@@ -66,19 +66,21 @@
   S.secVocab=`<section class="card" id="secVocab"><h2>Vocabulary <span style="font-weight:400;font-size:13px;color:var(--muted)">(tap a card to flip it)</span></h2>
     <div class="vox">${C.vocabulary.map((v,vi)=>`<div class="vox-card" role="button" tabindex="0"><div class="vox-front"><b>${v.term}</b>${v.staff?`<div class="vox-sym" data-vi="${vi}"></div>`: v.sym?`<div class="vox-sym vox-symtxt">${v.sym}</div>`:""}</div><div class="vox-back">${v.staffBack?`<div class="vox-symb" data-vi="${vi}"></div>`:v.def}</div></div>`).join("")}</div></section>`;
 
+  /* v2 reorg (2026-07-17): "Remember!" and "Mia's Tips" merged into ONE section,
+     shown before the games (secReview slot). secTips is no longer emitted —
+     stale "secTips" entries in lesson sectionOrders filter out harmlessly. */
   S.secReview=`<section class="card step" id="secReview"><h2>Remember!</h2>
     <ul class="summary">${C.summary.map(s=>`<li>${s}</li>`).join("")}</ul>
     ${(C.mistakes&&C.mistakes.length)?`<h2 style="margin-top:18px">Oops! Watch out for…</h2>
-    <ul class="mistakes">${C.mistakes.map(m=>`<li class="oops">${m}</li>`).join("")}</ul>`:""}</section>`;
-
-  if(C.tips) S.secTips=`<section class="card step" id="secTips"><h2>\u{1F4A1} Mia's Tips</h2>
-    ${C.tips.map(t=>Teacher.bubbleHTML(t)).join("")}</section>`;
+    <ul class="mistakes">${C.mistakes.map(m=>`<li class="oops">${m}</li>`).join("")}</ul>`:""}
+    ${C.tips?`<h2 style="margin-top:18px">\u{1F4A1} Mia's Tips</h2>
+    ${C.tips.map(t=>Teacher.bubbleHTML(t)).join("")}`:""}</section>`;
 
   S.secNext=`<div class="step" id="secNext">${Nav.nextInvite(n)}</div>`;
 
   const defaultOrder=[...(C.hook?["secHook"]:[]),"secObjectives","secVocab","secLearn","secExample",
-    ...(C.keyboard?["secKb"]:[]),...(C.practice?["secPractice"]:[]),
-    ...GAMES.map((_,i)=>"secGame"+i),"secQuiz","secReview",...(C.tips?["secTips"]:[]),"secNext"];
+    ...(C.keyboard?["secKb"]:[]),"secReview",...(C.practice?["secPractice"]:[]),
+    ...GAMES.map((_,i)=>"secGame"+i),"secQuiz","secNext"];
   let baseOrder=C.sectionOrder?[...C.sectionOrder]:defaultOrder;
   if(C.sectionOrder&&!baseOrder.includes("secVocab")){ const vi2=baseOrder.indexOf("secObjectives"); baseOrder.splice(vi2>=0?vi2+1:1,0,"secVocab"); }
   const ORDER=baseOrder.filter(id=>S[id]);
