@@ -1,6 +1,6 @@
 {
-  "name": "Music Fundamentals — Interactive Lessons with Mia",
-  "short_name": "Music Fund.",
+  "name": "Theory Lab — Interactive Lessons with Mia",
+  "short_name": "Theory Lab",
   "description": "107 interactive music theory lessons in 15 units — play, listen, practice.",
   "start_url": "./index.html",
   "scope": "./",

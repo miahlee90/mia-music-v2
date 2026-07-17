@@ -6,7 +6,7 @@
    NOT listed and never count toward academic progress. */
 const CURRICULUM={
  courseId:"practical-music-theory",
- courseTitle:"Practical Music Theory",
+ courseTitle:"Theory Lab",
  version:1,
  units:[
   {unit:1, title:"Basic Concepts"},

@@ -1,4 +1,4 @@
-/* Music Fundamentals — THE lesson template (DD-02/DD-03). v2
+/* Theory Lab — THE lesson template (DD-02/DD-03). v2
    Renders every lesson identically from LESSON_CONTENT[n]; validates content;
    wires Mia (restrained, SPEC §6.4) and the Ask-Mia menu.
    v2 adds: multiple games (C.games), Mia's Tips card (C.tips), rewards/badge
@@ -20,7 +20,7 @@
   if(interactions<2) warns.push("fewer than 2 hands-on interactions before the quiz");
 
   /* ---------- build sections ---------- */
-  document.title=`Lesson ${Nav.label(n)} · Music Fundamentals`;
+  document.title=`Lesson ${Nav.label(n)} · Theory Lab`;
   const S={};
 
   if(C.hook) S.secHook=`<section class="card" id="secHook"><span class="tag">Welcome</span>
