@@ -101,7 +101,12 @@
   updateProgress();
 
   /* ---------- interactions ---------- */
-  function fb(id,ok,msg){ const e=document.getElementById(id); e.textContent=msg; e.className="feedback "+(ok?"ok":"no"); }
+  function fb(id,ok,msg){ const e=document.getElementById(id); e.textContent=msg; e.className="feedback "+(ok?"ok":"no");
+    /* academic tracking: a step's try-activity answered correctly = one required
+       Learn-by-Doing activity done. Only "fbN" ids count — the welcome hook
+       ("hookFb"), games, practice and vocab never reach this branch. */
+    if(ok&&window.MFTrack){ const m=/^fb(\d+)$/.exec(id); if(m) MFTrack.lbd(n,"s"+m[1]); }
+  }
 
   function mountInteract(container,cfg,fbId){
     const wrongs={count:0};
@@ -224,6 +229,7 @@
   Quiz.mount(document.getElementById("quizBody"),C.quiz,{lesson:n,
     onHint:h=>Teacher.say(h,{pose:"think"}),
     onDone:(score,total,pass)=>{
+      if(window.MFTrack) MFTrack.quiz(n,score,total);  /* Final Quiz submitted (any score) */
       revealed=revealable.length+1; updateProgress();
       if(pass&&C.rewards){
         const stars=score===total?3:(score/total>=0.85?3:score/total>=0.7?2:1);

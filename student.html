@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Progress · Music Fundamentals</title>
+<link rel="stylesheet" href="css/style.css?v=20260717b">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1c1e54">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<style>
+.sd-wrap{max-width:900px;margin:0 auto;padding:0 12px}
+.sd-card{background:#fff;border:1.5px solid #e5dcc3;border-radius:14px;padding:16px;margin:12px 0}
+.sd-login input{font-size:18px;padding:12px;border:2px solid #cdd5e1;border-radius:10px;width:100%;
+  box-sizing:border-box;margin:6px 0;text-transform:uppercase;letter-spacing:1px}
+.sd-login button{width:100%;min-height:48px;font-size:17px}
+.sd-bar{background:#eee5cd;border-radius:9999px;height:12px;overflow:hidden}
+.sd-fill{background:linear-gradient(90deg,#533afd,#8b5cf6);height:100%;border-radius:9999px}
+.sd-unit{cursor:pointer}
+.sd-unit h3{margin:0 0 6px;font-size:15.5px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.sd-pages{display:none;margin-top:10px;border-top:1px dashed #ddd;padding-top:8px}
+.sd-unit.open .sd-pages{display:block}
+.sd-row{display:flex;align-items:center;gap:8px;padding:7px 2px;border-bottom:1px solid #f2ecd9;font-size:13.5px;flex-wrap:wrap}
+.sd-row .st{width:20px;text-align:center;flex:none}
+.sd-row .ttl{flex:1 1 180px;min-width:150px}
+.sd-row .res{color:#555;font-size:12.5px;flex:1 1 160px}
+.sd-row a{flex:none;padding:6px 12px;border:1.5px solid #533afd;border-radius:9999px;color:#533afd;
+  text-decoration:none;font-weight:700;font-size:12.5px;min-height:32px;display:inline-flex;align-items:center}
+.sd-done{color:#166534}.sd-prog{color:#b45309}.sd-not{color:#999}
+.sd-err{color:#b91c1c;font-weight:700;min-height:20px}
+@media(max-width:600px){ .sd-row .res{flex-basis:100%} }
+</style>
+</head>
+<body>
+<header class="lesson-header"><div class="inner">
+  <div class="crumb"><a href="index.html">🏠 Home</a> · <a href="lessons.html">All Lessons</a></div>
+  <h1>My Progress</h1>
+</div></header>
+<main class="sd-wrap" id="app"><div class="sd-card">Loading…</div></main>
+<script src="js/lessons-data.js?v=20260717b"></script>
+<script src="js/curriculum.js?v=20260717b"></script>
+<script src="js/config.js?v=20260717b"></script>
+<script src="js/lms.js?v=20260717b"></script>
+<script src="js/pwa.js?v=20260717b"></script>
+<script>
+(function(){
+  const app=document.getElementById("app");
+  const fmt=d=>d?new Date(d).toLocaleDateString(undefined,{year:"numeric",month:"long",day:"numeric"}):"";
+  const pct=(a,b)=>b?Math.round(100*a/b):0;
+
+  if(!MFTrack.enabled){
+    app.innerHTML=`<div class="sd-card"><h2>Not set up yet</h2>
+      <p>Online progress saving isn't configured on this site yet. You can still use every
+      lesson — your progress is saved on this device.</p></div>`;
+    return;
+  }
+  if(!MFTrack.session()) return renderLogin();
+  load();
+
+  function renderLogin(msg){
+    app.innerHTML=`<div class="sd-card sd-login"><h2>Student Sign-in</h2>
+      <p>Enter the two codes your teacher gave you. No email needed.</p>
+      <label>Class Code<input id="cc" autocomplete="off" placeholder="e.g. QK7M2P"></label>
+      <label>Access Code<input id="ac" autocomplete="off" placeholder="e.g. ABCD-2345"></label>
+      <p class="sd-err" id="err">${msg||""}</p>
+      <button id="go">Sign in</button>
+      <p style="font-size:13px;color:#777">Your codes work on any device — phone, tablet or computer.</p></div>`;
+    document.getElementById("go").onclick=async()=>{
+      const b=document.getElementById("go"); b.disabled=true; b.textContent="Signing in…";
+      try{
+        const r=await MFTrack.login(document.getElementById("cc").value.trim(),
+                                    document.getElementById("ac").value.trim());
+        if(r.ok) load();
+        else { document.getElementById("err").textContent=r.message||"Sign-in failed."; b.disabled=false; b.textContent="Sign in"; }
+      }catch(e){ document.getElementById("err").textContent="Could not reach the server — check your internet connection."; b.disabled=false; b.textContent="Sign in"; }
+    };
+  }
+
+  async function load(){
+    app.innerHTML=`<div class="sd-card">Loading your progress…</div>`;
+    let data;
+    try{ data=await MFTrack.progress(); }
+    catch(e){
+      app.innerHTML=`<div class="sd-card"><p class="sd-err">Could not load progress (offline?).
+        Your work is still being recorded on this device and will sync automatically.</p>
+        <button onclick="location.reload()">Try again</button>
+        <button onclick="if(MFTrack.logout())location.reload()">Sign out</button></div>`;
+      return;
+    }
+    if(!data||!data.ok){ MFTrack.logout(false); return renderLogin("Session expired — please sign in again."); }
+    render(data);
+  }
+
+  function render(data){
+    const P={}; (data.progress||[]).forEach(p=>{ if(p.course===MFTrack.COURSE) P[p.item]=p; });
+    const UC={}; (data.unitCompletions||[]).forEach(u=>{ if(u.course===MFTrack.COURSE) UC[u.unit]=u.at; });
+    const courseDone=(data.courseCompletions||[]).find(c=>c.course===MFTrack.COURSE);
+    const pages=CURRICULUM.pages.filter(p=>p.status==="active");
+    const doneCount=pages.filter(p=>(P[p.id]||{}).status==="completed").length;
+    const s=MFTrack.session();
+    const cls=(data.classes&&data.classes[0])||{name:s.class};
+    const nextPage=pages.find(p=>(P[p.id]||{}).status!=="completed")||pages[0];
+    const lastActive=pages.filter(p=>P[p.id]&&P[p.id].lastActiveAt)
+      .sort((a,b)=>new Date(P[b.id].lastActiveAt)-new Date(P[a.id].lastActiveAt))[0];
+    const recent=pages.filter(p=>P[p.id]&&P[p.id].completedAt)
+      .sort((a,b)=>new Date(P[b.id].completedAt)-new Date(P[a.id].completedAt)).slice(0,3);
+    const contPage=lastActive&&(P[lastActive.id]||{}).status!=="completed"?lastActive:nextPage;
+
+    let html=`<div class="sd-card">
+      <h2 style="margin:0 0 4px">${s.name} <span style="font-weight:400;color:#777;font-size:14px">· ${cls.name} · ${CURRICULUM.courseTitle}</span></h2>
+      <p style="margin:6px 0"><b>${doneCount} of ${pages.length}</b> lessons completed (${pct(doneCount,pages.length)}%)</p>
+      <div class="sd-bar"><div class="sd-fill" style="width:${pct(doneCount,pages.length)}%"></div></div>
+      ${courseDone?`<p style="color:#166534;font-weight:800;margin:8px 0 0">🎓 Course completed on ${fmt(courseDone.at)}!</p>`:""}
+      <p style="margin:12px 0 0">
+        <a href="${contPage.route}" style="display:inline-block;background:#533afd;color:#fff;padding:12px 22px;border-radius:9999px;text-decoration:none;font-weight:800">▶ Continue Learning — Lesson ${contPage.label}</a>
+        <button style="margin-left:8px" onclick="if(MFTrack.logout())location.reload()">Sign out</button>
+      </p>
+      ${recent.length?`<p style="font-size:13px;color:#555;margin-top:10px">Recently completed: ${recent.map(p=>`${p.label} (${fmt(P[p.id].completedAt)})`).join(" · ")}</p>`:""}
+    </div>`;
+
+    CURRICULUM.units.forEach(u=>{
+      const ups=pages.filter(p=>p.unit===u.unit);
+      const ud=ups.filter(p=>(P[p.id]||{}).status==="completed").length;
+      html+=`<div class="sd-card sd-unit" data-u="${u.unit}">
+        <h3><span>Unit ${u.unit} — ${u.title}</span>
+          <span style="font-weight:600;color:#555">${ud}/${ups.length} · ${pct(ud,ups.length)}%${UC[u.unit]?` · ✅ ${fmt(UC[u.unit])}`:""}</span></h3>
+        <div class="sd-bar"><div class="sd-fill" style="width:${pct(ud,ups.length)}%"></div></div>
+        <div class="sd-pages">`+
+        ups.map(p=>{
+          const r=P[p.id]||{}; const st=r.status||"not_started";
+          const icon=st==="completed"?'<span class="st sd-done">✅</span>':st==="in_progress"?'<span class="st sd-prog">🟡</span>':'<span class="st sd-not">⬜</span>';
+          const lbdDone=(r.lbdDone||[]).length;
+          const res=[];
+          res.push(`Learn by Doing: ${lbdDone}/${p.lbdIds.length}${r.lbdAttempts?` (${r.lbdAttempts} tries)`:""}`);
+          if(r.quizBest) res.push(`Quiz best ${pct(r.quizBest.earned,r.quizBest.possible)}%${r.quizRecent&&(r.quizRecent.earned!==r.quizBest.earned||r.quizRecent.possible!==r.quizBest.possible)?` · recent ${pct(r.quizRecent.earned,r.quizRecent.possible)}%`:""} (${r.quizAttempts}×)`);
+          else res.push("Quiz: not taken");
+          return `<div class="sd-row">${icon}
+            <span class="ttl"><b>${p.label}</b> ${p.title}</span>
+            <span class="res">${res.join(" · ")}${r.completedAt?` · done ${fmt(r.completedAt)}`:""}</span>
+            <a href="${p.route}">${st==="completed"?"Review":"Continue"}</a></div>`;
+        }).join("")+`</div></div>`;
+    });
+    app.innerHTML=html;
+    document.querySelectorAll(".sd-unit h3").forEach(h=>{
+      h.style.cursor="pointer";
+      h.onclick=()=>h.parentElement.classList.toggle("open");
+    });
+  }
+})();
+</script>
+</body>
+</html>
