@@ -1,4 +1,4 @@
-/* Lesson 29 — Key Signatures: The Sharp Keys (AEMT Book 2, Unit 7)
+/* Lesson 29 (4.4) — Key Signatures: The Sharp Keys (AEMT Book 2, Unit 7)
    Built from drafts/UNIT 7 – Lesson 29.md; AEMT p.46 verified by render.
    Uses staff.js v7 keysig rendering (spec.keysig, onKeysig, .ksgroup).
    QA note honored: the ORDER of sharps (F–C–G–D–A–E–B) and the "last sharp +

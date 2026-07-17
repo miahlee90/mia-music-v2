@@ -1,4 +1,4 @@
-/* Lesson 60 — The Primary Triads in Minor Keys (AEMT Book 3, Unit 15)
+/* Lesson 60 (8.3) — The Primary Triads in Minor Keys (AEMT Book 3, Unit 15)
    Built from drafts/UNIT 15 – Lesson 60.md; AEMT3 p.96 verified by render.
    Core: primary triads of a minor key = degrees 1, 4, 5 of the (harmonic)
    minor scale → i and iv are MINOR, V is MAJOR (its 3rd is the raised 7th!);

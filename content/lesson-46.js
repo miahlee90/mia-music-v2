@@ -1,4 +1,4 @@
-/* Lesson 46 — Incomplete Measures (Pick-up Notes) and Syncopation (AEMT Book 2, Unit 11)
+/* Lesson 46 (6.9) — Incomplete Measures (Pick-up Notes) and Syncopation (AEMT Book 2, Unit 11)
    Built from drafts/UNIT 11 – Lesson 46.md; AEMT p.71 verified by render.
    Core: pick-up note(s) = incomplete first measure; the missing beats live in
    the LAST measure. Syncopation = accent on the weak beat (&) instead of strong.

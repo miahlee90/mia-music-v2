@@ -1,261 +1,285 @@
-/* Lesson 23 — Sharps (AEMT Book 1, Unit 6)
-   Built from drafts/UNIT 6 – Lessons 22, 23 & 24.md (combined draft — pages stay separate, DD-12).
-   QA notes honored: ♯ = one key to the RIGHT (keyboard ↔ pitch direction),
-   one-measure rule reinforced from L22.
+/* Lesson 23 (3.3, formerly L20) — Articulation (AEMT Book 1, Unit 5)
+   Built from drafts/UNIT 5 – Lesson 20.md.
+   QA note honored: articulation = HOW a note is performed (not how loud/long,
+   fermata excepted) with side-by-side AUDIO demos of every marking.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* find-the-sharp-key drill (unique L23 prefix) */
-function MF_L23_sharpKey(container,fb){
-  const rounds=[{from:"C4",to:"C#4",name:"C♯"},{from:"F4",to:"F#4",name:"F♯"},{from:"G4",to:"G#4",name:"G♯"},{from:"D4",to:"D#4",name:"D♯"}];
-  let i=0;
-  container.innerHTML=`<div class="big-q sk-q" style="text-align:center"></div><div class="sk-kb"></div>`;
-  const q=container.querySelector(".sk-q");
-  function ask(){
-    const cur=rounds[i];
-    q.innerHTML=`Key ${i+1} of ${rounds.length}: this is <b>${cur.from[0]}</b> — now click <b>${cur.name}</b> (one key to the RIGHT).`;
-    Keyboard.create(container.querySelector(".sk-kb"),{start:60,octaves:2,labels:false,marks:[MFAudio.midi(cur.from)],
-      onKey:m=>{
-        const target=MFAudio.midi(cur.to);
-        if(m===target){ i++;
-          if(i>=rounds.length){ q.textContent="Sharp shooter!";
-            fb(true,"✓ Four sharps found — always ONE key to the right, one half step HIGHER. ⬆️"); }
-          else { fb(true,`✓ ${cur.name} — the black key just right of ${cur.from[0]}. Next…`); ask(); } }
-        else if(m===MFAudio.midi(cur.from)) fb(false,`That's plain ${cur.from[0]} — the sharp lives one key to its RIGHT.`);
-        else fb(false,"Start on the marked key and move exactly ONE key right — black or white!");
-      }});
-  }
+/* listen-and-identify articulation drill (unique L20 prefix) */
+function MF_L23_articListen(container,fb){
+  const ROUNDS=[
+    {a:"Staccato",play:()=>{[67,67,67,67].forEach((m,k)=>MFAudio.tone(m,.12,k*.5,.5));}},
+    {a:"Legato / Tenuto",play:()=>{[67,67,67,67].forEach((m,k)=>MFAudio.tone(m,.5,k*.5,.5));}},
+    {a:"Accent",play:()=>{[67,67,67,67].forEach((m,k)=>MFAudio.tone(m,.35,k*.5,k===0?.85:.35));}},
+    {a:"Fermata",play:()=>{MFAudio.tone(67,.4,0,.5);MFAudio.tone(67,2.2,.55,.5);}}].sort(()=>Math.random()-.5);
+  const OPTS=["Staccato","Legato / Tenuto","Accent","Fermata"];
+  let i=0,played=false;
+  container.innerHTML=`<div class="big-q al-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play al-play">▶ Listen</button></div>
+    <div class="choices al-ch" style="display:none"></div>`;
+  const q=container.querySelector(".al-q"), ch=container.querySelector(".al-ch");
+  OPTS.forEach(o=>{ const b=document.createElement("button"); b.textContent=o;
+    b.onclick=()=>{
+      if(!played){ fb(false,"Listen first!"); return; }
+      const cur=ROUNDS[i];
+      if(o===cur.a){ i++;
+        if(i>=ROUNDS.length){ ch.style.display="none"; container.querySelector(".al-play").style.display="none"; q.textContent="Articulation ears unlocked!";
+          fb(true,"✓ Bouncy, smooth, punchy, held — you heard every style correctly!"); }
+        else { fb(true,`✓ ${cur.a}! Next style…`); ask(); } }
+      else fb(false,`Listen for the STYLE: short bounces = staccato, full smooth notes = tenuto, one POP = accent, one loooong hold = fermata. (It was ${cur.a}.)`);
+    };
+    ch.appendChild(b); });
+  function ask(){ q.textContent=`Style ${i+1} of ${ROUNDS.length}: how were those notes performed?`; played=false; ch.style.display="none"; }
+  container.querySelector(".al-play").onclick=()=>{ ROUNDS[i].play(); played=true; setTimeout(()=>{ ch.style.display=""; },3000); };
   ask();
 }
 
 LESSON_CONTENT[23]={
-  welcome:"Yesterday down — today UP! ⬆️",
+  welcome:"Same note, a hundred personalities. \u{1F3A8}",
   hook:{
-    say:"The flat pulled notes down. Meet its opposite! Press play — C, then C-sharp. <b>Which way now?</b>",
+    say:"The same notes can be played in very different ways — that's called <b>articulation</b>. Press play: the same four notes, two deliveries. <b>What changed?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ C… then C♯</button></div>
-          <div class="choices hk-ch" style="display:none"><button>⬆️ UP — a little higher</button><button>⬇️ DOWN — a little lower</button><button>The same</button></div>`;
+        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ Two deliveries</button></div>
+          <div class="choices hk-ch" style="display:none"><button>The STYLE — bouncy, then smooth</button><button>The pitch</button><button>The speed</button></div>`;
         const ch=container.querySelector(".hk-ch");
         container.querySelector(".hk-play").onclick=()=>{
-          MFAudio.tone(60,.8,0); MFAudio.tone(61,.8,1.0);
-          setTimeout(()=>{ ch.style.display=""; },2100);
+          [60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.12,k*.45,.5));
+          [60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.48,2.4+k*.45,.5));
+          setTimeout(()=>{ ch.style.display=""; },4600);
         };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ UP one half step — the SHARP (♯) is the pitch-raising machine!");
-          else fb(false,"Listen again — the second note climbs just a little…");
+          if(i===0) fb(true,"✓ Bouncy then smooth — same notes, same speed, different STYLE. Style instructions are called ARTICULATION!");
+          else fb(false,"Pitch and speed stayed identical — listen to HOW each note starts and ends.");
         });
       } }
   },
   objectives:[
-    "Identify the sharp sign (♯)",
-    "Explain that a sharp raises a note by one half step",
-    "Find sharp notes on the keyboard (one key to the RIGHT)",
-    "Read sharp notes on the staff",
-    "Apply the one-measure rule with sharps",
-    "Tell sharps and flats apart instantly"
+    "Define articulation",
+    "Identify common articulation markings",
+    "Explain staccato, accent, sforzando, tenuto and fermata",
+    "Hear the difference between articulations",
+    "Recognize articulation symbols in a score",
+    "Describe how articulation changes musical expression"
   ],
   steps:[
-    { say:"A <b>sharp (♯)</b> <b>raises</b> a note by <b>one half step</b>: on the keyboard, move <b>one key to the RIGHT</b>. It's the flat's mirror twin. \u{1F447} <b>What does a sharp do to a note?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"C4",d:"q",label:"C"},{p:"C#4",d:"q",label:"C♯ — a half step higher"}],width:340} },
+    { say:"<b>Articulation</b> tells us <b>HOW</b> to play a note — not how long, not how loud, but the <b>style</b> of the sound. Meet the five: \u{1F3C0} <b>Staccato (•)</b> short & detached · \u{1F4E2} <b>Accent (&gt;)</b> extra emphasis · \u{1F4A5} <b>Sforzando (sfz)</b> sudden strong accent · \u{23F3} <b>Tenuto (—)</b> hold full value · \u{1F426} <b>Fermata</b> hold LONGER than written. \u{1F447} <b>What does articulation describe?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"E5",d:"q",artic:"staccato",articPos:"above",label:"staccato"},{p:"E5",d:"q",artic:"accent",articPos:"above",label:"accent"},{p:"E5",d:"q",artic:"tenuto",articPos:"above",label:"tenuto"},{p:"E5",d:"q",artic:"sfz"},{p:"E5",d:"q",artic:"fermata",label:"fermata"}],width:470} },
       try:{ type:"mc",
-        choices:["Raises it by one half step","Lowers it by one half step","Doubles its length"], answer:0,
-        success:"✓ Up one half step — the very next key to the right.",
-        fail:"Sharp = HIGHER. Think of a sharp arrow pointing up…",
-        hint:"⬆️ right and higher." } },
-    { say:"C♯ is the black key just <b>right</b> of C; F♯ just right of F. \u{1F447} <b>Find the sharps:</b>",
+        choices:["HOW a note is performed — its style","How loud a note is","How many beats a note gets"], answer:0,
+        success:"✓ Style! Volume is dynamics, length is note values — articulation is the personality.",
+        fail:"Not volume (dynamics), not length (note values) — articulation is the STYLE.",
+        hint:"Delivery, not duration." } },
+    { say:"\u{1F3C0} <b>Staccato</b>: a dot above or below the notehead — play it <b>short and detached</b>, like a bouncing ball. \u{1F447} <b>Compare:</b>",
       try:{ type:"custom",
-        hint:"Marked key, then ONE key right.",
-        mount:(container,fb)=>MF_L23_sharpKey(container,fb) } },
-    { say:"The <b>one-measure rule</b> works exactly the same for sharps: one printed ♯ rules every matching note until the <b>bar line</b>. \u{1F447} <b>How does the THIRD F (no sign) sound in this measure?</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"4/4",notes:[{p:"F#4",d:"q",label:"F♯"},{p:"A4",d:"q",label:"A"},{p:"F4",d:"q",sound:"F#4",label:"still F♯!"},{p:"A4",d:"q",label:"A"},{bar:"single"},{p:"F4",d:"w",label:"F natural again"},{bar:"final"}],width:470} },
-      try:{ type:"mc",
-        choices:["F♯ — the sharp still applies in this measure","Plain F — sharps affect only one note","F♭"], answer:0,
-        success:"✓ Same letter, same measure — the sharp is still switched on until the bar line.",
-        fail:"Check the measure: has a bar line passed since the ♯ appeared?",
-        hint:"One-measure rule — same as flats." } },
-    { say:"Sharp vs flat — the mirror test! \u{1F447} <b>Answer fast:</b>",
-      try:{ type:"custom",
-        hint:"♯ up/right · ♭ down/left.",
+        hint:"The staccato version has air between every note.",
         mount:(container,fb)=>{
-          const rounds=[
-            {q:"Which sign RAISES a note?",a:0},{q:"Which sign moves you one key LEFT?",a:1},
-            {q:"Which sign makes C become the black key to its right?",a:0},
-            {q:"Which sign makes B become the black key to its left?",a:1},
-            {q:"Which sign points “up” in pitch?",a:0}];
-          let i=0;
-          container.innerHTML=`<div class="big-q sf-q" style="text-align:center;min-height:44px"></div>
-            <div class="choices chips sf-ch"><button>♯ Sharp</button><button>♭ Flat</button></div>`;
-          const q=container.querySelector(".sf-q"), ch=container.querySelector(".sf-ch");
-          function ask(){ q.textContent=`Round ${i+1} of ${rounds.length}: `+rounds[i].q; }
-          [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-            const cur=rounds[i], ok=bi===cur.a;
-            if(ok){ MFAudio.tone(cur.a===0?73:70,.3); i++;
-              if(i>=rounds.length){ ch.style.display="none"; q.textContent="Mirror twins mastered!";
-                fb(true,"✓ Sharp up-right ⬆️, flat down-left ⬇️ — you'll never mix them again!"); }
-              else { fb(true,"✓ Right! Next…"); ask(); } }
-            else { MFAudio.tone(40,.25); fb(false,"Remember the mirror: ♯ = up/right, ♭ = down/left."); }
+          let heard=0;
+          container.innerHTML=`<div class="st-staff"></div>
+            <div style="text-align:center"><button class="play st-a">▶ Plain</button> <button class="play st-b">▶ Staccato</button></div>
+            <div class="choices st-ch" style="display:none"><button>Staccato = shorter, bouncier, detached</button><button>Staccato = longer and smoother</button></div>`;
+          Staff.render(container.querySelector(".st-staff"),{clef:"treble",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q",artic:"staccato"},{p:"G4",d:"q",artic:"staccato"}],width:340});
+          const ch=container.querySelector(".st-ch");
+          container.querySelector(".st-a").onclick=()=>{ [0,1].forEach(k=>MFAudio.tone(67,.5,k*.55,.5)); heard|=1; if(heard===3) ch.style.display=""; };
+          container.querySelector(".st-b").onclick=()=>{ [0,1].forEach(k=>MFAudio.tone(67,.12,k*.55,.5)); heard|=2; if(heard===3) ch.style.display=""; };
+          [...ch.children].forEach((b,i)=>b.onclick=()=>{
+            if(i===0) fb(true,"✓ Short, light, detached — the note bounces off the floor. That's staccato!");
+            else fb(false,"Listen again — which version has AIR between the notes?");
           });
-          ask();
         } } },
-    { say:"Read a melody WITH sharps — hear the bright “lift” each sharp adds. \u{1F447}",
+    { say:"\u{1F4E2} <b>Accent (&gt;)</b> gives one note extra <b>punch</b>; \u{1F4A5} <b>sforzando (sfz)</b> is that punch turned up to a <b>sudden surprise</b>; \u{23F3} <b>tenuto (—)</b> says “hold me for my FULL value, with a little weight.” \u{1F447} <b>Which note gets the punch?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:92,notes:[{p:"C4",d:"q",label:"1"},{p:"E5",d:"q",artic:"accent",label:"2"},{p:"G4",d:"q",label:"3"},{p:"C5",d:"q",label:"4"}],width:400} },
+      try:{ type:"mc",
+        choices:["Note 2 — it wears the > accent","Note 1","Note 4"], answer:0,
+        success:"✓ The > mark gives note 2 the extra emphasis — press play in the example section to hear it POP.",
+        fail:"Find the little sideways V — that's the accent.",
+        hint:"Look above/below each notehead." } },
+    { say:"\u{1F426} The <b>fermata</b> — the “bird's eye” — perches over a note and says: <b>hold me longer than written</b> (the conductor decides how long!). It's the one articulation that DOES change length. \u{1F447} <b>Hear it:</b>",
       try:{ type:"custom",
-        hint:"Both F's in measure 1 are sharp — the sign carries through the measure.",
+        hint:"The fermata note overstays its welcome — on purpose.",
         mount:(container,fb)=>{
-          const spec={clef:"treble",time:"4/4",tempo:96,
-            notes:[{p:"E4",d:"q",label:"E"},{p:"F#4",d:"q",label:"F♯"},{p:"G4",d:"q",label:"G"},{p:"F4",d:"q",label:"(F♯)"},{bar:"single"},{p:"E4",d:"w",label:"E"},{bar:"final"}],width:460};
-          container.innerHTML=`<div class="rs-staff"></div><div style="text-align:center"><button class="play rs-play">▶ Play & listen</button></div>`;
-          const api=Staff.render(container.querySelector(".rs-staff"),spec);
-          container.querySelector(".rs-play").onclick=()=>{
-            const spb=60/96;
-            const seq=[[64,0],[66,1],[67,2],[66,3]];
-            seq.forEach(([m,b],idx)=>{ MFAudio.tone(m,spb*.9,b*spb); setTimeout(()=>api.highlight(idx),b*spb*1000); });
-            MFAudio.tone(64,4*spb*.9,4*spb); setTimeout(()=>api.highlight(5),4*spb*1000);
-            setTimeout(()=>{ api.highlight(null);
-              fb(true,"✓ Both F's sounded SHARP — one printed ♯, two raised notes, then the bar line reset it all."); },8*spb*1000+300);
+          let played=false;
+          container.innerHTML=`<div class="fm-staff"></div>
+            <div style="text-align:center"><button class="play fm-play">▶ Play with fermata</button></div>
+            <div class="choices fm-ch" style="display:none"><button>The last note was held MUCH longer than 1 beat</button><button>Every note was equal</button></div>`;
+          Staff.render(container.querySelector(".fm-staff"),{clef:"treble",time:"4/4",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q",artic:"fermata"},{bar:"final"}],width:400});
+          const ch=container.querySelector(".fm-ch");
+          container.querySelector(".fm-play").onclick=()=>{
+            const s=.55;
+            [60,64,67].forEach((m,k)=>MFAudio.tone(m,s*.9,k*s,.5));
+            MFAudio.tone(72,2.4,3*s,.55);
+            played=true;
+            setTimeout(()=>{ ch.style.display=""; },5600);
           };
-        } } }
+          [...ch.children].forEach((b,i)=>b.onclick=()=>{
+            if(!played){ fb(false,"Play it first!"); return; }
+            if(i===0) fb(true,"✓ The bird's eye held the last note way past its written value — a dramatic pause before moving on!");
+            else fb(false,"Listen to the LAST note — did it really let go after one beat?");
+          });
+        } } },
+    { say:"Now EARS only. \u{1F447} <b>Identify each performance style:</b>",
+      try:{ type:"custom",
+        hint:"Short bounces / full smooth notes / one punch / one long hold.",
+        mount:(container,fb)=>MF_L23_articListen(container,fb) } }
   ],
   examples:[
-    { caption:"C and C♯, F and F♯ — each sharp climbs one half step to the black key on the right.",
-      staff:{clef:"treble",tempo:80,notes:[{p:"C4",d:"h",label:"C"},{p:"C#4",d:"h",label:"C♯"},{p:"F4",d:"h",label:"F"},{p:"F#4",d:"h",label:"F♯"}],width:440} },
-    { caption:"One printed ♯, two sharp F's — then the bar line resets. The one-measure rule never changes.",
-      staff:{clef:"treble",tempo:96,time:"4/4",notes:[{p:"F#4",d:"h",label:"F♯"},{p:"F4",d:"h",sound:"F#4",label:"(still F♯)"},{bar:"single"},{p:"F4",d:"w",label:"F natural"},{bar:"final"}],width:440} }
+    { caption:"Staccato dots vs tenuto dashes: bouncing balls, then full-weight steps. Same pitches, opposite personalities.",
+      staff:{clef:"treble",tempo:96,time:"4/4",notes:[{p:"E5",d:"q",artic:"staccato"},{p:"E5",d:"q",artic:"staccato"},{p:"E5",d:"q",artic:"tenuto"},{p:"E5",d:"q",artic:"tenuto"},{bar:"final"}],width:420} },
+    { caption:"An accent punches beat 1, and the fermata stretches the final note — listen for both!",
+      staff:{clef:"treble",tempo:96,time:"4/4",notes:[{p:"G4",d:"q",artic:"accent"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q",artic:"fermata"},{bar:"final"}],width:420} }
   ],
   games:[
-    { type:"symbol-hunt", title:"Game 1 · Spot the Sharp",
-      intro:"Sharps, flats, plain notes — click exactly what Mia names. The hashtag-lookalike is your target!",
-      miaIntro:"Hunt the pitch-raiser! \u{1F50D}",
-      spec:{rounds:6, pool:[
-        {label:"Sharp sign (F♯)", spec:{clef:"treble",notes:[{p:"F#4",d:"q"}]}},
-        {label:"Flat sign (B♭)", spec:{clef:"treble",notes:[{p:"Bb4",d:"q"}]}},
-        {label:"Plain F (no accidental)", spec:{clef:"treble",notes:[{p:"F4",d:"q"}]}},
-        {label:"C♯", spec:{clef:"treble",notes:[{p:"C#4",d:"q"}]}},
-        {label:"Eighth Note", spec:{clef:"treble",notes:[{p:"B4",d:"8"}]}}]},
-      result:(score)=>score>=5?"Sharp eyes for sharp signs!":null },
-    { type:"term-race", title:"Game 2 · Up or Down Dash",
-      intro:"Sharp facts vs flat facts — sort them at speed!",
-      miaIntro:"Mirror-twin quiz — fast! \u{26A1}",
+    { type:"term-race", title:"Game 1 · Style Dash",
+      intro:"A marking flashes — pick what it tells you to do. All five styles!",
+      miaIntro:"Quick — bounce, punch, or hold?! \u{26A1}",
       spec:{rounds:8, pool:[
-        ["Sharp (♯)","Raises a note by one half step"],
-        ["Flat (♭)","Lowers a note by one half step"],
-        ["♯ on the keyboard","One key to the RIGHT"],
-        ["♭ on the keyboard","One key to the LEFT"],
-        ["Accidental","A sign that changes a note's pitch"],
-        ["Bar line","Cancels accidentals automatically"]]},
-      result:(score)=>score>=7?"Up, down, left, right — never confused!":null },
-    { type:"rhythm-tap", title:"Game 3 · Tap Review",
-      intro:"Rhythm stays sharp too — tap these back in time!",
-      miaIntro:"Hands warm, brain sharp! \u{1F44F}",
-      spec:{tempo:96, rounds:3, patterns:[["q","q","q","q"],["q.","8","h"],["8","8","h","q"]]},
-      result:(score)=>score>=8?"Rhythm precision maintained!":null },
-    { type:"value-race", title:"Game 4 · Rest Family Sprint (45s)",
-      intro:"45 seconds of RESTS — all four, from the hole to the little 7!",
-      miaIntro:"Silence sprint! \u{23F1}",
-      spec:{seconds:45, ask:"name", kind:"rest", values:["w","h","q","8"]},
-      result:(score)=>score>=13?score+" — the rest family never forgets you!":null }
+        ["Staccato (•)","Short and detached"],
+        ["Accent (>)","Extra emphasis"],
+        ["Sforzando (sfz)","Sudden, strong accent"],
+        ["Tenuto (—)","Hold for full value"],
+        ["Fermata","Hold longer than written"],
+        ["Legato","Smooth and connected (from the slur!)"]]},
+      result:(score)=>score>=7?"Every style at your fingertips!":null },
+    { type:"symbol-hunt", title:"Game 2 · Mark Detective",
+      intro:"Click the articulation Mia names — dots, dashes, wedges and bird's eyes on real notes!",
+      miaIntro:"Detective work — find each tiny mark! \u{1F50D}",
+      spec:{rounds:6, pool:[
+        {label:"Staccato", spec:{clef:"treble",notes:[{p:"E5",d:"q",artic:"staccato",articPos:"above"}]}},
+        {label:"Accent", spec:{clef:"treble",notes:[{p:"E5",d:"q",artic:"accent",articPos:"above"}]}},
+        {label:"Tenuto", spec:{clef:"treble",notes:[{p:"E5",d:"q",artic:"tenuto",articPos:"above"}]}},
+        {label:"Fermata", spec:{clef:"treble",notes:[{p:"E5",d:"q",artic:"fermata"}]}},
+        {label:"Sforzando (sfz)", html:"<i>sfz</i>"}]},
+      result:(score)=>score>=5?"No mark too small for your eyes!":null },
+    { type:"rhythm-tap", title:"Game 3 · Crisp Staccato Tap",
+      intro:"Tap the rhythm with staccato SNAP — quick, light touches right on the beat!",
+      miaIntro:"Make your taps BOUNCE! \u{1F3C0}",
+      spec:{tempo:96, rounds:3, patterns:[["q","q","q","q"],["q","q","h"],["q","rq","q","q"]]},
+      result:(score)=>score>=8?"Crisp, snappy, on time — staccato hands!":null },
+    { type:"term-race", title:"Game 4 · Reverse Style Dash (45s)",
+      intro:"Backwards round: Mia gives the meaning, you name the marking — fast!",
+      miaIntro:"Final sprint — meanings to marks! \u{23F1}",
+      spec:{seconds:45, reverse:true, pool:[
+        ["Staccato (•)","Short and detached"],
+        ["Accent (>)","Extra emphasis"],
+        ["Sforzando (sfz)","Sudden, strong accent"],
+        ["Tenuto (—)","Hold for full value"],
+        ["Fermata","Hold longer than written"]]},
+      result:(score)=>score>=11?score+" matched — articulation fluency!":null }
   ],
-  practiceIntro:"20 practice questions — the sharp's job, keyboard direction, and the rule. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — the five markings and how each changes the sound. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"sign", pool:[["Sharp (♯)","Raises a note by one half step"],["Flat (♭)","Lowers a note by one half step"],["Accidental","A sign that changes a note's pitch"],["Bar Line","Cancels accidentals when the measure ends"]], reverse:true}, count:5 },
-    { gen:"click-key", params:{letters:["C","F","G"], octaves:[4]}, count:3 },
+    { gen:"term-match", params:{subject:"articulation marking", pool:[["Staccato (•)","Short and detached"],["Accent (>)","Extra emphasis"],["Sforzando (sfz)","Sudden, strong accent"],["Tenuto (—)","Hold for full value"],["Fermata","Hold longer than written"]], reverse:true}, count:8 },
     { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 },
     { gen:"note-name", params:{clef:"treble"}, count:2 },
-    { type:"mc", q:"A sharp (♯) makes a note…", choices:["one half step HIGHER","one half step lower","one beat longer"], answer:0,
-      explain:"Up — one key to the right." },
-    { type:"mc", q:"On the keyboard, C♯ is…", choices:["one key RIGHT of C","one key LEFT of C","the same key as C"], answer:0,
-      explain:"Sharps always move right/higher." },
-    { type:"truefalse", q:"A sharp affects every same-letter note until the bar line.", answer:true,
-      explain:"The one-measure rule — same as flats." },
-    { type:"truefalse", q:"The sharp sign looks a little like a hashtag (#).", answer:true,
-      explain:"Two verticals, two slanted horizontals." },
-    { type:"mc", q:"Sharp and flat are…", choices:["mirror opposites — up vs down","the same thing","both pitch-raisers"], answer:0,
-      explain:"♯ raises, ♭ lowers — by the same half step." },
-    { type:"truefalse", q:"F♯ is the black key just right of F.", answer:true,
-      explain:"One half step up from F." },
-    { type:"mc", q:"After a bar line, a sharp from the previous measure…", choices:["no longer applies","still applies","applies to every instrument"], answer:0,
-      explain:"Reset! Each measure starts clean." },
-    { type:"truefalse", q:"Sharps often make music feel brighter or more energetic.", answer:true,
-      explain:"That little lift upward adds sparkle." }
+    { type:"mc", q:"Articulation describes…", choices:["HOW a note is performed","how many beats a note lasts","which line a note sits on"], answer:0,
+      explain:"The style of the sound — bounce, punch, weight, hold." },
+    { type:"truefalse", q:"Staccato notes are short and detached.", answer:true,
+      explain:"Bounce off each note like a basketball." },
+    { type:"truefalse", q:"Tenuto means to hold the note for its full written value.", answer:true,
+      explain:"Full value, with a little weight — no clipping!" },
+    { type:"mc", q:"The fermata is nicknamed…", choices:["the bird's eye","the pizza","the hat"], answer:0,
+      explain:"An arc with a dot — an eye watching from above." },
+    { type:"truefalse", q:"The fermata is the one articulation that changes a note's LENGTH.", answer:true,
+      explain:"Hold it longer than written — the conductor decides how long." },
+    { type:"mc", q:"sfz (sforzando) means…", choices:["a sudden, strong accent","gradually louder","smooth and connected"], answer:0,
+      explain:"A musical surprise — one note jumps out." },
+    { type:"truefalse", q:"sfz is short for sforzando.", answer:true,
+      explain:"The abbreviation appears in the score; the full Italian word is sforzando." },
+    { type:"mc", q:"Compared with a plain accent (>), a sforzando is…", choices:["more sudden and stronger","softer","longer in duration"], answer:0,
+      explain:"Both add emphasis — sfz is the extreme, surprise version." },
+    { type:"truefalse", q:"An accent makes a note quieter.", answer:false,
+      explain:"The opposite — extra emphasis, extra punch." },
+    { type:"mc", q:"Staccato is marked with…", choices:["a dot above or below the notehead","a curved line","two dots by a bar line"], answer:0,
+      explain:"The tiny dot — not to be confused with the duration dot BESIDE a note!" }
   ],
-  miaQuizIntro:"Quiz time! Sharp = RIGHT and HIGHER. Climb!",
+  miaQuizIntro:"Quiz time! Bounce the staccatos, punch the accents, and hold that fermata!",
   quiz:[
-    { type:"mc", q:"What does a sharp (♯) do?", choices:["Lowers the pitch","Raises the pitch by one half step","Cancels a flat","Holds the note longer"], answer:1,
-      explain:"Up one half step — one key right.", hint:"⬆️" },
-    { type:"mc", q:"On the keyboard, a sharp moves you…", choices:["one key to the RIGHT","one key to the LEFT","down an octave"], answer:0,
-      explain:"Right = higher.", hint:"Sharp arrow points up." },
-    { type:"truefalse", q:"A sharp raises a note by one half step.", answer:true,
-      explain:"The pitch-raising machine.", hint:"⬆️ right." },
-    { type:"truefalse", q:"A sharp and a flat move a note in the same direction.", answer:false,
-      explain:"Mirror twins — ♯ up, ♭ down.", hint:"Opposites!" },
-    { type:"mc", q:"Which note is C♯?",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q",label:"1"},{p:"C#4",d:"q",label:"2"}],width:300},
-      choices:["1","2"], answer:1,
-      explain:"Note 2 carries the ♯ before its head.", hint:"Find the hashtag-lookalike." },
-    { type:"mc", q:"A sharp raises a note by one ____ step.", choices:["half","whole","quarter"], answer:0,
-      explain:"Half step — the very next key.", hint:"Smallest move." },
-    { type:"truefalse", q:"In this measure, BOTH F's sound sharp.",
-      staff:{clef:"treble",time:"4/4",notes:[{p:"F#4",d:"h"},{p:"F4",d:"h"},{bar:"final"}],width:340},
-      answer:true,
-      explain:"One printed ♯ rules every F until the bar line.", hint:"One-measure rule." },
+    { type:"mc", q:"What does staccato mean?", choices:["Play loudly","Play smoothly","Play short and detached","Hold longer"], answer:2,
+      explain:"Short, light, detached.", hint:"\u{1F3C0} bouncing ball." },
+    { type:"mc", q:"Which articulation tells you to hold a note LONGER than its written value?", choices:["Accent","Tenuto","Fermata","Staccato"], answer:2,
+      explain:"The bird's eye — the great stretcher.", hint:"\u{1F426}" },
+    { type:"mc", q:"What does tenuto tell you to do?", choices:["Play the note short","Hold the note for its full written value","Play louder","Repeat the note"], answer:1,
+      explain:"Full value with gentle weight.", hint:"⏳ all the way." },
+    { type:"truefalse", q:"A fermata tells you to hold a note longer than its normal value.", answer:true,
+      explain:"Longer than written — conductor's choice.", hint:"The eye watches… and waits." },
+    { type:"truefalse", q:"Staccato notes should be played smoothly and connected.", answer:false,
+      explain:"That's legato! Staccato is the opposite — detached.", hint:"Bounce, don't glide." },
+    { type:"truefalse", q:"Sforzando means a sudden, strong accent.", answer:true,
+      explain:"The musical surprise attack.", hint:"\u{1F4A5}" },
+    { type:"mc", q:"Which marking tells you to play a note short and detached?", choices:["Staccato","Tenuto","Fermata","Accent"], answer:0,
+      explain:"The dot above/below the head.", hint:"\u{1F3C0}" },
     { type:"mc", q:"Which matching is correct?",
-      choices:["♯ → raise · ♭ → lower · bar line → reset",
-               "♯ → lower · ♭ → raise · bar line → repeat",
-               "♯ → louder · ♭ → softer · bar line → stop"], answer:0,
-      explain:"Up, down, and the automatic reset.", hint:"The accidental system." },
-    { type:"mc", q:"F♯ on the piano is…", choices:["the black key just right of F","the black key just left of F","the white key F itself"], answer:0,
-      explain:"One half step UP from F.", hint:"Right = up." },
-    { type:"mc", q:"An accidental stops applying when…", choices:["the measure ends at the bar line","the note repeats","the line of music ends"], answer:0,
-      explain:"Bar line = off switch.", hint:"Same rule as Lesson 22." },
-    { type:"mc", q:"The sharp symbol looks most like…", choices:["a hashtag #","a lowercase b","a circle with a cross"], answer:0,
-      explain:"♯ — two verticals, two slants.", hint:"Social-media friendly." },
+      choices:["Staccato → short · Accent → emphasis · Sforzando → sudden accent · Tenuto → full value · Fermata → hold longer",
+               "Staccato → hold longer · Accent → short · Sforzando → smooth · Tenuto → sudden · Fermata → detached",
+               "Staccato → loud · Accent → soft · Sforzando → slow · Tenuto → fast · Fermata → moderate"], answer:0,
+      explain:"All five, correctly paired.", hint:"Bounce, punch, surprise, weight, hold." },
+    { type:"mc", q:"A note marked with a fermata should be held ____ than its written value.", choices:["longer","shorter","exactly equal"], answer:0,
+      explain:"Longer — that's its superpower.", hint:"The stretcher." },
+    { type:"mc", q:"The articulation that means short and detached is ____.", choices:["staccato","tenuto","sforzando"], answer:0,
+      explain:"Staccato!", hint:"The dot." },
+    { type:"mc", q:"Which note carries the ACCENT?",
+      staff:{clef:"treble",notes:[{p:"C4",d:"q",artic:"staccato",label:"1"},{p:"E5",d:"q",artic:"accent",label:"2"},{p:"G4",d:"q",artic:"tenuto",label:"3"},{p:"C5",d:"q",artic:"fermata",label:"4"}],width:420},
+      choices:["1","2","3","4"], answer:1,
+      explain:"The > wedge on note 2. (1 = staccato dot, 3 = tenuto dash, 4 = fermata.)",
+      hint:"Find the sideways V." },
     { type:"mc", q:"Which statement is correct?",
-      choices:["A sharp lowers a note","A sharp raises every note of the same letter until the bar line","A sharp lasts the whole piece","A sharp cancels a flat forever"], answer:1,
-      explain:"Raise + one-measure rule, in one sentence.", hint:"Two facts combined." },
+      choices:["Staccato means to hold the note longer","Tenuto means to play the note short","A fermata tells the performer to hold the note longer than its written value","Sforzando means to play quietly"], answer:2,
+      explain:"The bird's eye stretches time.", hint:"Which mark changes length?" },
+    { type:"mc", q:"Which marking calls for a SUDDEN, strong accent?",
+      choices:["Sforzando (sfz)","Tenuto","Staccato","Fermata"], answer:0,
+      explain:"sfz — the musical surprise attack, stronger and more sudden than a plain accent.",
+      hint:"\u{1F4A5}" },
+    { type:"mc", q:"Which note is marked sfz?",
+      staff:{clef:"treble",notes:[{p:"E5",d:"q",artic:"staccato",articPos:"above",label:"1"},{p:"E5",d:"q",artic:"sfz",label:"2"},{p:"E5",d:"q",artic:"tenuto",articPos:"above",label:"3"}],width:360},
+      choices:["1","2","3"], answer:1,
+      explain:"Note 2 carries the italic sfz below the staff. (1 = staccato dot, 3 = tenuto dash.)",
+      hint:"Look BELOW the staff for the letters." },
     /* generated */
-    { gen:"term-match", params:{subject:"sign", pool:[["Sharp (♯)","Raises a note by one half step"],["Flat (♭)","Lowers a note by one half step"],["Bar Line","Cancels accidentals when the measure ends"],["Accidental","A sign that changes a note's pitch"]], reverse:true}, count:4 },
-    { gen:"click-key", params:{letters:["C","F","G"], octaves:[4]}, count:2 },
-    { gen:"note-name", params:{clef:"treble"}, count:2 }
+    { gen:"term-match", params:{subject:"articulation marking", pool:[["Staccato (•)","Short and detached"],["Accent (>)","Extra emphasis"],["Sforzando (sfz)","Sudden, strong accent"],["Tenuto (—)","Hold for full value"],["Fermata","Hold longer than written"]], reverse:true}, count:5 },
+    { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 },
+    { gen:"note-name", params:{clef:"treble"}, count:1 }
   ],
   vocabulary:[
-    {def:"Raises the pitch by one half step.", term:"Sharp (♯)", staff:{clef:"none",notes:[{p:"F#4",d:"q"}],width:140}},
-    {def:"Lowers the pitch by one half step.", term:"Flat (♭)", staff:{clef:"none",notes:[{p:"Bb4",d:"q"}],width:140}},
-    {def:"A flat, sharp or natural sign that appears within a piece of music.", term:"Accidental"},
-    {def:"An accidental affects the notes on the same line or space following it, for that measure only.", term:"One-Measure Rule"}
+    {def:"The manner in which a note is performed.", term:"Articulation"},
+    {def:"Play the note short and detached.", term:"Staccato (•)", staff:{clef:"none",notes:[{p:"E5",d:"q",artic:"staccato",articPos:"above"}],width:140}},
+    {def:"Play the note louder, with a special emphasis.", term:"Accent (>)", staff:{clef:"none",notes:[{p:"E5",d:"q",artic:"accent",articPos:"above"}],width:140}},
+    {def:"A sudden, strong accent.", term:"Sforzando (sfz)"},
+    {def:"Hold the note for its full value.", term:"Tenuto (—)", staff:{clef:"none",notes:[{p:"E5",d:"q",artic:"tenuto",articPos:"above"}],width:140}},
+    {def:"Hold the note for longer than its normal value.", term:"Fermata", staff:{clef:"none",notes:[{p:"E5",d:"q",artic:"fermata"}],width:140}}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Sharp (♯)</b> = one half step <b>HIGHER</b> — one key to the <b>right</b>. ⬆️",
-    "✔ Sharp and flat are <b>mirror twins</b>: ♯ up, ♭ down.",
-    "✔ The sign sits <b>before the notehead</b>, and you say it after: “F-sharp.”",
-    "✔ <b>One-measure rule</b>: the sharp rules until the bar line.",
-    "✔ C♯, F♯, G♯, D♯ — black keys just RIGHT of their white neighbors."
+    "✔ Articulation = <b>HOW</b> a note is played — its style and personality.",
+    "✔ <b>Staccato •</b> short & detached · <b>Accent &gt;</b> extra punch.",
+    "✔ <b>sfz</b> = sudden strong accent · <b>Tenuto —</b> = full value.",
+    "✔ <b>Fermata</b> \u{1F426} = hold LONGER than written (the length exception!).",
+    "✔ Same notes + different articulation = a completely different character."
   ],
   tips:[
-    "Point up and say “sharp,” point down and say “flat” — anchor the directions in your body.",
-    "The ♯ looks like a ladder — and ladders go UP!",
-    "See one sharp? Scan the rest of the measure for that letter before you play on.",
-    "\u{1F504} Next lesson: the sign that CANCELS both — the natural!"
+    "Say “ta-ta-ta” short and dry for staccato, then “taaah” connected for tenuto — your voice knows the difference.",
+    "Careful: the staccato dot sits ABOVE/BELOW the head; the duration dot sits BESIDE it!",
+    "When you meet a fermata, breathe — it's the music's dramatic pause.",
+    "\u{1F5FA}\u{FE0F} Next lesson: the full musical GPS — D.C., D.S., Coda and Fine!"
   ],
-  rewards:{ badge:"Sharp Expert", icon:"⬆️" },
+  rewards:{ badge:"Articulation Artist", icon:"\u{1F3A8}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT — every sharp climbed on cue! The natural sign brings everything home next. ⬆️\u{1F389}",
-  miaPass:"You passed! Right and higher — locked in. Review below or climb again for perfection.",
+  miaPerfect:"PERFECT — every bounce, punch and hold in place! The musical GPS is next. \u{1F3A8}\u{1F389}",
+  miaPass:"You passed! Five styles, one artist — you. Review below or perform again for the perfect run.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"The sharp is the flat's mirror twin: one half step UP, one key to the right.",
-      play:()=>{MFAudio.tone(60,.6,0);MFAudio.tone(61,.9,.7);} },
-    learn:{ label:"the sharp",
-      explain:"♯ = up a half step (one key right). Same placement, same one-measure rule as the flat — just the opposite direction.",
-      hint:"⬆️ right, higher, until the bar line.",
-      play:()=>{[64,66,67,66].forEach((m,k)=>MFAudio.tone(m,.45,k*.45));} },
+      explain:"Articulation is delivery: the same note can bounce (staccato), punch (accent), lean (tenuto) or linger (fermata).",
+      play:()=>{[60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.12,k*.4,.5));[60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.45,2.1+k*.4,.5));} },
+    learn:{ label:"the articulations",
+      explain:"Staccato short · accent emphasized · sfz sudden · tenuto full value · fermata longer than written. Style, not volume or length (fermata excepted).",
+      hint:"Bounce, punch, surprise, weight, hold.",
+      play:()=>{MFAudio.tone(67,.12,0,.5);MFAudio.tone(67,.35,.5,.85);MFAudio.tone(67,.5,1.1,.5);MFAudio.tone(67,1.6,1.8,.5);} },
     example:{ label:"the examples",
-      explain:"Hear C lift to C♯ and F to F♯ — then one printed sharp control two notes before the reset." },
+      explain:"Bounces then weights in example 1; a punch and a long bird's-eye hold in example 2. Press play and listen close." },
     game:{ label:"the games",
-      explain:"Hunt sharps among flats, sort up-facts from down-facts, and keep rhythm and rests warm.",
-      hint:"Mirror twins: ♯ climbs, ♭ sinks." },
+      explain:"Race the styles, find the marks on real notes, tap with staccato snap, then reverse-match against the clock.",
+      hint:"Five markings — learn them as five personalities." },
     quiz:{ label:"this question",
-      explain:"Sharp = half step up (right); accidentals last until the bar line. The rest is reading carefully.",
-      play:()=>{MFAudio.tone(61,.8,0);} }
+      explain:"Articulation = style. Only the fermata touches length; only accent/sfz touch emphasis; staccato/tenuto shape the touch.",
+      play:()=>{MFAudio.tone(67,.12,0,.5);MFAudio.tone(67,1.4,.5,.5);} }
   }
 };

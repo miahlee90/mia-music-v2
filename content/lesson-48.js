@@ -1,280 +1,271 @@
-/* Lesson 48 — Primary and Major Triads (AEMT Book 2, Unit 12)
-   Built from drafts/UNIT 12 – Lesson 48.md; AEMT p.75 verified by render.
-   Core: primary triads = built on degrees 1, 4, 5 → Roman numerals I, IV, V;
-   in C major: C (C-E-G), F (F-A-C), G (G-B-D); they contain every scale tone.
-   Major triad recipe: root + MAJOR 3rd + PERFECT 5th (or M3 + m3 stacked).
-   NOTE: edit by FULL-FILE REWRITE only. */
+/* Lesson 48 (6.11, formerly L79) — Asymmetrical & Changing Meter (Book 4, Unit 19 — SELF-AUTHORED)
+   Core: ASYMMETRICAL meter = beats of unequal length (5/4 = 3+2 or 2+3;
+   7/8 = 2+2+3 etc.). ADDITIVE thinking: read the top number as a sum of
+   2s and 3s. CHANGING (mixed) meter = the time signature changes from
+   measure to measure. NOTE: edit by FULL-FILE REWRITE only. */
 
-/* primary picker: press the keyboard root of each requested primary triad, hear it ring */
-function MF_L48_primary(container,fb){
-  const ROUNDS=[
-    {ask:"I",root:"C",m:[60,64,67]},
-    {ask:"IV",root:"F",m:[65,69,72]},
-    {ask:"V",root:"G",m:[67,71,74]},
-    {ask:"V",root:"G",m:[67,71,74],switch:true},
-    {ask:"I",root:"C",m:[60,64,67],switch:true}];
-  let i=0,kb=null;
-  container.innerHTML=`<div class="big-q l48-q" style="text-align:center"></div><div class="l48-kb"></div>
-    <p style="text-align:center;font-size:13.5px;color:var(--primary);font-weight:700;margin:6px 0 0">Key of C major: I sits on degree 1, IV on degree 4, V on degree 5.</p>`;
-  const q=container.querySelector(".l48-q"), kbHolder=container.querySelector(".l48-kb");
-  function ask(){
-    q.innerHTML=`Chord ${i+1} of ${ROUNDS.length}: in C major, press the ROOT of the <b>${ROUNDS[i].ask}</b> chord.`;
-    kbHolder.innerHTML="";
-    kb=Keyboard.create(kbHolder,{start:60,octaves:2,labels:true,
-      onKey:m=>{
-        const c=ROUNDS[i];
-        /* either octave of the root is correct - the triad rings in that octave */
-        if((m-c.m[0])%12===0 && m+(c.m[2]-c.m[0])<=84){
-          const off=m-c.m[0];
-          kb.mark(c.m.map(x=>x+off)); c.m.forEach(x=>MFAudio.tone(x+off,.9,.1,.4)); i++;
-          if(i>=ROUNDS.length){ q.textContent="I, IV, V — under your fingers!";
-            fb(true,`✓ ${c.ask} = the ${c.root} triad. The three primary chords of C major: C (I), F (IV), G (V) — you just played the backbone of a thousand songs.`); }
-          else { fb(true,`✓ ${c.ask} = ${c.root} (${c.root} triad). Next…`); setTimeout(ask,1500); } }
-        else { MFAudio.tone(40,.2); fb(false,`Count scale degrees from C: ${c.ask==="I"?"degree 1":"degree "+(c.ask==="IV"?"4":"5")}.`); }
-      }});
-  }
-  ask();
-}
-
-/* major-triad X-ray: M3 + m3 stack checker */
-function MF_L48_xray(container,fb){
-  const ROUNDS=[
-    {q:"The lower 3rd of a MAJOR triad — root up to 3rd — is a…",opts:["Major 3rd (4 half steps)","minor 3rd (3 half steps)","Perfect 4th"],a:0,exp:"Major on the bottom."},
-    {q:"The upper 3rd — 3rd up to 5th — is a…",opts:["minor 3rd (3 half steps)","Major 3rd (4 half steps)","Major 2nd"],a:0,exp:"Minor on top."},
-    {q:"Root all the way to the 5th spans a…",opts:["Perfect 5th (7 half steps)","Major 5th","diminished 5th"],a:0,exp:"4 + 3 = 7 half steps = P5."},
-    {q:"So the full major-triad recipe is…",opts:["root + Major 3rd + Perfect 5th","root + minor 3rd + Perfect 5th","root + Major 3rd + Major 5th"],a:0,exp:"M3 above the root, P5 above the root."}];
-  let i=0;
-  container.innerHTML=`<div class="big-q l48-xq" style="text-align:center"></div><div class="choices chips l48-xch"></div>`;
-  const q=container.querySelector(".l48-xq"), ch=container.querySelector(".l48-xch");
-  function ask(){
-    const cur=ROUNDS[i];
-    q.innerHTML=`Check ${i+1} of ${ROUNDS.length}: ${cur.q}`;
-    ch.innerHTML="";
-    cur.opts.map((o,oi)=>({o,oi})).sort(()=>Math.random()-.5).forEach(({o,oi})=>{
-      const b=document.createElement("button"); b.textContent=o;
-      b.onclick=()=>{
-        const c=ROUNDS[i];
-        if(oi===c.a){ i++; MFAudio.yay();
-          if(i>=ROUNDS.length){ ch.style.display="none"; q.textContent="Check complete — the major triad has no secrets!";
-            fb(true,`✓ ${c.exp} Both recipes agree: (M3 + m3 stacked) = (root + M3 + P5).`); }
-          else { fb(true,`✓ ${c.exp}`); setTimeout(ask,1100); } }
-        else { MFAudio.tone(40,.2); fb(false,"Count half steps: C→E is 4, E→G is 3, C→G is 7."); }
-      };
-      ch.appendChild(b); });
-  }
-  ask();
+/* ear lab: four distinct meters (4/4, 5/4, 6/8, 7/8) — classify equal vs unequal grouping */
+function MF_L48_ear(container,fb){
+  const METERS=[
+    {per:4, unit:.42, strong:b=>b===0||b===2,          unequal:false, why:"4/4 — four even beats, grouped 2 + 2 (equal)."},
+    {per:5, unit:.42, strong:b=>b===0||b===3,          unequal:true,  why:"5/4 grouped 3 + 2 — unequal beat groups."},
+    {per:6, unit:.3,  strong:b=>b===0||b===3,          unequal:false, why:"6/8 — two equal groups of three (3 + 3), a compound-duple pulse."},
+    {per:7, unit:.3,  strong:b=>b===0||b===2||b===4,   unequal:true,  why:"7/8 grouped 2 + 2 + 3 — unequal beat groups."}
+  ];
+  let r=0, played=false;
+  container.innerHTML=`<div class="big-q l79e-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play l79e-play">▶ Play two measures</button></div>
+    <div class="choices l79e-ch" style="display:none"><button>Equal beat groupings</button><button>Unequal beat groupings</button></div>`;
+  const q=container.querySelector(".l79e-q"), pl=container.querySelector(".l79e-play"), ch=container.querySelector(".l79e-ch");
+  pl.onclick=()=>{
+    if(r>=METERS.length) return;
+    const M=METERS[r];
+    for(let m=0;m<2;m++) for(let b=0;b<M.per;b++){
+      const s=M.strong(b);
+      MFAudio.tone(s?43:55,.24,(m*M.per+b)*M.unit,s?.42:.22);
+    }
+    played=true; setTimeout(()=>ch.style.display="",2*M.per*M.unit*1000+300);
+  };
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    if(!played||r>=METERS.length) return;
+    const M=METERS[r];
+    if((i===1)===M.unequal){ fb(true,"✓ "+M.why); r++; played=false; ch.style.display="none";
+      if(r>=METERS.length){ q.textContent="Excellent! You can hear equal groupings from unequal ones."; pl.style.display="none"; } else q.innerHTML=`Round ${r+1} of ${METERS.length}: listen, then decide.`;
+    } else { MFAudio.tone(40,.2); fb(false,"Count the beats between the strong accents: are the groups equal, or a mix of longer and shorter?"); }
+  });
+  q.innerHTML="Round 1 of 4: listen, then decide.";
 }
 
 LESSON_CONTENT[48]={
-  welcome:"Three chords rule every key: I, IV, and V — the primary triads. \u{1F451}",
+  welcome:"Asymmetrical meter combines beat groups of unequal length.",
   hook:{
-    say:"Thousands of songs use just THREE chords. Listen to this classic progression. <b>How many different chords did you hear?</b>",
+    say:"<b>Listen to two rhythmic patterns.</b> One divides the measure into equal beat groups, while the other divides it into unequal groups (3 + 2). \u{1F447} <b>Which pattern sounds asymmetrical?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div style="text-align:center"><button class="play hk-a">▶ The three-chord magic</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Three chords</button><button>One chord repeated</button><button>Seven chords</button></div>`;
+        container.innerHTML=`<div style="text-align:center">
+          <button class="play hk-a">▶ Pattern 1</button>
+          <button class="play hk-b">▶ Pattern 2</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Pattern 2 — its pulses form a 3 + 2 grouping</button><button>Pattern 1 — its beat groups are equal</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{
-          const CH=[[60,64,67],[65,69,72],[67,71,74],[60,64,67]];
-          CH.forEach((c,k)=>c.forEach(m=>MFAudio.tone(m,.7,k*.8,.35)));
-          setTimeout(()=>ch.style.display="",3600);
-        };
+        let hA=false,hB=false;
+        container.querySelector(".hk-a").onclick=()=>{ for(let m=0;m<2;m++) for(let b=0;b<4;b++){ const s=b===0||b===2; MFAudio.tone(s?43:55,.24,(m*4+b)*.42,s?.42:.22); } hA=true; if(hB) setTimeout(()=>ch.style.display="",3700); };
+        container.querySelector(".hk-b").onclick=()=>{ for(let m=0;m<2;m++) for(let b=0;b<5;b++){ const s=b===0||b===3; MFAudio.tone(s?43:55,.24,(m*5+b)*.42,s?.42:.22); } hB=true; if(hA) setTimeout(()=>ch.style.display="",4600); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ C… F… G… C — three different triads (and home again). They're the PRIMARY TRIADS: I, IV, V — built on scale degrees 1, 4, and 5. Folk, rock, country, hymns: this trio runs them all.");
-          else fb(false,"Listen again — the harmony moves to a new place twice before coming home.");
+          if(i===0) fb(true,"✓ Correct. Pattern 2 combines a group of three quarter-note beats with a group of two. This unequal 3 + 2 grouping creates an asymmetrical meter.");
+          else fb(false,"Pattern 1 uses equal groupings. Listen again for a longer group followed by a shorter group.");
         });
       } }
   },
   objectives:[
-    "Identify the primary triads: degrees 1, 4, 5",
-    "Use Roman numerals I, IV, V",
-    "Name the primary triads of C major: C, F, G",
-    "Explain why they're MAJOR triads (root + M3 + P5)",
-    "Stack a major triad as M3 + m3",
-    "Know that I, IV, V contain every scale tone"
+    "Define asymmetrical meter: groups of unequal length inside the measure",
+    "Read common 5/4 groupings such as 3+2 and 2+3",
+    "Read common 7/8 groupings such as 2+2+3, 2+3+2 and 3+2+2",
+    "Understand additive meter by combining groups of 2s and 3s",
+    "Follow changing (mixed) meter as the signature changes during a piece",
+    "Hear even vs uneven meters"
   ],
   steps:[
-    { say:"The most important triads of any key grow on scale degrees <b>1, 4, and 5</b> — the <b>PRIMARY TRIADS</b> (or primary chords), labeled with <b>ROMAN NUMERALS: I, IV, V</b>. \u{1F447} <b>The primary triads are built on which degrees?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"C4",d:"w",x:140,label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"F4",d:"w",x:310,label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"G4",d:"w",x:480,label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:580} },
-      try:{ type:"mc", choices:["1, 4, and 5","1, 2, and 3","1, 3, and 5"], answer:0,
-        success:"✓ Degrees 1, 4, 5 → chords I, IV, V. (1-3-5 spells one triad's INSIDES; 1-4-5 locates three different triads!)",
-        fail:"Careful — 1-3-5 is a triad's spelling, not the primary LOCATIONS.",
-        hint:"The Roman numerals say it: I, IV, V." } },
-    { say:"In the key of <b>C major</b>: the <b>I</b> chord is the <b>C triad</b> (C-E-G), the <b>IV</b> chord is the <b>F triad</b> (F-A-C), and the <b>V</b> chord is the <b>G triad</b> (G-B-D). \u{1F447} <b>In C major, the IV chord is…?</b>",
-      try:{ type:"mc", choices:["The F triad (F-A-C)","The G triad (G-B-D)","The D triad (D-F-A)"], answer:0,
-        success:"✓ Degree 4 of C major is F → IV = F-A-C.",
-        fail:"Count up from C: C(1) D(2) E(3) …(4).",
-        hint:"C-D-E-F: the 4th letter." } },
-    { say:"Find them on the keyboard. \u{1F447} <b>Press each primary chord's root and hear the triad ring:</b>",
+    { say:"<b>Asymmetrical Meter:</b> An asymmetrical meter combines <b>beat groups of unequal length</b> within a measure. These beat groups are usually built from groups of 2 or 3 beats (or eighth notes), such as 2 + 3 or 2 + 2 + 3. Common examples include <b>5/4, 5/8, and 7/8</b>. \u{1F447} <b>What makes a meter asymmetrical?</b>",
+      try:{ type:"mc", choices:["It combines beat groups of unequal length","It has no time signature","It must be performed slowly"], answer:0,
+        success:"✓ Correct. Asymmetrical meter combines groups of different lengths, such as 3 + 2 or 2 + 2 + 3.",
+        fail:"Look for groups of different lengths within the measure.",
+        hint:"Look for a combination of groups containing two and three subdivisions." } },
+    { say:"<b>Common 5/4 Groupings:</b> Five quarter-note beats are often grouped <b style='color:#2F6DA8'>3 + 2</b> or <b style='color:#C05A21'>2 + 3</b>:<div style='text-align:center;font-family:monospace;font-weight:800;font-size:16px;letter-spacing:1px;margin:6px 0'>[1 2 3] [4 5]</div>In a 3 + 2 grouping, the second group begins on beat 4, so the natural accents fall on beats <b>1 and 4</b>. (A 2 + 3 grouping instead accents beats 1 and 3.) \u{1F447} <b>In 5/4 grouped 3 + 2, which beats begin the two groups?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"5/4",tempo:100,notes:[
+        {p:"G4",d:"q",artic:"accent",label:"1"},{p:"G4",d:"q",label:"2"},{p:"G4",d:"q",label:"3"},
+        {p:"D5",d:"q",artic:"accent",label:"4"},{p:"D5",d:"q",label:"5"},{bar:"final"}],width:440} },
+      try:{ type:"mc", choices:["Beats 1 and 4","Beats 1 and 3","Every beat"], answer:0,
+        success:"✓ Correct. Beat 1 begins the group of three, and beat 4 begins the group of two.",
+        fail:"Count the groups: 1–2–3 | 4–5.",
+        hint:"Identify the first beat of each group." } },
+    { say:"<b>Common 7/8 Groupings:</b> Seven eighth notes are often grouped <b>2 + 2 + 3</b>, <b>2 + 3 + 2</b>, or <b>3 + 2 + 2</b>. Each group acts like one beat: groups of two are shorter, while groups of three are longer.<div style='text-align:center;font-family:monospace;font-weight:800;font-size:15px;letter-spacing:1px;margin:6px 0'>2 + 2 + 3 → 1 2 | 3 4 | 5 6 7</div>These unequal groupings occur in many musical traditions, including numerous dances from the Balkans. \u{1F447} <b>How many eighth-note subdivisions are in a measure of 7/8?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"7/8",tempo:80,notes:[
+        {p:"E4",d:"8",artic:"accent"},{p:"E4",d:"8"},
+        {p:"G4",d:"8",artic:"accent"},{p:"G4",d:"8"},
+        {p:"B4",d:"8",artic:"accent"},{p:"B4",d:"8"},{p:"B4",d:"8"},{bar:"final"}],
+        beams:[[0,1],[2,3],[4,6]],width:440} },
+      try:{ type:"mc", choices:["7","8","3"], answer:0,
+        success:"✓ Correct. The measure contains seven eighth-note subdivisions, shown here in a 2 + 2 + 3 grouping.",
+        fail:"The top number indicates the number of eighth-note subdivisions in the measure.",
+        hint:"Read the top number of the time signature." } },
+    { say:"<b>Additive Meter:</b> Additive meters are understood by <b>combining smaller groups of 2s and 3s</b>, such as 5 = 3 + 2 and 7 = 2 + 2 + 3. Emphasize the beginning of each group while keeping the underlying subdivision steady. For example, count a 3 + 2 pattern as \u{201C}ONE-two-three | ONE-two.\u{201D} \u{1F447} <b>How is 7/8 grouped 3 + 2 + 2 counted?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:300px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Meter</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Common groupings</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">5/4 · 5/8</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">3+2 · 2+3</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">7/8</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">2+2+3 · 2+3+2 · 3+2+2</td></tr></table><div style="text-align:center;font-size:12px;color:#667;margin-top:6px">Optional advanced example: 8/8 grouped 3 + 3 + 2.</div>` },
+      try:{ type:"mc", choices:["ONE-two-three | ONE-two | ONE-two","ONE-two | ONE-two | ONE-two-three","Seven equally accented counts"], answer:0,
+        success:"✓ Correct. The group of three comes first, followed by two groups of two.",
+        fail:"Follow the grouping in order: 3 + 2 + 2.",
+        hint:"Emphasize the first count of each group." } },
+    { say:"<b>Changing Meter (Mixed Meter):</b> The time signature may <b>change during a piece</b>—for example, from 4/4 to 3/4 and back again. Each time signature remains in effect until a new one appears. \u{1F447} <b>In the passage below, how many quarter-note beats are in the middle measure?</b>",
+      show:{ type:"html", html:`<div style="display:flex;gap:10px;justify-content:center;align-items:center;font-weight:800;font-size:16px">
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:10px 16px;background:#fff"><span style="color:#2F6DA8">4/4</span><br>♩ ♩ ♩ ♩</div>
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:10px 16px;background:#fff"><span style="color:#2F6DA8">3/4</span><br>♩ ♩ ♩</div>
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:10px 16px;background:#fff"><span style="color:#2F6DA8">4/4</span><br>♩ ♩ ♩ ♩</div></div>` },
+      try:{ type:"mc", choices:["Three — the 3/4 signature applies to that measure","Four — the opening signature applies throughout","None"], answer:0,
+        success:"✓ Correct. The 3/4 time signature remains in effect until another time signature appears.",
+        fail:"Read the time signature that applies to the middle measure.",
+        hint:"A time signature remains in effect until it is replaced." } },
+    { say:"Listen and decide whether each example uses equal or unequal beat groupings. \u{1F447}",
       try:{ type:"custom",
-        hint:"I = C, IV = F, V = G — degrees 1, 4, 5.",
-        mount:(container,fb)=>MF_L48_primary(container,fb) } },
-    { say:"Why do these three sound so bright? They are <b>MAJOR TRIADS</b>: each is a <b>root + MAJOR 3rd + PERFECT 5th</b> — your Unit 9 intervals at work! \u{1F447} <b>Check the major triad, one 3rd at a time:</b>",
-      try:{ type:"custom",
-        hint:"C→E = 4 half steps; E→G = 3; C→G = 7.",
-        mount:(container,fb)=>MF_L48_xray(container,fb) } },
-    { say:"The second recipe: a major triad is also a <b>minor 3rd stacked on TOP of a Major 3rd</b>. M3 as the lower 3rd, m3 as the upper 3rd — 4 + 3 = 7 half steps, a perfect 5th from root to top. \u{1F447} <b>Which stack builds a MAJOR triad?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:60,notes:[
-        {p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],
-        brackets:[{from:0,to:1,label:"M3 below"},{from:1,to:2,label:"m3 on top"}],width:240},
-        kb:{start:60,octaves:1,labels:true,marks:[60,64,67]} },
-      try:{ type:"mc", choices:["Major 3rd on the bottom, minor 3rd on top","Minor 3rd on the bottom, Major 3rd on top","Two Major 3rds"], answer:0,
-        success:"✓ M3 + m3, in that order. (Flip the two 3rds and you get a MINOR triad — a story for Lesson 58!)",
-        fail:"Which 3rd was 4 half steps? Lower or upper?",
-        hint:"C→E (4), then E→G (3)." } },
-    { say:"One more remarkable fact: <b>the three primary triads together contain EVERY tone of the major scale.</b> C-E-G + F-A-C + G-B-D = C, D, E, F, G, A, B — the whole scale! That's why three chords can harmonize practically any melody. \u{1F447} <b>Which scale tone is missing from I, IV, and V combined?</b>",
-      try:{ type:"mc", choices:["None — all seven tones are covered","D — no chord contains it","B — no chord contains it"], answer:0,
-        success:"✓ All seven! (D lives in V, B lives in V, A lives in IV…) One trio, complete coverage — the secret of three-chord songs.",
-        fail:"Check V (G-B-D) and IV (F-A-C) again…",
-        hint:"List the nine chord tones and cross off duplicates." } }
+        hint:"Listen to the length of each group between accents: are the groups equal, or do they form a long–short pattern?",
+        mount:(container,fb)=>MF_L48_ear(container,fb) } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which of these time signatures is most commonly grouped asymmetrically?</b>",
+      try:{ type:"mc", choices:["7/8","4/4","12/8"], answer:0,
+        success:"✓ Correct. A measure of 7/8 is commonly organized into unequal groups such as 2 + 2 + 3. By contrast, 12/8 normally contains four equal groups of three eighth notes.",
+        fail:"Which meter is commonly organized using both groups of two and groups of three?",
+        hint:"Look for a meter commonly grouped 2 + 2 + 3." } }
   ],
   examples:[
-    { caption:"The primary triads of C major with their Roman numerals — I, IV, V, and home to I. The classic cadence of countless songs.",
-      staff:{clef:"treble",tempo:80,notes:[
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"G4",d:"w",label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:600},
-      kb:{start:60,octaves:1.3333,labels:true} },
-    { caption:"Anatomy of the major triad: Major 3rd below + minor 3rd above = a Perfect 5th from root to top.",
-      staff:{clef:"bass",tempo:60,notes:[
-        {p:"C3",d:"w"},{p:"E3",d:"w",chord:true},{p:"G3",d:"w",chord:true}],
-        brackets:[{from:0,to:1,label:"Major 3rd — 4 half steps"},{from:1,to:2,label:"minor 3rd — 3"}],width:340} }
+    { caption:"A 5/4 melody grouped 3+2: accents on beats 1 and 4. Count 'ONE-two-three ONE-two' as it plays.",
+      staff:{clef:"treble",time:"5/4",tempo:104,notes:[
+        {p:"D4",d:"q",artic:"accent"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"A4",d:"q",artic:"accent"},{p:"G4",d:"q"},{bar:"single"},
+        {p:"F4",d:"q",artic:"accent"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"D4",d:"h",artic:"accent"},{bar:"final"}],width:640},
+      kb:{start:60,octaves:1,labels:true} },
+    { caption:"7/8 grouped 2+2+3: two short steps and a long one. The beaming shows the groups — feel the drive in the final three.",
+      staff:{clef:"treble",time:"7/8",tempo:84,notes:[
+        {p:"E4",d:"8",artic:"accent"},{p:"F#4",d:"8"},
+        {p:"G4",d:"8",artic:"accent"},{p:"A4",d:"8"},
+        {p:"B4",d:"8",artic:"accent"},{p:"A4",d:"8"},{p:"G4",d:"8"},{bar:"single"},
+        {p:"F#4",d:"8",artic:"accent"},{p:"E4",d:"8"},
+        {p:"F#4",d:"8",artic:"accent"},{p:"G4",d:"8"},
+        {p:"E4",d:"q.",artic:"accent"},{bar:"final"}],
+        beams:[[0,1],[2,3],[4,6],[8,9],[10,11]],width:640},
+      kb:{start:60,octaves:1,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Roman Numeral Sprint (45s)",
-      intro:"Triads flash — name their Roman numerals in C major!",
-      miaIntro:"I, IV, V — read like a Roman! \u{1F3DB}",
-      spec:{gen:"triad-id", params:{ask:"numeral"}, seconds:45},
-      result:(score)=>score>=8?score+" numerals — senate-approved!":null },
-    { type:"key-climb", title:"Game 2 · Primary Path",
-      intro:"Walk the primary roots: C → F → G → C, in order, fast!",
-      miaIntro:"Degrees 1-4-5 and home! \u{1F3E0}",
-      spec:{seq:[60,65,67,72], names:["C (I)","F (IV)","G (V)","C (I)"], start:60, octaves:1,
-        title:"Press C → F → G → C: the primary chord roots"},
-      result:(score)=>score!==null?"The three-chord walk is yours!":null },
-    { type:"symbol-hunt", title:"Game 3 · Primary Hunt",
-      intro:"Three primaries and one impostor — click what the round asks!",
-      miaIntro:"Spot I, IV, V by sight! \u{1F50D}",
+    { type:"gen-race", title:"Game 1 · Uneven Meter Sprint (45s)",
+      intro:"Identify asymmetrical groupings, counts, and time signatures before time runs out.",
+      miaIntro:"Look for combinations of groups containing two and three subdivisions.",
+      spec:{gen:"term-match", params:{subject:"term", pool:[
+        ["Asymmetrical meter","beat groups of unequal length"],
+        ["5/4 groupings","3+2 or 2+3"],
+        ["7/8 groupings","2+2+3, 2+3+2 or 3+2+2"],
+        ["Additive thinking","combine smaller groups, often 2s and 3s"],
+        ["Changing meter","the signature changes mid-piece"],
+        ["Accents fall on","each group's first note"],
+        ["Uneven 8/8","3+3+2"],
+        ["An even meter","4/4 — equal groups"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Asymmetrical-meter challenge completed!":null },
+    { type:"symbol-hunt", title:"Game 2 · Name That Grouping",
+      intro:"Examine each beamed measure and select the correct grouping.",
+      miaIntro:"Use the beams to identify the groups.",
       spec:{rounds:6, pool:[
-        {label:"I (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"IV (F-A-C)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
-        {label:"V (G-B-D)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
-        {label:"ii (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"Primary radar: flawless!":null },
-    { type:"term-race", title:"Game 4 · Primary Vocabulary Race",
-      intro:"Primary, Roman numerals, M3+P5 — race the chord words!",
-      miaIntro:"Crown the vocabulary! \u{1F451}",
+        {label:"5/4 as 3+2", spec:{clef:"treble",time:"5/4",notes:[{p:"G4",d:"q",artic:"accent"},{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q",artic:"accent"},{p:"G4",d:"q"}],width:230}},
+        {label:"7/8 as 2+2+3", spec:{clef:"treble",time:"7/8",notes:[{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"}],beams:[[0,1],[2,3],[4,6]],width:230}},
+        {label:"7/8 as 3+2+2", spec:{clef:"treble",time:"7/8",notes:[{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"}],beams:[[0,2],[3,4],[5,6]],width:230}},
+        {label:"4/4 — even", spec:{clef:"treble",time:"4/4",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"}],width:200}}]},
+      result:(score)=>score>=5?"You identified the groupings correctly.":null },
+    { type:"order-tap", title:"Game 3 · Count the 7/8 Measure",
+      intro:"Select the counts of a 2 + 2 + 3 measure in the correct order.",
+      miaIntro:"Two subdivisions, two subdivisions, then three.",
+      spec:{sequence:["ONE-two (first group of 2)","ONE-two (second group of 2)","ONE-two-three (the group of 3)"],
+        title:"One measure of 7/8, group by group"},
+      result:(stars)=>stars>=2?"You counted the 7/8 grouping correctly.":null },
+    { type:"term-race", title:"Game 4 · Equal or Unequal?",
+      intro:"Classify each notated grouping before time runs out.",
+      miaIntro:"Compare the lengths of the indicated groups.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Primary triads","the triads on scale degrees 1, 4, and 5"],
-        ["I chord in C major","the C triad (C-E-G)"],
-        ["IV chord in C major","the F triad (F-A-C)"],
-        ["V chord in C major","the G triad (G-B-D)"],
-        ["Major triad","root + Major 3rd + Perfect 5th"],
-        ["I + IV + V together","contain every tone of the major scale"]]},
-      result:(score)=>score>=7?"Primary vocabulary: crowned!":null }
+        ["5/4 grouped 3+2","asymmetrical"],
+        ["7/8 grouped 2+2+3","asymmetrical"],
+        ["4/4 grouped 2+2","even — simple quadruple"],
+        ["12/8 grouped 3+3+3+3","even — compound quadruple"],
+        ["8/8 as 3+3+2","uneven grouping"],
+        ["3/4","even — simple triple"],
+        ["Meter that changes each measure","changing (mixed) meter"],
+        ["Where uneven accents fall","on group starts"]]},
+      result:(score)=>score>=6?"You classified the groupings correctly.":null }
   ],
-  practiceIntro:"19 practice questions — numerals, spellings, recipes and the every-tone fact. Answer right and the next appears automatically!",
+  practiceIntro:"Complete 20 practice questions on 5/4, 7/8, additive meter, and changing meter. The next question will appear after each correct answer.",
   practice:[
-    { gen:"triad-id", params:{ask:"numeral"}, count:5 },
-    { gen:"triad-id", params:{}, count:3 },
-    { gen:"term-match", params:{subject:"term", pool:[["Primary triads","built on degrees 1, 4, and 5"],["I in C major","C-E-G"],["IV in C major","F-A-C"],["V in C major","G-B-D"],["Major triad","root + M3 + P5"]], reverse:true}, count:3 },
-    { type:"mc", q:"The primary triads are identified by the Roman numerals…", choices:["I, IV, V","i, ii, iii","I, III, V"], answer:0,
-      explain:"Degrees 1, 4, 5." },
-    { type:"mc", q:"In C major, the V chord is spelled…", choices:["G-B-D","G-A-B","F-A-C"], answer:0,
-      explain:"Triad on degree 5: G-B-D." },
-    { type:"mc", q:"A major triad consists of a root, a…", choices:["Major 3rd and a Perfect 5th","minor 3rd and a Perfect 5th","Major 3rd and a Major 5th"], answer:0,
-      explain:"M3 + P5 — the Unit 9 intervals!" },
-    { type:"mc", q:"Stacked as two 3rds, a major triad is…", choices:["M3 on the bottom, m3 on top","m3 on the bottom, M3 on top","two M3s"], answer:0,
-      explain:"4 + 3 half steps." },
-    { type:"truefalse", q:"The three primary triads contain every tone of the major scale.", answer:true,
-      explain:"C-E-G + F-A-C + G-B-D = all seven letters." },
-    { type:"truefalse", q:"The primary triads are built on scale degrees 1, 3, and 5.", answer:false,
-      explain:"1, 4, and 5 — don't confuse locations with spelling!" },
-    { type:"mc", q:"Why are the primary triads called MAJOR triads?", choices:["Each has a root, Major 3rd, and Perfect 5th","They are the loudest","They only use white keys"], answer:0,
-      explain:"The quality comes from the intervals." },
-    { type:"mc", q:"Which primary chord contains the note B (in C major)?", choices:["V (G-B-D)","I (C-E-G)","IV (F-A-C)"], answer:0,
-      explain:"B is the 3rd of the G triad." }
-  ],
-  miaQuizIntro:"Crowns on: I, IV, V — rule the final quiz!",
-  quiz:[
-    { type:"mc", q:"The primary triads of a key are built on scale degrees…", choices:["1, 4, and 5","1, 2, and 3","1, 3, and 5","5, 6, and 7"], answer:0,
-      explain:"The 1-4-5 backbone.", hint:"Roman numerals I, IV, V." },
-    { type:"mc", q:"In C major, the I chord is…", choices:["C-E-G","C-D-E","C-F-G","C-E-A"], answer:0,
-      explain:"The triad on degree 1.", hint:"Root C, every other letter." },
-    { type:"mc", q:"In C major, the IV chord is…", choices:["F-A-C","F-G-A","G-B-D","D-F-A"], answer:0,
-      explain:"The triad on degree 4 = F.", hint:"Count to the 4th letter." },
-    { type:"mc", q:"In C major, the V chord is…", choices:["G-B-D","G-A-B","F-A-C","A-C-E"], answer:0,
-      explain:"The triad on degree 5 = G.", hint:"The 5th letter up." },
-    { type:"truefalse", q:"Primary triads are major triads.", answer:true,
-      explain:"Root + M3 + P5 each time.", hint:"Why they sound bright." },
-    { type:"truefalse", q:"The I, IV, and V chords together contain every tone of the major scale.", answer:true,
-      explain:"All seven letters covered — the three-chord-song secret.", hint:"Cross off the nine chord tones." },
-    { type:"mc", q:"A major triad = root + …", choices:["Major 3rd + Perfect 5th","minor 3rd + Perfect 5th","Major 3rd + Major 5th","Perfect 3rd + Perfect 5th"], answer:0,
-      explain:"Two impossible interval names hide in the wrong answers!", hint:"Unit 9: no P3, no M5." },
-    { type:"mc", q:"As stacked 3rds, the major triad is…", choices:["Major 3rd below, minor 3rd above","minor 3rd below, Major 3rd above","two minor 3rds"], answer:0,
-      explain:"4 + 3 = a perfect 5th.", hint:"Large 3rd below, small 3rd above." },
-    { type:"mc", q:"Name this chord's Roman numeral (key of C).",
-      staff:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:200},
-      choices:["IV","I","V"], answer:0,
-      explain:"Root F = degree 4 → IV.", hint:"Bottom note, then count from C." },
-    { type:"mc", q:"Name this chord's Roman numeral (key of C).",
-      staff:{clef:"bass",notes:[{p:"G2",d:"w"},{p:"B2",d:"w",chord:true},{p:"D3",d:"w",chord:true}],width:200},
-      choices:["V","IV","I"], answer:0,
-      explain:"Root G = degree 5 → V.", hint:"Same rule in bass clef." },
-    { type:"mc", q:"Roman numerals in chord labels represent…", choices:["the scale degree of the chord's root","how loud to play","the number of notes"], answer:0,
-      explain:"I = degree 1's chord, IV = degree 4's, V = degree 5's.", hint:"Numbers in disguise." },
-    { type:"mc", q:"Why can three-chord songs harmonize entire melodies?", choices:["I, IV, V contain every scale tone","Melodies avoid most notes","Chords change the melody's notes"], answer:0,
-      explain:"Every melody note has a primary chord home.", hint:"The remarkable fact." },
-    /* generated */
-    { gen:"triad-id", params:{ask:"numeral"}, count:4 },
-    { gen:"triad-id", params:{}, count:2 },
-    { gen:"term-match", params:{subject:"term", pool:[["Primary triads","degrees 1, 4, and 5"],["Major triad","root + M3 + P5"],["IV in C major","F-A-C"],["V in C major","G-B-D"]], reverse:true}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["Asymmetrical","unequal groups"],["5/4","3+2 or 2+3"],["7/8","2+2+3 and friends"],["Additive meter","a combination of smaller groups"],["Changing meter","new signature mid-piece"]], reverse:true}, count:6 },
+    { gen:"rhythm-count", params:{}, count:2 },
+    { type:"mc", q:"How many quarter-note beats are notated in a measure of 5/4?", choices:["5","4","3"], answer:0,
+      explain:"The top number indicates five quarter-note beats. These beats may be organized into groups such as 3 + 2 or 2 + 3." },
+    { type:"mc", q:"Which is a common asymmetrical grouping of 7/8?", choices:["2 + 2 + 3","4 + 4","3 + 3 + 3"], answer:0,
+      explain:"2 + 2 + 3 includes seven eighth-note subdivisions." },
+    { type:"mc", q:"In 5/4 grouped 2 + 3, which beats begin the two groups?", choices:["Beats 1 and 3","Beats 1 and 4","Beats 2 and 5"], answer:0,
+      explain:"Group starts: 1-2 | 3-4-5." },
+    { type:"mc", q:"When the time signature changes during a piece, each new signature…", choices:["remains in effect until another time signature appears","lasts for only one beat","may be ignored by the performer"], answer:0,
+      explain:"Changing (mixed) meter." },
+    { type:"truefalse", q:"7/8 is commonly organized into equal groups of two eighth notes.", answer:false,
+      explain:"Common asymmetrical groupings of 7/8 include one group of three and two groups of two." },
+    { type:"truefalse", q:"12/8 is normally organized as four unequal beat groups.", answer:false,
+      explain:"12/8 normally contains four equal dotted-quarter beats, each divided into three eighth notes." },
+    { type:"truefalse", q:"In additive meter, the beginning of each group receives emphasis while the underlying subdivision remains steady.", answer:true,
+      explain:"ONE-two-three ONE-two." },
+    { gen:"term-match", params:{subject:"term", pool:[["Group of 3","the long step"],["Group of 2","the short step"],["Accent","each group's first note"],["8/8 uneven","3+3+2"]], reverse:true}, count:3 },
+    { gen:"note-value", params:{}, count:2 }
   ],
   vocabulary:[
-    {term:"Primary Triads (Primary Chords)", def:"The most important triads of a key, built on scale degrees 1, 4, and 5 — identified by the Roman numerals I, IV, and V. Together they contain every tone of the major scale.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:130}},
-    {term:"Major Triad", def:"A triad made of a root, a Major 3rd, and a Perfect 5th — equivalently, a minor 3rd stacked on top of a Major 3rd."},
-    {term:"Roman Numerals (I, IV, V)", def:"Labels showing the scale degree a chord is built on — capital numerals for major chords."},
-    {term:"I, IV, V in C major", def:"C triad (C-E-G), F triad (F-A-C), G triad (G-B-D)."}
+    {term:"Asymmetrical Meter", def:"A meter that combines beat groups of unequal length, as in 5/4 grouped 3+2 or 7/8 grouped 2+2+3."},
+    {term:"Additive Meter", def:"Understanding a meter by combining smaller groups, often 2s and 3s: 5 = 3+2, 7 = 2+2+3."},
+    {term:"Changing Meter (Mixed Meter)", def:"The time signature changes during a piece; each remains in effect until replaced."},
+    {term:"Grouping Accents", def:"The accent on each group's first note — it tells the listener the meter's shape."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Primary triads</b> live on degrees <b>1, 4, 5</b> → Roman numerals <b>I, IV, V</b>.",
-    "✔ In C major: <b>I = C-E-G · IV = F-A-C · V = G-B-D</b>.",
-    "✔ Each is a <b>MAJOR triad</b>: root + Major 3rd + Perfect 5th (= M3 with m3 stacked on top).",
-    "✔ I + IV + V contain <b>every tone of the scale</b> — three chords can harmonize nearly anything.",
-    "✔ Location vs spelling: chords SIT on 1-4-5 but are each SPELLED 1-3-5 from their own root."
+    "✔ <b>Asymmetrical meter</b> mixes <b>unequal groups</b> — the uneven grouping is deliberate.",
+    "✔ Common groupings: <b>5/4</b> = 3+2 or 2+3 · <b>7/8</b> = 2+2+3, 2+3+2 or 3+2+2.",
+    "✔ Think <b>additively</b>: combine smaller groups, often 2s and 3s; emphasize group starts while keeping the subdivision steady.",
+    "✔ <b>Changing meter</b>: each new signature rules until the next.",
+    "✔ Beaming and accents reveal the grouping at a glance."
   ],
   tips:[
-    "Grab a guitar-playing friend: C, F, G are literally their first three chords — now you know why.",
-    "Drill the three spellings until instant: C-E-G! F-A-C! G-B-D!",
-    "Hearing check: I feels like home, IV like a step away, V like it's leaning back toward home.",
-    "Next lesson names every scale degree — tonic, dominant, and friends — and L50 crowns V with a 7th."
+    "Walk it: step LONG-short for 5/4 (3+2) — your feet learn asymmetry faster than your eyes.",
+    "In 7/8, find the 3 first; the 2s fall into place around it.",
+    "Famous asymmetry to find tonight: a jazz classic in 5/4 — count ONE-two-three ONE-two along with it.",
+    "Unit 19 complete! Next unit returns to pitch: the modes, put to WORK."
   ],
-  rewards:{ badge:"Primary Ruler", icon:"\u{1F451}" },
+  rewards:{ badge:"Odd-Meter Navigator", icon:"\u{2696}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect score — I, IV, V salute their ruler! \u{1F451}\u{1F389}",
-  miaPass:"Passed! Keep the three spellings on your tongue: C-E-G, F-A-C, G-B-D.",
+  miaQuizIntro:"Quiz: Identify the groups of two and three, and locate the beginning of each group.",
+  quiz:[
+    { type:"mc", q:"What makes a meter asymmetrical?", choices:["It combines beat groups of unequal length","It lacks a time signature","It requires a slow tempo"], answer:0,
+      explain:"The uneven grouping defines it.", hint:"Un-equal." },
+    { type:"mc", q:"Which pair shows two common groupings of 5/4?", choices:["3 + 2 and 2 + 3","4 + 1 and 1 + 4","Five separately accented groups"], answer:0,
+      explain:"A group of three and a group of two may occur in either order.", hint:"3 and 2." },
+    { type:"mc", q:"Which grouping was presented as a common asymmetrical organization of 7/8?", choices:["2 + 3 + 2","2 + 2 + 2","3 + 3 + 3"], answer:0,
+      explain:"2 + 3 + 2 contains seven eighth-note subdivisions arranged in unequal groups.", hint:"Look for unequal groups that total seven subdivisions." },
+    { type:"mc", q:"In 5/4 grouped 3 + 2, which beats begin the two groups?", choices:["Beats 1 and 4","Beats 1 and 3","Beats 2 and 4"], answer:0,
+      explain:"1-2-3 | 4-5 — group starts.", hint:"After the group of three." },
+    { type:"mc", q:"What is one way to understand additive meter?", choices:["As a combination of smaller beat groups, such as 3 + 2","As the unrestricted addition of extra beats","As a doubling of the tempo"], answer:0,
+      explain:"Additive meter combines smaller beat groups, often groups of two and three.", hint:"Addition." },
+    { type:"mc", q:"Identify the grouping.",
+      staff:{clef:"treble",time:"7/8",notes:[{p:"G4",d:"8"},{p:"G4",d:"8"},{p:"G4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"D5",d:"8"},{p:"D5",d:"8"}],beams:[[0,2],[3,4],[5,6]],width:240},
+      choices:["3 + 2 + 2","2 + 2 + 3","Seven separately accented eighth notes"], answer:0,
+      explain:"The beaming shows one group of three followed by two groups of two.", hint:"Count each beam." },
+    { type:"mc", q:"What is changing, or mixed, meter?", choices:["The time signature changes during the music","Two meters are performed simultaneously","The music has no bar lines"], answer:0,
+      explain:"For example, a passage may move from 4/4 to 3/4 and then return to 4/4.", hint:"Signatures in sequence." },
+    { type:"truefalse", q:"In changing meter, a new time signature remains in effect until another one appears.", answer:true,
+      explain:"Each signature rules its stretch.", hint:"Until replaced." },
+    { type:"truefalse", q:"9/8 grouped 3 + 3 + 3 is asymmetrical.", answer:false,
+      explain:"The three beat groups are equal, so this is compound triple meter rather than an asymmetrical grouping.", hint:"Are the groups equal?" },
+    { type:"mc", q:"You hear a repeating five-beat pattern grouped 3 + 2. Which meter best matches the pattern?", choices:["5/4 grouped 3 + 2","4/4 grouped 2 + 2","6/8 grouped 3 + 3"], answer:0,
+      explain:"A group of three quarter-note beats followed by a group of two produces a 3 + 2 organization of 5/4.", hint:"Count to the next strong beat." },
+    { type:"mc", q:"Why does 8/8 grouped 3 + 3 + 2 sound asymmetrical?", choices:["It combines groups of unequal length","Eight is an odd number","It contains no rhythmic emphasis"], answer:0,
+      explain:"Although 8/8 and 4/4 can contain the same total duration, the 3 + 3 + 2 grouping creates unequal main beats.", hint:"Grouping decides." },
+    { type:"mc", q:"Which list contains time signatures commonly used with asymmetrical groupings?", choices:["5/4, 7/8, and 5/8","4/4, 3/4, and 2/4","6/8, 9/8, and 12/8"], answer:0,
+      explain:"5/4, 7/8, and 5/8 are commonly organized using unequal groups of two and three subdivisions.", hint:"Look for meters commonly grouped as combinations such as 3 + 2 or 2 + 2 + 3." }
+  ],
+  miaPerfect:"Perfect score! You accurately identified asymmetrical groupings and changing meters.",
+  miaPass:"You passed and completed unit 19. Next, you will apply these rhythmic skills in new musical contexts.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"You heard C (I) → F (IV) → G (V) → C (I): the primary triads of C major — the three-chord engine of popular music.",
-      play:()=>{[[60,64,67],[65,69,72],[67,71,74],[60,64,67]].forEach((c,k)=>c.forEach(m=>MFAudio.tone(m,.6,k*.7,.35)));} },
-    learn:{ label:"primary & major triads",
-      explain:"Degrees 1, 4, 5 → I, IV, V. In C: C-E-G, F-A-C, G-B-D. Each is major (root + M3 + P5 = M3 + m3 stacked), and together they hold every scale tone.",
-      hint:"Location 1-4-5; spelling 1-3-5.",
-      play:()=>{[60,64,67].forEach(m=>MFAudio.tone(m,.8,0,.38));} },
+      explain:"Pattern 1 pulsed in equal fours; pattern 2 went STRONG-2-3-STRONG-2 — five beats in unequal groups: asymmetrical meter.",
+      play:()=>{for(let b=0;b<5;b++){ const s=b===0||b===3; MFAudio.tone(s?43:55,.24,b*.42,s?.42:.22);} } },
+    learn:{ label:"asymmetrical & changing meter",
+      explain:"Beat groups of unequal length: 5/4 is often 3+2 or 2+3; 7/8 is often 2+2+3; think additively; changing meter swaps signatures during a piece.",
+      hint:"Combine smaller groups, often 2s and 3s.",
+      play:()=>{for(let b=0;b<7;b++){ const s=b===0||b===2||b===4; MFAudio.tone(s?43:55,.2,b*.3,s?.4:.2);} } },
     example:{ label:"the examples",
-      explain:"Example 1 plays the I-IV-V-I progression with numerals; example 2 breaks the major triad into its lower and upper 3rds." },
+      explain:"Example 1 walks a 5/4 melody in 3+2; example 2 drives 7/8 in 2+2+3 — the beams show the groups." },
     game:{ label:"the games",
-      explain:"Sprint the numerals, walk the primary path, hunt I-IV-V by sight, then race the vocabulary.",
-      hint:"Root → degree → numeral, in that order." },
+      explain:"Sprint the groupings, read beams on cards, count a 7/8 measure in order, then sort even from uneven.",
+      hint:"Accents mark group starts." },
     quiz:{ label:"this question",
-      explain:"Anchor facts: primaries sit on 1-4-5; in C they're C/F/G; each is root+M3+P5; together = the whole scale.",
-      play:()=>{[65,69,72].forEach(m=>MFAudio.tone(m,.7,0,.38));} }
+      explain:"Two checks: is the measure commonly organized into equal groups (even) or into unequal groups such as 2 + 2 + 3 (asymmetrical)? And which signature currently rules the measure?",
+      play:()=>{for(let b=0;b<5;b++){ const s=b===0||b===3; MFAudio.tone(s?43:55,.22,b*.4,s?.4:.2);} } }
   }
 };

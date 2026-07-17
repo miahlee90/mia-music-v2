@@ -1,291 +1,278 @@
-/* Lesson 68 — Harmonizing a Melody in a Minor Key (AEMT Book 3, Unit 17)
-   Built from drafts/UNIT 17 – Lesson 68.md; AEMT3 p.108 verified by render.
-   Core: same method as major — i, iv, V(7) hold every note of the HARMONIC
-   minor scale. The minor chart: degrees 1,3,5 → i · 2,4,5,7 → V(7) ·
-   1,4,6 → iv. Ear decides ties; begin/end with i; V(7) precedes the last
-   chord. Model: A harmonic minor scale harmonized i-V-i-iv-i-iv-V-i.
+/* Lesson 68 (9.2, formerly L87) — Cadences (Book 4, Unit 21 — SELF-AUTHORED)
+   Core: CADENCE = the harmonic resting point ending a phrase.
+   AUTHENTIC V(7)→I — PERFECT (PAC: both root position, tonic on top) vs
+   IMPERFECT (IAC). HALF: ends ON V. PLAGAL: IV→I. DECEPTIVE: V→vi.
+   NOTE: chord demos play immediately (no chime before demos).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* harmonize A harmonic minor, degree by degree */
-function MF_L68_harm(container,fb){
-  const STEPS=[
-    {deg:1, note:"A4", ok:["i","iv"], why:"Degree 1 lives in i (root) and iv (5th) — most minor harmonizations BEGIN with i."},
-    {deg:2, note:"B4", ok:["V7"], why:"Degree 2 (B) belongs only to V — its 5th."},
-    {deg:3, note:"C5", ok:["i"], why:"Degree 3 (C) is the 3rd of i — the note that makes the key MINOR."},
-    {deg:4, note:"D5", ok:["iv","V7"], why:"Degree 4 fits iv (root) or V7 (7th) — either works; the ear decides."},
-    {deg:5, note:"E5", ok:["i","V7"], why:"Degree 5 fits i (5th) or V (root) — the flexible one, in minor too."},
-    {deg:6, note:"F5", ok:["iv"], why:"Degree 6 (F) belongs only to iv — its 3rd."},
-    {deg:7, note:"G#5", ok:["V7"], why:"The RAISED 7th (G♯) is V's major 3rd — the harmonic minor at work!"},
-    {deg:8, note:"A5", ok:["i"], why:"End on i — home, with V(7) just before."}];
-  const CH={i:[57,60,64], iv:[57,62,65], V7:[56,59,62,64]};
-  let k=0; const picked=[];
-  container.innerHTML=`<div class="big-q l68h-q" style="text-align:center"></div>
-    <div class="l68h-staff"></div>
-    <div class="choices chips l68h-ch"><button>i</button><button>iv</button><button>V7</button></div>
-    <div style="text-align:center"><button class="play l68h-play" style="display:none">▶ Play your harmonized minor scale</button></div>`;
-  const q=container.querySelector(".l68h-q"), holder=container.querySelector(".l68h-staff"), ch=container.querySelector(".l68h-ch"), pl=container.querySelector(".l68h-play");
-  function draw(){
-    Staff.render(holder,{clef:"treble",notes:STEPS.map((s,i)=>({p:s.note,d:"q",label:i<picked.length?picked[i]:String(s.deg)})),width:560});
-  }
-  function ask(){
-    draw();
-    if(k>=STEPS.length){ q.textContent="Excellent! The melody is fully harmonized. Press play!"; ch.style.display="none"; pl.style.display="inline-block"; return; }
-    q.innerHTML=`Melody note ${k+1} of 8 — scale degree <b>${STEPS[k].deg}</b>${STEPS[k].deg===7?" (raised!)":""}. Which chord? <i>(Minor chart: 1,3,5→i · 2,4,5,7→V7 · 1,4,6→iv)</i>`;
-  }
-  [...ch.children].forEach(b=>b.onclick=()=>{
-    const S=STEPS[k]; if(!S) return;
-    if(S.ok.includes(b.textContent)){
-      MFAudio.tone(MFAudio.midi(S.note),.8,.05,.42);
-      CH[b.textContent].forEach(m=>MFAudio.tone(m,.9,.05,.25));
-      picked.push(b.textContent); k++;
-      fb(true,`✓ ${S.why}`);
-      setTimeout(ask,1200);
-    } else { MFAudio.tone(40,.2); fb(false,"Which chord contains this melody note? Spell i (A-C-E), iv (D-F-A) and V7 (E-G♯-B-D)."); }
-  });
+/* cadence ear lab */
+function MF_L68_ear(container,fb){
+  const CAD={
+    auth:{rows:[[67,71,74,77],[60,64,67,72]], name:"Authentic (V7 \u{2192} I)"},
+    half:{rows:[[62,65,69],[67,71,74]], name:"Half (ends ON V)"},
+    plag:{rows:[[65,69,72],[60,64,67,72]], name:"Plagal (IV \u{2192} I)"},
+    dec:{rows:[[67,71,74,77],[69,72,76]], name:"Deceptive (V7 \u{2192} vi)"}};
+  const ROUNDS=["auth","half","dec","plag"];
+  let r=0, played=false;
+  container.innerHTML=`<div class="big-q l87e-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play l87e-play">▶ Hear the phrase ending</button></div>
+    <div class="choices l87e-ch" style="display:none"><button>Authentic — V to I, finished</button><button>Half — stops on V, unfinished</button><button>Plagal — IV to I, gentle</button><button>Deceptive — V to vi, surprise</button></div>`;
+  const q=container.querySelector(".l87e-q"), pl=container.querySelector(".l87e-play"), ch=container.querySelector(".l87e-ch");
+  const KEY=["auth","half","plag","dec"];
   pl.onclick=()=>{
-    STEPS.forEach((s,i)=>{
-      MFAudio.tone(MFAudio.midi(s.note),.55,i*.62,.42);
-      CH[picked[i]].forEach(m=>MFAudio.tone(m,.58,i*.62,.2));
-    });
-    setTimeout(()=>fb(true,"✓ Your harmonization — listen to the V chords under degrees 2 and 7."),5300);
+    const C=CAD[ROUNDS[r]]; if(!C) return;
+    MFAudio.tone(60,.5,.05,.3); MFAudio.tone(64,.5,.05,.2); MFAudio.tone(67,.5,.05,.2); /* set tonic context: I */
+    C.rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,.8+i*.9,.28)));
+    played=true; setTimeout(()=>ch.style.display="",2900);
   };
-  ask();
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    if(!played) return;
+    const want=ROUNDS[r];
+    if(KEY[i]===want){ fb(true,"✓ "+CAD[want].name+" — correct."); r++; played=false; ch.style.display="none";
+      if(r>=ROUNDS.length){ q.textContent="Excellent! All four cadences identified by ear."; pl.style.display="none"; } else q.innerHTML=`Round ${r+1} of ${ROUNDS.length}: listen, then name the cadence.`;
+    } else { MFAudio.tone(40,.2); fb(false,"Listen to the final two harmonies at the phrase ending: V\u{2192}I is authentic, IV\u{2192}I is plagal, an ending on V is half, and V\u{2192}vi is deceptive."); }
+  });
+  q.innerHTML="Round 1 of 4: listen, then name the cadence.";
 }
 
 LESSON_CONTENT[68]={
-  welcome:"Harmonizing in a minor key. \u{1F319}",
+  welcome:"Cadences create arrival, pause, or expectation at the ends of phrases.",
   hook:{
-    say:"<b>The same minor melody can be harmonized in different ways.</b> Listen to both versions. <b>Which accompaniment fits the melody better?</b>",
+    say:"<b>Listen to two phrase endings.</b> One creates a strong sense of arrival, while the other ends with an expectation of continuation. \u{1F447} <b>Which ending sounds more complete?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Version A</button>
-          <button class="play hk-b">▶ Version B</button></div>
-          <div class="choices hk-ch" style="display:none"><button>A — i and V7 of A minor, raised 7th included</button><button>B — the C major chords fit better</button></div>`;
-        const mel=[69,72,71,68,69];
-        const goodCh=[[57,60,64],[57,60,64],[56,59,64],[56,59,64],[57,60,64]];
-        const badCh=[[60,64,67],[60,65,69],[59,62,67],[60,64,67],[60,64,67]];
+          <button class="play hk-a">▶ Ending A</button>
+          <button class="play hk-b">▶ Ending B</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Ending A — it resolves from V to I</button><button>Ending B — it stops on V and sounds incomplete</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        const play=(chs)=>mel.forEach((m,i)=>{ MFAudio.tone(m,.6,i*.68,.42); chs[i].forEach(c=>MFAudio.tone(c,.6,i*.68,.2)); });
-        container.querySelector(".hk-a").onclick=()=>{ play(goodCh); hA=true; if(hB) setTimeout(()=>ch.style.display="",3800); };
-        container.querySelector(".hk-b").onclick=()=>{ play(badCh); hB=true; if(hA) setTimeout(()=>ch.style.display="",3800); };
+        container.querySelector(".hk-a").onclick=()=>{ [[60,64,67],[65,69,72],[67,71,74,77],[60,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.75,i*.8,.28))); hA=true; if(hB) setTimeout(()=>ch.style.display="",3700); };
+        container.querySelector(".hk-b").onclick=()=>{ [[60,64,67],[62,65,69],[67,71,74]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.75,i*.8,.28))); hB=true; if(hA) setTimeout(()=>ch.style.display="",3000); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Version A used the MINOR key's own primary chords — i and V7 with the raised G♯. Harmonizing in minor works like major, using the minor chart. Today's lesson!");
-          else fb(false,"Version B's borrowed chords clashed with the melody's minor tones. Listen again…");
+          if(i===0) fb(true,"✓ Correct. Ending A resolves from dominant to tonic, creating a stronger sense of closure. Ending B stops on the dominant and suggests continuation.");
+          else fb(false,"Ending B stops on the dominant without resolving to tonic. Listen again for the ending that creates a stronger sense of arrival.");
         });
       } }
   },
   objectives:[
-    "Harmonize minor melodies the same way as major ones",
-    "Use the minor chart: 1,3,5 → i · 2,4,5,7 → V(7) · 1,4,6 → iv",
-    "Remember: the chart reads the HARMONIC minor scale (raised 7th)",
-    "Let the ear break ties (degrees 1, 4, 5)",
-    "Begin and end with i; V(7) precedes the last chord",
-    "Harmonize the full A harmonic minor scale"
+    "Define cadence: a harmonic ending that marks the end of a phrase",
+    "Recognize Authentic, Half, Plagal, and Deceptive cadences",
+    "Distinguish PAC and IAC",
+    "Identify each cadence by ear and by notation",
+    "Understand how different cadences create different musical endings"
   ],
   steps:[
-    { say:"<b>Harmonizing in a Minor Key:</b> Harmonizing a melody in a minor key is very similar to harmonizing in a major key. The <b>i, iv, and V (or V7)</b> chords contain all the notes of the <b>harmonic minor scale</b>. \u{1F447} <b>Which minor scale is used for harmonization?</b>",
-      try:{ type:"mc", choices:["Harmonic minor — the raised 7th feeds the V chord","Natural minor only","Melodic minor descending"], answer:0,
-        success:"✓ The raised 7th (G♯ in A minor) is exactly what makes V major — Lesson 60's whole story, now applied.",
-        fail:"Which form gave the V chord its major 3rd?",
-        hint:"The 'most used' minor form." } },
-    { say:"<b>Using the Minor Harmonizing Chart:</b> Use the chart to choose a chord that contains the melody note. \u{1F447} <b>Which chord harmonizes scale degree 6 in A minor?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:260px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Melody Note</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Chord</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">1</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">i, iv</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">2</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">V</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">3</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">i</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">4</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">iv, V</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">5</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">i, V</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">6</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">iv</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">7 (raised)</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">V</td></tr></table>` },
-      try:{ type:"mc", choices:["iv — the only chord containing degree 6","i","V7"], answer:0,
-        success:"✓ F is the 3rd of D-F-A. Same chart logic as major — only the chord qualities changed.",
-        fail:"Scan the rows for a 6…",
-        hint:"One row only." } },
-    { say:"<b>The Raised 7th:</b> The raised 7th belongs to the <b>V (or V7)</b> chord. It creates the leading tone that pulls to the tonic. \u{1F447} <b>Which chord should harmonize G♯ in A minor?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[
-        {p:"G#4",d:"w",label:"the melody's ♯7…"},
-        {p:"E4",d:"w",label:"…lives in V"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:400} },
-      try:{ type:"mc", choices:["V or V7","iv","i"], answer:0,
-        success:"✓ G♯ is the 3rd of V (E-G♯-B) — no other primary chord contains it.",
-        fail:"Spell all three primaries — which contains G♯?",
-        hint:"E-G♯-B." } },
-    { say:"<b>Ending the Progression:</b> Most minor harmonizations begin with <b>i</b>, end with <b>i</b>, and use <b>V (or V7)</b> before the final i. \u{1F447} <b>Which cadence is most common in a minor key?</b>",
-      try:{ type:"mc", choices:["V(7) → i","iv → iv","i → V, stopping on V"], answer:0,
-        success:"✓ V(7) → i — the dominant-to-tonic cadence, in the minor mode.",
-        fail:"Same rule as major, minor spelling…",
-        hint:"The pre-final chord rule." } },
-    { say:"Harmonize the melody using the minor harmonizing chart. \u{1F447}",
+    { say:"<b>Cadence:</b> a harmonic ending that marks the end of a phrase. You identify it by the final chord motion. \u{1F447} <b>Where does a cadence normally occur?</b>",
+      try:{ type:"mc", choices:["At or near the end of a phrase","On every beat","Only at the end of an entire composition"], answer:0,
+        success:"✓ Correct. Cadences commonly mark phrase endings, so a composition may contain many cadential points.",
+        fail:"Where does a phrase create a point of arrival or pause?",
+        hint:"Recall the phrase endings introduced in Lesson 72." } },
+    { say:"<b>Authentic Cadence — V (or V⁷) → I:</b> the dominant resolves to the tonic at a phrase ending. This is the strongest way to close a phrase. \u{1F447} <b>Which harmonic motion defines an authentic cadence in a major key?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:440} },
+      try:{ type:"mc", choices:["V or V⁷ to I","IV to I","I to V"], answer:0,
+        success:"✓ Correct. An authentic cadence moves from dominant to tonic at a phrase ending.",
+        fail:"Identify the motion from dominant to tonic.",
+        hint:"The leading tone resolves to the tonic in a typical authentic cadence." } },
+    { say:"<b>PAC vs IAC:</b><br>• <b>PAC</b> — V(⁷)→I, both chords in root position, soprano ends on the tonic (strongest ending).<br>• <b>IAC</b> — any authentic V–I that does not meet all PAC conditions. \u{1F447} <b>A root-position V–I cadence ends with scale degree 3 in the soprano. How is it classified?</b>",
+      try:{ type:"mc", choices:["Imperfect authentic cadence","Perfect authentic cadence","Half cadence"], answer:0,
+        success:"✓ Correct. The cadence is authentic because it moves from V to I, but it is imperfect because the soprano ends on scale degree 3 rather than the tonic.",
+        fail:"Check the chord positions and the final soprano note.",
+        hint:"A PAC requires root-position V–I and the tonic in the final soprano." } },
+    { say:"<b>Half Cadence — ends on V:</b> the phrase ends on the dominant. It feels unfinished and expects continuation. \u{1F447} <b>A half cadence normally ends on…</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"ii"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V — wait…"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{bar:"final"}],width:480} },
+      try:{ type:"mc", choices:["A root-position V chord","A I chord","A vi chord"], answer:0,
+        success:"✓ Correct. Ending on the dominant creates an open cadence that commonly suggests continuation.",
+        fail:"The dominant is reached but does not resolve to tonic.",
+        hint:"The phrase ends on V." } },
+    { say:"<b>Plagal Cadence — IV → I:</b> often called the “Amen” cadence. It gives a gentle sense of arrival, without the dominant-to-tonic motion of an authentic cadence. \u{1F447} <b>Which harmonic motion defines a plagal cadence?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:400} },
+      try:{ type:"mc", choices:["IV to I","V to I","V to vi"], answer:0,
+        success:"✓ Correct. A plagal cadence moves from IV to I without dominant-to-tonic harmonic motion.",
+        fail:"Identify the motion from IV to I.",
+        hint:"Subdominant to tonic." } },
+    { say:"<b>Deceptive Cadence:</b> V begins as if it will resolve to I, but moves somewhere else instead — <b>V → vi</b> in major, <b>V → VI</b> in minor. This delays the tonic and often keeps the music going. \u{1F447} <b>Why is V–vi in a major key called deceptive?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"A4",d:"w",label:"vi — surprise!"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:440} },
+      try:{ type:"mc", choices:["V creates an expectation of I but moves to vi instead","The progression contains no dominant chord","The dynamic level changes unexpectedly"], answer:0,
+        success:"✓ Correct. The dominant creates an expectation of tonic, but the progression moves to vi instead.",
+        fail:"Which chord normally follows V in an authentic cadence?",
+        hint:"The expected tonic chord does not arrive." } },
+    { say:"Listen to each phrase ending and identify the cadence. \u{1F447}",
       try:{ type:"custom",
-        hint:"i = A-C-E, iv = D-F-A, V7 = E-G♯-B-D. Watch degree 7!",
-        mount:(container,fb)=>MF_L68_harm(container,fb) } },
-    { say:"<b>Choosing Between Chords:</b> Some melody notes belong to more than one chord. <b>Remember: if more than one chord fits the melody note, use your ear to choose the best harmony.</b> \u{1F447} <b>Who makes the final choice?</b>",
-      try:{ type:"mc", choices:["Your ear","The metronome","Always the V chord"], answer:0,
-        success:"✓ Your ear should always be the final guide.",
-        fail:"Same tie-breaker as Lesson 64…",
-        hint:"The final guide." } },
-    { say:"<b>Try Another Key:</b> Apply the same harmonizing chart in E minor. \u{1F447} <b>Which are the three primary chords?</b>",
-      try:{ type:"mc", choices:["Em (E-G-B), Am (A-C-E), B7 (B-D♯-F♯-A)","Em, Am, Bm — all minor","E, A, B — all major"], answer:0,
-        success:"✓ i and iv minor, V7 major with the raised D♯. The chart rides along to every minor key.",
-        fail:"Raise E minor's 7th (D→D♯) and build V on B…",
-        hint:"i, iv minor; V7 major with ♯7 inside." } }
+        hint:"Identify the final two harmonies and confirm that they occur at a phrase ending. V–I is authentic, IV–I is plagal, a phrase ending on root-position V is a half cadence, and V–vi in major is deceptive.",
+        mount:(container,fb)=>MF_L68_ear(container,fb) } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which cadence most clearly suggests that the phrase will continue?</b>",
+      try:{ type:"mc", choices:["A half cadence ending on V","A perfect authentic cadence","A plagal cadence"], answer:0,
+        success:"✓ Correct. A half cadence ends on the dominant without resolving to tonic, creating an expectation of continuation.",
+        fail:"Which cadence ends on V rather than resolving to I?",
+        hint:"Identify the cadence that stops on the dominant." } }
   ],
   examples:[
-    { caption:"The A harmonic minor scale harmonized with only i, iv and V(7) — i, V, i, iv, i, iv, V, i.",
+    { caption:"Four endings from one phrase: authentic (V7-I), half (…V), plagal (IV-I), deceptive (V7-vi). Same music, four punctuation marks.",
+      staff:{clef:"treble",tempo:84,notes:[
+        {p:"G4",d:"q",label:"V7"},{p:"B4",d:"q",chord:true},{p:"F5",d:"q",chord:true},
+        {p:"C5",d:"q",label:"I"},{p:"E5",d:"q",chord:true},{p:"G5",d:"q",chord:true},{bar:"single"},
+        {p:"D4",d:"q",label:"ii"},{p:"F4",d:"q",chord:true},{p:"A4",d:"q",chord:true},
+        {p:"G4",d:"q",label:"V"},{p:"B4",d:"q",chord:true},{p:"D5",d:"q",chord:true},{bar:"single"},
+        {p:"F4",d:"q",label:"IV"},{p:"A4",d:"q",chord:true},{p:"C5",d:"q",chord:true},
+        {p:"C4",d:"q",label:"I"},{p:"E4",d:"q",chord:true},{p:"G4",d:"q",chord:true},{bar:"single"},
+        {p:"G4",d:"q",label:"V7"},{p:"B4",d:"q",chord:true},{p:"F5",d:"q",chord:true},
+        {p:"A4",d:"q",label:"vi!"},{p:"C5",d:"q",chord:true},{p:"E5",d:"q",chord:true},{bar:"final"}],width:680},
+      kb:{start:60,octaves:2,labels:true} },
+    { caption:"PAC vs IAC: the same V7-I twice — first with the tonic proudly on top (perfect), then with the 3rd on top (imperfect). Hear the difference in finality.",
       staff:{clef:"treble",tempo:80,notes:[
-        {p:"A4",d:"q",label:"i"},{p:"B4",d:"q",label:"V7"},{p:"C5",d:"q",label:"i"},{p:"D5",d:"q",label:"iv"},
-        {p:"E5",d:"q",label:"i"},{p:"F5",d:"q",label:"iv"},{p:"G#5",d:"q",label:"V7"},{p:"A5",d:"q",label:"i"},{bar:"final"}],width:560},
-      kb:{start:69,octaves:1.1667,labels:true} },
-    { caption:"The minor cadence: iv → V7 → i. The leading tone G♯ pulls to the tonic.",
-      staff:{clef:"treble",tempo:80,notes:[
-        {p:"D4",d:"w",label:"iv"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"V7"},{p:"G#4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{bar:"final"}],width:480},
-      kb:{start:56,octaves:1.6667,labels:true} }
+        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I (C on top)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"single"},
+        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I (E on top)"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:640},
+      kb:{start:60,octaves:2,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Minor-Chart Sprint (45s)",
-      intro:"Scale degrees in minor — name their chords at speed!",
-      miaIntro:"Same rows, minor mood! \u{26A1}",
+    { type:"gen-race", title:"Game 1 · Cadence Identification (45s)",
+      intro:"Identify four cadence types, their harmonic motions, and their effects.",
+      miaIntro:"Authentic, half, plagal, or deceptive.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Degree 3 (minor)","the i chord (only)"],
-        ["Degree 6 (minor)","the iv chord (only)"],
-        ["Degree 2 (minor)","the V(7) chord (only)"],
-        ["Raised degree 7","the V(7) chord (only)"],
-        ["Degree 1 (minor)","i or iv — ear decides"],
-        ["Degree 5 (minor)","i or V — ear decides"],
-        ["Degree 4 (minor)","iv or V7 — ear decides"],
-        ["The final minor chord","usually i, preceded by V(7)"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — minor chart mastered!":null },
-    { type:"key-climb", title:"Game 2 · Minor Cadence Climb",
-      intro:"Play the minor cadence: iv, V7, then i — mind the G♯!",
-      miaIntro:"The leading tone lives in V! \u{1FA9C}",
-      spec:{seq:[62,65,69, 64,68,71,74, 69,72,76],
-        names:["D (iv: root)","F","A","E (V7: root)","G♯ — the raised 7th!","B","D (the 7th)","A (i: home)","C","E"],
-        start:57, octaves:1.5833, title:"iv → V7 → i in A minor"},
-      result:(score)=>score!==null?"The minor cadence is in your hands!":null },
-    { type:"symbol-hunt", title:"Game 3 · Which Minor Chord Holds the Note?",
-      intro:"A melody note is called — click the A-minor chord that CONTAINS it!",
-      miaIntro:"Spell i, iv and V7 first! \u{1F440}",
+        ["Authentic cadence","V(7) \u{2192} I"],
+        ["Half cadence","ends ON V"],
+        ["Plagal cadence","IV \u{2192} I"],
+        ["Deceptive cadence","V \u{2192} vi"],
+        ["PAC requires","root positions + tonic on top"],
+        ["IAC","authentic, but not perfect"],
+        ["The unfinished cadence","half"],
+        ["The gentle close","plagal"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Cadence-identification challenge completed!":null },
+    { type:"key-climb", title:"Game 2 · Perform an Authentic Cadence",
+      intro:"Play a root-position V⁷–I cadence. End with the tonic in the highest voice to create a PAC.",
+      miaIntro:"Resolve the dominant to tonic.",
+      spec:{seq:[55,59,62,65, 48,52,55,60],
+        names:["G (V7 root)","B (leading tone!)","D","F (the 7th)","C (I root)","E","G","C (tonic on top — PAC!)"],
+        start:48, octaves:2, title:"V7 \u{2192} I, note by note"},
+      result:(score)=>score!==null?"You performed a perfect authentic cadence.":null },
+    { type:"symbol-hunt", title:"Game 3 · Name That Cadence",
+      intro:"Examine each phrase ending and select the correct cadence type.",
+      miaIntro:"Identify the final harmonies and check the phrase ending.",
       spec:{rounds:6, pool:[
-        {label:"i — holds A, C, E", spec:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:150}},
-        {label:"iv — holds D, F, A", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}},
-        {label:"V7 — holds E, G♯, B, D", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
-        {label:"V — holds E, G♯, B", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"Minor note-to-chord mapping complete!":null },
-    { type:"term-race", title:"Game 4 · Minor Harmonizer's Race",
-      intro:"All the minor-harmonizing rules — at speed!",
-      miaIntro:"Minor facts, fast! \u{1F3C1}",
+        {label:"Authentic (V \u{2192} I)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:210}},
+        {label:"Plagal (IV \u{2192} I)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:210}},
+        {label:"Deceptive (V \u{2192} vi)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:210}},
+        {label:"Half (ends on V)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:210}}]},
+      result:(score)=>score>=5?"You identified the cadences correctly.":null },
+    { type:"term-race", title:"Game 4 · Cadence Effect",
+      intro:"Match each cadence with its typical harmonic effect.",
+      miaIntro:"Listen for closure, continuation, or delayed resolution.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Minor harmonizing","similar to major — new chart, same method"],
-        ["The scale it reads","harmonic minor (raised 7th)"],
-        ["i, iv, V(7) together","every note of the harmonic minor scale"],
-        ["G♯ in an A-minor melody","must take V or V7"],
-        ["First and last chord","usually i"],
-        ["Just before the end","V or V7"],
-        ["Tie-breaker","the ear, always"],
-        ["V7 of E minor","B7 (B-D♯-F♯-A)"]]},
-      result:(score)=>score>=6?"Minor harmonizing mastered!":null }
+        ["Strong closure on tonic","authentic (V\u{2192}I)"],
+        ["Open, suggests continuation","half (ends on V)"],
+        ["Gentle tonic arrival","plagal (IV\u{2192}I)"],
+        ["Avoids the expected tonic","deceptive (V\u{2192}vi)"],
+        ["Full closure","PAC"],
+        ["Closure with reservations","IAC"],
+        ["Keeps the music going","deceptive"],
+        ["Waits for an answer","half"]]},
+      result:(score)=>score>=6?"You matched each cadence with its typical effect.":null }
   ],
-  practiceIntro:"20 practice questions — the minor chart, the G♯ rule and the cadence. Answer right and the next appears automatically!",
+  practiceIntro:"Complete 20 practice questions on authentic, half, plagal, and deceptive cadences, including PAC and IAC. The next question will appear after each correct answer.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Degree 3","i only"],["Degree 6","iv only"],["Degree 2","V(7) only"],["Raised 7","V(7) only"],["Degree 5","i or V"],["Degree 4","iv or V7"]], reverse:true}, count:6 },
-    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 },
-    { type:"mc", q:"Harmonizing a melody in a minor key is…", choices:["similar to harmonizing in a major key","completely different","impossible with three chords"], answer:0,
-      explain:"Minor harmonizing uses the same process as major." },
-    { type:"mc", q:"Which minor scale is used when harmonizing melodies?", choices:["The harmonic minor scale","The natural minor scale","The chromatic scale"], answer:0,
-      explain:"The raised 7th is included — via V." },
-    { type:"mc", q:"In A minor, melody note C (degree 3) takes…", choices:["the i chord","the iv chord","the V7 chord"], answer:0,
-      explain:"C is i's 3rd — its only primary home." },
-    { type:"mc", q:"In A minor, melody note F (degree 6) takes…", choices:["the iv chord","the i chord","the V chord"], answer:0,
-      explain:"F is iv's 3rd." },
-    { type:"mc", q:"Which chord contains the raised 7th?", choices:["V or V7","iv","i"], answer:0,
-      explain:"The raised 7th is V's 3rd — nowhere else." },
-    { type:"mc", q:"Most minor harmonizations begin and end with…", choices:["the i chord","the V chord","the iv chord"], answer:0,
-      explain:"Home rules transfer from major." },
-    { type:"truefalse", q:"A V or V7 usually precedes the last chord in minor too.", answer:true,
-      explain:"The cadence is universal." },
-    { type:"truefalse", q:"Degree 5 in minor can be harmonized by i or V.", answer:true,
-      explain:"E = i's 5th = V's root; ear decides." },
-    { type:"mc", q:"Why does the raised 7th appear in a minor melody?", choices:["The harmonization draws on the harmonic minor scale","It is a printing error","It comes from the major scale"], answer:0,
-      explain:"The harmonic minor's raised 7th lives in V(7) — it pulls to the tonic." },
-    { type:"truefalse", q:"In E minor, the V7 chord contains D♯.", answer:true,
-      explain:"B-D♯-F♯-A — the raised 7th of E minor." }
-  ],
-  miaQuizIntro:"Quiz! Same chart shape, minor spellings — and G♯ always points at V.",
-  quiz:[
-    { type:"mc", q:"Why can many minor melodies be harmonized with i, iv, and V (or V7)?", choices:["Those chords contain all the notes of the harmonic minor scale","Minor melodies avoid most notes","The chart forbids other chords"], answer:0,
-      explain:"Complete coverage, minor edition.", hint:"Same argument as Lesson 64." },
-    { type:"mc", q:"The minor chart assigns degrees 1, 3 and 5 to…", choices:["the i chord","the iv chord","the V7 chord"], answer:0,
-      explain:"They are i's own tones.", hint:"Root, 3rd, 5th of the tonic." },
-    { type:"mc", q:"Degrees 2, 4, 5 and 7 (raised) go to…", choices:["V (or V7)","i","iv"], answer:0,
-      explain:"All four live in E-G♯-B-D.", hint:"The dominant's row." },
-    { type:"mc", q:"Degrees 1, 4 and 6 go to…", choices:["iv","i","V7"], answer:0,
-      explain:"D-F-A = degrees 4, 6, 1.", hint:"The remaining row." },
-    { type:"truefalse", q:"When more than one chord fits, your ear should always be the final guide.", answer:true,
-      explain:"The ear is the final guide.", hint:"The universal tie-breaker." },
-    { type:"truefalse", q:"Most minor harmonizations begin and end with a V7 chord.", answer:false,
-      explain:"They begin and end with i.", hint:"Where is home in minor?" },
-    { type:"mc", q:"Which cadence best ends a melody in A minor? (…G♯ → A)", choices:["V7 → i","iv → i","i → iv"], answer:0,
-      explain:"G♯ forces V7; the final A lands on i.", hint:"Who owns G♯?" },
-    { type:"mc", q:"Which primary chords contain melody note D in A minor?", choices:["iv (D-F-A) and V7 (E-G♯-B-D)","only i","none of the primaries"], answer:0,
-      explain:"Root of iv, 7th of V7 — an ear tie.", hint:"Two homes." },
-    { type:"mc", q:"Why is the raised 7th important in minor-key harmonization?", choices:["It creates the leading tone used in the V (or V7) chord","It is a printing error","Minor keys borrow it from Lydian"], answer:0,
-      explain:"The leading tone lives in V.", hint:"Which chord contains it?" },
-    { type:"mc", q:"In D minor, the V7 chord is spelled…", choices:["A-C♯-E-G","A-C-E-G","D-F♯-A-C"], answer:0,
-      explain:"Raise D minor's 7th: C→C♯; build on A.", hint:"The raised 7th sits inside." },
-    { type:"mc", q:"In E minor, melody note C (degree 6) takes…", choices:["Am — the iv chord","Em — the i chord","B7 — the V7"], answer:0,
-      explain:"Degree 6 → iv; iv of E minor is A-C-E.", hint:"Degrees first, letters second." },
-    { type:"mc", q:"What is the main difference between the major and minor harmonizing charts?", choices:["The chord qualities change, but the scale-degree chart stays the same","Completely different degree rows","Minor needs six chords"], answer:0,
-      explain:"1,3,5 / 2,4,5,7 / 1,4,6 — same rows, lowercase i and iv.", hint:"Compare them side by side." },
-    /* generated */
-    { gen:"term-match", params:{subject:"term", pool:[["Degrees 1,3,5","i"],["Degrees 2,4,5,7","V(7)"],["Degrees 1,4,6","iv"],["G♯ in A minor","V's 3rd"]], reverse:true}, count:3 },
-    { gen:"rel-key", params:{ask:"both"}, count:2 },
+    { gen:"term-match", params:{subject:"term", pool:[["Authentic","V \u{2192} I"],["Half","ends on V"],["Plagal","IV \u{2192} I"],["Deceptive","V \u{2192} vi"],["PAC","perfect authentic"],["Cadence","marks a phrase ending"]], reverse:true}, count:6 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
+    { type:"mc", q:"A cadence is best described as…", choices:["a melodic and harmonic gesture that marks a phrase ending or point of arrival","a rapidly performed scale","a type of clef"], answer:0,
+      explain:"Cadences help articulate phrase endings through melody, harmony, and rhythm." },
+    { type:"mc", q:"Which harmonic motion defines an authentic cadence?", choices:["V or V⁷ to I","IV to I","V to vi"], answer:0,
+      explain:"Dominant resolves to tonic at a phrase ending." },
+    { type:"mc", q:"A perfect authentic cadence requires…", choices:["root-position V or V⁷ and I, with the tonic in the final soprano","any V–I motion","a IV chord"], answer:0,
+      explain:"Both conditions for full closure." },
+    { type:"mc", q:"A half cadence normally ends on…", choices:["root-position V","I","vi"], answer:0,
+      explain:"The open door." },
+    { type:"mc", q:"Which harmonic motion defines a plagal cadence?", choices:["IV–I","V–I","V–vi"], answer:0,
+      explain:"A plagal cadence moves from IV to I." },
+    { type:"mc", q:"In a major key, V–vi most commonly produces which cadence?", choices:["Deceptive cadence","Plagal cadence","Half cadence"], answer:0,
+      explain:"The promised I never arrives." },
+    { type:"truefalse", q:"A half cadence normally creates a strong sense of final closure.", answer:false,
+      explain:"It waits on the dominant." },
+    { type:"truefalse", q:"An IAC is a type of authentic cadence.", answer:true,
+      explain:"It contains authentic dominant-to-tonic motion but does not meet all the conditions of a PAC." },
+    { gen:"term-match", params:{subject:"term", pool:[["Finished, strongest","PAC"],["Finished, gentle","plagal"],["Unfinished, waiting","half"],["Surprised","deceptive"]], reverse:true}, count:3 },
     { gen:"triad-quality", params:{quals:["M","m"]}, count:1 }
   ],
   vocabulary:[
-    {term:"Minor Harmonizing Chart", def:"Degrees 1,3,5 → i · 2,4,5,7 → V(7) · 1,4,6 → iv — read from the HARMONIC minor scale."},
-    {term:"The Raised 7th", def:"A raised-7th melody note can only be harmonized by V(7) — it is that chord's 3rd.",
-      staff:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:130}},
-    {term:"Minor Cadence", def:"iv (or i) → V(7) → i — the dominant-to-tonic close in a minor key."},
-    {term:"The Ear", def:"Still the final guide whenever two chords fit one melody note."}
+    {term:"Cadence", def:"A harmonic ending that marks the end of a musical phrase."},
+    {term:"Authentic Cadence (PAC / IAC)", sym:"V(⁷) → I", def:"V or V7 → I. PAC = strongest ending. IAC = less complete ending."},
+    {term:"Half Cadence", sym:"? → V", def:"Ends on V. Creates an expectation of continuation."},
+    {term:"Plagal & Deceptive", sym:"IV→I & V→vi", def:"Plagal: IV → I (“Amen” cadence). Deceptive: V → vi (major) or V → VI (minor)."}
   ],
   mistakes:[],
   summary:[
-    "✔ Minor harmonizing = <b>major harmonizing with the minor chart</b>: 1,3,5 → i · 2,4,5,7 → V(7) · 1,4,6 → iv.",
-    "✔ The chart reads the <b>HARMONIC minor</b> — the raised 7th belongs to V.",
-    "✔ <b>G♯-type notes have exactly one chord</b>: V(7).",
-    "✔ Begin and end with <b>i</b>; <b>V(7)</b> precedes the final chord.",
-    "✔ Ties (degrees 1, 4, 5): <b>the ear decides</b>."
+    "✔ <b>Cadence</b> = harmonic ending of a phrase.",
+    "✔ <b>Authentic</b>: V(⁷)→I — PAC strongest; otherwise IAC.",
+    "✔ <b>Half</b>: ends on V → unfinished.",
+    "✔ <b>Plagal</b>: IV→I (“Amen”).",
+    "✔ <b>Deceptive</b>: V→vi (major) or V→VI (minor).",
+    "✔ Listen to the final two chords to identify the cadence."
   ],
   tips:[
-    "Spot the raised 7th FIRST when harmonizing a minor melody — those notes lock in V, and the rest falls into place around them.",
-    "The chart is identical to major's in its rows. Learn ONE chart, own both modes.",
-    "Play the harmonized minor scale daily; the i→V7 alternation at the top (F, G♯) is the most minor-sounding move in music.",
-    "Next lesson you'll COMPOSE in minor — Pat-A-Pan style."
+    "Question-answer pairs: phrase 1 with a weaker cadence (often a half cadence), phrase 2 with a stronger one (often a PAC) — one common design in countless melodies (and next lesson's periods).",
+    "Deceptive cadences extend pieces: composers 'miss' the ending on purpose, then land it for real.",
+    "Sing the soprano at each cadence — ending on 1 (PAC) feels different from ending on 3 (IAC).",
+    "Unit 21 complete! Next unit: phrases pair into PERIODS — cadences make it possible."
   ],
-  rewards:{ badge:"Minor Harmonizer", icon:"\u{1F319}" },
+  rewards:{ badge:"Cadence Keeper", icon:"\u{1F6A6}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! The minor chart obeys you completely. \u{1F319}\u{1F389}",
-  miaPass:"Passed! You can harmonize minor melodies. Now compose one…",
+  miaQuizIntro:"Quiz: Identify cadence types from their harmonic motion and phrase-ending context.",
+  quiz:[
+    { type:"mc", q:"Which statement best describes a cadence?", choices:["It is a melodic and harmonic gesture that marks a phrase ending or point of arrival","It is the fastest passage in a composition","It is any repeated motive"], answer:0,
+      explain:"Punctuation in harmony.", hint:"Where phrases rest." },
+    { type:"mc", q:"Which progression can form an authentic cadence at a phrase ending?", choices:["V⁷–I","IV–I","V–vi"], answer:0,
+      explain:"Dominant resolves to tonic.", hint:"Dominant to tonic." },
+    { type:"mc", q:"A perfect authentic cadence (PAC) requires…", choices:["root-position V or V⁷ and I, with the tonic in the final soprano","any V–I motion","a IV chord before I"], answer:0,
+      explain:"Two strict conditions.", hint:"Perfection has rules." },
+    { type:"mc", q:"A root-position V–I cadence ends with scale degree 3 in the soprano. How is it classified?", choices:["Imperfect authentic cadence","Perfect authentic cadence","Plagal cadence"], answer:0,
+      explain:"Authentic but imperfect.", hint:"Check the top note." },
+    { type:"mc", q:"A half cadence normally…", choices:["ends on root-position V","ends on I","moves from IV to I"], answer:0,
+      explain:"Open — the comma.", hint:"Half-way home." },
+    { type:"mc", q:"Which progression can form a plagal cadence at a phrase ending?", choices:["IV–I","V–I","ii–V"], answer:0,
+      explain:"Plagal motion approaches tonic from IV rather than V.", hint:"Subdominant to tonic." },
+    { type:"mc", q:"In a major key, a deceptive cadence most commonly moves from V to…", choices:["vi","I","IV"], answer:0,
+      explain:"The expected tonic is avoided when V moves to vi.", hint:"The surprise chord." },
+    { type:"mc", q:"Name the cadence.",
+      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:240},
+      choices:["Deceptive cadence — V moves to vi","Authentic cadence","Plagal cadence"], answer:0,
+      explain:"In C major, G–B–D moves to A–C–E, producing V–vi at the phrase ending.", hint:"Where did V land?" },
+    { type:"truefalse", q:"A phrase ending on a root-position V chord normally creates a half cadence.", answer:true,
+      explain:"Stopping on the dominant defines it.", hint:"The open door." },
+    { type:"truefalse", q:"A deceptive cadence completes the expected V–I resolution.", answer:false,
+      explain:"A deceptive cadence avoids the expected tonic resolution.", hint:"De-CEP-tive." },
+    { type:"mc", q:"Which cadence pair commonly supports an antecedent–consequent period?", choices:["Half cadence followed by a PAC","PAC followed by a half cadence","Two deceptive cadences"], answer:0,
+      explain:"The antecedent commonly ends with a weaker or open cadence, while the consequent ends with a stronger cadence. A half cadence followed by a PAC is one common pattern.", hint:"Unfinished first." },
+    { type:"mc", q:"You hear a phrase ending with IV–I. Which cadence is it?", choices:["Plagal cadence","Authentic cadence","Half cadence"], answer:0,
+      explain:"A plagal cadence approaches tonic from IV rather than V.", hint:"Identify the chord immediately before I." }
+  ],
+  miaPerfect:"Perfect score! You accurately identified authentic, half, plagal, and deceptive cadences.",
+  miaPass:"You passed and completed unit 21. Next, you will study phrases and periods.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Version A used A minor's own primaries — i, iv, V7 with the raised G♯. Version B borrowed C major's chords and clashed with the minor melody.",
-      play:()=>{const mel=[69,72,71,68,69],chs=[[57,60,64],[57,62,65],[56,59,64],[56,59,64],[57,60,64]];mel.forEach((m,i)=>{MFAudio.tone(m,.6,i*.65,.42);chs[i].forEach(c=>MFAudio.tone(c,.6,i*.65,.2));});} },
-    learn:{ label:"minor harmonizing",
-      explain:"Same method as major; chart: 1,3,5→i, 2,4,5,7→V(7), 1,4,6→iv, read from harmonic minor. G♯ notes force V. Begin/end on i.",
-      hint:"The chord must contain the note — minor edition.",
-      play:()=>{[57,60,64].forEach(m=>MFAudio.tone(m,.7,0,.3));[56,59,62,64].forEach(m=>MFAudio.tone(m,.7,.8,.3));[57,60,64,69].forEach(m=>MFAudio.tone(m,1,1.6,.3));} },
+      explain:"Ending A closed V\u{2192}I (authentic — finished); ending B stopped ON V (half — waiting). Cadences are harmony's punctuation.",
+      play:()=>{[[60,64,67],[65,69,72],[67,71,74,77],[60,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.7,i*.75,.28)));} },
+    learn:{ label:"cadences",
+      explain:"Authentic V(7)→I (PAC: roots + tonic on top; else IAC) · half ends ON V · plagal IV→I · deceptive V→vi.",
+      hint:"Finished? From where?",
+      play:()=>{[[67,71,74,77],[69,72,76]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.28)));} },
     example:{ label:"the examples",
-      explain:"Example 1 is the harmonized A harmonic minor scale; example 2 isolates the minor cadence iv → V7 → i." },
+      explain:"Example 1 plays all four endings in a row; example 2 contrasts PAC and IAC — listen to the soprano's landing note." },
     game:{ label:"the games",
-      explain:"Sprint the minor chart, climb the cadence, match notes to minor chords, then race the rules.",
-      hint:"i = A-C-E, iv = D-F-A, V7 = E-G♯-B-D." },
+      explain:"Sprint the formulas, perform V7→I, name cadences on cards, then match punctuation at speed.",
+      hint:"Last two chords tell all." },
     quiz:{ label:"this question",
-      explain:"Find the degree, find its row(s), let the ear break ties — and remember the raised 7th belongs to V alone.",
-      play:()=>{[64,68,71,74].forEach(m=>MFAudio.tone(m,.8,0,.3));[57,60,64].forEach(m=>MFAudio.tone(m,1,.9,.35));} }
+      explain:"Two questions crack every cadence: did it finish on I (authentic/plagal — check the approach chord)? If not, is it waiting on V (half) or surprised on vi (deceptive)?",
+      play:()=>{[[65,69,72],[60,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.28)));} }
   }
 };

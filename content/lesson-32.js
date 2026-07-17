@@ -1,275 +1,339 @@
-/* Lesson 32 — Chromatic Scale (AEMT Book 2, Unit 8)
-   Built from drafts/UNIT 8 – Lesson 32.md; AEMT p.51 verified by render.
-   QA note honored: chromatic (EVERY pitch, all half steps) contrasted side by side
-   with the major scale; keyboard runs where the student physically plays every key.
-   Game-forward: the Chromatic Run (key-climb), half-step radar (gen-race), 13-tap spelling ladder.
+/* Lesson 32 (4.7, formerly L38) — Solfège and Transposition (AEMT Book 2, Unit 9)
+   Built from drafts/UNIT 9 – Lesson 38.md; AEMT p.59 verified by render.
+   Movable Do: syllables ride scale DEGREES, not fixed pitches.
+   Transposition: same intervals/syllables, new keynote (B&S Ch.3: interval method).
+   Uses quiz.js v5.4 solfege-id generator; melodies kept accidental-free (C↔G).
+   v2 reorg (2026-07-17): absorbed the practice drills from deleted old Lesson 84 —
+   the transpose-by-key (scale-degree) method step, the Scale-Degree Translator
+   race, and degree/interval drill items.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* staff + keyboard side by side */
-function MF_L32_staffKb(el,staffSpec,kbOpts){
-  const s=document.createElement("div"); el.appendChild(s); Staff.render(s,staffSpec);
-  const k=document.createElement("div"); k.style.marginTop="10px"; el.appendChild(k); Keyboard.create(k,kbOpts);
-}
-
-/* fill the missing sharps in the ascending spelling */
-function MF_L32_fillBlanks(container,fb){
-  const SEQ=["C","C♯","D","?","E","F","F♯","G","?","A","?","B","C"];
-  const ANS=["D♯","G♯","A♯"];
-  let i=0;
-  container.innerHTML=`<div class="l32-line" style="text-align:center;font-weight:700;font-size:1.05rem;letter-spacing:1px;line-height:2"></div>
-    <div class="choices chips l32-ch"></div>`;
-  const line=container.querySelector(".l32-line"), ch=container.querySelector(".l32-ch");
-  function drawLine(){
-    let k=0;
-    line.innerHTML=SEQ.map(s=>{
-      if(s!=="?") return s;
-      k++;
-      return k<=i? `<b style="color:var(--correct)">${ANS[k-1]}</b>` : `<span style="display:inline-block;min-width:34px;border:2px dashed var(--primary-dark);border-radius:6px;padding:0 4px">?</span>`;
-    }).join(" – ");
-  }
-  ["D♯","E♯","G♯","A♯","B♯"].forEach(lbl=>{ const b=document.createElement("button"); b.textContent=lbl;
-    b.onclick=()=>{
-      if(i>=ANS.length||b.disabled) return;
-      if(lbl===ANS[i]){ b.disabled=true; b.style.opacity=".4"; i++; MFAudio.tone(56+i*5,.3); drawLine();
-        if(i>=ANS.length) fb(true,"✓ C–C♯–D–D♯–E–F–F♯–G–G♯–A–A♯–B–C — thirteen notes, twelve half steps, nothing skipped!");
-        else fb(true,"✓ That half step fits! Next blank…"); }
-      else { MFAudio.tone(40,.25); fb(false,`The blank sits one half step above ${["D","G","A"][i]} — which sharp is that?`); }
-    };
-    ch.appendChild(b); });
-  drawLine();
-}
-
-/* half-step detective: are the two marked keys a half step apart? */
-function MF_L32_detective(container,fb){
+/* solfège climber: press the scale on the keyboard; each key gets its syllable badge.
+   Round 1 = C major (badges on white keys); round 2 = G major (F♯ included!). */
+function MF_L32_climb(container,fb){
   const ROUNDS=[
-    {a:60,b:61,half:true, why:"C to C♯ — the very next key"},
-    {a:64,b:65,half:true, why:"E to F — white neighbors with no black key between"},
-    {a:65,b:67,half:false,why:"F to G skips F♯ — a whole step"},
-    {a:71,b:72,half:true, why:"B to C — the other white-key half step"},
-    {a:61,b:63,half:false,why:"C♯ to D♯ skips D — a whole step"},
-    {a:68,b:69,half:true, why:"G♯ to A — the very next key"}];
+    {key:"C", seq:[60,62,64,65,67,69,71,72], names:["C","D","E","F","G","A","B","C"], start:60, octaves:1},
+    {key:"G", seq:[67,69,71,72,74,76,78,79], names:["G","A","B","C","D","E","F♯","G"], start:60, octaves:2}];
+  const SYL=["Do","Re","Mi","Fa","Sol","La","Ti","Do"];
+  const WHITES=[0,2,4,5,7,9,11];
+  let r=0,k=0,kb=null,pressed=[];
+  container.innerHTML=`<div class="big-q l38-q" style="text-align:center"></div>
+    <div class="l38-cnt" style="text-align:center;font-weight:800;font-size:1.1rem;min-height:26px;color:var(--correct)"></div>
+    <div class="l38-kb"></div>
+    <p style="text-align:center;font-size:13.5px;color:var(--primary);font-weight:700;margin:6px 0 0">Movable Do: the KEYNOTE is always Do — no matter which key you're in!</p>`;
+  const q=container.querySelector(".l38-q"), cnt=container.querySelector(".l38-cnt"), kbHolder=container.querySelector(".l38-kb");
+  function badge(m,txt,start){
+    const rel=m-start, oct=Math.floor(rel/12), wi=WHITES.indexOf(rel%12);
+    if(wi<0) return;
+    const keyEl=kb.el.children[oct*7+wi]; if(!keyEl) return;
+    keyEl.insertAdjacentHTML("beforeend",`<div style="position:absolute;top:6px;left:0;width:100%;text-align:center;font-weight:800;font-size:13px;color:var(--primary);pointer-events:none">${txt}</div>`);
+  }
+  function ask(){
+    const cur=ROUNDS[r]; k=0; pressed=[]; cnt.textContent="";
+    q.innerHTML=`Climb ${r+1} of ${ROUNDS.length}: sing the <b>${cur.key} major</b> scale in solfège — press each key, starting on <b>${cur.key} = Do</b>!`;
+    kbHolder.innerHTML="";
+    kb=Keyboard.create(kbHolder,{start:cur.start,octaves:cur.octaves,labels:true,point:cur.seq[0],
+      onKey:m=>{
+        const c=ROUNDS[r];
+        if(m===c.seq[k]){
+          pressed.push(m); kb.mark(pressed); kb.point(null); MFAudio.tone(m,.3); badge(m,SYL[k],c.start);
+          cnt.textContent=c.seq.slice(0,k+1).map((x,i2)=>`${c.names[i2]}=${SYL[i2]}`).join("  ");
+          k++;
+          if(k>=c.seq.length){ r++;
+            if(r>=ROUNDS.length){ q.textContent="Two keys, one set of syllables!";
+              fb(true,"✓ G major: G=Do A=Re B=Mi C=Fa D=Sol E=La F♯=Ti G=Do. The note names changed, the syllables never did — THAT is movable Do."); }
+            else { fb(true,"✓ C major in solfège — complete! Now watch what happens when Do MOVES to G…"); setTimeout(ask,1500); } } }
+        else { MFAudio.tone(40,.2);
+          fb(false, k===0? `Do first! In ${c.key} major, Do is ${c.key} — the key with the red arrow.` :
+            (c.key==="G"&&c.names[k]==="F♯")? "Careful — G major's 7th note (Ti) is the BLACK key F♯, not F!" :
+            `Next syllable is ${SYL[k]} — one scale step up from ${c.names[k-1]}.`); }
+      }});
+  }
+  ask();
+}
+
+/* transposition machine: melody in C — rebuild it in G by picking each new note.
+   Same syllables, new letters; every interval preserved. */
+function MF_L32_machine(container,fb){
+  const MEL=[{c:"C",g:"G",syl:"Do"},{c:"D",g:"A",syl:"Re"},{c:"E",g:"B",syl:"Mi"},{c:"G",g:"D",syl:"Sol"}];
+  const OPTS=["G","A","B","C","D","E"];
+  const CP={C:"C4",D:"D4",E:"E4",G:"G4"}, GP={G:"G4",A:"A4",B:"B4",D:"D5"};
   let i=0;
-  container.innerHTML=`<div class="big-q l32-dq" style="text-align:center"></div><div class="l32-dkb"></div>
-    <div class="choices l32-dch"><button>Half step — the VERY next key</button><button>NOT a half step — a key is skipped</button></div>`;
-  const q=container.querySelector(".l32-dq"), kbHolder=container.querySelector(".l32-dkb"), ch=container.querySelector(".l32-dch");
-  function ask(){ q.textContent=`Pair ${i+1} of ${ROUNDS.length}: are the two marked keys a half step apart?`;
-    kbHolder.innerHTML=""; Keyboard.create(kbHolder,{start:60,octaves:1,labels:true,marks:[ROUNDS[i].a,ROUNDS[i].b]}); }
-  [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-    const cur=ROUNDS[i], saidHalf=bi===0;
-    if(saidHalf===cur.half){ i++; MFAudio.tone(74,.3);
-      if(i>=ROUNDS.length){ ch.style.display="none"; kbHolder.innerHTML=""; q.textContent="Half-step radar calibrated!";
-        fb(true,"✓ Six pairs judged perfectly — chromatic motion is nothing but these half steps, one after another."); }
-      else { fb(true,`✓ ${cur.why}. Next…`); ask(); } }
-    else { MFAudio.tone(40,.25); fb(false,`Look between the marked keys: ${cur.half?"NOTHING sits between them — half step.":"one key is skipped — that's a whole step."}`); }
-  });
+  container.innerHTML=`<div class="big-q l38-mq" style="text-align:center"></div>
+    <div class="l38-mstaff"></div>
+    <div class="l38-msyl" style="text-align:center;font-weight:800;min-height:24px;color:var(--correct)"></div>
+    <div class="choices chips l38-mch"></div>`;
+  const q=container.querySelector(".l38-mq"), holder=container.querySelector(".l38-mstaff"),
+        syl=container.querySelector(".l38-msyl"), ch=container.querySelector(".l38-mch");
+  function draw(){
+    const done=MEL.slice(0,i).map(n=>({p:GP[n.g],d:"q",label:n.g}));
+    const spec={clef:"treble",tempo:100,notes:[
+      {p:"C4",d:"q",label:"C"},{p:"D4",d:"q",label:"D"},{p:"E4",d:"q",label:"E"},{p:"G4",d:"q",label:"G"},{bar:"double"},
+      ...done]};
+    spec.width=340+done.length*40;
+    Staff.render(holder,spec);
+    syl.textContent="syllables: Do Re Mi Sol → "+MEL.slice(0,i).map(n=>n.syl).join(" ");
+  }
+  function ask(){
+    draw();
+    q.innerHTML=`The melody C-D-E-G is in C major. Transpose it UP a Perfect 5th into <b>G major</b> — note ${i+1} of ${MEL.length}: what does <b>${MEL[i].c} (${MEL[i].syl})</b> become?`;
+    ch.innerHTML="";
+    OPTS.forEach(o=>{ const b=document.createElement("button"); b.textContent=o;
+      b.onclick=()=>{
+        const cur=MEL[i];
+        if(o===cur.g){ i++; MFAudio.tone(MFAudio.midi(GP[cur.g]),.35); draw();
+          if(i>=MEL.length){ ch.style.display="none"; q.textContent="Transposition complete!";
+            const spec={clef:"treble",tempo:110,notes:[
+              {p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{bar:"double"},{ksig:"G"},
+              {p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"D5",d:"q"},{bar:"final"}],width:520};
+            const api=Staff.render(holder,spec); setTimeout(()=>Staff.play(spec,api),400);
+            fb(true,"✓ C-D-E-G became G-A-B-D — every note up a Perfect 5th, every interval preserved, syllables still Do-Re-Mi-Sol. Press play and hear the same tune, higher!"); }
+          else { fb(true,`✓ ${cur.c} → ${o} (${cur.syl} stays ${cur.syl}). Next note…`); } }
+        else { MFAudio.tone(40,.2); fb(false,`Move ${cur.c} UP a Perfect 5th — count 5 letters: ${cur.c} as 1…`); }
+      };
+      ch.appendChild(b); });
+  }
   ask();
 }
 
 LESSON_CONTENT[32]={
-  welcome:"Major scales skip keys. Today's scale skips NOTHING — every key, black and white. \u{1F9D7}",
+  welcome:"Do-Re-Mi isn't just a movie song — it's how musicians name melody in ANY key. \u{1F3A4}",
   hook:{
-    say:"Two scales, both starting on C. Listen to each — <b>which one uses EVERY key on the keyboard?</b>",
+    say:"The same tune, played twice — once low, once high. Press both. <b>Is it the same melody?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        const MAJ=[60,62,64,65,67,69,71,72];
-        const CHR=[60,61,62,63,64,65,66,67,68,69,70,71,72];
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Scale A</button>
-          <button class="play hk-b">▶ Scale B</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Scale B — it hit every single key</button><button>Scale A — it had more notes</button><button>Both used every key</button></div>`;
+          <button class="play hk-a">▶ Version 1</button>
+          <button class="play hk-b">▶ Version 2</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Same melody — just higher the second time</button><button>Two different melodies</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ MAJ.forEach((m,i)=>MFAudio.tone(m,.28,i*.26)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2400); };
-        container.querySelector(".hk-b").onclick=()=>{ CHR.forEach((m,i)=>MFAudio.tone(m,.2,i*.18)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2600); };
+        const play=(base)=>{[0,2,4,7].forEach((s,ix)=>MFAudio.tone(base+s,.32,ix*.38));};
+        container.querySelector(".hk-a").onclick=()=>{ play(60); hA=true; if(hB) setTimeout(()=>ch.style.display="",1800); };
+        container.querySelector(".hk-b").onclick=()=>{ play(67); hB=true; if(hA) setTimeout(()=>ch.style.display="",1800); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Scale B is the CHROMATIC scale — all twelve pitches, moving only by half steps. Scale A (the major scale) skips keys; the chromatic scale never does.");
-          else fb(false,"Play both again — count how tightly packed Scale B's steps are.");
+          if(i===0) fb(true,"✓ Same melody, same intervals, same SHAPE — only the starting note moved from C to G. That move is called TRANSPOSITION, and the syllable system that survives it is called SOLFÈGE. Both are today's lesson.");
+          else fb(false,"Hum along with both — does the shape of the tune change?");
         });
       } }
   },
   objectives:[
-    "Define a chromatic scale",
-    "Explain why every interval is a half step",
-    "Count the twelve pitches within one octave",
-    "Write ascending and descending chromatic scales",
-    "Recognize the use of sharps (up) and flats (down)",
-    "Perform a chromatic scale on the keyboard"
+    "Name the seven solfège syllables in order",
+    "Explain the movable-Do system",
+    "Sing/press any major scale in solfège",
+    "Define transposition",
+    "Transpose a melody up or down by an interval",
+    "Transpose by key: new key signature, same scale degrees",
+    "Explain what changes and what stays the same"
   ],
   steps:[
-    { say:"The <b>CHROMATIC SCALE</b> is made up entirely of <b>half steps in consecutive order</b> — a <b>twelve-note scale</b> containing <b>every pitch within the octave</b>. On a keyboard it uses <b>every key, black and white</b>, and it may begin on any note. Unlike the major scale — seven different pitches built around a home keynote that <b>establishes a key center</b> — the chromatic scale has <b>no key center and no hierarchy</b>: musicians use it for <b>color</b>, for decorating melodies, for <b>smooth half-step connections</b>, and for <b>modulation</b> between keys. \u{1F447} <b>How many different pitches are inside one octave of a chromatic scale?</b>",
-      show:{ type:"custom", mount:(el)=>MF_L32_staffKb(el,
-        {clef:"treble",notes:[{p:"C4",d:"q",label:"C"},{p:"C#4",d:"q",label:"C♯"},{p:"D4",d:"q",label:"D"},{p:"D#4",d:"q",label:"D♯"},{p:"E4",d:"q",label:"E"},{p:"F4",d:"q",label:"F"},{p:"F#4",d:"q",label:"F♯"},{p:"G4",d:"q",label:"G"},{p:"G#4",d:"q",label:"G♯"},{p:"A4",d:"q",label:"A"},{p:"A#4",d:"q",label:"A♯"},{p:"B4",d:"q",label:"B"},{p:"C5",d:"q",label:"C"}],width:560},
-        {start:60,octaves:1,labels:true,marks:[60,61,62,63,64,65,66,67,68,69,70,71,72]}) },
-      try:{ type:"mc", choices:["12","7","8","15"], answer:0,
-        success:"✓ Twelve pitches — the 13th note is the starting letter again, an octave up.",
-        fail:"Count the marked keys, but don't count the top C twice.",
-        hint:"Every key from C up to (not including) the next C." } },
-    { say:"Spelling convention: going <b>UP</b>, a chromatic scale usually uses <b>SHARPS</b>. Three sharps are missing below. \u{1F447} <b>Fill the blanks in the ascending chromatic scale:</b>",
+    { say:"<b>SOLFÈGE</b> assigns a singable syllable to each note of the major scale: <b>Do, Re, Mi, Fa, Sol, La, Ti</b> — then Do again at the octave. Numbers 1-8, but voice-friendly. \u{1F447} <b>Which syllable is scale degree 5?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
+        {p:"C4",d:"q",label:"Do"},{p:"D4",d:"q",label:"Re"},{p:"E4",d:"q",label:"Mi"},{p:"F4",d:"q",label:"Fa"},{p:"G4",d:"q",label:"Sol"},{p:"A4",d:"q",label:"La"},{p:"B4",d:"q",label:"Ti"},{p:"C5",d:"q",label:"Do"}],width:520} },
+      try:{ type:"mc", choices:["Sol","Fa","La"], answer:0,
+        success:"✓ Do(1) Re(2) Mi(3) Fa(4) SOL(5). Sing the ladder until it's automatic!",
+        fail:"Count up: Do, Re, Mi, Fa…",
+        hint:"Do-Re-Mi-Fa-?" } },
+    { say:"The magic ingredient is <b>MOVABLE DO</b>: Do is always the tonic (keynote) of the current key. In C major, Do = C. In G major, Do = G. A note's letter name never changes — but the syllable it carries shifts with the key: the note G is Sol in C major and Do in G major. \u{1F447} <b>In F major, which note is Do?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,keysig:"F",notes:[
+        {p:"F4",d:"q",label:"Do"},{p:"G4",d:"q",label:"Re"},{p:"A4",d:"q",label:"Mi"},{p:"Bb4",d:"q",acc:"none",label:"Fa"},{p:"C5",d:"q",label:"Sol"},{p:"D5",d:"q",label:"La"},{p:"E5",d:"q",label:"Ti"},{p:"F5",d:"q",label:"Do"}],width:520} },
+      try:{ type:"mc", choices:["F — the keynote","C — always C","B♭ — the flat"], answer:0,
+        success:"✓ Do = the keynote, wherever you are. F major → F is Do (and B♭ is Fa).",
+        fail:"Movable Do follows the KEY, not the letter C.",
+        hint:"Which note is F major named after?" } },
+    { say:"Climb it yourself — two keys, same syllables. \u{1F447} <b>Press each scale in solfège, keynote first:</b>",
       try:{ type:"custom",
-        hint:"Each blank is a half step above the note before it: D♯, G♯, A♯.",
-        mount:(container,fb)=>MF_L32_fillBlanks(container,fb) } },
-    { say:"Going <b>DOWN</b>, the convention flips: a descending chromatic scale usually uses <b>FLATS</b>: C–B–B♭–A–A♭–G–G♭–F–E–E♭–D–D♭–C. \u{1F447} <b>Descending chromatic scales are usually written with…?</b>",
-      show:{ type:"staff", spec:{clef:"bass",notes:[{p:"C3",d:"q",label:"C"},{p:"B2",d:"q",label:"B"},{p:"Bb2",d:"q",label:"B♭"},{p:"A2",d:"q",label:"A"},{p:"Ab2",d:"q",label:"A♭"},{p:"G2",d:"q",label:"G"},{p:"Gb2",d:"q",label:"G♭"},{p:"F2",d:"q",label:"F"}],width:520} },
-      try:{ type:"mc", choices:["Flats","Sharps","Naturals only","Double sharps"], answer:0,
-        success:"✓ Up = sharps, down = flats — the standard beginning-theory spelling.",
-        fail:"Look at the accidentals on the descending staff above.",
-        hint:"⬆♯ · ⬇♭" } },
-    { say:"Half-step radar time — chromatic motion is ONLY half steps, so you must spot them instantly. \u{1F447} <b>Judge each pair of marked keys:</b>",
+        hint:"Round 2 is G major — remember its key signature: F♯! Ti will be a black key.",
+        mount:(container,fb)=>MF_L32_climb(container,fb) } },
+    { say:"Why do musicians bother? Because solfège names the <b>RELATIONSHIPS</b>, not the letters. 'Do-Mi-Sol' describes the same shape in every key — which is why singers can read a melody in any key at sight. \u{1F447} <b>What does each solfège syllable stand for?</b>",
+      try:{ type:"mc", choices:["A scale degree — a position in the current key","One fixed piano key","A rhythm value"], answer:0,
+        success:"✓ Syllables ride the scale DEGREES. Mi is always degree 3 — whatever note that happens to be today.",
+        fail:"If Do can move, syllables can't be glued to fixed keys…",
+        hint:"Degree, not letter." } },
+    { say:"Now the second big idea: <b>TRANSPOSITION</b> — rewriting a melody in a different key, keeping <b>every interval exactly the same</b>. The tune sounds higher or lower, but its shape is untouched. Why? To fit a singer's range, or an instrument's tuning. \u{1F447} <b>After transposing, what stays the SAME?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
+        {p:"C4",d:"q",label:"Do"},{p:"D4",d:"q",label:"Re"},{p:"E4",d:"q",label:"Mi"},{p:"G4",d:"q",label:"Sol"},{bar:"double"},{ksig:"G"},
+        {p:"G4",d:"q",label:"Do"},{p:"A4",d:"q",label:"Re"},{p:"B4",d:"q",label:"Mi"},{p:"D5",d:"q",label:"Sol"},{bar:"final"}],
+        brackets:[{from:0,to:3,label:"in C major"},{from:6,to:9,label:"in G major"}],width:600} },
+      try:{ type:"mc", choices:["The intervals and the melody's shape","The letter names","The starting pitch"], answer:0,
+        success:"✓ Intervals, shape, syllables — all preserved. Only the letters and the key signature change.",
+        fail:"The notes clearly changed (C-D-E-G → G-A-B-D)… so what survived?",
+        hint:"Hum both — what's identical?" } },
+    { say:"The standard method is <b>transposing by interval</b>: choose the interval of transposition, then move <b>every single note</b> by exactly that interval. Up a Perfect 5th: C→G, D→A, E→B, G→D. \u{1F447} <b>Run the machine — transpose the melody note by note:</b>",
       try:{ type:"custom",
-        hint:"Half step = the VERY next key, black or white. E–F and B–C count too!",
-        mount:(container,fb)=>MF_L32_detective(container,fb) } }
+        hint:"Every note moves UP a Perfect 5th — count 5 letter names, starting on the note itself as 1.",
+        mount:(container,fb)=>MF_L32_machine(container,fb) } },
+    { say:"There's a second method — <b>transposing by key</b>, and solfège makes it easy: identify each note's <b>scale degree</b> (its syllable!) in the original key, then place it on the <b>same degree of the new key</b>. Do-Re-Mi in C major (C-D-E) becomes Do-Re-Mi in F major (F-G-A). \u{1F447} <b>Which notes are scale degrees 5–3–1 (Sol–Mi–Do) in G major?</b>",
+      try:{ type:"mc", choices:["D–B–G","G–E–C","D–B♭–G"], answer:0,
+        success:"✓ In G major, degree 5 (Sol) is D, degree 3 (Mi) is B, and degree 1 (Do) is G. Same syllables, new home — the degree method in action.",
+        fail:"Count up the G major scale: G(Do)–A(Re)–B(Mi)–C(Fa)–D(Sol).",
+        hint:"G major begins G–A–B–C–D." } },
+    { say:"Last detail: the transposed melody lives in a <b>new key</b> — so it needs that key's <b>KEY SIGNATURE</b>. Transpose from C major up to G major and the new version carries one sharp (F♯), even if no F appears in the tune. The signature announces the new home. \u{1F447} <b>A melody transposed from C major to G major gets which key signature?</b>",
+      try:{ type:"mc", choices:["One sharp (F♯)","No sharps or flats","One flat (B♭)"], answer:0,
+        success:"✓ G major = 1 sharp. New key, new signature — always update it when you transpose.",
+        fail:"What is G major's key signature? (Lesson 29 knows…)",
+        hint:"G major carries exactly one sharp." } }
   ],
   examples:[
-    { caption:"Ascending chromatic scale from C — sharps on the way up. Every neighboring note is one half step.",
-      staff:{clef:"treble",tempo:140,notes:[{p:"C4",d:"q",label:"C"},{p:"C#4",d:"q",label:"C♯"},{p:"D4",d:"q",label:"D"},{p:"D#4",d:"q",label:"D♯"},{p:"E4",d:"q",label:"E"},{p:"F4",d:"q",label:"F"},{p:"F#4",d:"q",label:"F♯"},{p:"G4",d:"q",label:"G"},{p:"G#4",d:"q",label:"G♯"},{p:"A4",d:"q",label:"A"},{p:"A#4",d:"q",label:"A♯"},{p:"B4",d:"q",label:"B"},{p:"C5",d:"q",label:"C"}],width:560},
-      kb:{start:60,octaves:1,labels:true,marks:[60,61,62,63,64,65,66,67,68,69,70,71,72]} },
-    { caption:"Descending chromatic scale from C — flats on the way down. Same twelve keys, opposite direction.",
-      staff:{clef:"treble",tempo:140,notes:[{p:"C5",d:"q",label:"C"},{p:"B4",d:"q",label:"B"},{p:"Bb4",d:"q",label:"B♭"},{p:"A4",d:"q",label:"A"},{p:"Ab4",d:"q",label:"A♭"},{p:"G4",d:"q",label:"G"},{p:"Gb4",d:"q",label:"G♭"},{p:"F4",d:"q",label:"F"},{p:"E4",d:"q",label:"E"},{p:"Eb4",d:"q",label:"E♭"},{p:"D4",d:"q",label:"D"},{p:"Db4",d:"q",label:"D♭"},{p:"C4",d:"q",label:"C"}],width:560},
-      kb:{start:60,octaves:1,labels:true,marks:[60,61,62,63,64,65,66,67,68,69,70,71,72]} }
+    { caption:"The solfège ladder in C major — sing along as it plays: Do Re Mi Fa Sol La Ti Do!",
+      staff:{clef:"treble",tempo:100,notes:[
+        {p:"C4",d:"q",label:"Do"},{p:"D4",d:"q",label:"Re"},{p:"E4",d:"q",label:"Mi"},{p:"F4",d:"q",label:"Fa"},{p:"G4",d:"q",label:"Sol"},{p:"A4",d:"q",label:"La"},{p:"B4",d:"q",label:"Ti"},{p:"C5",d:"q",label:"Do"}],width:520},
+      kb:{start:60,octaves:1,labels:true} },
+    { caption:"One melody, two homes: Do-Re-Mi-Sol in C major, then the identical shape up a Perfect 5th in G major. Same intervals, same syllables — press play and hear the tune simply lift.",
+      staff:{clef:"treble",tempo:110,notes:[
+        {p:"C4",d:"q",label:"Do"},{p:"D4",d:"q",label:"Re"},{p:"E4",d:"q",label:"Mi"},{p:"G4",d:"q",label:"Sol"},{bar:"double"},{ksig:"G"},
+        {p:"G4",d:"q",label:"Do"},{p:"A4",d:"q",label:"Re"},{p:"B4",d:"q",label:"Mi"},{p:"D5",d:"q",label:"Sol"},{bar:"final"}],
+        brackets:[{from:0,to:3,label:"C major"},{from:6,to:9,label:"G major — up a P5"}],width:600},
+      kb:{start:60,octaves:1.3333,labels:true} }
   ],
   games:[
-    { type:"key-climb", title:"Game 1 · THE CHROMATIC RUN \u{1F3C3}",
-      intro:"Every key from C to C — thirteen keys, zero skips. How fast can you run it clean?",
-      miaIntro:"The ultimate keyboard run — GO! \u{1F9D7}",
-      spec:{start:60, octaves:1, seq:[60,61,62,63,64,65,66,67,68,69,70,71,72],
-        names:["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B","C"],
-        title:"Play EVERY key from C up to C — don't skip a single one!"},
-      result:(stars)=>stars>=3?"A flawless chromatic run — every key, no misses!":null },
-    { type:"order-tap", title:"Game 2 · Spell the Climb (13 taps)",
-      intro:"Spell the ascending chromatic scale in order — sharps on the way up!",
-      miaIntro:"Thirteen names, perfect order! \u{1F520}",
-      spec:{sequence:["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B","C"], title:"Tap the ascending chromatic spelling — C first!"},
-      result:(stars)=>stars>=3?"Perfect chromatic spelling!":null },
-    { type:"gen-race", title:"Game 3 · Half-Step Radar (30s)",
-      intro:"Half step or whole step? Judge as many as you can in 30 seconds!",
-      miaIntro:"Radar ON — trust your keyboard eyes! \u{1F4E1}",
-      spec:{gen:"step-type", params:{}, seconds:30},
-      result:(score)=>score>=8?score+" in 30 seconds — radar locked!":null },
-    { type:"term-race", title:"Game 4 · Chromatic Vocabulary Race",
-      intro:"Every term from today — match them at speed!",
-      miaIntro:"Words as fast as your fingers! \u{26A1}",
+    { type:"gen-race", title:"Game 1 · Syllable Sprint (45s)",
+      intro:"Which syllable lands on that note? Movable Do, three keys, full speed!",
+      miaIntro:"Do is on the move — chase it! \u{1F3C3}",
+      spec:{gen:"solfege-id", params:{keys:["C","G","F"],ask:"syllable"}, seconds:45},
+      result:(score)=>score>=8?score+" syllables pinned in 45 seconds — sight-singer material!":null },
+    { type:"gen-race", title:"Game 2 · Find the Note (10 rounds)",
+      intro:"Reverse gear: given the syllable, name the NOTE in each key!",
+      miaIntro:"Now hunt the letters! \u{1F50D}",
+      spec:{gen:"solfege-id", params:{keys:["C","G","F","D"],ask:"note"}, rounds:10},
+      result:(score)=>score>=8?"Four keys, no misses — movable Do fully installed!":null },
+    { type:"key-climb", title:"Game 3 · Do-Re-Mi Dash",
+      intro:"Race up the C major scale in solfège — every key in order, against the clock!",
+      miaIntro:"Sing it as you press it! \u{1F3A4}",
+      spec:{seq:[60,62,64,65,67,69,71,72], names:["Do","Re","Mi","Fa","Sol","La","Ti","Do"], start:60, octaves:1,
+        title:"Press the C major scale: Do Re Mi Fa Sol La Ti Do"},
+      result:(score)=>score!==null?"The ladder is in your fingers AND your voice!":null },
+    { type:"term-race", title:"Game 4 · Solfège & Transposition Vocabulary",
+      intro:"Solfège, movable Do, transposition — match the big ideas at speed!",
+      miaIntro:"Vocabulary dash! \u{1F3C1}",
       spec:{rounds:8, reverse:true, pool:[
-        ["Chromatic Scale","All twelve pitches, moving only by half steps"],
-        ["Half Step","The smallest interval — the very next key"],
-        ["Ascending","Moving from lower pitches to higher — usually spelled with sharps"],
-        ["Descending","Moving from higher pitches to lower — usually spelled with flats"],
-        ["12","How many tones a chromatic scale has in one octave"]]},
-      result:(score)=>score>=7?"Chromatic vocabulary complete!":null }
+        ["Solfège","Syllables assigned to the scale degrees: Do Re Mi Fa Sol La Ti"],
+        ["Movable Do","Do is always the keynote of the current key"],
+        ["Transposition","Rewriting a melody in a different key, intervals unchanged"],
+        ["Do","The keynote's syllable in every major key"],
+        ["Ti","Scale degree 7 — one half step below Do"],
+        ["Interval of transposition","The distance every note moves during a transposition"]]},
+      result:(score)=>score>=7?"Vocabulary: complete!":null },
+    { type:"term-race", title:"Game 5 · Scale-Degree Translator",
+      intro:"Which note carries each scale degree in the given key? Translate at speed!",
+      miaIntro:"Begin with the key's Do and count up! \u{1F9EE}",
+      spec:{rounds:8, reverse:true, pool:[
+        ["Degree 1 in G major","G"],
+        ["Degree 3 in G major","B"],
+        ["Degree 5 in F major","C"],
+        ["Degree 1 in D major","D"],
+        ["Degree 3 in F major","A"],
+        ["Degree 5 in G major","D"],
+        ["Degree 2 in D major","E"],
+        ["Degree 3 in D major","F♯"]]},
+      result:(score)=>score>=6?"You matched the scale degrees and pitches correctly!":null }
   ],
-  practiceIntro:"20 practice questions — half steps, the 12 pitches, and the sharp-up/flat-down convention. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — syllables, movable Do, and transposition logic. Answer right and the next appears automatically!",
   practice:[
-    { gen:"step-type", params:{}, count:4 },
-    { gen:"term-match", params:{subject:"term", pool:[["Chromatic Scale","all twelve pitches, only half steps"],["Half Step","the smallest interval"],["Ascending","moving upward — usually sharps"],["Descending","moving downward — usually flats"]], reverse:true}, count:4 },
-    { gen:"note-name", params:{clef:"treble"}, count:2 },
-    { type:"mc", q:"A chromatic scale is made up entirely of…", choices:["half steps","whole steps","major thirds"], answer:0,
-      explain:"Twelve consecutive half steps." },
-    { type:"mc", q:"How many different pitches are within one octave of a chromatic scale?", choices:["12","7","8"], answer:0,
-      explain:"Every key, black and white, exactly once." },
-    { type:"truefalse", q:"A chromatic scale includes every pitch within an octave.", answer:true,
-      explain:"No skips — that's its definition." },
-    { type:"truefalse", q:"Ascending chromatic scales are usually written using flats.", answer:false,
-      explain:"Ascending uses SHARPS; descending uses flats." },
-    { type:"mc", q:"The chromatic scale may begin on…", choices:["any note","only C","only white keys"], answer:0,
-      explain:"Start anywhere — the pattern is identical." },
-    { type:"mc", q:"Complete the ascending spelling: C – C♯ – D – ____ – E", choices:["D♯","E♭","D"], answer:0,
-      explain:"Ascending = sharps: D♯." },
-    { type:"mc", q:"Complete the descending spelling: C – B – ____ – A", choices:["B♭","A♯","G"], answer:0,
-      explain:"Descending = flats: B♭." },
-    { type:"mc", q:"Within one octave, the major scale has ____ different pitches; the chromatic scale has ____.", choices:["7 · 12","8 · 13","8 · 12"], answer:0,
-      explain:"Both scales END on the repeated keynote — it doesn't count twice." },
-    /* — from the unit review sheet — */
-    { type:"mc", q:"The chromatic scale is made up entirely of ____ in consecutive order.", choices:["half steps","whole steps","thirds"], answer:0,
-      explain:"Review-sheet wording — half steps, one after another." },
-    { type:"mc", q:"How many half steps are found within one octave of a chromatic scale?", choices:["12","8","13"], answer:0,
-      explain:"Twelve half steps connect the thirteen written notes." }
+    { gen:"solfege-id", params:{keys:["C","G","F"],ask:"syllable"}, count:4 },
+    { gen:"solfege-id", params:{keys:["C","G","F","D"],ask:"note"}, count:3 },
+    { gen:"term-match", params:{subject:"term", pool:[["Solfège","syllables for the scale degrees"],["Movable Do","Do = the keynote of the current key"],["Transposition","rewriting a melody in a different key"],["Scale degree","a note's position within its scale"]], reverse:true}, count:2 },
+    { gen:"term-match", params:{subject:"term", pool:[["Up a M2 from E","F♯"],["Up a P5 from C","G"],["Up a P4 from D","G"],["Up a M3 from F","A"]], reverse:true}, count:3 },
+    { type:"mc", q:"In a transposition from one key to another, each note normally keeps its…", choices:["scale-degree (syllable)","original pitch","original letter name"], answer:0,
+      explain:"Degree 3 (Mi) stays degree 3 (Mi) in the new key — that's the degree method." },
+    { type:"mc", q:"The solfège syllables in order are…", choices:["Do Re Mi Fa Sol La Ti","Do Mi Re Fa Sol Ti La","Do Re Mi Sol Fa La Ti"], answer:0,
+      explain:"Do Re Mi Fa Sol La Ti — then Do again." },
+    { type:"mc", q:"In G major, Ti is sung on…", choices:["F♯","F","E"], answer:0,
+      explain:"G major's 7th degree is F♯ — the key signature note!" },
+    { type:"mc", q:"Transposition is when a melody is rewritten in another…", choices:["key","clef","rhythm"], answer:0,
+      explain:"New key, same intervals." },
+    { type:"mc", q:"Transpose C-D-E up a Major 2nd:", choices:["D-E-F♯","D-E-F","C♯-D♯-E♯"], answer:0,
+      explain:"Each note up a M2: C→D, D→E, E→F♯ (E to F is only a half step!)." },
+    { type:"truefalse", q:"After transposition, the intervals between the notes stay exactly the same.", answer:true,
+      explain:"That's the definition — only the starting pitch (and key) changes." },
+    { type:"truefalse", q:"In movable Do, the syllable Do always means the note C.", answer:false,
+      explain:"Do = the KEYNOTE of the current key — it moves!" },
+    { type:"mc", q:"A melody in C major is transposed up a P5. Its new key signature is…", choices:["1 sharp","no accidentals","1 flat"], answer:0,
+      explain:"Up a P5 from C = G major = F♯." }
   ],
-  miaQuizIntro:"Every key, every half step — run the quiz like you ran the keyboard!",
+  miaQuizIntro:"Sing the ladder, move the Do, lift the melody — quiz time!",
   quiz:[
-    { type:"mc", q:"A chromatic scale is made up entirely of:", choices:["Whole steps","Half steps","Major thirds","Perfect fifths"], answer:1,
-      explain:"Half steps in consecutive order.", hint:"The smallest possible moves." },
-    { type:"mc", q:"How many different pitches are found within one octave of a chromatic scale?", choices:["7","8","12","15"], answer:2,
-      explain:"All twelve keys, black and white.", hint:"Count the marked keyboard." },
-    { type:"mc", q:"The distance between every pair of adjacent notes in a chromatic scale is:", choices:["A whole step","A half step","A minor third","A perfect fourth"], answer:1,
-      explain:"Always exactly one half step.", hint:"No exceptions, ever." },
-    { type:"truefalse", q:"A chromatic scale includes every pitch within an octave.", answer:true,
-      explain:"That's what makes it chromatic.", hint:"Chromatic = every key." },
-    { type:"truefalse", q:"Ascending chromatic scales are usually written using flats.", answer:false,
-      explain:"Up = sharps, down = flats.", hint:"⬆♯ ⬇♭" },
-    { type:"mc", q:"Which matching is correct?",
-      choices:["Chromatic → all half steps · Ascending → up (sharps) · Descending → down (flats)",
-               "Chromatic → all whole steps · Ascending → down · Descending → up",
-               "Chromatic → eight notes · Ascending → flats · Descending → sharps"], answer:0,
-      explain:"The three core facts of the lesson.", hint:"Direction decides the spelling." },
-    { type:"mc", q:"A chromatic scale contains ____ different pitches within one octave.", choices:["12","7","13"], answer:0,
-      explain:"Twelve — the 13th written note repeats the keynote.", hint:"Don't double-count the top note." },
-    { type:"mc", q:"Every interval in a chromatic scale is a ____ step.", choices:["half","whole","skipped"], answer:0,
-      explain:"Half steps only.", hint:"The definition itself." },
-    { type:"mc", q:"Composers use the chromatic scale for…",
-      choices:["color, smooth half-step connections, and modulation between keys","establishing the home key","keeping the beat steady"], answer:0,
-      explain:"With no key center of its own, the chromatic scale decorates, connects and travels.", hint:"It has no 'home' to establish." },
-    { type:"mc", q:"Which comparison is correct?",
-      choices:["Major: 7 different pitches, establishes a key center · Chromatic: all 12, adds color with no key center",
-               "Major: 12 pitches · Chromatic: 7 pitches",
-               "Both scales establish a key center"], answer:0,
-      explain:"The major scale builds a home key; the chromatic scale supplies every color without one.", hint:"Which scale has a 'home'?" },
-    { type:"mc", q:"Complete the ascending chromatic scale: C  C♯  D  ____  E  F  F♯  G  ____  A  A♯  B  C",
-      choices:["D♯ · G♯","E♭ · A♭","D · G"], answer:0,
-      explain:"Ascending uses sharps: D♯ and G♯.", hint:"One half step above D, one above G." },
-    { type:"mc", q:"How many half steps are found within one octave of a chromatic scale?", choices:["12","8","6"], answer:0,
-      explain:"Twelve half-step moves from C to shining C.", hint:"Same as the number of pitches." },
-    { type:"mc", q:"Which statement is correct?",
-      choices:["A chromatic scale skips all black keys","Every interval in a chromatic scale is a half step","Chromatic scales contain only eight notes","Chromatic scales always use sharps in both directions"], answer:1,
-      explain:"Half steps only — and the spelling flips with direction.", hint:"Test each claim against the keyboard." },
-    { type:"mc", q:"Which scale is shown?",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"C#4",d:"q"},{p:"D4",d:"q"},{p:"D#4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"}],width:340},
-      choices:["The start of a chromatic scale","A major scale","A tetrachord"], answer:0,
-      explain:"C–C♯–D–D♯–E–F: nothing skipped — chromatic motion.", hint:"Check the accidentals between the letters." },
+    { type:"mc", q:"Solfège is a system that…", choices:["names rhythms with numbers","assigns syllables to the scale degrees","replaces key signatures","tunes the piano"], answer:1,
+      explain:"Do Re Mi Fa Sol La Ti — one syllable per degree.", hint:"Sing-able names for 1-8." },
+    { type:"mc", q:"In the movable-Do system, Do is always…", choices:["middle C","the keynote of the current key","the lowest note of the melody","A 440"], answer:1,
+      explain:"Do follows the key — C in C major, G in G major.", hint:"MOVABLE Do." },
+    { type:"mc", q:"The syllable for scale degree 4 is…", choices:["Fa","Mi","Sol","Re"], answer:0,
+      explain:"Do(1) Re(2) Mi(3) FA(4).", hint:"Count up from Do." },
+    { type:"mc", q:"In G major, the note B is sung as…", choices:["Mi","Ti","Sol","Do"], answer:0,
+      explain:"G=Do, A=Re, B=Mi — degree 3.", hint:"Count from G as Do." },
+    { type:"truefalse", q:"In F major, Do is F.", answer:true,
+      explain:"The keynote is always Do.", hint:"Which note names the key?" },
+    { type:"truefalse", q:"When a melody is transposed, its intervals change size.", answer:false,
+      explain:"Intervals are preserved exactly — that's the whole point.", hint:"What makes it the SAME tune?" },
+    { type:"mc", q:"Transposition means…", choices:["rewriting a melody in a different key with the same intervals","playing a melody backwards","changing the rhythm of a melody","removing the key signature"], answer:0,
+      explain:"Same shape, new home.", hint:"Trans- = across (keys)." },
+    { type:"mc", q:"Why do musicians transpose melodies?", choices:["To fit a singer's range or an instrument's key","To make the melody harder","To avoid writing key signatures","To change the time signature"], answer:0,
+      explain:"Ranges and instrument keys are the classic reasons.", hint:"Think of a song pitched too high to sing." },
+    { type:"mc", q:"Transpose the melody C-E-G up a Major 2nd:", choices:["D-F♯-A","D-F-A","E-G-B"], answer:0,
+      explain:"C→D, E→F♯ (a M2 is 2 half steps — F is only 1!), G→A.", hint:"Every note exactly 2 half steps up." },
+    { type:"mc", q:"A melody in C major is transposed UP a Perfect 5th. The new key and signature are…", choices:["G major — 1 sharp","F major — 1 flat","D major — 2 sharps"], answer:0,
+      explain:"C up a P5 = G; G major carries F♯.", hint:"Count 5 letters up from C." },
+    { type:"mc", q:"Scale degrees 1–2–3 of F major are…", choices:["F–G–A","F–G–A♭","C–D–E"], answer:0,
+      explain:"Do–Re–Mi from F: F–G–A (F major's flat is B♭, degree 4).", hint:"F major begins on F — count up." },
+    { type:"mc", q:"In the key (degree) method of transposing, notes keep their…", choices:["scale degrees","letter names","octave"], answer:0,
+      explain:"Do stays Do, Mi stays Mi — the degrees carry the melody into the new key.", hint:"Think syllables, not letters." },
+    { type:"mc", q:"What is the solfège of this melody?",
+      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"}],width:320},
+      choices:["Do Mi Sol Do","Do Re Mi Fa","Do Fa La Do"], answer:0,
+      explain:"In C major: C=Do, E=Mi, G=Sol, C=Do.", hint:"Degrees 1-3-5-8." },
+    { type:"mc", q:"After transposing, what must be updated at the start of the staff?", choices:["the key signature","the clef","the bar lines"], answer:0,
+      explain:"The new key's signature announces the new home.", hint:"New key = new…?" },
+    { type:"mc", q:"Which stays the SAME after transposition?", choices:["the melody's intervals and shape","the letter names","the keynote","the key signature"], answer:0,
+      explain:"Shape and intervals survive; letters, keynote, and signature all change.", hint:"What did the hook prove?" },
     /* generated */
-    { gen:"step-type", params:{}, count:4 },
-    { gen:"term-match", params:{subject:"term", pool:[["Chromatic Scale","all twelve pitches, only half steps"],["Half Step","the smallest interval"],["Ascending","upward — usually sharps"],["Descending","downward — usually flats"]], reverse:true}, count:2 },
-    { gen:"note-name", params:{clef:"bass"}, count:2 }
+    { gen:"solfege-id", params:{keys:["C","G","F"],ask:"syllable"}, count:3 },
+    { gen:"solfege-id", params:{keys:["C","G","F","D"],ask:"note"}, count:2 },
+    { gen:"term-match", params:{subject:"term", pool:[["Solfège","syllables for the scale degrees"],["Movable Do","Do = the keynote of the current key"],["Transposition","rewriting a melody in a different key"],["Ti","scale degree 7"]], reverse:true}, count:2 }
   ],
   vocabulary:[
-    {term:"Chromatic Scale", def:"The chromatic scale is a twelve-note scale that includes every half step within the octave — C, C♯, D, D♯, E, F, F♯, G, G♯, A, A♯, B. On the keyboard it uses every key, black and white; ascending versions usually use sharps, descending versions flats."},
-    {term:"Half Step", def:"The smallest interval between two adjacent notes — the very next key."},
-    {term:"Ascending", def:"Moving from lower pitches to higher pitches. Ascending chromatic scales usually use sharps."},
-    {term:"Descending", def:"Moving from higher pitches to lower pitches. Descending chromatic scales usually use flats."}
+    {term:"Solfège", def:"A system that assigns syllables — Do, Re, Mi, Fa, Sol, La, Ti — to the scale degrees of a major scale."},
+    {term:"Movable Do", def:"The system in which Do is always the keynote (tonic) of the current major key — syllables follow the key, not fixed pitches."},
+    {term:"Transposition", def:"Rewriting or performing a melody in a different key while preserving the same intervals and melodic relationships."},
+    {term:"Transposing by Interval", def:"Pick the interval; move each note exactly that far — double-check the half-step spots (E→F, B→C)."},
+    {term:"Transposing by Key", def:"Write the new key signature; place each note on the same scale degree (the same solfège syllable) in the new key."},
+    {term:"Scale Degree", def:"The position of a note within a scale — degree 1 is the keynote, degree 5 is Sol, and so on."}
   ],
   mistakes:[],
   summary:[
-    "✔ The <b>chromatic scale</b> = <b>every pitch</b> in the octave — <b>12 tones</b>, all <b>half steps</b>, no skips.",
-    "✔ On the keyboard: <b>every key, black and white</b>.",
-    "✔ Spelling convention: <b>ascending → sharps</b>, <b>descending → flats</b>.",
-    "✔ It may begin on <b>any note</b>.",
-    "✔ Count carefully: <b>major = 7 different pitches</b> (the 8th written note repeats the keynote) · <b>chromatic = all 12</b>.",
-    "✔ <b>Function</b>: the major scale <b>establishes a key center</b> — home, hierarchy, progressions; the chromatic scale has <b>no center</b> — it supplies <b>color, embellishment, smooth connections and modulation</b>."
+    "✔ <b>Solfège</b>: Do Re Mi Fa Sol La Ti (Do) — singable names for scale degrees 1-8.",
+    "✔ <b>Movable Do</b>: Do = the keynote of the CURRENT key. G major → G is Do and F♯ is Ti.",
+    "✔ Syllables name <b>relationships</b>, not letters — 'Do-Mi-Sol' is the same shape in every key.",
+    "✔ <b>Transposition</b> = same melody, new key: every note moves by the same interval; every interval is preserved.",
+    "✔ Two methods: <b>by interval</b> (every note the same distance) and <b>by key</b> (new signature + same scale degrees).",
+    "✔ After transposing, write the <b>new key signature</b> — the melody has a new home."
   ],
   tips:[
-    "The chromatic scale is your interval ruler: ANY interval can be measured by counting its half steps.",
-    "At a piano, run C to C touching every key — thumb-crossing drills love the chromatic scale.",
-    "Remember the two white-key half steps (E–F, B–C): the chromatic scale passes straight through them with no black key needed.",
-    "Next lesson: intervals — and now you own the ruler that measures them."
+    "Sing the scale in solfège daily — up AND down (Do Ti La Sol Fa Mi Re Do). Down is where most people wobble.",
+    "Transposing by interval? Move every note the SAME distance, and double-check any spot where the letters step E→F or B→C — the half steps hide there.",
+    "Singers ask for keys, not notes: 'take it down a whole step' = transpose everything down a Major 2nd.",
+    "The degree method beats the interval method in fast sessions — think Do-Mi-Sol (1-3-5), not letter names.",
+    "Solfège + transposition are the same insight twice: music lives in RELATIONSHIPS, not fixed letters."
   ],
-  rewards:{ badge:"Chromatic Climber", icon:"\u{1F9D7}" },
+  rewards:{ badge:"Melody Mover", icon:"\u{1F3A4}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
-    "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect chromatic quiz — every key, every half step, every answer! \u{1F9D7}\u{1F389}",
-  miaPass:"You passed! Chant it on the way out: up with sharps, down with flats, never skip a key.",
+    "secGame0","secGame1","secGame2","secGame3","secGame4","secPractice","secQuiz","secTips","secNext"],
+  miaPerfect:"A perfect score — Do would follow YOU anywhere! \u{1F3A4}\u{1F389}",
+  miaPass:"Passed! Keep singing: Do Re Mi Fa Sol La Ti Do — in every key you meet.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Scale A was the C major scale (it skips keys); Scale B was the chromatic scale — all twelve pitches by half step.",
-      play:()=>{[60,61,62,63,64,65].forEach((m,i)=>MFAudio.tone(m,.18,i*.17));} },
-    learn:{ label:"the chromatic scale",
-      explain:"Twelve tones, all half steps, every key on the keyboard. Ascending is spelled with sharps, descending with flats.",
-      hint:"'Chromatic = every key' — nothing is skipped.",
-      play:()=>{[72,71,70,69].forEach((m,i)=>MFAudio.tone(m,.2,i*.2));} },
+      explain:"Both versions were Do-Re-Mi-Sol: first from C, then from G — the same melody transposed up a Perfect 5th. Shape preserved, letters changed.",
+      play:()=>{[0,2,4,7].forEach((s,ix)=>MFAudio.tone(60+s,.3,ix*.35));[0,2,4,7].forEach((s,ix)=>MFAudio.tone(67+s,.3,1.7+ix*.35));} },
+    learn:{ label:"solfège & transposition",
+      explain:"Do Re Mi Fa Sol La Ti ride the scale degrees; Do is always the keynote (movable Do). Transposition moves every note by one fixed interval — or by key: same degrees, new signature. Shape and syllables survive.",
+      hint:"Do = keynote. Intervals never change.",
+      play:()=>{[60,62,64,65,67].forEach((m,ix)=>MFAudio.tone(m,.25,ix*.3));} },
     example:{ label:"the examples",
-      explain:"The same twelve keys twice: up with sharp spellings, down with flat spellings — watch the fully-marked keyboard." },
+      explain:"Example 1 is the solfège ladder in C; example 2 lifts one melody from C major to G major — identical shape, new key signature." },
     game:{ label:"the games",
-      explain:"Run every key against the clock, spell the climb in 13 taps, judge half steps on radar, then race the vocabulary.",
-      hint:"In the Run, accuracy first — misses cost more than seconds." },
+      explain:"Sprint the syllables, hunt the notes, dash up Do-Re-Mi, race the vocabulary, then translate scale degrees across keys.",
+      hint:"In every game, find Do first — everything else is counted from it." },
     quiz:{ label:"this question",
-      explain:"Three facts do the work: 12 pitches, all half steps, sharps up / flats down.",
-      play:()=>{MFAudio.tone(60,.2,0);MFAudio.tone(61,.2,.2);MFAudio.tone(62,.3,.4);} }
+      explain:"Anchor on two facts: Do = the keynote of the current key, and transposition preserves every interval.",
+      play:()=>{MFAudio.tone(60,.3,0);MFAudio.tone(64,.3,.35);MFAudio.tone(67,.4,.7);} }
   }
 };

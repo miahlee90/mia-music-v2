@@ -1,249 +1,253 @@
-/* Lesson 99 — Modulation (Book 4, Unit 24 — SELF-AUTHORED)
-   Core: MODULATION = an actual key change, confirmed by a cadence in the
-   new key. Closely related keys (±1 accidental + relatives). PIVOT-CHORD
-   modulation (a chord shared by both keys), DIRECT (abrupt), PHRASE
-   modulation (new key at a phrase boundary). NOTE: edit by FULL-FILE REWRITE only. */
+/* Lesson 99 (14.10, formerly L102) — Sonata Form (Book 4, Unit 25 — SELF-AUTHORED)
+   Core: EXPOSITION (theme 1 in tonic, theme 2 in a new key — usually V or
+   relative major) → DEVELOPMENT (themes fragmented, sequenced, modulating)
+   → RECAPITULATION (both themes home in the tonic) → optional CODA.
+   Built on: periods, sequence, modulation.
+   NOTE: edit by FULL-FILE REWRITE only. */
+
+function MF_L99_playAll(){
+  let t=0; const q=0.45, g=0.30;
+  const play=(seq)=>{ seq.forEach(([m,b])=>{ MFAudio.tone(m,Math.max(0.18,b*q*0.9),t,0.32); t+=b*q; }); };
+  /* exposition (C -> F# -> G) */
+  play([[60,1],[67,1],[64,.5],[62,.5],[60,1],[62,1],[64,1],[66,1],[67,1],[67,1],[74,1],[71,.5],[69,.5],[67,1]]); t+=g;
+  /* development (fragments, F#, unstable) */
+  play([[60,.5],[67,.5],[64,1],[62,.5],[69,.5],[66,1],[67,.5],[74,.5],[71,.5],[69,.5],[67,2]]); t+=g;
+  /* recapitulation (same opening, F-natural, stays home) */
+  play([[60,1],[67,1],[64,.5],[62,.5],[60,1],[62,1],[64,1],[65,1],[67,1],[67,.5],[74,.5],[72,.5],[71,.5],[72,2]]); t+=g;
+  /* coda (C-major scale to tonic) */
+  play([[67,.5],[69,.5],[71,.5],[72,.5],[74,.5],[76,.5],[77,.5],[74,.5],[72,4]]);
+}
+function MF_L99_diagram(host){
+  host.innerHTML=`<div style="border:1px dashed #b9a86a;border-radius:8px;padding:10px 12px;background:#FBF9F1">
+    <div style="text-align:center;font-weight:800;font-size:13px;color:#5a4a12;margin-bottom:8px">Miniature sonata-form example</div>
+    <div style="display:flex;gap:6px;justify-content:center;font-weight:800;font-size:12px;flex-wrap:wrap">
+      <div style="border:2px solid #2F6DA8;border-radius:8px;padding:5px 9px;color:#2F6DA8;text-align:center">EXPOSITION<br><span style="font-weight:400;font-size:10px;color:#555">primary: tonic · secondary: contrasting key</span></div>
+      <div style="border:2px solid #C05A21;border-radius:8px;padding:5px 9px;color:#C05A21;text-align:center">DEVELOPMENT<br><span style="font-weight:400;font-size:10px;color:#555">fragments · sequences · changing keys</span></div>
+      <div style="border:2px solid #2F6DA8;border-radius:8px;padding:5px 9px;color:#2F6DA8;text-align:center">RECAPITULATION<br><span style="font-weight:400;font-size:10px;color:#555">primary + secondary in tonic</span></div>
+      <div style="border:2px solid #A9821F;border-radius:8px;padding:5px 9px;color:#A9821F;text-align:center">CODA<br><span style="font-weight:400;font-size:10px;color:#555">optional closing section</span></div>
+    </div>
+    <div style="text-align:center;margin-top:10px"><button class="play" id="l102-playall">▶ Hear the whole sonata — exposition → development → recapitulation → coda</button></div>
+    <div style="text-align:center;font-size:11px;color:#5a4a12;margin-top:6px">Listen to all four sections connected as one movement: the exposition leans to a new key (F♯ → G), the development stays unstable, then the recapitulation brings everything home (F♮ this time) and the coda confirms the tonic.</div>
+  </div>`;
+  const b=host.querySelector("#l102-playall"); if(b) b.onclick=()=>MF_L99_playAll();
+}
 
 LESSON_CONTENT[99]={
-  welcome:"Modulation establishes a new tonic and key within a composition.",
+  welcome:"Sonata form presents, develops, and recomposes contrasting tonal and thematic material.",
   hook:{
-    say:"<b>The passage begins in C major but later establishes G major through a cadence.</b> \u{1F447} <b>In which key does the passage end?</b>",
+    say:"<b>The exposition presents primary material in the tonic and secondary material in a contrasting key. After a developmental passage, the opening material returns.</b> \u{1F447} <b>What happens to the secondary material in the recapitulation?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play the passage</button></div>
-          <div class="choices hk-ch" style="display:none"><button>G major—the final cadence confirms G as the new tonic</button><button>C major—the passage returns to its original tonic</button><button>The passage remains entirely in C major</button></div>`;
-        const ROWS=[[60,64,67],[60,65,69],[62,66,69],[62,67,71],[62,66,69,72],[55,62,67,71]];
+          <button class="play hk-a">▶ Play the short sonata-form example</button></div>
+          <div class="choices hk-ch" style="display:none"><button>The primary and secondary material return in the tonic region</button><button>Entirely unrelated themes replace the opening material</button><button>The opening material never returns</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{ ROWS.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.26))); setTimeout(()=>ch.style.display="",ROWS.length*850+300); };
+        container.querySelector(".hk-a").onclick=()=>{
+          let t=0;
+          [[60,.3],[64,.3],[67,.6]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});         /* T1 in C */
+          [[74,.3],[71,.3],[67,.6]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});         /* T2 in G-ish */
+          [[64,.2],[67,.2],[66,.2],[69,.2],[68,.2],[71,.2]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.38);t+=d;}); /* development */
+          [[60,.3],[64,.3],[67,.6]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});         /* T1 home */
+          [[67,.3],[64,.3],[60,.8]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});         /* T2 home */
+          setTimeout(()=>ch.style.display="",t*1000+400);
+        };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. F♯ supports the new key, and a cadence in G major confirms G as the new tonic. The passage has modulated from C major to G major.");
-          else fb(false,"Listen to the final harmonic progression and identify the tonic confirmed by the cadence.");
+          if(i===0) fb(true,"✓ Correct. The exposition establishes contrasting tonal areas, the development destabilizes or transforms the material, and the recapitulation returns the principal material with the secondary area resolved into the tonic region.");
+          else fb(false,"Listen for the return of the opening material and the new tonal placement of the secondary theme group.");
         });
       } }
   },
   objectives:[
-    "Define modulation as a true change of key",
-    "Distinguish modulation from tonicization",
-    "Learn closely related keys",
-    "Understand pivot-chord modulation",
-    "Introduce direct and phrase modulation",
-    "Recognize modulation by cadence and harmonic evidence"
+    "Name the three principal sections: exposition, development, and recapitulation",
+    "Exposition: primary material in the tonic; secondary material in a contrasting key area",
+    "Development: fragmentation, sequence, and modulation",
+    "Recapitulation: primary and secondary material return in the tonic region",
+    "Know the optional framing sections: introduction and coda",
+    "Connect the form to periods, sequences, and modulation"
   ],
   steps:[
-    { say:"<b>Modulation vs. Tonicization:</b> you just learned <b>tonicization</b> — a brief, local emphasis. <b>Modulation</b> goes further: it establishes a <b>new tonic</b>, confirmed by a cadence, and the music continues in the new key. \u{1F447} <b>Which event provides especially strong confirmation of a modulation?</b>",
-      show:{ type:"html", html:`<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:13px;text-align:left">
-        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 14px"><b style="color:#2F6DA8">Tonicization</b><br>• temporary<br>• local emphasis<br>• original key stays active</div>
-        <div style="border:2px solid #C05A21;border-radius:10px;padding:8px 14px"><b style="color:#C05A21">Modulation</b><br>• a new tonic<br>• new key established<br>• confirmed by a cadence<br>• music continues in the new key</div></div>` },
-      try:{ type:"mc", choices:["A cadence that establishes the new tonic","A single isolated accidental","A change in tempo alone"], answer:0,
-        success:"✓ Correct. A cadence in the new key is strong evidence of modulation, especially when the surrounding harmony also supports the new tonic.",
-        fail:"Determine whether the new tonic receives sustained or structural harmonic confirmation.",
-        hint:"Listen for dominant-to-tonic motion in the new key." } },
-    { say:"<b>Closely Related Keys:</b> the easiest keys to modulate to share many diatonic chords with the original. For a major key they are its <b>dominant, subdominant, relative minor,</b> and the relative minors of the dominant and subdominant — all within one accidental. \u{1F447} <b>Which list contains the closely related keys of C major?</b>",
-      show:{ type:"html", html:`<div style="text-align:center;font-size:14px;line-height:1.9">
-        <b style="color:#2F6DA8;font-size:16px">C major</b><br>
-        Dominant <b style="color:#2F6DA8">G</b> · Subdominant <b style="color:#2F6DA8">F</b> · Relative minor <b style="color:#C05A21">Am</b> · Rel. of dominant <b style="color:#C05A21">Em</b> · Rel. of subdominant <b style="color:#C05A21">Dm</b><br>
-        <span style="font-size:12px;color:#555">All within ±1 accidental — they share the most diatonic chords, so they are the easiest destinations.</span></div>` },
-      try:{ type:"mc", choices:["G major, F major, A minor, E minor, and D minor","F♯ major and B♭ minor","C minor only"], answer:0,
-        success:"✓ Correct. These keys have the same key signature as C major or differ from it by one accidental. They also share several diatonic chords with C major.",
-        fail:"Compare the key signatures and relative-key relationships.",
-        hint:"Relative minor, dominant, subdominant, and their relative minors." } },
-    { say:"<b>Pivot-Chord Modulation:</b> a pivot chord is diatonic to <b>both</b> keys. The process: old key → reach the shared chord → <b>reinterpret its function</b> → dominant of the new key → cadence → new key. The pivot changes <b>function, not spelling</b> — the same notes get a new Roman numeral. \u{1F447} <b>What must be true of a diatonic pivot chord?</b>",
-      show:{ type:"html", html:`<div style="text-align:center;font-size:13.5px;line-height:1.9;font-weight:700">
-        Old key → shared chord → <span style="color:#A9821F">reinterpret function</span> → V of new key → cadence → new key<br>
-        <span style="font-weight:400;font-size:12.5px;color:#555">Am = vi in C  →  ii in G  (same notes, new function)</span></div>` },
-      try:{ type:"mc", choices:["It belongs to both the original and destination keys","It must be the tonic triad of both keys","It must contain a chromatic accidental"], answer:0,
-        success:"✓ Correct. A pivot chord has a valid diatonic function in both keys, allowing it to be reinterpreted.",
-        fail:"Identify A minor's Roman numeral in each key.",
-        hint:"Am is vi in C major and ii in G major." } },
-    { say:"<b>Direct and Phrase Modulation:</b> <b>direct modulation</b> changes key with <b>no shared pivot chord</b>. <b>Phrase modulation</b> is usually a direct modulation that <b>begins at a new phrase or section</b> — like a final chorus lifted up a step. (They are related ideas, not opposites.) \u{1F447} <b>A final chorus begins one whole step higher without a pivot chord. How is this best described?</b>",
-      try:{ type:"mc", choices:["Phrase modulation, a type of direct modulation","Pivot-chord modulation","No modulation"], answer:0,
-        success:"✓ Correct. The new key begins at a phrase boundary without a shared pivot chord, creating phrase modulation.",
-        fail:"Identify the formal location of the key change.",
-        hint:"The new key begins with the new phrase." } },
-    { say:"<b>Recognizing Modulation — a checklist:</b><br>✓ a new tonic emerges<br>✓ dominant harmony points toward it<br>✓ a cadence confirms it<br>✓ the music continues in the new key<br>✓ accidentals may support it<br>But <b>accidentals alone do NOT prove modulation</b> — you need the cadence and continued harmony. \u{1F447} <b>A passage in C major introduces F♯, develops dominant harmony directed toward G, and cadences in G major. What has occurred?</b>",
-      try:{ type:"mc", choices:["A modulation to G major","A tonicization of ii","No change of tonal center"], answer:0,
-        success:"✓ Correct. The pitch collection, dominant preparation, and cadence work together to establish G as the new tonic.",
-        fail:"Combine the chromatic, harmonic, and cadential evidence.",
-        hint:"The cadence confirms G as tonic." } },
-    { say:"<b>Tonicization vs. Modulation:</b> this is the pair students confuse most. A brief applied dominant = tonicization; a cadence-confirmed new key that continues = modulation. \u{1F447} <b>V/V resolves to V, after which the progression continues clearly in the original key. How should the event be classified?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:13.5px;min-width:340px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px;color:#2F6DA8">Tonicization</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px;color:#C05A21">Modulation</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">brief</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">new key established</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">local</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">a cadence confirms it</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">no new cadence</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">the new tonic continues</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">original key remains</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">functional harmony supports the new key</td></tr></table>` },
-      try:{ type:"mc", choices:["Tonicization of V","Modulation to the dominant key","Phrase modulation"], answer:0,
-        success:"✓ Correct. V receives temporary dominant emphasis, but the original tonic remains structurally active.",
-        fail:"Determine whether V becomes a structurally confirmed tonic or remains a tonicized diatonic chord.",
-        hint:"The progression returns immediately to the original key's harmonic syntax." } },
-    { say:"<b>Review:</b> \u{1F447} <b>Which modulation technique uses a chord that is diatonic to both the original and destination keys?</b>",
-      try:{ type:"mc", choices:["Pivot-chord modulation","Direct modulation","Modulation created by silence alone"], answer:0,
-        success:"✓ Correct. The shared chord is reinterpreted from a function in the original key to a function in the new key.",
-        fail:"Identify the technique that uses a common chord.",
-        hint:"The pivot chord belongs to both keys." } }
+    { say:"<b>The Basic Plan:</b> Sonata form is commonly organized into three large functional sections. <b>Exposition</b> establishes the principal thematic material and contrasting tonal areas. <b>Development</b> transforms, fragments, combines, or reinterprets material while creating tonal instability. <b>Recapitulation</b> returns the principal material and resolves the exposition's tonal contrast, usually within the tonic region. A slow introduction may precede the exposition, and a coda may follow the recapitulation; expositions are also frequently repeated. \u{1F447} <b>What are the three principal sections of sonata form?</b>",
+      show:{ type:"html", html:`<div style="border:1px solid #A9821F;background:#FBF6E9;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12.5px;color:#5a4a12;text-align:left"><b>Sonata form vs. sonata genre:</b> Sonata form is the formal design studied in this lesson. A <i>sonata</i> is a multi-movement instrumental genre. A movement of a sonata may use sonata form, but not every movement does, and sonata form also appears in symphonies, quartets, concertos, overtures, and other genres.</div><div style="display:flex;gap:8px;justify-content:center;font-weight:800;font-size:14px;flex-wrap:wrap">
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 12px;color:#2F6DA8">EXPOSITION<br><span style="font-weight:400;font-size:11.5px;color:#555">primary: tonic · secondary: contrasting key</span></div>
+        <div style="border:2px solid #C05A21;border-radius:10px;padding:8px 12px;color:#C05A21">DEVELOPMENT<br><span style="font-weight:400;font-size:11.5px;color:#555">fragments · sequences · changing keys</span></div>
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 12px;color:#2F6DA8">RECAPITULATION<br><span style="font-weight:400;font-size:11.5px;color:#555">primary + secondary in tonic</span></div>
+        <div style="border:2px solid #A9821F;border-radius:10px;padding:8px 12px;color:#A9821F">CODA<br><span style="font-weight:400;font-size:11.5px;color:#555">optional closing section</span></div></div>` },
+      try:{ type:"mc", choices:["exposition, development, and recapitulation","verse, chorus, and bridge","A, B, A, C, and A"], answer:0,
+        success:"✓ Correct. The exposition establishes the material, the development transforms it, and the recapitulation returns and tonally resolves it.",
+        fail:"Recall the three principal formal functions.",
+        hint:"Exposition → development → recapitulation." } },
+    { say:"<b>The Exposition:</b> The primary thematic area normally begins in the tonic. A transition leads toward a contrasting tonal area, where the secondary theme group appears. In a major-key movement, the secondary area is commonly the dominant. In a minor-key movement, it is often the relative major, although other key relationships occur. A closing section may confirm the secondary key. \u{1F447} <b>In a conventional C-major sonata-form exposition, which key commonly supports the secondary theme group?</b>",
+      try:{ type:"mc", choices:["G major, the dominant","C major, the tonic","F♯ minor"], answer:0,
+        success:"✓ Correct. In a conventional major-key exposition, the secondary thematic area commonly appears in the dominant key.",
+        fail:"Identify the dominant key of C major.",
+        hint:"The dominant of C major is G major." } },
+    { say:"<b>The Development:</b> The development often transforms material from the exposition through fragmentation, sequence, recombination, rhythmic change, and modulation. It may also introduce new material. Tonal instability and increasing emphasis on the dominant commonly prepare the return of the tonic and the recapitulation. \u{1F447} <b>Which process commonly occurs in a development section?</b>",
+      try:{ type:"mc", choices:["thematic transformation and tonal instability","initial presentation of the complete exposition","exact repetition of the exposition in every detail"], answer:0,
+        success:"✓ Correct. The development reworks familiar material or introduces related ideas within a less tonally stable context.",
+        fail:"Listen for fragmentation, sequence, recombination, and changes of key.",
+        hint:"The exposition's material is transformed rather than simply restated." } },
+    { say:"<b>The Recapitulation:</b> The recapitulation begins with the return of the primary thematic area, usually in the tonic. The transition is often adjusted or recomposed so that the secondary thematic area appears in the tonic region rather than in the contrasting key of the exposition. This tonal return provides the principal large-scale resolution of the form. \u{1F447} <b>What is the principal tonal change to the secondary thematic area in a conventional recapitulation?</b>",
+      try:{ type:"mc", choices:["it returns in the tonic region","it is always omitted","it becomes a fugue"], answer:0,
+        success:"✓ Correct. The secondary area is recomposed into the tonic region, resolving the exposition's large-scale tonal contrast.",
+        fail:"Compare the key of the secondary area in the exposition with its key in the recapitulation.",
+        hint:"The recapitulation brings the secondary area into the tonic region." } },
+    { say:"<b>Optional Framing Sections:</b> An introduction may precede the exposition and may use a slower tempo or different character. A coda may follow the main recapitulation and extend, reinforce, or further develop the closing tonic area. Codas range from brief closing gestures to substantial formal sections. <b>Remember: exposition establishes thematic material and tonal contrast · development transforms material and creates tonal instability · recapitulation returns the principal material and resolves the contrast · coda is an optional closing extension.</b> \u{1F447} <b>What is a coda in sonata form?</b>",
+      try:{ type:"mc", choices:["an optional closing section following the main recapitulation","the required secondary theme","a melodic ornament"], answer:0,
+        success:"✓ Correct. A coda extends the closing portion of the movement and reinforces or develops its final tonal resolution.",
+        fail:"Identify the optional section that extends the ending.",
+        hint:"It occurs after the main recapitulation." } },
+    { say:"<b>Where Sonata Form Appears:</b> Sonata form is especially common in first movements of Classical and Romantic sonatas, symphonies, string quartets, and concertos. It also appears in finales, overtures, slow movements, and works from later periods. Its design varies according to genre, historical period, and composer. \u{1F447} <b>In which musical context is sonata form especially common?</b>",
+      try:{ type:"mc", choices:["first movements of many sonatas, symphonies, and chamber works","strophic folk-song verses only","unaccompanied drum solos only"], answer:0,
+        success:"✓ Correct. Sonata form is especially common in first movements, although it may appear in other movements and genres.",
+        fail:"Consider large instrumental movements from the Classical and Romantic traditions.",
+        hint:"It frequently appears in opening movements." } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which sequence shows the principal sections of sonata form in their usual order?</b>",
+      try:{ type:"mc", choices:["exposition → development → recapitulation → optional coda","development → exposition → coda","recapitulation → exposition → development"], answer:0,
+        success:"✓ Correct. The exposition establishes the formal and tonal material, the development transforms it, and the recapitulation returns and resolves it. A coda may follow.",
+        fail:"Begin with the section that establishes the thematic and tonal material.",
+        hint:"E–D–R, followed by an optional coda." } }
   ],
   examples:[
-    { caption:"A pivot modulation C→G: I – IV – vi(=ii of G) – V of G – I of G. The Am turns the corner; the cadence confirms the new home.",
-      staff:{clef:"treble",tempo:72,notes:[
-        {p:"C4",d:"w",label:"I (C)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"A3",d:"w",label:"pivot vi=ii"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"V (of G)"},{p:"F#4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"G3",d:"w",label:"I (G!)"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{bar:"final"}],width:640},
-      kb:{start:48,octaves:2,labels:true} },
-    { caption:"A phrase modulation: the phrase ends in C; the next phrase simply begins in D major — the pop lift, up a whole step.",
-      staff:{clef:"treble",tempo:84,notes:[
-        {p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"h",label:"C ends"},{bar:"double"},
-        {p:"D4",d:"q",label:"D begins!"},{p:"F#4",d:"q"},{p:"A4",d:"q"},{p:"D5",d:"h"},{bar:"final"}],width:560},
+    { mount:(host)=>MF_L99_diagram(host) },
+    { caption:"Exposition — analysis: the primary idea arpeggiates C major (I: C–G–E–D–C); then D–E–F♯–G raises the 4th to F♯, the leading tone of G, pulling toward the dominant; G–D–B–A–G confirms the new key. Tonic (C) vs contrasting key (G) — the conflict is set.",
+      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
+        {p:"C4",d:"q",label:"C: I"},{p:"G4",d:"q"},{p:"E4",d:"8"},{p:"D4",d:"8"},{p:"C4",d:"q"},{bar:"single"},
+        {p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q",label:"F♯→G"},{p:"G4",d:"q"},{bar:"single"},
+        {p:"G4",d:"q",label:"in G"},{p:"D5",d:"q"},{p:"B4",d:"8"},{p:"A4",d:"8"},{p:"G4",d:"q"},{bar:"final"}],
+        beams:[[2,3],[13,14]],width:660},
       kb:{start:60,octaves:1.3333,labels:true} },
-    { caption:"Modulation isn't only major-to-major. In G major, Em is the pivot (vi of G = i of E minor); B7 → Em then cadences in the new minor key.",
-      staff:{clef:"treble",tempo:72,notes:[
-        {p:"G4",d:"w",label:"I (G)"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"E4",d:"w",label:"pivot vi=i"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
-        {p:"B3",d:"w",label:"V7 (of Em)"},{p:"D#4",d:"w",chord:true},{p:"F#4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"i (Em!)"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{bar:"final"}],width:560},
-      kb:{start:57,octaves:1.5833,labels:true} }
+    { caption:"Development — analysis: the opening fragments (C–G–E, D–A–F♯) are tossed about while F♯ keeps the key unstable, building tension that drives back toward the tonic and the return.",
+      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
+        {p:"C4",d:"8",label:"fragment"},{p:"G4",d:"8"},{p:"E4",d:"q"},{p:"D4",d:"8"},{p:"A4",d:"8"},{p:"F#4",d:"q",label:"unstable"},{bar:"single"},
+        {p:"G4",d:"8"},{p:"D5",d:"8"},{p:"B4",d:"8"},{p:"A4",d:"8"},{p:"G4",d:"h"},{bar:"final"}],
+        beams:[[0,1],[3,4],[7,10]],width:560},
+      kb:{start:60,octaves:1.3333,labels:true} },
+    { caption:"Recapitulation — analysis: the same opening in C (I), but the second phrase now uses F♮ instead of F♯, so it never leaves home; G–D–C–B–C cadences on the tonic. The conflict resolves in C.",
+      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
+        {p:"C4",d:"q",label:"C: I"},{p:"G4",d:"q"},{p:"E4",d:"8"},{p:"D4",d:"8"},{p:"C4",d:"q"},{bar:"single"},
+        {p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q",label:"F♮ home"},{p:"G4",d:"q"},{bar:"single"},
+        {p:"G4",d:"8"},{p:"D5",d:"8"},{p:"C5",d:"8"},{p:"B4",d:"8"},{p:"C5",d:"h",label:"tonic C"},{bar:"final"}],
+        beams:[[2,3],[11,14]],width:680},
+      kb:{start:60,octaves:1.3333,labels:true} },
+    { caption:"Coda — analysis: a rising C-major scale (G–A–B–C–D–E–F–D) settles onto a held tonic C — the closing confirmation of home.",
+      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
+        {p:"G4",d:"8",label:"coda"},{p:"A4",d:"8"},{p:"B4",d:"8"},{p:"C5",d:"8"},{p:"D5",d:"8"},{p:"E5",d:"8"},{p:"F5",d:"8"},{p:"D5",d:"8"},{bar:"single"},
+        {p:"C5",d:"w",label:"tonic C"},{bar:"final"}],
+        beams:[[0,3],[4,7]],width:560},
+      kb:{start:60,octaves:2,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Modulation Identification (45s)",
-      intro:"Identify modulation types, tonal evidence, and closely related keys.",
-      miaIntro:"Tonicization or structurally confirmed new key?",
+    { type:"gen-race", title:"Game 1 · Sonata-Form Functions",
+      intro:"Match each formal section with its thematic and tonal function.",
+      miaIntro:"Establish, develop, recapitulate.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Modulation","a key change confirmed by cadence"],
-        ["Tonicization","a brief visit — no confirming cadence"],
-        ["Closely related keys","\u{00B1}1 accidental + relatives"],
-        ["Pivot chord","belongs to both keys"],
-        ["Direct modulation","the new key just arrives"],
-        ["Phrase modulation","new key at the phrase boundary"],
-        ["C major's neighbors","G, F, Am, Em, Dm"],
-        ["The pop final-chorus lift","phrase modulation"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?"Modulations identified!":null },
-    { type:"key-climb", title:"Game 2 · Perform a Pivot-Chord Modulation",
-      intro:"Follow the red arrow and press each chord's root — you'll hear the full chord: C → F → Am → D7 → G. Hear Am first as vi in C, then as ii in G.",
-      miaIntro:"Press the root, hear the chord. Reinterpret Am, then confirm G with D7–G.",
-      spec:{seq:[60,65,57,62,55],
-        chords:[[60,64,67],[60,65,69],[57,60,64],[62,66,69,72],[55,62,67,71]],
-        names:["C major (I of C)","F major (IV)","A minor (pivot: vi of C = ii of G)","D7 (V of G)","G major (I of G — cadence)"],
-        start:53, octaves:1.5833, title:"C to G, via the shared chord"},
-      result:(score)=>score!==null?"You performed the pivot-chord modulation.":null },
-    { type:"order-tap", title:"Game 3 · Build the Pivot Modulation",
-      intro:"Arrange the stages of a pivot-chord modulation.",
-      miaIntro:"Original key → pivot chord → new-key dominant → new-key tonic.",
-      spec:{sequence:["Establish the old key","Reach the shared (pivot) chord","Treat it as the NEW key's chord","Cadence in the new key"],
-        title:"Four stages of a smooth move"},
-      result:(stars)=>stars>=2?"You arranged the modulation correctly.":null },
-    { type:"term-race", title:"Game 4 · Closely Related Keys",
-      intro:"Identify the closely related keys of each major key.",
-      miaIntro:"Include the relative minor, dominant, subdominant, and their relative minors.",
+        ["Exposition","contrasting tonal areas"],
+        ["Development","fragments, sequences, modulations"],
+        ["Recapitulation","secondary area now in the tonic"],
+        ["Coda","the optional tail"],
+        ["Theme 1's key","the tonic"],
+        ["Theme 2's key (exposition)","dominant or relative major"],
+        ["Theme 2's key (recap)","the tonic — resolved"],
+        ["Sonata form's home","first movements"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — sonata-form functions identified!":null },
+    { type:"order-tap", title:"Game 2 · Arrange the Formal Events",
+      intro:"Arrange the principal events of a conventional sonata-form movement.",
+      miaIntro:"Exposition → development → recapitulation → optional coda.",
+      spec:{sequence:["Theme 1 — tonic","Theme 2 — new key","Development — fragments wander","Recapitulation — both themes home","Coda — the tail"],
+        title:"One movement, start to finish"},
+      result:(stars)=>stars>=2?"You arranged the formal events correctly.":null },
+    { type:"key-climb", title:"Game 3 · Perform the Tonal Plan",
+      intro:"Play a short primary idea in C major, a secondary idea in G major, and then the secondary idea in C major as it would appear in the recapitulation.",
+      miaIntro:"Exposition contrast, then recapitulation in the tonic.",
+      spec:{seq:[60,67,60],
+        chords:[[60,64,67],[67,71,74],[60,64,67]],
+        names:["C major — primary idea (home key)","G major — secondary idea (new key)","C major — secondary idea resolved home"],
+        start:60, octaves:1.3333, title:"The tonal plot in three notes"},
+      result:(score)=>score!==null?"You demonstrated the conventional tonal plan.":null },
+    { type:"term-race", title:"Game 4 · Identify the Section",
+      intro:"Match each description with the appropriate sonata-form section.",
+      miaIntro:"Identify both the thematic process and tonal function.",
       spec:{rounds:8, reverse:true, pool:[
-        ["C major's sharp-side neighbor","G major"],
-        ["C major's flat-side neighbor","F major"],
-        ["C major's relative","A minor"],
-        ["G major's relative","E minor"],
-        ["F major's relative","D minor"],
-        ["G major's neighbors include","C and D major"],
-        ["Distant from C major","F♯ major"],
-        ["Relative keys share","the same key signature"]]},
-      result:(score)=>score>=6?"You identified the closely related keys correctly.":null }
+        ["Theme 2 enters in the dominant","exposition"],
+        ["A motive sequences through keys","development"],
+        ["Theme 2 returns — in the tonic","recapitulation"],
+        ["A slow opening before theme 1","introduction"],
+        ["Closing section after the recap","coda"],
+        ["Maximum instability","development"],
+        ["The key conflict is created","exposition"],
+        ["The key conflict is resolved","recapitulation"]]},
+      result:(score)=>score>=6?"You identified the sections correctly.":null }
   ],
-  practiceIntro:"Complete 20 practice questions on modulation types, tonal evidence, closely related keys, and pivot chords.",
+  practiceIntro:"Complete 20 practice questions on sonata-form sections, thematic processes, and tonal relationships.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Modulation","confirmed key change"],["Pivot","shared chord"],["Direct","no shared pivot chord"],["Phrase","at the phrase line"],["Closely related","\u{00B1}1 accidental"]], reverse:true}, count:6 },
-    { gen:"rel-key", params:{ask:"both"}, count:3 },
-    { type:"mc", q:"Which event provides especially strong confirmation of a new key?", choices:["A cadence establishing the new tonic","One isolated accidental","A rest"], answer:0,
-      explain:"The new key must cadence." },
-    { type:"mc", q:"Which list contains the closely related keys of C major?", choices:["G major, F major, A minor, E minor, and D minor","D major, B♭ major, and F♯ minor","A minor only"], answer:0,
-      explain:"±1 accidental + relatives." },
-    { type:"mc", q:"A pivot chord belongs to…", choices:["both the old and new keys","neither key","only the new key"], answer:0,
-      explain:"The shared doorway." },
-    { type:"mc", q:"Am can pivot between C major and G major because it is…", choices:["vi in C and ii in G","the tonic of both","V in both"], answer:0,
-      explain:"Double membership." },
-    { type:"truefalse", q:"Tonicization and modulation establish a new key with equal structural strength.", answer:false,
-      explain:"Visit vs confirmed move." },
-    { type:"truefalse", q:"Phrase modulation begins the new key at a phrase or section boundary.", answer:true,
-      explain:"The pop-lift design." },
-    { type:"truefalse", q:"Relative major and minor keys share the same key signature.", answer:true,
-      explain:"C/Am, G/Em, F/Dm." },
+    { gen:"term-match", params:{subject:"term", pool:[["Exposition","presents"],["Development","argues"],["Recapitulation","resolves"],["Coda","tail"],["Transition","modulating bridge"]], reverse:true}, count:6 },
     { gen:"rel-key", params:{ask:"both"}, count:2 },
+    { type:"mc", q:"Sonata form's three main sections are…", choices:["exposition, development, recapitulation","intro, verse, chorus","A, B, A"], answer:0, explain:"E-D-R." },
+    { type:"mc", q:"In a conventional major-key exposition, the secondary thematic area normally appears in…", choices:["a contrasting key, commonly the dominant","the tonic in every case","no identifiable key"], answer:0, explain:"The key conflict." },
+    { type:"mc", q:"The development treats the themes by…", choices:["fragmenting and sequencing them through keys","ignoring them","playing them backwards only"], answer:0, explain:"Instability by design." },
+    { type:"mc", q:"In a conventional recapitulation, the secondary thematic area…", choices:["returns in the tonic region","must remain in the exposition's contrasting key","must disappear"], answer:0, explain:"Resolution." },
+    { type:"truefalse", q:"A coda is required in every sonata-form movement.", answer:false, explain:"Optional tail." },
+    { type:"truefalse", q:"A minor-key exposition often puts theme 2 in the relative major.", answer:true, explain:"The minor-mode convention." },
+    { type:"truefalse", q:"Many symphonic first movements use sonata form.", answer:true, explain:"Sonata form also appears in other movements and genres." },
+    { gen:"term-match", params:{subject:"term", pool:[["T1's key","tonic"],["T2's key (expo)","dominant"],["T2's key (recap)","tonic"],["Development's tools","fragment + sequence + modulate"]], reverse:true}, count:3 },
     { gen:"triad-id", params:{ask:"numeral"}, count:3 }
   ],
   vocabulary:[
-    {term:"Modulation", def:"A change of key confirmed by a cadence in the new key."},
-    {term:"Closely Related Keys", def:"Keys sharing most diatonic chords (usually differing by one accidental or a relative relationship)."},
-    {term:"Pivot Chord", def:"A chord belonging to both keys that smooths the modulation."},
-    {term:"Direct / Phrase Modulation", def:"Direct: changes key without a pivot chord. Phrase: a direct modulation that begins at a new phrase or section."}
+    {term:"Exposition", def:"Primary material in the tonic; secondary material in a contrasting key."},
+    {term:"Development", def:"Material transformed and moved through changing keys."},
+    {term:"Recapitulation", def:"Primary and secondary material return in the tonic region."},
+    {term:"Introduction / Coda", def:"Optional opening and closing sections."}
   ],
   mistakes:[],
   summary:[
-    "✔ Modulation establishes a <b>new key</b>.",
-    "✔ A confirming <b>cadence</b> is the strongest evidence.",
-    "✔ Tonicization is temporary; modulation is structural.",
-    "✔ <b>Closely related keys</b> share many diatonic chords.",
-    "✔ <b>Pivot chords</b> belong to both keys but change harmonic function.",
-    "✔ <b>Direct</b> modulation changes keys without a pivot.",
-    "✔ <b>Phrase</b> modulation is usually a direct modulation at a phrase or section boundary.",
-    "✔ Accidentals alone do not prove modulation."
+    "✔ Three principal sections: <b>exposition → development → recapitulation</b> (+ optional coda).",
+    "✔ Exposition: <b>primary material in the tonic; secondary material in a contrasting key area</b> — tonal contrast established.",
+    "✔ Development: <b>material fragmented, sequenced, recombined, and moved through keys</b> — tonal instability created.",
+    "✔ Recapitulation: <b>primary and secondary material return in the tonic region</b> — tonal contrast resolved.",
+    "✔ Built from your toolkit: periods, sequences, and modulation."
   ],
   tips:[
-    "Find pivots fast: list the old key's triads, the new key's triads, and circle the shared ones.",
-    "The V of the NEW key is the modulation's engine — the pivot just steers toward it.",
-    "Final-chorus lifts are phrase modulations up a half or whole step — count them in tonight's playlist.",
-    "Unit 24 complete! Next unit: ornaments, variations and the grand forms."
+    "Listen for the recapitulation's arrival — theme 1's return in the tonic is the movement's biggest landmark.",
+    "In the development, follow one motive; it is your map through the key changes.",
+    "Minor-key sonatas often brighten: theme 2 in the relative major, sometimes major-mode recaps.",
+    "Next lesson: the forms around the sonata — minuet & trio, scherzo, march, concerto."
   ],
-  rewards:{ badge:"Key Traveler", icon:"\u{1F5FA}\u{FE0F}" },
+  rewards:{ badge:"Form Architect", icon:"\u{1F3F0}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Distinguish brief tonicization from structurally confirmed modulation.",
+  miaQuizIntro:"Quiz: Identify the thematic and tonal functions of exposition, development, and recapitulation.",
   quiz:[
-    { type:"mc", q:"Modulation occurs when music…", choices:["establishes a new tonic and key","increases its dynamic level","repeats a motive"], answer:0,
-      explain:"A cadence and continued harmonic emphasis can provide strong confirmation of the new key.", hint:"Move, not visit." },
-    { type:"mc", q:"Which evidence most strongly distinguishes modulation from brief tonicization?", choices:["Structural confirmation of the new tonic through cadence, continued harmony, or formal emphasis","A change in tempo","A change of clef"], answer:0,
-      explain:"The new tonic receives more substantial structural confirmation.", hint:"Lesson 98's line." },
-    { type:"mc", q:"For a major key, closely related keys generally have key signatures that…", choices:["are identical to or differ by one accidental","differ by exactly three accidentals","must be identical"], answer:0,
-      explain:"The neighborhood rule.", hint:"±1." },
-    { type:"mc", q:"Which list contains the closely related keys of C major?", choices:["G major, F major, A minor, E minor, and D minor","D major, A major, and E major","C♯ major only"], answer:0,
-      explain:"Five neighbors.", hint:"Two majors, three minors." },
-    { type:"mc", q:"A diatonic pivot chord…", choices:["belongs to both the original and destination keys","must be the tonic of the destination key","must contain the destination key's new accidental"], answer:0,
-      explain:"The same chord is reinterpreted with a different Roman-numeral function.", hint:"Double citizenship." },
-    { type:"mc", q:"A minor functions as vi in C major and ii in G major. In a modulation from C to G, it can serve as…", choices:["A pivot chord","A pedal point","A deceptive cadence"], answer:0,
-      explain:"One chord, two passports.", hint:"Both keys claim it." },
-    { type:"mc", q:"A final chorus begins one whole step higher at a phrase boundary without a pivot chord. What type of modulation occurs?", choices:["Phrase modulation","Pivot-chord modulation","Tonicization"], answer:0,
-      explain:"The pop lift.", hint:"New phrase, new key." },
-    { type:"mc", q:"A new key is established without a diatonic pivot chord. Which broad technique is used?", choices:["Direct modulation","Pivot-chord modulation","Tonicization only"], answer:0,
-      explain:"No diatonic pivot chord is used.", hint:"No doorway." },
-    { type:"truefalse", q:"Accidentals consistent with a new key can provide evidence of modulation, but they are not sufficient by themselves.", answer:true,
-      explain:"Accidentals help but are not sufficient alone.", hint:"The tell-tale sharps/flats." },
-    { type:"truefalse", q:"A single V/V–V motion followed by an immediate return to the original key is normally a modulation.", answer:false,
-      explain:"It normally represents tonicization of V.", hint:"No cadence, no move." },
-    { type:"mc", q:"Which key is not closely related to G major?", choices:["E♭ major","D major","C major"], answer:0,
-      explain:"E♭ major is more distantly related.", hint:"Count the signature gap." },
-    { type:"mc", q:"Which sequence describes a common pivot-chord modulation process?", choices:["Original key → pivot chord → dominant of the new key → cadence in the new key","Cadence in the new key → pivot chord → original key","New key → original key without confirmation"], answer:0,
-      explain:"The pivot chord is reinterpreted before the new key receives dominant and cadential confirmation.", hint:"Doorway before proof." },
-    { type:"mc", q:"Which event most clearly confirms a modulation to G major?", choices:["A V–I (D→G) cadence in G major","A single F♯ in the melody","A change of tempo"], answer:0,
-      explain:"A cadence in the NEW key is the strongest confirmation.", hint:"Dominant-to-tonic in G." },
-    { type:"mc", q:"In a modulation from C major to G major, which accidental functions as the new leading tone?", choices:["F♯","B♭","C♯"], answer:0,
-      explain:"F♯ is the leading tone of G and points to the new tonic.", hint:"A half step below G." },
-    { type:"mc", q:"A phrase cadences in G with D7→G and the music continues in G. Is this tonicization or modulation?", choices:["Modulation — a cadence confirms the new key and it continues","Tonicization — just a brief visit","Neither"], answer:0,
-      explain:"A confirming cadence plus continuation in the new key = modulation.", hint:"Did the new key get its own cadence?" }
+    { type:"mc", q:"Sonata form's sections, in order:", choices:["exposition, development, recapitulation","development, exposition, coda","recapitulation, development, exposition"], answer:0, explain:"E-D-R.", hint:"Present first." },
+    { type:"mc", q:"What does the exposition normally establish?", choices:["principal thematic material and contrasting tonal areas","exactly one theme with no tonal contrast","chords without thematic material"], answer:0, explain:"Thematic material plus contrasting tonal areas.", hint:"The conflict." },
+    { type:"mc", q:"In a C major movement, theme 2's usual expo key is…", choices:["G major","C minor","B♭ major"], answer:0, explain:"The dominant.", hint:"Closest neighbor." },
+    { type:"mc", q:"In a minor-key exposition, the secondary thematic area often appears in…", choices:["the relative major","the subdominant minor in every case","no key"], answer:0, explain:"The relative major shares the minor key's key signature and commonly provides the contrasting tonal area.", hint:"Shared key signature." },
+    { type:"mc", q:"The development is characterized by…", choices:["fragmentation, sequence and modulation","complete silence","exact repetition"], answer:0, explain:"Instability by design.", hint:"The argument." },
+    { type:"mc", q:"What is the recapitulation's principal tonal resolution?", choices:["the secondary thematic area returns in the tonic region","the primary theme is always omitted","the meter must change"], answer:0, explain:"Conflict resolved.", hint:"Home for everyone." },
+    { type:"mc", q:"A coda is…", choices:["an added ending after the recapitulation","the second theme","the development's nickname"], answer:0, explain:"The tail.", hint:"Extra closing." },
+    { type:"mc", q:"A slow section before theme 1 is…", choices:["an introduction","a cadenza","a refrain"], answer:0, explain:"The optional opening frame.", hint:"Before the expo." },
+    { type:"truefalse", q:"A development section must remain in one stable key throughout.", answer:false, explain:"Developments often move through several keys or destabilize the tonic, although individual examples vary.", hint:"The unstable core." },
+    { type:"truefalse", q:"Sonata form resolves the exposition's key conflict in the recapitulation.", answer:true, explain:"Both themes home.", hint:"The payoff." },
+    { type:"mc", q:"Which techniques commonly appear in a development section?", choices:["motive fragmentation, sequence, recombination, and modulation","clef changes and rest notation only","twelve-bar blues only"], answer:0, explain:"Familiar material transformed through several techniques.", hint:"Transforming the themes." },
+    { type:"mc", q:"After a development, the primary thematic area returns in the tonic and leads to a tonic-key restatement of the secondary area. Which section is this?", choices:["the recapitulation","the exposition","the introduction"], answer:0, explain:"The recapitulation returns the principal thematic material and resolves the secondary tonal area into the tonic region.", hint:"Both areas home in the tonic." }
   ],
-  miaPerfect:"Perfect score! You accurately identified tonicization, pivot-chord modulation, direct modulation, and phrase modulation.",
-  miaPass:"You passed and completed unit 24. Next, you will study melodic ornaments.",
+  miaPerfect:"Perfect score! You accurately identified the thematic and tonal functions of sonata form.",
+  miaPass:"You passed! Next, you will compare larger instrumental forms.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"The F♯ arrived and a cadence confirmed G major — the piece modulated from C major to G major.",
-      play:()=>{const ROWS=[[60,64,67],[60,65,69],[62,66,69],[62,67,71],[62,66,69,72],[55,62,67,71]];ROWS.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.75,i*.8,.26)));} },
-    learn:{ label:"modulation",
-      explain:"Key change + confirming cadence. Closely related keys (±1 accidental + relatives). Pivot (shared chord), direct (no pivot chord), phrase (at the boundary).",
-      hint:"Cadence = proof.",
-      play:()=>{[62,66,69].forEach(m=>MFAudio.tone(m,.8,.05,.27));[55,59,62,67].forEach(m=>MFAudio.tone(m,1.0,.95,.27));} },
+      explain:"Two themes (tonic, then new key), a wandering middle, then both themes home — exposition, development, recapitulation.",
+      play:()=>{let t=0;[[60,.3],[64,.3],[67,.6],[74,.3],[71,.3],[67,.6]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});} },
+    learn:{ label:"sonata form",
+      explain:"Exposition (T1 tonic, T2 new key) → development (fragment/sequence/modulate) → recapitulation (both home) → coda.",
+      hint:"E-D-R.",
+      play:()=>{let t=0;[[60,.3],[64,.3],[67,.5],[60,.3],[64,.3],[67,.7]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});} },
     example:{ label:"the examples",
-      explain:"Example 1 pivots C→G through Am; example 2 lifts a whole step at the phrase line — the pop modulation." },
+      explain:"A miniature sonata-form example across four areas: exposition (tonal contrast), development (instability), recapitulation (resolved in the tonic), and an optional coda.",
+      play:()=>{const b=document.getElementById("exBtn1"); if(b)b.click();} },
     game:{ label:"the games",
-      explain:"Sprint the types, walk the pivot route, stage the move in order, then race the neighbor keys.",
-      hint:"±1 accidental = neighbors." },
+      explain:"Sprint the map, stage the drama, walk the key plan, then locate moments in the form.",
+      hint:"Where is the tonic?" },
     quiz:{ label:"this question",
-      explain:"Evidence: a new tonic emphasized, dominant harmony, and — decisive — a cadence in the new key.",
-      play:()=>{[62,66,69].forEach(m=>MFAudio.tone(m,.8,.05,.27));[55,59,62].forEach(m=>MFAudio.tone(m,.9,.95,.27));} }
+      explain:"Track two things: WHICH theme, and WHICH key. Exposition splits them; the recapitulation reunites them at home.",
+      play:()=>{let t=0;[[74,.3],[71,.3],[67,.5],[67,.3],[64,.3],[60,.7]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});} }
   }
 };

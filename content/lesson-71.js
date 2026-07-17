@@ -1,315 +1,288 @@
-/* Lesson 71 — The Blues Scale (AEMT Book 3, Unit 17 FINALE)
-   Built from drafts/UNIT 17 – Lesson 71.md; AEMT3 p.111 verified by render.
-   Core: the blues sound = the progression + a unique SCALE. The BLUES
-   SCALE has only 7 notes with a flatted 3rd, 5th and 7th — the BLUE NOTES.
-   Recipe from major: 1) remove degrees 2 and 6; 2) flat the 3rd and 7th;
-   3) add a flatted 5th. C blues: C-E♭-F-G♭-G-B♭-C. IMPROVISING = to
-   spontaneously create a unique solo.
+/* Lesson 71 (10.1, formerly L50) — The V7 (Dominant 7th) Chord (AEMT Book 2, Unit 12) — BOOK 2 FINALE
+   Built from drafts/UNIT 12 – Lesson 50.md; AEMT p.77 verified by render.
+   Core: V7 = V triad + minor 7th above the root (= m3 above the 5th);
+   4 notes → a CHORD, not a triad; the 5th is often omitted (3 voices);
+   the primary chords become I, IV, V7. In C major: G7 = G-B-D-F.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* build the blues scale: major → blues in three steps */
-function MF_L71_convert(container,fb){
-  let phase=0, removed=[], flatted=[];
-  container.innerHTML=`<div class="big-q l71c-q" style="text-align:center"></div>
-    <div class="l71c-staff"></div>
-    <div style="text-align:center"><button class="play l71c-add" style="display:none">➕ Add the flatted 5th (G♭)</button></div>`;
-  const q=container.querySelector(".l71c-q"), holder=container.querySelector(".l71c-staff"), addBtn=container.querySelector(".l71c-add");
-  function currentNotes(){
-    if(phase===0||phase===1){
-      const base=[["C4",1],["D4",2],["E4",3],["F4",4],["G4",5],["A4",6],["B4",7],["C5",8]];
-      return base.filter(([p,d])=>!removed.includes(d)).map(([p,d])=>{
-        let pp=p;
-        if(flatted.includes(d)) pp=p[0]+"b"+p[1];
-        return {p:pp, d:"q", label:String(d===8?1:d), deg:d};
-      });
-    }
-    return [{p:"C4",d:"q",label:"R"},{p:"Eb4",d:"q",label:"♭3"},{p:"F4",d:"q",label:"4"},{p:"Gb4",d:"q",label:"♭5"},{p:"G4",d:"q",label:"5"},{p:"Bb4",d:"q",label:"♭7"},{p:"C5",d:"q",label:"R"}];
+/* V7 factory: build G7 note by note on the keyboard */
+function MF_L71_factory(container,fb){
+  const STEPS=[
+    {m:67,name:"G — the root (degree 5, the dominant)"},
+    {m:71,name:"B — the 3rd"},
+    {m:74,name:"D — the 5th"},
+    {m:77,name:"F — the MINOR 7th above the root: the new ingredient!"}];
+  let k=0,kb=null;
+  container.innerHTML=`<div class="big-q l50-q" style="text-align:center"></div>
+    <div class="l50-staff"></div><div class="l50-kb"></div>
+    <p style="text-align:center;font-size:13.5px;color:var(--primary);font-weight:700;margin:6px 0 0">G to F = 10 half steps = a minor 7th. That little dissonance is V7's engine!</p>`;
+  const q=container.querySelector(".l50-q"), holder=container.querySelector(".l50-staff"), kbHolder=container.querySelector(".l50-kb");
+  function drawStaff(){
+    const PS=["G4","B4","D5","F5"];
+    const notes=PS.slice(0,k).map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true});
+    if(notes.length) Staff.render(holder,{clef:"treble",notes,width:180}); else holder.innerHTML="";
   }
-  function draw(clickable){
-    const notes=currentNotes();
-    Staff.render(holder,{clef:"treble",notes:notes.map(n=>({p:n.p,d:n.d,label:n.label})),width:520,clickNotes:clickable,
-      onNote: clickable? (i,p)=>{
-        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
-        const n=notes[i];
-        if(phase===0){
-          if(n.deg===2||n.deg===6){
-            if(!removed.includes(n.deg)){ removed.push(n.deg); MFAudio.yay();
-              if(removed.length<2){ q.innerHTML="✓ Great! Keep building the blues scale — one more to remove…"; draw(true); }
-              else { fb(true,"✓ Degrees 2 and 6 removed — step 1 complete. Now step 2: LOWER the 3rd and the 7th (tap them)."); phase=1; q.innerHTML="Step 2: tap the <b>3rd</b> and the <b>7th</b> to lower them."; draw(true); } }
-          } else fb(false,`Keep degree ${n.deg===8?1:n.deg} — step 1 removes only the 2nd and the 6th.`);
-        } else if(phase===1){
-          if((n.deg===3||n.deg===7)&&!flatted.includes(n.deg)){
-            flatted.push(n.deg);
-            MFAudio.tone(MFAudio.midi(n.p[0]+"b"+n.p[n.p.length-1]),.6,.1,.42);
-            if(flatted.length<2){ q.innerHTML="✓ Lowered! One more…"; draw(true); }
-            else { fb(true,"✓ E→E♭ and B→B♭ — step 2 complete. One thing missing: step 3 adds a new note!");
-              q.innerHTML="Step 3: press the button to add the <b>lowered 5th</b>."; draw(false); addBtn.style.display="inline-block"; }
-          } else if(n.deg===3||n.deg===7) q.innerHTML="Already lowered — now the other one!";
-          else fb(false,`Degree ${n.deg===8?1:n.deg} stays natural — lower only the 3rd and the 7th.`);
-        }
-      } : undefined});
-  }
-  addBtn.onclick=()=>{
-    phase=2; addBtn.style.display="none"; draw(false);
-    [60,63,65,66,67,70,72].forEach((m,i)=>MFAudio.tone(m,.45,.2+i*.32,.42));
-    fb(true,"✓ G♭ slides in between F and G — and there it is: the C BLUES SCALE. C-E♭-F-G♭-G-B♭-C: seven notes, three of them BLUE (♭3, ♭5, ♭7).");
-    q.textContent="Your blues scale is complete.";
-  };
-  q.innerHTML="Step 1: this is C major. Tap the <b>2nd</b> and the <b>6th</b> degrees to REMOVE them.";
-  draw(true);
+  function ask(){ q.innerHTML=`Build G7, note ${k+1} of 4: press <b>${STEPS[k].name.split(" — ")[0]}</b>.`; }
+  kb=Keyboard.create(kbHolder,{start:60,octaves:2,labels:true,
+    onKey:m=>{
+      if(m===STEPS[k].m){
+        kb.mark(STEPS.slice(0,k+1).map(s=>s.m)); MFAudio.tone(m,.5,0,.5); k++; drawStaff();
+        if(k>=4){ STEPS.forEach(s=>MFAudio.tone(s.m,1.1,.2,.32)); q.textContent="G7 assembled — hear that lean!";
+          fb(true,"✓ G-B-D-F: the V triad plus a minor 7th. FOUR notes make it a CHORD (not a triad) — and that F leans hungrily toward the I chord."); }
+        else { fb(true,`✓ ${STEPS[k-1].name}. Next…`); ask(); } }
+      else { MFAudio.tone(40,.2); fb(false, k===3? "The 7th is a minor 7th above G — count 10 half steps (or a m3 above D)." : `${STEPS[k].name.split(" — ")[0]} — build the plain V triad first.`); }
+    }});
+  ask();
 }
 
-/* improvising made simple: tap 5 blues-scale notes → hear your own solo */
-function MF_L71_improv(container,fb){
-  const BLUES=new Set([0,3,5,6,7,10]); const GOAL=5; const solo=[];
-  container.innerHTML=`<div class="big-q" style="text-align:center">Make your own blues solo: tap any <b>5</b> keys from the blues scale <b>(C · E♭ · F · G♭ · G · B♭)</b>, in any order.</div>
-    <div class="l71i-prog" style="text-align:center;font-weight:800;font-size:17px;margin:8px 0;color:var(--ink,#333)">Your solo: 0 / ${GOAL}</div>
-    <div class="l71i-kb"></div>`;
-  const prog=container.querySelector(".l71i-prog"), kh=container.querySelector(".l71i-kb");
-  Keyboard.create(kh,{start:60,octaves:2,labels:true,
-    onKey:m=>{
-      if(solo.length>=GOAL) return;
-      if(BLUES.has(m%12)){
-        MFAudio.tone(m,.5,0,.42); solo.push(m);
-        prog.textContent=`Your solo: ${solo.length} / ${GOAL}`;
-        if(solo.length===GOAL){
-          prog.textContent="\u{1F535} Your 5-note blues solo — listen back!";
-          solo.forEach((n,i)=>MFAudio.tone(n,.5,.4+i*.5,.42));
-          setTimeout(()=>fb(true,"✓ You just IMPROVISED — you made your own melody from the blues scale. That is improvising!"), GOAL*500+700);
-        }
-      } else {
-        MFAudio.tone(40,.15,0,.3);
-        fb(false,"That key is not in the blues scale — use C, E♭, F, G♭, G or B♭ (any octave).");
-      }
-    }});
+/* resolution lab: V7 → I vs V7 → nowhere */
+function MF_L71_resolve(container,fb){
+  let hA=false,hB=false;
+  container.innerHTML=`<div class="big-q" style="text-align:center">Listen to both endings. Which one sounds finished? Why?</div>
+    <div style="text-align:center">
+      <button class="play l50-a">▶ Ending A: V7 → I</button>
+      <button class="play l50-b">▶ Ending B: V7 (stops on the dominant)</button></div>
+    <div class="choices l50-ch" style="display:none"><button>Ending A — the tritone resolved to the tonic (I), so it sounds finished</button><button>Ending B — stopping on the dominant felt complete</button></div>`;
+  const ch=container.querySelector(".l50-ch");
+  container.querySelector(".l50-a").onclick=()=>{
+    [67,71,74,77].forEach(m=>MFAudio.tone(m,.8,0,.3));
+    [60,64,67,72].forEach(m=>MFAudio.tone(m,1.4,.9,.35));
+    hA=true; if(hB) setTimeout(()=>ch.style.display="",2400);
+  };
+  container.querySelector(".l50-b").onclick=()=>{
+    [67,71,74,77].forEach(m=>MFAudio.tone(m,1.6,0,.3));
+    hB=true; if(hA) setTimeout(()=>ch.style.display="",1800);
+  };
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    if(i===0) fb(true,"✓ V7 → I is music's most powerful arrival: the leading tone (B) rises to C, the 7th (F) sinks to E, and home never felt so earned. Composers end pieces with it constantly.");
+    else fb(false,"Play Ending B again — the B and F of the tritone are left hanging, so the music feels unfinished.");
+  });
 }
 
 LESSON_CONTENT[71]={
-  welcome:"The blues scale and its blue notes. \u{1F535}",
+  welcome:"The V chord saves its best trick for last: a 7th! \u{1F386}",
   hook:{
-    say:"<b>Two solos use the same blues progression.</b> Listen to both. <b>Which one sounds more like the blues?</b>",
+    say:"Two versions of the classic ending. One uses the plain V triad; the other has an added 7th that makes the arrival irresistible. <b>Which ending pulls home harder?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Solo A</button>
-          <button class="play hk-b">▶ Solo B</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Solo B — its lowered notes create the blues sound</button><button>Solo A — the plain major scale</button></div>`;
+          <button class="play hk-a">▶ Ending 1: V → I</button>
+          <button class="play hk-b">▶ Ending 2: V? → I</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Ending 2 — the extra note leaned harder into home</button><button>Ending 1 — three notes pull more than four</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ [60,62,64,67,69,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.3,.42)); [48,64,67].forEach(m=>MFAudio.tone(m,2.2,0,.18)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2400); };
-        container.querySelector(".hk-b").onclick=()=>{ [60,63,65,66,67,70,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.3,.42)); [48,64,67].forEach(m=>MFAudio.tone(m,2.4,0,.18)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2400); };
+        container.querySelector(".hk-a").onclick=()=>{ [67,71,74].forEach(m=>MFAudio.tone(m,.8,0,.33)); [60,64,67].forEach(m=>MFAudio.tone(m,1.2,.9,.38)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2300); };
+        container.querySelector(".hk-b").onclick=()=>{ [67,71,74,77].forEach(m=>MFAudio.tone(m,.8,0,.3)); [60,64,67,72].forEach(m=>MFAudio.tone(m,1.2,.9,.35)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Solo B used the BLUES SCALE — with its flatted 3rd, 5th and 7th, the BLUE NOTES. Those notes against the major chord create the blues sound. Today: build the scale and improvise with it!");
-          else fb(false,"Solo A was the plain major scale. Listen again for the LOWERED notes in B…");
+          if(i===0) fb(true,"✓ The added note was F — a minor 7th above G — turning V into V7, the DOMINANT SEVENTH chord. That extra lean is today's whole lesson!");
+          else fb(false,"Play both once more — which second chord ACHES before resolving?");
         });
       } }
   },
   objectives:[
-    "Know both blues ingredients: the 12-bar progression AND the blues scale",
-    "The blues scale has only 7 notes, with flatted 3rd, 5th and 7th",
-    "Call the flatted notes by name: BLUE NOTES",
-    "Build from any major scale: remove 2 & 6 → lower 3 & 7 → add ♭5",
-    "Spell the C blues scale: C-E♭-F-G♭-G-B♭-C",
-    "Define improvising — and do some!"
+    "Build a V7: V triad + minor 7th above the root",
+    "Explain why V7 is a chord, not a triad (4 notes)",
+    "Spell G7 in C major: G-B-D-F",
+    "Know the alternate recipe: minor 3rd above the 5th",
+    "Understand the omitted-5th version",
+    "Update the primary chords to I, IV, V7"
   ],
   steps:[
-    { say:"<b>The Blues Scale:</b> The blues sound comes from both the <b>12-bar blues progression</b> and the <b>blues scale</b>. The blues scale contains <b>blue notes</b>. \u{1F447} <b>What are the flatted notes in the blues scale called?</b>",
-      try:{ type:"mc", choices:["Blue notes","Sad notes","Broken notes"], answer:0,
-        success:"✓ BLUE NOTES — the flatted 3rd, 5th and 7th.",
-        fail:"The scale's own name is the clue…",
-        hint:"What color is the blues?" } },
-    { say:"<b>Build a Blues Scale:</b> Start with a major scale. <b>1) Remove the 2nd and 6th. · 2) Lower the 3rd and 7th. · 3) Add a lowered 5th.</b> \u{1F447} <b>Build the blues scale.</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 10px">Major Scale</th><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">C</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">D</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">E</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">F</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">—</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">G</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">A</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">B</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">C</td></tr>
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 10px">Blues Scale</th><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">C</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">—</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">E♭</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">F</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">G♭</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">G</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">—</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">B♭</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">C</td></tr></table>` },
+    { say:"The recipe: take the <b>V (dominant) triad</b> and add a <b>minor 7th above the root</b>. In C major: G-B-D + <b>F</b> = <b>G7</b>, the V7 chord. Equivalent shortcut: add a <b>minor 3rd above the 5th</b> (D→F). \u{1F447} <b>V7 = V triad + …?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
+        {p:"G4",d:"w",x:170,label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
+        {p:"G4",d:"w",x:390,label:"V7 = G-B-D-F"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:520} },
+      try:{ type:"mc", choices:["A minor 7th above the root","A Major 7th above the root","Another perfect 5th"], answer:0,
+        success:"✓ Minor 7th (G→F = 10 half steps). A MAJOR 7th would give F♯ — a very different, dreamier chord.",
+        fail:"G up to F — count the half steps: 10 = which interval from Unit 9?",
+        hint:"m7, not M7." } },
+    { say:"Terminology check: with <b>FOUR notes</b>, V7 is officially a <b>CHORD but not a triad</b> — triads have exactly three. Its full name: the <b>DOMINANT SEVENTH</b> chord. \u{1F447} <b>Why isn't V7 a triad?</b>",
+      try:{ type:"mc", choices:["It has 4 notes — triads have exactly 3","It's too loud","It has no root"], answer:0,
+        success:"✓ Tri- = three. Root, 3rd, 5th, PLUS 7th = four voices = a seventh chord.",
+        fail:"Count the noteheads in the stack…",
+        hint:"Tri- means…" } },
+    { say:"Build it yourself, note by note. \u{1F447} <b>Assemble G7 on the keyboard:</b>",
       try:{ type:"custom",
-        hint:"Remove 2 & 6 → lower 3 & 7 → add ♭5.",
-        mount:(container,fb)=>MF_L71_convert(container,fb) } },
-    { say:"<b>The C Blues Scale:</b> C – E♭ – F – G♭ – G – B♭ – C. \u{1F447} <b>How many notes are in the blues scale?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
-        {p:"C4",d:"q",label:"Root"},{p:"Eb4",d:"q",label:"♭3"},{p:"F4",d:"q",label:"4"},{p:"Gb4",d:"q",label:"♭5"},
-        {p:"G4",d:"q",label:"5"},{p:"Bb4",d:"q",label:"♭7"},{p:"C5",d:"q",label:"Root"}],width:520} },
-      try:{ type:"mc", choices:["7 notes","12 notes","8 notes"], answer:0,
-        success:"✓ 7 notes — two degrees were removed and one (♭5) was added.",
-        fail:"Count the noteheads on the staff…",
-        hint:"8 minus 2 removed plus 1 added." } },
-    { say:"<b>The Blue Note:</b> The lowered 5th sits next to the natural 5th. This creates one of the characteristic blues sounds. \u{1F447} <b>Which two notes are a half step apart?</b>",
-      try:{ type:"mc", choices:["♭5 and 5 (G♭ and G)","Root and ♭3","4 and ♭7"], answer:0,
-        success:"✓ G♭ and G — the lowered 5th next to the natural 5th creates a characteristic blues sound.",
-        fail:"Find the two notes sharing almost the same letter…",
-        hint:"The added note and its neighbor." } },
-    { say:"<b>Improvising:</b> Improvising means creating music as you play. Blues musicians often improvise using the blues scale. <b>Remember: the blues scale is often used for improvising over a 12-bar blues progression.</b> \u{1F447} <b>What does improvising mean?</b>",
-      try:{ type:"mc", choices:["Spontaneously creating a unique solo","Playing exactly what's written","Playing without any rhythm"], answer:0,
-        success:"✓ Creating music as you play — and every note of the blues scale works over the progression.",
-        fail:"Creating music as you play…",
-        hint:"Spontaneous + unique." } },
-    { say:"Now improvise your own solo — tap 5 notes from the blues scale and hear it play back. \u{1F447}",
+        hint:"G, B, D — then the m7: F.",
+        mount:(container,fb)=>MF_L71_factory(container,fb) } },
+    { say:"Why add the 7th? The added 7th (<b>F</b>) forms a <b>tritone</b> with <b>B</b>, the chord's 3rd. This unstable interval creates tension that naturally wants to resolve to the tonic (I): B rises to C, F falls to E. \u{1F447} <b>Listen to both examples and decide which ending feels complete:</b>",
       try:{ type:"custom",
-        hint:"Tap any 5 of C, E♭, F, G♭, G, B♭ — in any order.",
-        mount:(container,fb)=>MF_L71_improv(container,fb) } },
-    { say:"<b>Try Another Key:</b> Build the G blues scale. \u{1F447} <b>Which notes belong in the G blues scale?</b>",
-      try:{ type:"mc", choices:["G-B♭-C-D♭-D-F-G","G-A-B-C-D-E-F♯-G","G-B-C-D-F♯-G"], answer:0,
-        success:"✓ From G major: remove A and E, lower B and F♯ (→B♭, F), add D♭. Root, ♭3, 4, ♭5, 5, ♭7, Root.",
-        fail:"Apply the three operations to G major, one at a time…",
-        hint:"Remove 2&6, flat 3&7, add ♭5." } }
+        hint:"Which ending could you actually END a piece with?",
+        mount:(container,fb)=>MF_L71_resolve(container,fb) } },
+    { say:"Practical Tip: in a <b>3-voice V7, the 5th is usually omitted</b>. Instead of G\u2013B\u2013D\u2013F, we often play <b>G\u2013B\u2013F</b>. The chord still sounds like V7. \u{1F447} <b>Which note is missing in the 3-voice V7?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
+        {p:"G4",d:"w",x:170,label:"full V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"G4",d:"w",x:400,label:"5th omitted"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:540} },
+      try:{ type:"mc", choices:["The 5th (D)","The 7th (F)","The root (G)"], answer:0,
+        success:"✓ The 5th (D) is left out — the root, 3rd and 7th carry the chord's character, so G\u2013B\u2013F still sounds like V7.",
+        fail:"Drop the 7th and it's not a 7th chord at all!",
+        hint:"Keep the name-note, the quality-note, and the tension-note." } },
+    { say:"A Common Chord Group: in many songs, the three most common harmonic functions are <b>I, IV, and V7</b>. Together, they create a strong sense of <b>home, movement, and resolution</b>. \u{1F447} <b>Which three chords make up this common progression?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",x:140,label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"F4",d:"w",x:310,label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",x:480,label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:580} },
+      try:{ type:"mc", choices:["I, IV, and V7","I, ii, and V7","I7, IV7, and V7"], answer:0,
+        success:"✓ I, IV, V7 — home, movement, resolution: the harmonization toolkit for everything ahead. Take a bow! \u{1F386}",
+        fail:"Only the DOMINANT gets the 7th upgrade (for now).",
+        hint:"One chord earned a 7; two stayed triads." } }
   ],
   examples:[
-    { caption:"C major vs C blues, side by side: two notes are removed, three are lowered.",
-      staff:{clef:"treble",tempo:110,notes:[
-        {p:"C4",d:"q",label:"C major"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"},{bar:"double"},
-        {p:"C4",d:"q",label:"C blues"},{p:"Eb4",d:"q"},{p:"F4",d:"q"},{p:"Gb4",d:"q"},{p:"G4",d:"q",acc:"n"},{p:"Bb4",d:"q"},{p:"C5",d:"q"},{bar:"final"}],width:640},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"A written blues melody — blues-scale notes over the I chord. The ♭3 against the chord's natural 3rd creates the blues sound.",
-      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
-        {p:"C4",d:"8"},{p:"Eb4",d:"8"},{p:"F4",d:"8"},{p:"Gb4",d:"8"},{p:"G4",d:"q",acc:"n"},{p:"Bb4",d:"q"},{bar:"single"},
-        {p:"G4",d:"8"},{p:"Gb4",d:"8"},{p:"F4",d:"8"},{p:"Eb4",d:"8"},{p:"C4",d:"h"},{bar:"final"}],
-        beams:[[0,1],[2,3],[7,8],[9,10]],width:600},
-      kb:{start:60,octaves:0.9167,labels:true} }
+    { caption:"V grows into V7: the dominant triad, then the same chord with its minor 7th — hear the tension arrive with the F.",
+      staff:{clef:"treble",tempo:60,notes:[
+        {p:"G4",d:"w",x:170,label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
+        {p:"G4",d:"w",x:390,label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:520},
+      kb:{start:60,octaves:2,labels:true} },
+    { caption:"The upgraded primary chords — I, IV, V7, and the triumphant return to I: home, movement, and resolution in one cadence.",
+      staff:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:640} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Blue-Note Sprint (45s)",
-      intro:"Steps, spellings and definitions — race the blues facts!",
-      miaIntro:"♭3, ♭5, ♭7 — paint them blue! \u{26A1}",
+    { type:"gen-race", title:"Game 1 · V7 Fact Sprint (45s)",
+      intro:"Everything V7 — recipes, spellings, omissions — at top speed!",
+      miaIntro:"The final sprint of the lesson! \u{1F386}",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Blue notes","the flatted 3rd, 5th and 7th"],
-        ["Blues scale size","only 7 notes"],
-        ["Build step 1","remove the 2nd and 6th degrees"],
-        ["Build step 2","lower the 3rd and 7th"],
-        ["Build step 3","add a lowered 5th"],
-        ["C blues scale","C-E♭-F-G♭-G-B♭-C"],
-        ["Improvising","creating music as you play"],
-        ["The blues sound","the progression + the scale together"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — blue-note fluent!":null },
-    { type:"key-climb", title:"Game 2 · Blues Scale Round Trip",
-      intro:"Climb the C blues scale up and back down — watch for the ♭5!",
-      miaIntro:"Up and back down! \u{1FA9C}",
-      spec:{seq:[60,63,65,66,67,70,72, 70,67,66,65,63,60],
-        names:["C (root)","E♭ (♭3 — blue!)","F (4)","G♭ (♭5 — blue!)","G (5)","B♭ (♭7 — blue!)","C (top)","B♭","G","G♭","F","E♭","C — home"],
-        start:60, octaves:1, title:"C blues scale, up and down"},
-      result:(score)=>score!==null?"The blues scale lives in your fingers now!":null },
-    { type:"symbol-hunt", title:"Game 3 · Spot the Blue Note",
-      intro:"Four intervals from the root — click the BLUE one each round calls!",
-      miaIntro:"Which bend is which? \u{1F440}",
+        ["V7 chord","the V triad + a minor 7th above the root"],
+        ["G7 in C major","G-B-D-F"],
+        ["Why V7 is not a triad","it has 4 notes"],
+        ["Often omitted from V7","the 5th"],
+        ["The alternate recipe","a minor 3rd above the 5th"],
+        ["The upgraded primary chords","I, IV, and V7"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" facts — dominant mastery!":null },
+    { type:"key-climb", title:"Game 2 · G7 Ladder",
+      intro:"Climb G-B-D-F in order — the dominant seventh under your fingers!",
+      miaIntro:"Four notes to the top! \u{1FA9C}",
+      spec:{seq:[67,71,74,77], names:["G (root)","B (3rd)","D (5th)","F (m7!)"], start:60, octaves:2,
+        title:"Press G → B → D → F: the G7 chord"},
+      result:(score)=>score!==null?"G7 climbed and conquered!":null },
+    { type:"symbol-hunt", title:"Game 3 · Seventh Spotter",
+      intro:"Triads and seventh chords mixed — click what each round names!",
+      miaIntro:"Count the noteheads! \u{1F50D}",
       spec:{rounds:6, pool:[
-        {label:"♭3 (C to E♭)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true}],width:150}},
-        {label:"♭5 (C to G♭)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Gb4",d:"w",chord:true}],width:150}},
-        {label:"♭7 (C to B♭)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Bb4",d:"w",chord:true}],width:150}},
-        {label:"Natural 5 (C to G) — NOT blue", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"G4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"Blue vision: activated!":null },
-    { type:"term-race", title:"Game 4 · UNIT 17 GRAND FINALE Race",
-      intro:"The victory lap — minor harmonizing, composing, 12 bars and blue notes!",
-      miaIntro:"Everything from Unit 17 — GO! \u{1F3C6}",
+        {label:"V7 (G-B-D-F)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:150}},
+        {label:"V (G-B-D)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
+        {label:"I (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"V7, 5th omitted", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"No seventh slips past you!":null },
+    { type:"term-race", title:"Game 4 · GRAND REVIEW Race",
+      intro:"The victory lap: chords, intervals, meters — highlights from Lessons 26–50!",
+      miaIntro:"Everything you've learned — GO! \u{1F3C6}",
       spec:{rounds:10, reverse:true, pool:[
-        ["Minor chart rows","1,3,5→i · 2,4,5,7→V · 1,4,6→iv"],
-        ["Raised 7th in a melody","harmonize with V(7)"],
-        ["Minor composing frame","root of i at both ends"],
-        ["12-bar blues map","I×4 · IV×2 · I×2 · V×1 · IV×1 · I×2"],
-        ["The blues' birthplace","America's south"],
-        ["Blue notes","♭3, ♭5, ♭7"],
-        ["Building the blues scale","remove 2&6, lower 3&7, add ♭5"],
-        ["C blues scale","C-E♭-F-G♭-G-B♭-C"],
-        ["Improvising","creating music as you play"],
-        ["The complete blues sound","12-bar progression + blues scale"]]},
-      result:(score)=>score>=8?"UNIT 17 CHAMPION!":null }
+        ["V7","the dominant seventh chord"],
+        ["Triad","root + 3rd + 5th"],
+        ["Primary chords (final form)","I, IV, and V7"],
+        ["Perfect intervals","unison, 4th, 5th, octave"],
+        ["Minor interval","a Major interval lowered a half step"],
+        ["Triplet","3 notes in the time of 2"],
+        ["6/8 time","six eighth-beats in two bundles"],
+        ["Cut time","2/2 — alla breve"],
+        ["Leading tone","degree 7 — pulls to the tonic"],
+        ["Circle of fifths","the key-signature map from Unit 8"]]},
+      result:(score)=>score>=8?"REVIEW CHAMPION — inversions await in Lesson 51!":null }
   ],
-  practiceIntro:"20 practice questions — the recipe, the spelling and the blue notes. Answer right and the next appears automatically!",
+  practiceIntro:"16 practice questions — recipes, spellings, omissions and the big finale review. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Blue notes","♭3, ♭5, ♭7"],["Step 1","remove degrees 2 and 6"],["Step 2","flat degrees 3 and 7"],["Step 3","add the flatted 5th"],["Improvise","create a solo spontaneously"]], reverse:true}, count:6 },
-    { gen:"interval-quality", params:{ask:"quality"}, count:2 },
-    { type:"mc", q:"How many notes are in the blues scale?", choices:["7","8","5"], answer:0,
-      explain:"Two degrees removed, one added." },
-    { type:"mc", q:"Which notes are lowered?", choices:["The 3rd, 5th and 7th","The 2nd and 6th","The 1st and 4th"], answer:0,
-      explain:"The three blue notes." },
-    { type:"mc", q:"Which degrees are REMOVED when converting major to blues?", choices:["2nd and 6th","3rd and 7th","1st and 5th"], answer:0,
-      explain:"Operation 1 of the recipe." },
-    { type:"mc", q:"The C blues scale is spelled…", choices:["C-E♭-F-G♭-G-B♭-C","C-D-E♭-F-G-A-B♭-C","C-E-F-G-B-C"], answer:0,
-      explain:"Root, ♭3, 4, ♭5, 5, ♭7, Root." },
-    { type:"mc", q:"The flatted notes of the blues scale are often called…", choices:["blue notes","gray notes","passing tones"], answer:0,
-      explain:"The style's namesake notes." },
-    { type:"mc", q:"What does improvising mean?", choices:["Creating music as you play","Reading music perfectly","Playing someone else's solo"], answer:0,
-      explain:"Spontaneous and unique to you." },
-    { type:"truefalse", q:"The blues sound comes only from the chord progression.", answer:false,
-      explain:"NOT only — the unique scale matters just as much." },
-    { type:"truefalse", q:"The blues scale contains both G♭ and G (in C).", answer:true,
-      explain:"♭5 AND 5 — a half step apart." },
-    { type:"truefalse", q:"The blues scale keeps the major scale's 2nd degree.", answer:false,
-      explain:"Degree 2 is removed in operation 1." },
-    { type:"truefalse", q:"Playing blues-scale notes over a blues progression creates the special blues sound.", answer:true,
-      explain:"Scale + progression = the blues sound." }
+    { gen:"term-match", params:{subject:"term", pool:[["V7","V triad + minor 7th above the root"],["G7","G-B-D-F"],["Not a triad because","V7 has four notes"],["Often omitted","the 5th of V7"]], reverse:true}, count:4 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:3 },
+    { type:"mc", q:"To build a V7 chord, add a ____ above the root of the V triad.", choices:["minor 7th","Major 7th","Perfect 8th"], answer:0,
+      explain:"G→F = m7." },
+    { type:"mc", q:"Equivalently, add a ____ above the 5th of the V triad.", choices:["minor 3rd","Major 3rd","Perfect 4th"], answer:0,
+      explain:"D→F = m3 — same F either way." },
+    { type:"mc", q:"In C major, V7 is spelled…", choices:["G-B-D-F","G-B-D-F♯","G-A-B-C"], answer:0,
+      explain:"The G7 chord." },
+    { type:"mc", q:"V7 is a chord but NOT a triad because…", choices:["it has 4 notes","it has no root","it uses a flat"], answer:0,
+      explain:"Triads are exactly three notes." },
+    { type:"mc", q:"When the 5th of V7 is omitted, the remaining notes are…", choices:["G-B-F","G-D-F","B-D-F"], answer:0,
+      explain:"Root + 3rd + 7th keep the chord's identity." },
+    { type:"truefalse", q:"Omitting the 5th destroys the V7's seventh-chord quality.", answer:false,
+      explain:"It RETAINS the quality — the 5th is the dispensable note." },
+    { type:"truefalse", q:"After this lesson, the three primary chords are I, IV, and V7.", answer:true,
+      explain:"The dominant almost always brings its 7th." },
+    { type:"mc", q:"The tension inside V7 comes partly from B and F forming…", choices:["a tritone (dim 5th)","a perfect 5th","an octave"], answer:0,
+      explain:"The B–F tritone (the unstable interval from Lesson 37) naturally wants to resolve to I." },
+    { type:"mc", q:"V7 resolves most naturally to…", choices:["I","IV","vii"], answer:0,
+      explain:"Dominant → tonic: music's strongest arrival." }
   ],
-  miaQuizIntro:"The Unit 17 finale quiz! Seven notes, three of them blue — and a license to improvise.",
+  miaQuizIntro:"The final quiz of the unit — bring everything. G-B-D-F and go!",
   quiz:[
-    { type:"mc", q:"What creates the blues sound?", choices:["The chord progression AND the blues scale","Only the tempo","Only the lyrics"], answer:0,
-      explain:"Two ingredients, one style.", hint:"Lessons 70 + 71 together." },
-    { type:"mc", q:"Compared with a major scale, what is different about the blues scale?", choices:["It has 7 notes, with lowered 3rd, 5th and 7th","It has more notes","It has the same notes, reordered"], answer:0,
-      explain:"Fewer notes; three of them lowered.", hint:"Count and compare." },
-    { type:"mc", q:"The flatted notes are often called…", choices:["blue notes","soft notes","minor notes"], answer:0,
-      explain:"♭3, ♭5, ♭7 — the blue trio.", hint:"The lesson's color." },
-    { type:"mc", q:"Which scale degrees are removed?", choices:["The 2nd and 6th","The 3rd and 7th","The root"], answer:0,
-      explain:"Step 1 of building the scale.", hint:"Subtraction first." },
-    { type:"mc", q:"Which scale degrees are lowered?", choices:["The 3rd and 7th","The 1st","The 2nd and 6th"], answer:0,
-      explain:"Step 2 of building the scale.", hint:"The first two blue notes." },
-    { type:"mc", q:"Which note is added?", choices:["A lowered 5th","A sharped 4th","A second root"], answer:0,
-      explain:"Step 3 — it sits between 4 and 5.", hint:"The final blue note." },
-    { type:"mc", q:"Identify this scale.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"Eb4",d:"q"},{p:"F4",d:"q"},{p:"Gb4",d:"q"},{p:"G4",d:"q"},{p:"Bb4",d:"q"},{p:"C5",d:"q"}],width:440},
-      choices:["The C blues scale","C natural minor","C major with typos"], answer:0,
-      explain:"Root, ♭3, 4, ♭5, 5, ♭7, Root.", hint:"Count the notes: seven." },
-    { type:"mc", q:"Which two notes of the C blues scale are a half step apart?", choices:["G♭ and G","C and E♭","F and B♭"], answer:0,
-      explain:"♭5 against 5 — a half step.", hint:"The added note's neighbor." },
-    { type:"truefalse", q:"Improvising means spontaneously creating a unique solo.", answer:true,
-      explain:"Creating music as you play.", hint:"Spontaneous + unique." },
-    { type:"mc", q:"The blues scale's ♭3 (E♭) played over a C MAJOR chord (with E♮)…", choices:["creates the characteristic blues sound","is always an error","cancels the chord"], answer:0,
-      explain:"That sound IS the blues.", hint:"Why solo B sounded like the blues." },
-    { type:"mc", q:"The G blues scale (from the recipe) is…", choices:["G-B♭-C-D♭-D-F-G","G-A-B♭-C-D-E♭-F-G","G-B-D-F-G"], answer:0,
-      explain:"Remove A & E, flat B & F♯, add D♭.", hint:"Apply all three operations to G major." },
-    { type:"mc", q:"How do musicians create a blues sound?", choices:["By using the blues scale over a blues progression","By playing without any chords","By playing only block chords"], answer:0,
-      explain:"Scale + progression = the blues.", hint:"The two lessons combined." },
+    { type:"mc", q:"A V7 chord is built by adding a minor 7th above the root of…", choices:["the V (dominant) triad","the I (tonic) triad","the IV triad","any minor triad"], answer:0,
+      explain:"Dominant + m7 = dominant seventh.", hint:"Its other name says it." },
+    { type:"mc", q:"In C major, the V7 chord is…", choices:["G-B-D-F","G-B-D","C-E-G-B","F-A-C-E"], answer:0,
+      explain:"G7 — the G triad plus F.", hint:"Root on degree 5." },
+    { type:"mc", q:"V7 is called a CHORD and not a triad because…", choices:["it contains 4 notes rather than 3","it is played loudly","its notes are all on lines"], answer:0,
+      explain:"Four voices = seventh chord.", hint:"Tri- = 3." },
+    { type:"mc", q:"The interval from the ROOT of V7 up to its 7th is…", choices:["a minor 7th","a Major 7th","a Perfect octave"], answer:0,
+      explain:"G→F = 10 half steps = m7.", hint:"NOT F♯!" },
+    { type:"mc", q:"The interval from the 5TH of the V triad up to the added 7th is…", choices:["a minor 3rd","a Major 3rd","a Perfect 4th"], answer:0,
+      explain:"D→F = 3 half steps.", hint:"The alternate recipe." },
+    { type:"truefalse", q:"The 5th of the V7 chord is often omitted.", answer:true,
+      explain:"G-B-F still sounds fully like G7.", hint:"Which note adds bulk, not flavor?" },
+    { type:"truefalse", q:"With the 5th omitted, V7 can be performed by just three singers.", answer:true,
+      explain:"A practical reason for the omission.", hint:"Three voices, three notes." },
+    { type:"mc", q:"Name this chord (key of C).",
+      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:200},
+      choices:["V7 (G7)","V (G triad)","I7"], answer:0,
+      explain:"Four notes from G: G-B-D-F.", hint:"Count the noteheads first." },
+    { type:"mc", q:"Name this chord (key of C).",
+      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:200},
+      choices:["V7 with the 5th omitted","An error — chords need stacked 3rds only","IV"], answer:0,
+      explain:"G-B-F: root, 3rd, 7th — G7 minus its D.", hint:"What's missing from G-B-D-F?" },
+    { type:"mc", q:"The three primary chords, in their upgraded form, are…", choices:["I, IV, and V7","I, IV, and V","I7, IV, and V"], answer:0,
+      explain:"The dominant brings its 7th from now on.", hint:"One upgrade only." },
+    { type:"mc", q:"V7 most naturally resolves to…", choices:["the I chord","the IV chord","another V7","silence"], answer:0,
+      explain:"Leading tone up, 7th down — home.", hint:"Where did the resolution lab land?" },
+    { type:"mc", q:"Why does V7 pull harder toward I than plain V?", choices:["The added 7th creates extra tension (a tritone with the 3rd)","It is played faster","Four notes are louder than three"], answer:0,
+      explain:"The B–F tritone is unstable and naturally resolves: B up to C, F down to E.", hint:"An unstable interval (a tritone) hides between the chord's 3rd and 7th." },
     /* generated */
-    { gen:"term-match", params:{subject:"term", pool:[["♭3, ♭5, ♭7","the blue notes"],["Remove 2 & 6","build step 1"],["Add ♭5","build step 3"],["Improvise","creating music as you play"]], reverse:true}, count:3 },
-    { gen:"interval-quality", params:{ask:"quality"}, count:2 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:1 }
+    { gen:"term-match", params:{subject:"term", pool:[["V7","V triad + minor 7th above the root"],["G7 in C major","G-B-D-F"],["Omittable note of V7","the 5th"],["Primary chords (final)","I, IV, V7"]], reverse:true}, count:3 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
+    { gen:"degree-name", params:{ask:"name"}, count:1 }
   ],
   vocabulary:[
-    {term:"Blues Scale", def:"A 7-note scale with flatted 3rd, 5th and 7th. In C: C-E♭-F-G♭-G-B♭-C."},
-    {term:"Blue Notes", def:"The flatted 3rd, 5th and 7th — the lowered notes that create the blues sound."},
-    {term:"Building the Scale", def:"Major → blues: 1) remove degrees 2 & 6 · 2) lower 3 & 7 · 3) add a lowered 5th."},
-    {term:"Improvise", def:"To create music as you play — blues-scale notes over a blues progression."}
+    {term:"V7 (Dominant Seventh) Chord", def:"The V triad plus a minor 7th above its root — four notes, used in many pieces instead of the plain V triad.",
+      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:130}},
+    {term:"G7", def:"The V7 chord of C major: G-B-D-F."},
+    {term:"Omitted 5th", def:"V7 is often written without its 5th (G-B-F) — three voices can perform it, and the 7th-chord quality remains.",
+      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:130}},
+    {term:"Primary Chords (final form)", def:"I, IV, and V7 — the harmonization toolkit for the lessons ahead."}
   ],
   mistakes:[],
   summary:[
-    "✔ The blues = <b>the 12-bar progression + the blues scale</b>.",
-    "✔ The scale has <b>7 notes</b> with <b>♭3, ♭5, ♭7 — the BLUE NOTES</b>.",
-    "✔ Build it: <b>remove 2 & 6 → lower 3 & 7 → add ♭5</b>.",
-    "✔ C blues: <b>C-E♭-F-G♭-G-B♭-C</b> (Root, ♭3, 4, ♭5, 5, ♭7, Root).",
-    "✔ <b>IMPROVISE</b> = create music as you play. <b>UNIT 17 COMPLETE!</b> \u{1F389}"
+    "✔ <b>V7 = V triad + minor 7th above the root</b> (or m3 above the 5th): in C major, <b>G-B-D-F = G7</b>.",
+    "✔ Four notes → a <b>chord</b>, not a triad.",
+    "✔ The <b>5th is often omitted</b> (G-B-F) — the quality survives; three voices suffice.",
+    "✔ The primary chords are now <b>I, IV, V7</b>.",
+    "✔ V7's tritone (3rd + 7th) makes dominant → tonic music's strongest resolution. <b>LESSONS 26–50 COMPLETE!</b> \u{1F386}"
   ],
   tips:[
-    "Every note of the blues scale works over every chord of the 12-bar progression — that's why it's the improviser's first scale.",
-    "The ♭5 is strongest as a PASSING note — slide G♭ into G (or down into F) rather than parking on it.",
-    "Practice trick: loop the Game 2 round trip until your fingers know it blind, then improvise by rearranging its pieces.",
-    "Unit 18 — the FINAL unit — zooms all the way out: how whole pieces of music are built. Form!"
+    "Every 'bluesy' chord you've ever heard is a cousin of V7 — dominant sevenths run the blues.",
+    "Voice-leading preview: in V7 → I, the leading tone rises (B→C) while the 7th falls (F→E). Two half steps do all the magic.",
+    "Play I → IV → V7 → I daily. It is the single most useful progression you will ever own.",
+    "Congratulations — the first 50 lessons are yours! Next up: chord inversions, minor scales, and beyond. \u{1F386}"
   ],
-  rewards:{ badge:"Blue-Note Bender — Unit 17 Champion", icon:"\u{1F535}" },
+  rewards:{ badge:"Dominant Master", icon:"\u{1F386}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT — the scale, the blue notes AND a solo of your own! Unit 17 conquered. \u{1F535}\u{1F3C6}\u{1F389}",
-  miaPass:"Passed — and Unit 17 is COMPLETE! You harmonize, compose AND improvise now. \u{1F389}",
+  miaPerfect:"A PERFECT score on the V7 finale — I could not be prouder! \u{1F386}\u{1F3C6}\u{1F389}",
+  miaPass:"Passed — the V7 chord is yours! G-B-D-F forever. \u{1F386}",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Solo A used plain C major; solo B used the BLUES SCALE — its ♭3, ♭5 and ♭7 against the chord created the blues sound.",
-      play:()=>{[60,63,65,66,67,70,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.3,.42));[48,64,67].forEach(m=>MFAudio.tone(m,2.4,0,.18));} },
-    learn:{ label:"the blues scale",
-      explain:"7 notes: Root, ♭3, 4, ♭5, 5, ♭7, Root. Build it: remove 2&6, lower 3&7, add ♭5. The flatted notes are the blue notes; improvising = creating music as you play.",
-      hint:"C-E♭-F-G♭-G-B♭-C.",
-      play:()=>{[60,63,65,66,67,70,72].forEach((m,i)=>MFAudio.tone(m,.42,i*.3,.42));} },
+      explain:"Ending 1 was V → I; ending 2 added F to make V7 → I — the minor 7th that turns a nice arrival into an inevitable one.",
+      play:()=>{[67,71,74,77].forEach(m=>MFAudio.tone(m,.8,0,.3));[60,64,67,72].forEach(m=>MFAudio.tone(m,1.2,.9,.35));} },
+    learn:{ label:"the V7 chord",
+      explain:"V triad + m7 above the root = V7 (G-B-D-F in C). Four notes = chord, not triad. The 5th is expendable; the 7th is the point. Primary chords: I, IV, V7.",
+      hint:"G-B-D-F. The F is the magic.",
+      play:()=>{[67,71,74,77].forEach(m=>MFAudio.tone(m,1,.1,.3));} },
     example:{ label:"the examples",
-      explain:"Example 1 sets C major and C blues side by side; example 2 is a written blues lick over the I chord — the ♭3 rub in action." },
+      explain:"Example 1 grows V into V7; example 2 plays the full I-IV-V7-I cadence — music's most classic closing sound." },
     game:{ label:"the games",
-      explain:"Sprint the facts, climb the scale both ways, spot the blue intervals, then run the Unit 17 victory lap.",
-      hint:"Three blue notes: ♭3, ♭5, ♭7." },
+      explain:"Sprint the facts, climb G7, spot sevenths by eye, then run the grand review race.",
+      hint:"Count noteheads first: four = seventh chord." },
     quiz:{ label:"this question",
-      explain:"Everything comes from the three steps (remove 2&6, lower 3&7, add ♭5) and the spelling they produce. When in doubt, rebuild the scale.",
-      play:()=>{[60,63,65,66,67,70,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.28,.42));} }
+      explain:"Everything reduces to the recipe: G-B-D-F, four notes, m7 on top, 5th optional, resolves to I.",
+      play:()=>{[67,71,77].forEach(m=>MFAudio.tone(m,.8,0,.33));[60,64,72].forEach(m=>MFAudio.tone(m,1,1,.38));} }
   }
 };

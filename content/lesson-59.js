@@ -1,355 +1,322 @@
-/* Lesson 59 — Augmented and Diminished Triads (AEMT Book 3, Unit 14 FINALE)
-   Built from drafts/UNIT 14 – Lesson 59.md; AEMT3 p.93 verified by render.
-   Core: AUGMENTED (+) = major triad with the 5th RAISED ½ step (M3+M3);
-   DIMINISHED (°) = minor triad with the 5th LOWERED ½ step (m3+m3);
-   symbols: letter=major, m=minor, +=aug, °=dim; MAJOR TRIAD SCALE:
-   degrees 1-4-5 major, 2-3-6 minor, 7 DIMINISHED (vii°).
+/* Lesson 59 (8.2, formerly L57) — Natural, Harmonic and Melodic Minor Scales (AEMT Book 3, Unit 14)
+   Built from drafts/UNIT 14 – Lesson 57.md; AEMT3 p.91 verified by render.
+   Core: three forms — NATURAL (relative major's tones only), HARMONIC (raised
+   7th ascending AND descending; the most used), MELODIC (raised 6th & 7th
+   ascending, natural form descending). Harmonic minor diatonic intervals:
+   P1 M2 m3 P4 P5 m6 M7 P8. Hard concept → extra-slow steps, hands-on fixes.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* stretch & shrink lab: tap the 5th to alter it */
-function MF_L59_lab(container,fb){
-  const ROUNDS=[
-    {from:"C major (C-E-G)", to:"C+ — AUGMENTED", base:["C4","E4","G4"], out:["C4","E4","G#4"], dir:"raise",
-      expl:"G was raised to G♯ — a major triad with a raised 5th: AUGMENTED (C+)."},
-    {from:"C minor (C-E♭-G)", to:"C° — DIMINISHED", base:["C4","Eb4","G4"], out:["C4","Eb4","Gb4"], dir:"lower",
-      expl:"G was lowered to G♭ — a minor triad with a lowered 5th: DIMINISHED (C°)."}];
-  let r=0;
-  container.innerHTML=`<div class="big-q l59l-q" style="text-align:center"></div>
-    <div class="l59l-staff"></div>
-    <div style="text-align:center"><button class="play l59l-next" style="display:none">▶ Next chord</button></div>`;
-  const q=container.querySelector(".l59l-q"), holder=container.querySelector(".l59l-staff"), nxt=container.querySelector(".l59l-next");
-  function draw(ps,label,clickable){
-    Staff.render(holder,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w",label}:{p,d:"w",chord:true}),
-      width:250, clickNotes:clickable,
-      onNote: clickable? (i)=>{
-        const R=ROUNDS[r];
-        if(i===2){
-          draw(R.out, R.to, false);
-          R.out.forEach(p=>MFAudio.tone(MFAudio.midi(p),1.2,.1,.32));
-          fb(true,`✓ ${R.expl}`);
-          r++;
-          if(r<ROUNDS.length) nxt.style.display="inline-block";
-          else q.textContent="Excellent! You built an augmented and a diminished triad.";
-        } else { MFAudio.tone(40,.2); fb(false, i===0? "The root stays the same. Tap the 5th — the top note." : "The 3rd stays the same here — tap the 5th, the top note."); }
-      } : undefined});
+/* fix-the-scale: tap the degree(s) that get raised */
+function MF_L59_fix(container,fb){
+  const NAT=["A3","B3","C4","D4","E4","F4","G4","A4"];
+  let stage=0; /* 0 = raise 7th (harmonic), 1 = raise 6th then 7th (melodic) */
+  let done=[];
+  container.innerHTML=`<div class="big-q l57f-q" style="text-align:center"></div>
+    <div class="l57f-staff"></div>`;
+  const q=container.querySelector(".l57f-q"), holder=container.querySelector(".l57f-staff");
+  function draw(ps,label){
+    Staff.render(holder,{clef:"treble",notes:ps.map((p,i)=>({p,d:"q",label:i===0?label:undefined})),
+      width:520, clickNotes:true,
+      onNote:(i,p)=>{
+        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
+        if(stage===0){
+          if(i===6){
+            const H=["A3","B3","C4","D4","E4","F4","G#4","A4"];
+            draw(H,"A harmonic minor");
+            H.forEach((pp,ix)=>MFAudio.tone(MFAudio.midi(pp),.4,.3+ix*.28,.38));
+            fb(true,"✓ Great! You built the harmonic minor scale — G♯ is the leading tone, used both ascending and descending.");
+            stage=1; done=[];
+            setTimeout(()=>{ q.innerHTML="Now raise the <b>6th and 7th</b> to build the <b>melodic minor</b> (ascending)."; draw(NAT,"A natural minor"); },3400);
+          } else fb(false,`That's degree ${i+1}. The harmonic minor raises only the 7TH.`);
+        } else {
+          if(i===5&&!done.includes(5)){ done.push(5);
+            draw(["A3","B3","C4","D4","E4","F#4","G4","A4"],"6th raised…");
+            q.innerHTML="✓ F→F♯. One more: tap the <b>7th</b>."; }
+          else if(i===6&&done.includes(5)){
+            const M=["A3","B3","C4","D4","E4","F#4","G#4","A4"];
+            draw(M,"A melodic minor (ascending)");
+            M.forEach((pp,ix)=>MFAudio.tone(MFAudio.midi(pp),.4,.3+ix*.28,.38));
+            fb(true,"✓ Excellent! F♯ and G♯ — the melodic minor ascending. Descending, it returns to the natural minor form.");
+            q.textContent="Excellent! You built all three forms of the minor scale.";
+          }
+          else if(i===6&&!done.includes(5)) fb(false,"Raise the 6TH first — melodic minor lifts both, in order.");
+          else fb(false,`That's degree ${i+1}. Melodic minor raises degrees 6 and 7.`);
+        }
+      }});
   }
-  function ask(){
-    const R=ROUNDS[r]; nxt.style.display="none";
-    q.innerHTML=`${R.from}: ${R.dir==="raise"?"raise":"lower"} the 5th a half step — tap the note that changes.`;
-    draw(R.base, R.from.split(" ")[0]+" "+R.from.split(" ")[1], true);
-  }
-  nxt.onclick=()=>ask();
-  ask();
+  q.innerHTML="A <b>natural minor</b>. Build the <b>harmonic minor</b>: raise the 7th degree — tap it.";
+  draw(NAT,"A natural minor");
 }
 
-/* keyboard builder: all four qualities on one root */
-function MF_L59_build(container,fb){
-  const ROUNDS=[
-    {name:"C major", sym:"C", pcs:[0,4,7], names:["C","E (M3)","G (P5)"]},
-    {name:"C augmented", sym:"C+", pcs:[0,4,8], names:["C","E (M3)","G♯ (raised 5th!)"]},
-    {name:"C minor", sym:"Cm", pcs:[0,3,7], names:["C","E♭ (m3)","G (P5)"]},
-    {name:"C diminished", sym:"C°", pcs:[0,3,6], names:["C","E♭ (m3)","G♭ (lowered 5th!)"]}];
-  let r=0,k=0,last=null,got=[];
-  container.innerHTML=`<div class="big-q l59b-q" style="text-align:center"></div>
-    <div class="l59b-staff"></div><div class="l59b-kb"></div>`;
-  const q=container.querySelector(".l59b-q"), sh=container.querySelector(".l59b-staff"), kh=container.querySelector(".l59b-kb");
-  function drawStaff(){
-    if(!got.length){ sh.innerHTML=""; return; }
-    const NAMES={0:"C",3:"Eb",4:"E",6:"Gb",7:"G",8:"G#"};
-    const ps=got.map(m=>(NAMES[m%12]||"C")+(Math.floor(m/12)-1));
-    Staff.render(sh,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:190});
-  }
-  function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Excellent! You built all four triad qualities."; return; }
-    k=0; last=null; got=[]; drawStaff();
-    q.innerHTML=`Build <b>${ROUNDS[r].name} (${ROUNDS[r].sym})</b>. Press <b>${ROUNDS[r].names[0]}</b> first.`;
-  }
-  Keyboard.create(kh,{start:60,octaves:2,labels:true,
-    onKey:m=>{
-      const R=ROUNDS[r]; if(!R) return;
-      const want=R.pcs[k];
-      if(m%12===want && (last===null || m>last)){
-        last=m; got.push(m); k++; drawStaff();
-        if(k>=3){ got.forEach(x=>MFAudio.tone(x,1.2,.1,.32));
-          fb(true,`✓ ${R.name} (${R.sym}).`);
-          r++; setTimeout(ask,1500); }
-        else q.innerHTML=`Now play <b>${R.names[k]}</b> above the note you just played.`;
-      } else if(m%12===want){ MFAudio.tone(40,.2); fb(false,"Right key — build UPWARD."); }
-      else { MFAudio.tone(40,.2); fb(false,k===2? (R.pcs[2]===8?"Raise the 5th: one key ABOVE G.":R.pcs[2]===6?"Lower the 5th: one key BELOW G.":"The perfect 5th is 7 half steps up.") : "Check the 3rd: major uses E, minor uses E♭."); }
-    }});
-  ask();
-}
-
-/* ear lab: all four qualities */
+/* ear lab: which form did you hear? */
 function MF_L59_ear(container,fb){
-  const QUALS=[
-    {name:"Major", midis:[60,64,67]},
-    {name:"Minor", midis:[60,63,67]},
-    {name:"Augmented", midis:[60,64,68]},
-    {name:"Diminished", midis:[60,63,66]}];
-  let order=[0,2,1,3].sort(()=>Math.random()-.5), r=0, played=false;
-  container.innerHTML=`<div class="big-q l59e-q" style="text-align:center"></div>
-    <div style="text-align:center"><button class="play l59e-play">▶ Play the mystery chord</button></div>
-    <div class="choices chips l59e-ch" style="display:none"><button>Major</button><button>Minor</button><button>Augmented</button><button>Diminished</button></div>`;
-  const q=container.querySelector(".l59e-q"), pl=container.querySelector(".l59e-play"), ch=container.querySelector(".l59e-ch");
+  const FORMS=[
+    {name:"Natural minor", midis:[57,59,60,62,64,65,67,69]},
+    {name:"Harmonic minor", midis:[57,59,60,62,64,65,68,69]},
+    {name:"Melodic minor (ascending)", midis:[57,59,60,62,64,66,68,69]}];
+  let order=[0,1,2,1].sort(()=>Math.random()-.5), r=0, played=false;
+  container.innerHTML=`<div class="big-q l57e-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play l57e-play">▶ Play the mystery scale</button></div>
+    <div class="choices chips l57e-ch" style="display:none"><button>Natural</button><button>Harmonic</button><button>Melodic</button></div>`;
+  const q=container.querySelector(".l57e-q"), pl=container.querySelector(".l57e-play"), ch=container.querySelector(".l57e-ch");
   function ask(){
-    if(r>=order.length){ q.textContent="Excellent! You identified every triad."; pl.style.display="none"; ch.style.display="none"; return; }
+    if(r>=order.length){ q.textContent="Excellent! You identified every minor form."; pl.style.display="none"; ch.style.display="none"; return; }
     played=false; ch.style.display="none";
-    q.innerHTML=`Round ${r+1} of ${order.length}: which triad do you hear?`;
+    q.innerHTML=`Round ${r+1} of ${order.length}: which form do you hear? Listen to degrees 6 and 7.`;
   }
-  pl.onclick=()=>{ const F=QUALS[order[r]]; if(!F) return;
-    F.midis.forEach(m=>MFAudio.tone(m,1.3,0,.32)); played=true;
-    setTimeout(()=>ch.style.display="",1000); };
+  pl.onclick=()=>{
+    const F=FORMS[order[r]]; if(!F) return;
+    F.midis.forEach((m,i)=>MFAudio.tone(m,.42,i*.3,.4));
+    played=true; setTimeout(()=>ch.style.display="",F.midis.length*300+300);
+  };
   [...ch.children].forEach((b,i)=>b.onclick=()=>{
     if(!played) return;
     const want=order[r];
-    if(i===want){ MFAudio.yay();
-      fb(true,`✓ ${QUALS[want].name}! ${["A major triad.","A minor triad.","Augmented — open and unstable.","Diminished — tense and unstable."][want]}`);
-      r++; setTimeout(ask,1300); }
-    else { MFAudio.tone(40,.2); fb(false,"Listen again. Is the 5th perfect, raised, or lowered?"); }
+    if(i===want){ MFAudio.yay(); fb(true,`✓ ${FORMS[want].name}! ${want===0?"Degrees 6 and 7 stayed natural.":want===1?"Only the 7th was raised — the large gap between 6 and ♯7 gives it away.":"Both 6 and 7 were raised."}`);
+      r++; setTimeout(ask,1400); }
+    else { MFAudio.tone(40,.2); fb(false,"Listen again to degrees 6 and 7: are they natural, or raised?"); }
   });
   ask();
 }
 
 LESSON_CONTENT[59]={
-  welcome:"Two new chord qualities today: augmented and diminished. \u{26A1}",
+  welcome:"Major scales have one form. Minor scales come in THREE. \u{1F3AD}",
   hook:{
-    say:"<b>Major and minor are not the only triads.</b> Today you'll learn two new chord qualities: <b>augmented</b> and <b>diminished</b>. <b>Can you hear the difference?</b>",
+    say:"<b>There are three common forms of the minor scale.</b> Listen carefully. <b>Which ending creates the strongest pull to the tonic?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Chord A</button>
-          <button class="play hk-b">▶ Chord B</button></div>
-          <div class="choices hk-ch" style="display:none"><button>A is augmented · B is diminished</button><button>A is diminished · B is augmented</button></div>`;
+          <button class="play hk-a">▶ Ending A: …F, G, A</button>
+          <button class="play hk-b">▶ Ending B: …F, G♯, A</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Ending B — the raised 7th (G♯) pulls to the tonic</button><button>Ending A — plain G pulls harder</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ [60,64,68].forEach(m=>MFAudio.tone(m,1.4,0,.32)); hA=true; if(hB) setTimeout(()=>ch.style.display="",1600); };
-        container.querySelector(".hk-b").onclick=()=>{ [60,63,66].forEach(m=>MFAudio.tone(m,1.4,0,.32)); hB=true; if(hA) setTimeout(()=>ch.style.display="",1600); };
+        container.querySelector(".hk-a").onclick=()=>{ [64,65,67,69].forEach((m,i)=>MFAudio.tone(m,.5,i*.4,.42)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2100); };
+        container.querySelector(".hk-b").onclick=()=>{ [64,65,68,69].forEach((m,i)=>MFAudio.tone(m,.5,i*.4,.42)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2100); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Chord A was C-E-G♯ — an AUGMENTED triad (a major triad with a raised 5th). Chord B was C-E♭-G♭ — a DIMINISHED triad (a minor triad with a lowered 5th). Today's lesson!");
-          else fb(false,"Listen again — the augmented triad is wider than major; the diminished triad is narrower than minor.");
+          if(i===0) fb(true,"✓ Raising G to G♯ created a LEADING TONE — a half step below the tonic that pulls strongly to it. That is why the minor scale has extra forms. Today: all three!");
+          else fb(false,"Play both again — listen to the note just before the final A.");
         });
       } }
   },
   objectives:[
-    "Build an augmented triad: a major triad with its 5th RAISED a half step",
-    "Build a diminished triad: a minor triad with its 5th LOWERED a half step",
-    "Stack them: augmented = M3+M3, diminished = m3+m3",
-    "Read the symbols: C, Cm, C+, C°",
-    "Complete the major-triad scale: 1-4-5 major, 2-3-6 minor, 7 diminished",
-    "Tell all four qualities apart by sight and ear"
+    "Name the three forms: natural, harmonic, melodic",
+    "Natural minor: only the tones of the relative major",
+    "Harmonic minor: raised 7th — up AND down; the most used form",
+    "Melodic minor: raised 6th & 7th ascending; natural form descending",
+    "Explain WHY each raise exists (leading tone / smooth melody)",
+    "Identify the forms by sight and by ear"
   ],
   steps:[
-    { say:"<b>Two New Triad Qualities:</b> An <b>augmented triad</b> is a major triad with a <b>raised 5th</b>. A <b>diminished triad</b> is a minor triad with a <b>lowered 5th</b>. <b>Remember: major and minor triads differ by the 3rd; augmented and diminished triads differ by the 5th.</b> \u{1F447} <b>What does the word augmented mean?</b>",
-      try:{ type:"mc", choices:["Made larger","Made smaller","Made louder"], answer:0,
-        success:"✓ Augment = enlarge. And diminish = shrink. The names ARE the recipes.",
-        fail:"Think of 'augmented reality' — ADDED, expanded…",
-        hint:"aug+ = bigger; dim− = smaller." } },
-    { say:"<b>Build the Chords:</b> Change a major triad into an augmented triad. Then change a minor triad into a diminished triad. \u{1F447} <b>Which note changes?</b>",
+    { say:"<b>Natural Minor:</b> The <b>natural minor</b> uses the same notes as its <b>relative major</b>. No notes are raised or lowered. \u{1F447} <b>How many accidentals are added to the natural minor scale?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
+        {p:"A3",d:"q",label:"1"},{p:"B3",d:"q",label:"2"},{p:"C4",d:"q",label:"3"},{p:"D4",d:"q",label:"4"},
+        {p:"E4",d:"q",label:"5"},{p:"F4",d:"q",label:"6"},{p:"G4",d:"q",label:"7"},{p:"A4",d:"q",label:"8"}],width:540} },
+      try:{ type:"mc", choices:["None — same notes as C major","One sharp","One flat"], answer:0,
+        success:"✓ No accidentals — the natural minor uses only the notes of its relative major.",
+        fail:"It shares EVERYTHING with its relative major…",
+        hint:"A minor's relative major is C major." } },
+    { say:"<b>Why Raise the 7th?</b> In the natural minor scale, the <b>7th degree</b> is a whole step below the tonic. Raising the 7th creates a <b>leading tone</b>, which pulls strongly to the tonic. \u{1F447} <b>How far below the tonic is a leading tone?</b>",
+      try:{ type:"mc", choices:["A half step","A whole step","A minor 3rd"], answer:0,
+        success:"✓ One half step below the tonic — the strongest possible pull.",
+        fail:"The closer to home, the stronger the pull.",
+        hint:"Think of B→C in C major." } },
+    { say:"Build the <b>harmonic minor</b> and <b>melodic minor</b> scales. \u{1F447}",
       try:{ type:"custom",
-        hint:"The 5th — the top note — moves a half step.",
-        mount:(container,fb)=>MF_L59_lab(container,fb) } },
-    { say:"<b>Comparing Triads:</b> Major = <b>M3 + m3</b> · Minor = <b>m3 + M3</b> · Augmented = <b>M3 + M3</b> · Diminished = <b>m3 + m3</b>. \u{1F447} <b>How is an augmented triad built?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:280px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Triad</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Formula</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:5px 14px">Major</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center;font-weight:800">M3 + m3</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:5px 14px">Minor</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center;font-weight:800">m3 + M3</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:5px 14px">Augmented</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center;font-weight:800">M3 + M3</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:5px 14px">Diminished</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center;font-weight:800">m3 + m3</td></tr></table>` },
-      try:{ type:"mc", choices:["Two Major 3rds","Two minor 3rds","A m3 on top of a M3"], answer:0,
-        success:"✓ M3 (C→E) + M3 (E→G♯) — two Major 3rds make an augmented triad.",
-        fail:"Augmented uses two of the LARGER 3rd…",
-        hint:"Aug = M3 + M3; dim = m3 + m3." } },
-    { say:"<b>Chord Symbols:</b> Major → <b>C</b> · Minor → <b>Cm</b> · Augmented → <b>C+</b> · Diminished → <b>C°</b>. \u{1F447} <b>How is E♭ diminished written?</b>",
-      try:{ type:"mc", choices:["E♭°","E♭+","e♭m−"], answer:0,
-        success:"✓ The small circle (°) marks the diminished triad. Four symbols cover all four qualities.",
-        fail:"Diminished wears the degree-circle…",
-        hint:"+ = raised 5th, ° = lowered 5th." } },
-    { say:"<b>The vii° Chord:</b> In a major key, <b>I, IV, V are major</b>; <b>ii, iii, vi are minor</b>; <b>vii° is diminished</b>. \u{1F447} <b>Why is the triad on degree 7 diminished?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"ii"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"iii"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
-        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"G4",d:"w",label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"A4",d:"w",label:"vi"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},
-        {p:"B4",d:"w",label:"vii°"},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"C5",d:"w",label:"I"},{p:"E5",d:"w",chord:true},{p:"G5",d:"w",chord:true},{bar:"final"}],width:680} },
-      try:{ type:"mc", choices:["B-D-F stacks two minor 3rds — no accidentals needed","Someone added a flat","It has four notes"], answer:0,
-        success:"✓ B→D = m3, D→F = m3: the white keys ALONE produce a diminished triad on degree 7. That B-F frame is the tritone that powers V7!",
-        fail:"Spell it: B-D-F. Measure each 3rd…",
-        hint:"Count half steps: B→D and D→F." } },
-    { say:"<b>Build all four triad qualities on the same root.</b> \u{1F447}",
+        hint:"Harmonic: raise degree 7 only. Melodic: degrees 6 AND 7 (ascending).",
+        mount:(container,fb)=>MF_L59_fix(container,fb) } },
+    { say:"<b>Harmonic Minor:</b> Raise the <b>7th degree</b> by a half step. The raised 7th is used <b>both ascending and descending</b>. Harmonic minor is the most commonly used minor form. \u{1F447} <b>Does harmonic minor lower the raised 7th when descending?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
+        {p:"A3",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q",label:"6"},{p:"G#4",d:"q",label:"♯7"},{p:"A4",d:"q",label:"8"}],width:540} },
+      try:{ type:"mc", choices:["No — ♯7 stays in both directions","Yes — it descends naturally","Only in major keys"], answer:0,
+        success:"✓ The raise is permanent in this form — that's what separates it from melodic minor.",
+        fail:"Harmonic minor is the consistent one…",
+        hint:"Only ONE form changes on the way down." } },
+    { say:"<b>Melodic Minor:</b> Raising only the 7th creates a large interval between <b>6 and ♯7</b>. To make the melody smoother, melodic minor raises <b>both the 6th and 7th</b> when ascending. Descending, it returns to the <b>natural minor</b> form. \u{1F447} <b>Why is the 6th also raised?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
+        {p:"A3",d:"q",label:"up:"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q",label:"♯6"},{p:"G#4",d:"q",label:"♯7"},{p:"A4",d:"q"},
+        {p:"G4",d:"q",acc:"n",label:"down: ♮7"},{p:"F4",d:"q",acc:"n",label:"♮6"},{p:"E4",d:"q"},{p:"D4",d:"q"},{p:"C4",d:"q"},{p:"B3",d:"q"},{p:"A3",d:"q"},{bar:"final"}],width:660} },
+      try:{ type:"mc", choices:["To make the melody smoother — it closes the large gap between 6 and ♯7","To make the scale louder","To add another leading tone"], answer:0,
+        success:"✓ F♯ smooths the staircase into G♯: whole step, half step — singable again. Coming down there's no leading-tone job to do, so both lifts cancel.",
+        fail:"Measure F to G♯ — how many half steps?",
+        hint:"Three half steps = the gap that needed patching." } },
+    { say:"<b>Remember:</b> Harmonic minor — raise the <b>7th</b>. Melodic minor — raise the <b>6th and 7th</b> when ascending. \u{1F447} <b>Which minor scale raises both the 6th and 7th?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:340px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Scale</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Ascending</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Descending</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:5px 14px">Natural Minor</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center">natural</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center">natural</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:5px 14px">Harmonic Minor</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center;font-weight:800">♯7</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center;font-weight:800">♯7</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:5px 14px">Melodic Minor</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center;font-weight:800">♯6, ♯7</td><td style="border:1.5px solid #cdd5e1;padding:5px 14px;text-align:center">natural</td></tr></table>` },
+      try:{ type:"mc", choices:["Melodic minor","Harmonic minor","Natural minor"], answer:0,
+        success:"✓ The shape-shifter itself. One name per behavior: natural never changes, harmonic changes once forever, melodic changes going up and repents coming down.",
+        fail:"Which form has a two-way personality?",
+        hint:"Up ♯6♯7, down natural — the standard description." } },
+    { say:"<b>Extra:</b> In harmonic minor, the interval from the tonic to the raised 7th is a <b>Major 7th</b>. \u{1F447} <b>What is the interval from the tonic to the raised 7th?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"A3",d:"w",label:"tonic → ♯7 = Major 7th"},{p:"G#4",d:"w",chord:true}],width:280} },
+      try:{ type:"mc", choices:["A Major 7th","A minor 7th","A Perfect 7th"], answer:0,
+        success:"✓ A up to G♯ is a Major 7th. (There is no such thing as a 'perfect 7th'.)",
+        fail:"G♯ is the RAISED 7th…",
+        hint:"Raising the top note makes an interval BIGGER." } },
+    { say:"<b>Listen Carefully:</b> Identify the type of minor scale by ear. \u{1F447}",
       try:{ type:"custom",
-        hint:"C: E vs E♭ for the 3rd; G, G♯ or G♭ for the 5th.",
-        mount:(container,fb)=>MF_L59_build(container,fb) } },
-    { say:"<b>Listen Carefully:</b> Identify each triad by ear. \u{1F447}",
-      try:{ type:"custom",
-        hint:"Stable? major/minor. Unstable? wide = aug, narrow = dim.",
+        hint:"Focus on the last three notes: plain (natural), one lift with a gap (harmonic), or two lifts (melodic).",
         mount:(container,fb)=>MF_L59_ear(container,fb) } }
   ],
   examples:[
-    { caption:"The four faces of C: major, minor, augmented, diminished — the 3rd shades it, then the 5th destabilizes it. Four chords, one root, four completely different futures.",
-      staff:{clef:"treble",tempo:60,notes:[
-        {p:"C4",d:"w",label:"C"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"Cm"},{p:"Eb4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"C+"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"C°"},{p:"Eb4",d:"w",chord:true},{p:"Gb4",d:"w",chord:true}],width:560},
-      kb:{start:60,octaves:0.9167,labels:true} },
-    { caption:"The complete major-triad scale of C: I ii iii IV V vi vii° I. Listen for the vii° — the built-in troublemaker that makes the final I feel so earned.",
-      staff:{clef:"treble",tempo:90,notes:[
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"ii"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"iii"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
-        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"G4",d:"w",label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"A4",d:"w",label:"vi"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},
-        {p:"B4",d:"w",label:"vii°"},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"C5",d:"w",label:"I"},{p:"E5",d:"w",chord:true},{p:"G5",d:"w",chord:true},{bar:"final"}],width:680},
-      kb:{start:60,octaves:2,labels:true} }
+    { caption:"The three forms of A minor, back to back: natural (plain), harmonic (♯7 — hear the large gap), melodic ascending (♯6 ♯7 — smooth as major until the last step).",
+      staff:{clef:"treble",tempo:120,notes:[
+        {p:"A3",d:"q",label:"natural"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{bar:"double"},
+        {p:"A3",d:"q",label:"harmonic"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G#4",d:"q"},{p:"A4",d:"q"},{bar:"double"},
+        {p:"A3",d:"q",label:"melodic ↑"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A4",d:"q"},{bar:"final"}],width:680},
+      kb:{start:57,octaves:1.1667,labels:true} },
+    { caption:"The melodic minor's full round trip: ♯6 and ♯7 climbing up… then the naturals reappear on the way home. One scale, two faces.",
+      staff:{clef:"treble",tempo:120,notes:[
+        {p:"A3",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A4",d:"q"},
+        {p:"G4",d:"q",acc:"n"},{p:"F4",d:"q",acc:"n"},{p:"E4",d:"q"},{p:"D4",d:"q"},{p:"C4",d:"q"},{p:"B3",d:"q"},{p:"A3",d:"h"},{bar:"final"}],width:680},
+      kb:{start:57,octaves:1.1667,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Four-Quality Sprint (45s)",
-      intro:"Major, minor, augmented, diminished — judge every chord that flashes by!",
-      miaIntro:"3rd first, then the 5th! \u{26A1}",
-      spec:{gen:"triad-quality", params:{}, seconds:45},
-      result:(score)=>score>=8?score+" chords sorted — quality-control master!":null },
-    { type:"key-climb", title:"Game 2 · Quality Morph Tour",
-      intro:"Play C major, C augmented, C minor, C diminished — feel each half-step shift!",
-      miaIntro:"One root, four moods! \u{1FA9C}",
-      spec:{seq:[60,64,67, 60,64,68, 60,63,67, 60,63,66],
-        names:["C","E","G — major \u{2600}\u{FE0F}","C","E","G♯ — augmented \u{1F388}","C","E♭","G — minor \u{1F311}","C","E♭","G♭ — diminished \u{1F32A}\u{FE0F}"],
-        start:60, octaves:0.9167, title:"C → C+ → Cm → C°, chord by chord"},
-      result:(score)=>score!==null?"All four qualities under your fingers!":null },
-    { type:"symbol-hunt", title:"Game 3 · Symbol Match",
-      intro:"C, Cm, C+ and C° on cards — click what each round calls!",
-      miaIntro:"Letter, m, plus, circle! \u{1F440}",
+    { type:"gen-race", title:"Game 1 · Three-Form Fact Sprint (45s)",
+      intro:"Which form raises what? Race the rules of all three minors!",
+      miaIntro:"7 → harmony, 6&7 → melody! \u{26A1}",
+      spec:{gen:"term-match", params:{subject:"term", pool:[
+        ["Natural minor","only the relative major's tones"],
+        ["Harmonic minor","raised 7th — up AND down"],
+        ["Melodic minor ascending","raised 6th and 7th"],
+        ["Melodic minor descending","same as natural minor"],
+        ["Leading tone","a half step below the tonic"],
+        ["Most used minor form","harmonic minor"],
+        ["The awkward harmonic gap","1½ steps between 6 and ♯7"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" facts — three forms fully filed!":null },
+    { type:"key-climb", title:"Game 2 · Melodic Round Trip",
+      intro:"Climb A melodic minor up (with F♯ and G♯) and come home the natural way!",
+      miaIntro:"Up with lifts, down without! \u{1FA9C}",
+      spec:{seq:[57,59,60,62,64,66,68,69, 67,65,64,62,60,59,57],
+        names:["A","B","C","D","E","F♯ (raised 6!)","G♯ (raised 7!)","A — top!","G♮ (back to natural)","F♮","E","D","C","B","A — home"],
+        start:53, octaves:1.5, title:"A melodic minor: ascend raised, descend natural"},
+      result:(score)=>score!==null?"The shape-shifter, mastered in both directions!":null },
+    { type:"symbol-hunt", title:"Game 3 · Form Spotter",
+      intro:"Three A-minor scales on cards — click the form each round names!",
+      miaIntro:"Stare at degrees 6 and 7! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"C (major)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"Cm (minor)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"C+ (augmented)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true}],width:150}},
-        {label:"C° (diminished)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true},{p:"Gb4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"Symbols locked in!":null },
-    { type:"term-race", title:"Game 4 · UNIT 14 GRAND FINALE Race",
-      intro:"The victory lap — relatives, three minors, four qualities!",
-      miaIntro:"Everything from Unit 14 — GO! \u{1F3C6}",
-      spec:{rounds:10, reverse:true, pool:[
-        ["Augmented triad","a major triad with a raised 5th"],
-        ["Diminished triad","a minor triad with a lowered 5th"],
-        ["C+","C-E-G♯"],
-        ["C°","C-E♭-G♭"],
-        ["vii° in a major key","the diminished triad on degree 7"],
-        ["Relative minor","the major scale's 6th degree"],
-        ["Harmonic minor","raised 7th, both directions"],
+        {label:"Natural minor", spec:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"}],width:250}},
+        {label:"Harmonic minor (♯7)", spec:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G#4",d:"q"},{p:"A4",d:"q"}],width:250}},
+        {label:"Melodic minor ↑ (♯6 ♯7)", spec:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A4",d:"q"}],width:250}}]},
+      result:(score)=>score>=5?"No form can hide from you!":null },
+    { type:"term-race", title:"Game 4 · Minor-Scale Grand Race",
+      intro:"Everything from Lessons 56-57 — relatives and all three forms!",
+      miaIntro:"The minor world so far! \u{1F3C1}",
+      spec:{rounds:9, reverse:true, pool:[
+        ["Relative minor","starts on the major's 6th degree"],
+        ["Natural minor","the unchanged form"],
+        ["Harmonic minor","♯7 in both directions"],
         ["Melodic minor","♯6 ♯7 up, natural down"],
-        ["Minor triad","root + m3 + P5"],
-        ["Aug stacking","M3 + M3"]]},
-      result:(score)=>score>=8?"UNIT 14 CHAMPION — the minor world is yours!":null }
+        ["Leading tone","the raised 7th's new job"],
+        ["Why 'harmonic'","the raised 7th strengthens chords"],
+        ["Why 'melodic'","the raised 6th smooths the line"],
+        ["A harmonic minor's ♯7","G♯"],
+        ["Harmonic minor intervals","P1 M2 m3 P4 P5 m6 M7 P8"]]},
+      result:(score)=>score>=7?"Minor scholar — all forms complete!":null }
   ],
-  practiceIntro:"20 practice questions — building, changing and naming all four triad qualities. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — forms, raises, directions and reasons. Answer right and the next appears automatically!",
   practice:[
-    { gen:"triad-quality", params:{}, count:6 },
-    { gen:"triad-quality", params:{ask:"symbol"}, count:4 },
-    { gen:"term-match", params:{subject:"term", pool:[["Augmented","major + raised 5th"],["Diminished","minor + lowered 5th"],["+","the augmented symbol"],["°","the diminished symbol"],["vii°","degree 7's diminished triad"]], reverse:true}, count:3 },
-    { type:"mc", q:"An augmented triad is a major triad with…", choices:["a raised 5th","a lowered 3rd","an added 7th"], answer:0,
-      explain:"Raise the 5th a half step." },
-    { type:"mc", q:"A diminished triad is a minor triad with…", choices:["a lowered 5th","a raised root","a lowered root"], answer:0,
-      explain:"Lower the 5th a half step." },
-    { type:"mc", q:"C augmented is spelled…", choices:["C-E-G♯","C-E♭-G♯","C-E-G♭"], answer:0,
-      explain:"Major 3rd kept, 5th raised." },
-    { type:"mc", q:"C diminished is spelled…", choices:["C-E♭-G♭","C-E-G♭","C-E♭-G♯"], answer:0,
-      explain:"Minor 3rd kept, 5th lowered." },
-    { type:"mc", q:"Which triad quality is built on scale degree 7 in a major key?", choices:["diminished triad","major triad","augmented triad"], answer:0,
-      explain:"B-D-F in C major: two minor 3rds, no accidentals." },
-    { type:"truefalse", q:"An augmented triad stacks two Major 3rds.", answer:true,
-      explain:"M3+M3 — the all-big stack." },
-    { type:"truefalse", q:"A diminished triad stacks two minor 3rds.", answer:true,
-      explain:"m3+m3 — the all-small stack." },
-    { type:"truefalse", q:"The symbol for augmented is °.", answer:false,
-      explain:"° is diminished; + is augmented." },
-    { type:"truefalse", q:"Augmented and diminished triads sound stable.", answer:false,
-      explain:"Both are tense — that's their job." }
+    { gen:"term-match", params:{subject:"term", pool:[["Natural minor","no raised tones"],["Harmonic minor","raised 7th only"],["Melodic minor ascending","raised 6th and 7th"],["Melodic minor descending","identical to natural minor"],["Leading tone","half step below tonic"]], reverse:true}, count:6 },
+    { gen:"rel-key", params:{ask:"both"}, count:3 },
+    { type:"mc", q:"The natural minor scale uses…", choices:["only the tones of the relative major","one added sharp","two added sharps"], answer:0,
+      explain:"It IS the relative major's material, re-homed." },
+    { type:"mc", q:"The harmonic minor raises which degree?", choices:["the 7th","the 6th","the 3rd"], answer:0,
+      explain:"G→G♯ in A minor — ascending AND descending." },
+    { type:"mc", q:"The melodic minor ascending raises…", choices:["the 6th and 7th","only the 7th","the 2nd and 3rd"], answer:0,
+      explain:"F♯ and G♯ in A minor — for a smooth climb." },
+    { type:"mc", q:"Descending, the melodic minor sounds like…", choices:["the natural minor","the harmonic minor","the major scale"], answer:0,
+      explain:"The lifts cancel on the way down." },
+    { type:"mc", q:"Which minor form is used most often?", choices:["Harmonic minor","Natural minor","Melodic minor"], answer:0,
+      explain:"Its leading tone powers the strongest chords." },
+    { type:"mc", q:"In A harmonic minor, the raised 7th is…", choices:["G♯","F♯","C♯"], answer:0,
+      explain:"The 7th letter from A is G — raised to G♯." },
+    { type:"truefalse", q:"The harmonic minor's ♯7 is cancelled when descending.", answer:false,
+      explain:"Harmonic keeps it both ways; only MELODIC cancels." },
+    { type:"truefalse", q:"The raised 7th of a minor scale acts as a leading tone.", answer:true,
+      explain:"Half step below tonic = maximum pull." },
+    { type:"truefalse", q:"In the harmonic minor, the interval tonic→7th is a Major 7th.", answer:true,
+      explain:"A→G♯ = M7." },
+    { type:"mc", q:"Why was the melodic minor scale developed?", choices:["To make the large gap between 6 and ♯7 easier to sing","To add more sharps","To replace the major scale"], answer:0,
+      explain:"Raising the 6th makes the melody smoother." }
   ],
-  miaQuizIntro:"The Unit 14 finale quiz! The 3rd sets major/minor; the 5th sets augmented/diminished.",
+  miaQuizIntro:"Final quiz! Natural, harmonic, melodic — know what changes, which way, and WHY.",
   quiz:[
-    { type:"mc", q:"An AUGMENTED triad is made by…", choices:["raising the 5th of a major triad a half step","lowering the 5th of a minor triad","lowering the 3rd of a major triad","adding a 7th"], answer:0,
-      explain:"Major, made LARGER.", hint:"The name means 'enlarged'." },
-    { type:"mc", q:"A DIMINISHED triad is made by…", choices:["lowering the 5th of a minor triad a half step","raising the 5th of a major triad","raising the 3rd of a minor triad"], answer:0,
-      explain:"Minor, made SMALLER.", hint:"The name means 'shrunk'." },
-    { type:"mc", q:"How is an augmented triad built?", choices:["M3 + M3","m3 + m3","M3 + m3","m3 + M3"], answer:0,
-      explain:"Both thirds major → widest triad.", hint:"All-big." },
-    { type:"mc", q:"How is a diminished triad built?", choices:["m3 + m3","M3 + M3","M3 + m3","m3 + M3"], answer:0,
-      explain:"Both thirds minor → narrowest triad.", hint:"All-small." },
-    { type:"truefalse", q:"Chord letter alone (like C) means a major triad.", answer:true,
-      explain:"C=major, Cm=minor, C+=aug, C°=dim.", hint:"The standard chord-quality symbols." },
-    { type:"truefalse", q:"In a major key, the triad on the 7th scale degree is minor.", answer:false,
-      explain:"It's DIMINISHED — vii° (B-D-F in C).", hint:"vii° — two minor 3rds." },
-    { type:"mc", q:"Identify this triad.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true}],width:200},
-      choices:["C+ (augmented)","C major","C° (diminished)"], answer:0,
-      explain:"Major 3rd + raised 5th = augmented.", hint:"The ♯ stretched the top." },
-    { type:"mc", q:"Identify this triad.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true},{p:"Gb4",d:"w",chord:true}],width:200},
-      choices:["C° (diminished)","C minor","C+ (augmented)"], answer:0,
-      explain:"m3 + lowered 5th = diminished.", hint:"TWO flats squeeze it." },
-    { type:"mc", q:"Identify this triad — careful, no accidentals!",
-      staff:{clef:"treble",notes:[{p:"B4",d:"w"},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:200},
-      choices:["B diminished (vii° of C major)","B minor","B major"], answer:0,
-      explain:"B→D and D→F are BOTH minor 3rds — diminished on white keys alone.", hint:"Count each 3rd's half steps." },
-    { type:"mc", q:"What are the triad qualities in a major scale?", choices:["M m m M M m dim","M M m m M m M","m M m M m M dim"], answer:0,
-      explain:"1-4-5 major, 2-3-6 minor, 7 diminished.", hint:"The diatonic quality pattern." },
-    { type:"mc", q:"Which triad is built with two minor 3rds?", choices:["Diminished","Major","Augmented"], answer:0,
-      explain:"m3 + m3 — the diminished triad.", hint:"The narrowest stack." },
-    { type:"mc", q:"Which statement correctly describes these two chord qualities?", choices:["Augmented sounds open and unstable; diminished sounds tense and unstable","Both sound calm and final","Augmented is dark; diminished is bright"], answer:0,
-      explain:"Both are unstable — that is their musical job.", hint:"Neither one sounds finished." },
+    { type:"mc", q:"How many common forms does the minor scale have?", choices:["3","1","2","5"], answer:0,
+      explain:"Natural, harmonic, melodic.", hint:"Today's whole lesson in one number." },
+    { type:"mc", q:"The NATURAL minor scale…", choices:["uses only the tones of its relative major","raises the 7th","raises the 6th and 7th"], answer:0,
+      explain:"No notes are raised or lowered.", hint:"'Natural' = untouched." },
+    { type:"mc", q:"The HARMONIC minor scale raises the 7th…", choices:["ascending AND descending","ascending only","descending only"], answer:0,
+      explain:"The raise is permanent in this form.", hint:"It's the consistent sibling." },
+    { type:"mc", q:"The MELODIC minor scale ascending raises…", choices:["the 6th and 7th","only the 6th","the 4th and 5th"], answer:0,
+      explain:"Two lifts for one smooth staircase.", hint:"6 & 7 → melody." },
+    { type:"truefalse", q:"The melodic minor descends exactly like the natural minor.", answer:true,
+      explain:"No leading-tone job downhill — the lifts cancel.", hint:"The round-trip game." },
+    { type:"truefalse", q:"The harmonic minor is the most frequently used minor form.", answer:true,
+      explain:"The standard definition.", hint:"Its name hints at chords — music's engine." },
+    { type:"mc", q:"Why is the 7th raised in the harmonic minor scale?", choices:["To create a leading tone that pulls to the tonic","To make the scale louder","To change the key signature"], answer:0,
+      explain:"Half step below home = the tug you heard in the hook.", hint:"What did G♯ do to A?" },
+    { type:"mc", q:"Which two scale degrees create the large interval in harmonic minor?", choices:["degrees 6 and ♯7","degrees 1 and 2","degrees 4 and 5"], answer:0,
+      explain:"F to G♯: 1½ steps — the gap melodic minor fixes.", hint:"Right below the raised note." },
+    { type:"mc", q:"Identify this scale.",
+      staff:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G#4",d:"q"},{p:"A4",d:"q"}],width:400},
+      choices:["A harmonic minor","A natural minor","A melodic minor ascending"], answer:0,
+      explain:"Only the 7th (G♯) is raised.", hint:"Count the sharps: one, on degree 7." },
+    { type:"mc", q:"Identify this scale.",
+      staff:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A4",d:"q"}],width:400},
+      choices:["A melodic minor ascending","A harmonic minor","A major"], answer:0,
+      explain:"♯6 AND ♯7 going up = melodic.", hint:"Two sharps, top of the scale." },
+    { type:"mc", q:"Which scale raises both the 6th and 7th when ascending?", choices:["Melodic minor","Harmonic minor","Natural minor"], answer:0,
+      explain:"Melodic minor raises 6 and 7 ascending and returns to natural minor descending.", hint:"The two-way form." },
+    { type:"mc", q:"A singer has trouble singing the large interval between 6 and ♯7. Which minor form makes the melody smoother?", choices:["Melodic minor","Harmonic minor","Natural minor"], answer:0,
+      explain:"Raising the 6th makes the line smoother — that is the melodic minor's purpose.", hint:"The form made for melodies." },
     /* generated */
-    { gen:"triad-quality", params:{}, count:4 },
-    { gen:"triad-quality", params:{ask:"symbol"}, count:2 },
-    { gen:"rel-key", params:{ask:"both"}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["Natural","no changes"],["Harmonic","♯7 both ways"],["Melodic up","♯6 ♯7"],["Melodic down","natural again"]], reverse:true}, count:3 },
+    { gen:"rel-key", params:{ask:"both"}, count:3 }
   ],
   vocabulary:[
-    {term:"Augmented Triad (+)", def:"A major triad with its 5th raised a half step — M3+M3. Open and unstable.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true}],width:130}},
-    {term:"Diminished Triad (°)", def:"A minor triad with its 5th lowered a half step — m3+m3. Tense and unstable.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true},{p:"Gb4",d:"w",chord:true}],width:130}},
-    {term:"Chord Symbols", def:"Letter only = major · m = minor · + = augmented · ° = diminished."},
-    {term:"vii°", def:"The diminished triad living on degree 7 of every major scale (B-D-F in C major).",
-      staff:{clef:"treble",notes:[{p:"B4",d:"w"},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:130}}
+    {term:"Natural Minor", def:"The basic form — only the tones of the relative major, re-centered on the minor tonic."},
+    {term:"Harmonic Minor", def:"Natural minor with a raised 7th — ascending AND descending. The most used form; its ♯7 is a leading tone."},
+    {term:"Melodic Minor", def:"Raised 6th and 7th ascending; descends as the natural minor."},
+    {term:"Leading Tone", def:"A note one half step below the tonic, pulling strongly toward it — the raised 7th's new job."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Augmented (+)</b> = major triad, 5th RAISED a half step: <b>M3+M3</b> (C-E-G♯).",
-    "✔ <b>Diminished (°)</b> = minor triad, 5th LOWERED a half step: <b>m3+m3</b> (C-E♭-G♭).",
-    "✔ Symbols: <b>C · Cm · C+ · C°</b> — four marks, four qualities.",
-    "✔ Major-triad scale: <b>1-4-5 major, 2-3-6 minor, 7 diminished (vii°)</b>.",
-    "✔ The 3rd sets major/minor; the <b>5th</b> sets stable/unstable. <b>UNIT 14 COMPLETE!</b> \u{1F389}"
+    "✔ Three forms: <b>natural</b> (unchanged), <b>harmonic</b> (♯7, both directions), <b>melodic</b> (♯6 ♯7 up, natural down).",
+    "✔ The raised 7th = a <b>leading tone</b> — a half step below home with maximum pull.",
+    "✔ Harmonic minor is <b>the most frequently used</b>; the large 6→♯7 gap is its trademark sound.",
+    "✔ Melodic minor raises the 6th to <b>smooth the climb</b>, then cancels everything downhill.",
+    "✔ Harmonic minor intervals from the tonic: <b>P1 M2 m3 P4 P5 m6 M7 P8</b> — all P/M/m."
   ],
   tips:[
-    "Two-question quality test: (1) Is the 3rd major or minor? (2) Is the 5th perfect, raised, or lowered? Two answers = one quality.",
-    "The augmented chord is film music's favorite 'dream sequence' sound; the diminished chord is its favorite 'danger!' sound. Listen for them tonight.",
-    "vii° is secretly V7's upper three notes (B-D-F ⊂ G-B-D-F) — that's why both chords crave I.",
-    "Unit 15 next: the primary chords move INTO minor keys — i, iv, V… and why that V stays major."
+    "Memory hooks: 7 → HARMONY (chords need the leading tone), 6&7 → MELODY (lines need smoothness).",
+    "That 6-to-♯7 gap is the sound of countless film scores and folk traditions — play F to G♯ and you'll recognize it instantly.",
+    "Practice trick: sing 'up like major (almost), down like natural' for melodic minor.",
+    "Next lesson the minor scale starts BUILDING: minor triads live on its degrees 1, 3 and 5."
   ],
-  rewards:{ badge:"Quality Alchemist — Unit 14 Champion", icon:"\u{26A1}" },
+  rewards:{ badge:"Three-Form Shapeshifter", icon:"\u{1F3AD}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! All four qualities, sight AND sound — Unit 14 conquered in style! \u{26A1}\u{1F3C6}\u{1F389}",
-  miaPass:"Passed — and Unit 14 is COMPLETE! Major, minor, augmented, diminished: the full palette. \u{1F389}",
+  miaPerfect:"PERFECT! All three forms, both directions, every reason why. \u{1F3AD}\u{1F389}",
+  miaPass:"Passed! Natural, harmonic, melodic — filed and findable. Minor triads await!",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Chord A was C-E-G♯ (augmented — raised 5th); chord B was C-E♭-G♭ (diminished — lowered 5th).",
-      play:()=>{[60,64,68].forEach(m=>MFAudio.tone(m,1.2,0,.32));[60,63,66].forEach(m=>MFAudio.tone(m,1.4,1.5,.32));} },
-    learn:{ label:"aug & dim triads",
-      explain:"Aug = major + raised 5th (M3+M3, symbol +). Dim = minor + lowered 5th (m3+m3, symbol °). Major scale: 1-4-5 M, 2-3-6 m, 7 dim.",
-      hint:"The 3rd sets major/minor; the 5th sets augmented/diminished.",
-      play:()=>{[60,64,68].forEach(m=>MFAudio.tone(m,1.2,.1,.32));} },
+      explain:"Ending A used the natural 7th (G) — a whole step below the tonic. Ending B raised it to G♯ — a leading tone, a half step below A.",
+      play:()=>{[64,65,68,69].forEach((m,i)=>MFAudio.tone(m,.5,i*.4,.42));} },
+    learn:{ label:"the three forms",
+      explain:"Natural = untouched. Harmonic = ♯7 both ways (leading tone; most used). Melodic = ♯6♯7 up for smoothness, natural coming down.",
+      hint:"7 → harmony; 6&7 → melody.",
+      play:()=>{[57,59,60,62,64,65,68,69].forEach((m,i)=>MFAudio.tone(m,.4,i*.28,.4));} },
     example:{ label:"the examples",
-      explain:"Example 1 plays the four faces of C; example 2 walks the entire triad scale I→vii°→I — listen for the wobble on degree 7." },
+      explain:"Example 1 plays all three forms back to back; example 2 takes melodic minor on its full round trip — lifted up, natural down." },
     game:{ label:"the games",
-      explain:"Sprint all four qualities, build C in all four qualities, match the symbols, then run the Unit 14 victory lap.",
-      hint:"+ = raised 5th, ° = lowered 5th." },
+      explain:"Sprint the facts, climb the melodic round trip, spot forms on cards, then run the minor grand race.",
+      hint:"Always check degrees 6 and 7 first." },
     quiz:{ label:"this question",
-      explain:"Two dials answer everything: the 3rd (major/minor) and the 5th (perfect/raised/lowered). Spell, measure, name.",
-      play:()=>{[60,63,66].forEach(m=>MFAudio.tone(m,1.3,0,.32));[60,64,67].forEach(m=>MFAudio.tone(m,1.2,1.5,.33));} }
+      explain:"Ask two things of any minor scale: WHAT is raised (nothing / 7 / 6+7), and does it stay raised coming DOWN (yes for harmonic, no for melodic)?",
+      play:()=>{[64,65,68,69].forEach((m,i)=>MFAudio.tone(m,.5,i*.4,.42));} }
   }
 };

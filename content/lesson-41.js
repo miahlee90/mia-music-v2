@@ -1,275 +1,275 @@
-/* Lesson 41 — Dotted Eighth Notes (AEMT Book 2, Unit 10)
-   Built from drafts/UNIT 10 – Lesson 41.md; AEMT p.64 verified by render.
-   Core: dot = +half the value; 8th (=2 sixteenths) + dot = 3 sixteenths = ¾ beat;
-   usually followed by ONE sixteenth ("long-short"); three notations, one rhythm.
-   Uses staff.js v7.6 "8." + partial-beam stubs [[i,i,2]].
+/* Lesson 41 (6.4, formerly L42) — Common Time and Cut Time / Alla Breve (AEMT Book 2, Unit 10)
+   Built from drafts/UNIT 10 – Lesson 42.md; AEMT p.65 verified by render.
+   Core: C = 4/4 (common time); C-with-a-slash = 2/2 (cut time / alla breve):
+   2 beats per measure, HALF note = 1 beat. Same notes, different feel/count.
+   Uses staff.js v7.6 time:"C|" cut-time glyph.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* long-short vs even lab: hear the difference, then pick which is which */
+/* feel lab: the same passage counted in 4 vs in 2 — which is the march? */
 function MF_L41_feel(container,fb){
-  const ROUNDS=[true,false,true,false].sort(()=>Math.random()-.5);
-  let i=0,heard=false;
-  container.innerHTML=`<div class="big-q l41-q" style="text-align:center"></div>
-    <div style="text-align:center"><button class="play l41-p">▶ Hear the beat pair</button></div>
-    <div class="choices l41-ch" style="display:none"><button>\u{1F998} Long–short (dotted 8th + 16th)</button><button>\u{2696} Even (two equal 8ths)</button></div>`;
-  const q=container.querySelector(".l41-q"), ch=container.querySelector(".l41-ch");
-  function ask(){ heard=false; ch.style.display="none";
-    q.textContent=`Sound ${i+1} of ${ROUNDS.length}: is this pair LONG–SHORT or perfectly EVEN?`; }
-  container.querySelector(".l41-p").onclick=()=>{
-    const dotted=ROUNDS[i];
-    if(dotted){ MFAudio.tone(72,.5,0,.5); MFAudio.tone(74,.15,.66,.5); MFAudio.tone(76,.5,.88,.5); }
-    else { MFAudio.tone(72,.35,0,.5); MFAudio.tone(74,.35,.44,.5); MFAudio.tone(76,.5,.88,.5); }
-    heard=true; setTimeout(()=>ch.style.display="",1600);
+  let h4=false,h2=false;
+  container.innerHTML=`<div class="big-q" style="text-align:center">The SAME notes, counted two ways. Press both and feel the difference.</div>
+    <div style="text-align:center">
+      <button class="play l42-a">▶ Counted in 4 (4/4)</button>
+      <button class="play l42-b">▶ Counted in 2 (cut time)</button></div>
+    <div class="choices l42-ch" style="display:none"><button>Counted in 2 — it strides like a march</button><button>Counted in 4 — it strides like a march</button></div>`;
+  const ch=container.querySelector(".l42-ch");
+  const MEL=[72,74,76,77,79,77,76,74];
+  container.querySelector(".l42-a").onclick=()=>{
+    MEL.forEach((m,k)=>{ MFAudio.tone(m,.3,k*.4,.45); if(k%1===0) MFAudio.tone(45,.08,k*.4,k%4===0?.6:.3); });
+    h4=true; if(h2) setTimeout(()=>ch.style.display="",MEL.length*400+300);
   };
-  [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-    if(!heard) return;
-    const dotted=ROUNDS[i];
-    if((bi===0)===dotted){ i++; MFAudio.yay();
-      if(i>=ROUNDS.length){ ch.style.display="none"; container.querySelector(".l41-p").style.display="none";
-        q.textContent="The swagger detector is calibrated!";
-        fb(true,"✓ Four for four! Long–short = dotted 8th + 16th (¾ + ¼); even = two straight eighths (½ + ½). Your ear knows the difference now."); }
-      else { fb(true,`✓ ${dotted?"Long–short — the dotted rhythm!":"Perfectly even eighths."} Next…`); setTimeout(ask,900); } }
-    else { MFAudio.tone(40,.25); fb(false,"Listen for the limp: LOOONG-short… or flat, even steps?"); }
+  container.querySelector(".l42-b").onclick=()=>{
+    MEL.forEach((m,k)=>{ MFAudio.tone(m,.3,k*.4,.45); if(k%2===0) MFAudio.tone(45,.1,k*.4,k%4===0?.7:.45); });
+    h2=true; if(h4) setTimeout(()=>ch.style.display="",MEL.length*400+300);
+  };
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    if(i===0) fb(true,"✓ In cut time the pulse thumps HALF as often — two big strides per measure instead of four small steps. Same notes, bigger walk. That's why fast marches are written in cut time!");
+    else fb(false,"Listen to the low thumps — which version has fewer, bigger ones?");
   });
+}
+
+/* symbol match: C, cut-C, 4/4, 2/2 — connect the equivalents */
+function MF_L41_match(container,fb){
+  const ROUNDS=[
+    {q:"Which fraction signature equals COMMON TIME (the plain C)?",opts:["4/4","2/2","3/4"],a:0,exp:"C is simply a symbol for 4/4."},
+    {q:"Which fraction signature equals CUT TIME (the C with a slash)?",opts:["2/2","4/4","2/4"],a:0,exp:"Cut the 4/4 in half: 2/2 — alla breve."},
+    {q:"In cut time, which note gets ONE beat?",opts:["Half note","Quarter note","Whole note"],a:0,exp:"Bottom '2' = half note is the beat unit."},
+    {q:"How many beats fill a cut-time measure?",opts:["2","4","3"],a:0,exp:"Top '2' = two beats per measure."}];
+  let i=0;
+  container.innerHTML=`<div class="big-q l42-mq" style="text-align:center"></div><div class="choices chips l42-mch"></div>`;
+  const q=container.querySelector(".l42-mq"), ch=container.querySelector(".l42-mch");
+  function ask(){
+    const cur=ROUNDS[i];
+    q.innerHTML=`Match ${i+1} of ${ROUNDS.length}: ${cur.q}`;
+    ch.innerHTML="";
+    cur.opts.map((o,oi)=>({o,oi})).sort(()=>Math.random()-.5).forEach(({o,oi})=>{
+      const b=document.createElement("button"); b.textContent=o;
+      b.onclick=()=>{
+        const c=ROUNDS[i];
+        if(oi===c.a){ i++; MFAudio.yay();
+          if(i>=ROUNDS.length){ ch.style.display="none"; q.textContent="All symbols decoded!";
+            fb(true,`✓ ${c.exp} C = 4/4, slashed C = 2/2, half note = the cut-time beat.`); }
+          else { fb(true,`✓ ${c.exp}`); setTimeout(ask,1100); } }
+        else { MFAudio.tone(40,.2); fb(false,"Think: 'cut' means the 4/4 numbers are halved."); }
+      };
+      ch.appendChild(b); });
+  }
   ask();
 }
 
-/* dot calculator: build the dotted 8th from sixteenth blocks */
-function MF_L41_calc(container,fb){
-  let placed=0;
-  container.innerHTML=`<div class="big-q l41-cq" style="text-align:center">Build a dotted eighth note using sixteenth-note units.<br>
-    <span style="font-weight:600">An eighth note equals <b>2</b> sixteenth notes. A dot adds <b>half of the note's original value</b>. Half of 2 is 1.</span><br>
-    Tap the ➕:</div>
-    <div class="l41-cbar" style="display:flex;gap:6px;justify-content:center;margin:14px 0;min-height:44px"></div>
-    <div style="text-align:center"><button class="play l41-add">➕ Add the dot's value</button></div>
-    <div class="l41-cmsg" style="text-align:center;font-weight:800;min-height:24px;color:var(--correct)"></div>`;
-  const bar=container.querySelector(".l41-cbar"), msg=container.querySelector(".l41-cmsg"), btn=container.querySelector(".l41-add");
-  function block(txt,extra){ return `<div style="width:64px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff;background:${extra?"var(--correct)":"var(--primary)"}">${txt}</div>`; }
-  function draw(){
-    bar.innerHTML=block("♬ ¼")+block("♬ ¼")+(placed>=1?block("+ ¼",true):"");
-    msg.textContent=placed===0? "" : "2 + 1 = 3 sixteenth notes = ¾ of one beat";
-  }
-  btn.onclick=()=>{
-    if(placed>=1) return;
-    placed=1; draw(); btn.style.display="none";
-    MFAudio.tone(72,.62,0,.55); 
-    fb(true,"✓ Correct! You built a dotted eighth note: 2 + 1 = 3 sixteenth notes (¾ beat). It is usually followed by a sixteenth note to complete one beat.");
-  };
-  draw();
-}
-
 LESSON_CONTENT[41]={
-  welcome:"One tiny dot turns even eighths into a DOTTED rhythm: LONG–short. \u{1F998}",
+  welcome:"Two letters that replace numbers: C for common time — and C with a slash for CUT time. \u{2702}",
   hook:{
-    say:"Same two pitches, two rhythms: one is even eighth notes, one is the DOTTED rhythm — a long note followed by a quick short one. Press both. <b>Which one is LOOONG-short, LOOONG-short?</b>",
+    say:"Sometimes a time signature isn't numbers at all. Look at these two symbols — the second is the first one <b>cut</b> by a line. <b>What do you think the slash does to the counting?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Walk A</button>
-          <button class="play hk-b">▶ Walk B</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Walk B is long–short</button><button>Walk A is long–short</button></div>`;
-        const ch=container.querySelector(".hk-ch");
-        let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ for(let k=0;k<4;k++){ MFAudio.tone(72,.3,k*.44,.5); MFAudio.tone(76,.3,k*.44+.22,.5);} hA=true; if(hB) setTimeout(()=>ch.style.display="",2200); };
-        container.querySelector(".hk-b").onclick=()=>{ for(let k=0;k<4;k++){ MFAudio.tone(72,.4,k*.44,.5); MFAudio.tone(76,.12,k*.44+.33,.5);} hB=true; if(hA) setTimeout(()=>ch.style.display="",2200); };
+        const holder=document.createElement("div"); container.appendChild(holder);
+        Staff.render(holder,{clef:"treble",time:"C",notes:[{p:"C5",d:"q",label:"C = ?"},{p:"C5",d:"q"},{p:"C5",d:"q"},{p:"C5",d:"q"},{bar:"final"}],width:320});
+        const holder2=document.createElement("div"); container.appendChild(holder2);
+        Staff.render(holder2,{clef:"treble",time:"C|",notes:[{p:"C5",d:"h",label:"\u{1D135} = ?"},{p:"C5",d:"h"},{bar:"final"}],width:320});
+        const ch=document.createElement("div"); ch.className="choices";
+        ch.innerHTML=`<button>It cuts the count in half — 4 beats become 2 big ones</button><button>It doubles the count to 8</button><button>It silences the measure</button>`;
+        container.appendChild(ch);
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Walk B was the DOTTED rhythm — dotted 8th (¾ beat) then a quick 16th (¼ beat). Marches, jazz, film themes — that strut is everywhere. Today you'll learn its math and its notation.");
-          else fb(false,"Play them again — one is flat and even, one is long–short.");
+          if(i===0) fb(true,"✓ Exactly — the slash CUTS 4/4 in half: 2 beats per measure, and the HALF note takes over as the beat. Musicians call it cut time, or by its Italian name: alla breve.");
+          else fb(false,"The line slices the C — and slices the numbers of 4/4 too…");
         });
       } }
   },
   objectives:[
-    "Apply the dot rule to eighth notes",
-    "State the value: dotted 8th = 3 sixteenths = ¾ beat",
-    "Count the dotted-8th + 16th figure with 1-e-&-a",
-    "Recognize the three notations of the same rhythm",
-    "Read partial (stub) beams",
-    "Perform the long–short rhythm accurately"
+    "Recognize the common time symbol (C) as 4/4",
+    "Recognize the cut time symbol (𝄵) as 2/2",
+    "State cut time's rule: 2 beats, half note = 1 beat",
+    "Convert note values between 4/4 and 2/2 counting",
+    "Explain why fast music often uses cut time",
+    "Use the name alla breve"
   ],
   steps:[
-    { say:"Dot review — the rule you learned back with dotted halves and quarters: <b>a dot adds HALF of the note's own value</b>. \u{1F447} <b>A dotted HALF note equals…?</b>",
-      try:{ type:"mc", choices:["3 beats (2 + 1)","2½ beats","4 beats"], answer:0,
-        success:"✓ Half note (2) + its half (1) = 3. The dot rule never changes — today we just aim it at a smaller note.",
-        fail:"Half of the half note's 2 beats is…",
-        hint:"2 + half-of-2." } },
-    { say:"Now aim the dot at the <b>eighth note</b>. Do the math with blocks: \u{1F447} <b>Build the dotted eighth from sixteenths:</b>",
+    { say:"First symbol: a plain letter <b>C</b> in place of the time signature = <b>COMMON TIME</b>, which is simply another way of writing <b>4/4</b>. Four beats per measure, quarter note = 1 beat — everything you already know. \u{1F447} <b>C stands for…?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:76,time:"C",notes:[
+        {p:"C5",d:"q",label:"1"},{p:"D5",d:"q",label:"2"},{p:"E5",d:"q",label:"3"},{p:"D5",d:"q",label:"4"},{bar:"final"}],width:380} },
+      try:{ type:"mc", choices:["Common time — exactly 4/4","Cut time — 2/2","'Chorus'"], answer:0,
+        success:"✓ C = common time = 4/4. Same music, fancier badge.",
+        fail:"The PLAIN C (no slash) is the familiar one…",
+        hint:"Common = the time you've used since Lesson 11." } },
+    { say:"Second symbol: draw a vertical line through the C — <b><span style='font-size:1.3em;line-height:1;vertical-align:-0.14em;display:inline-block'>𝄵</span></b> — and you get <b>CUT TIME</b>, also called <b>ALLA BREVE</b>. The slash cuts 4/4's numbers in half: <b>2/2</b>. That means <b>2 beats per measure</b>, and the <b>HALF note receives 1 beat</b>. \u{1F447} <b>In cut time, which note is the beat?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:168,time:"C|",notes:[
+        {p:"C5",d:"h",label:"1"},{p:"G4",d:"h",label:"2"},{bar:"single"},
+        {p:"E5",d:"h",label:"1"},{p:"C5",d:"h",label:"2"},{bar:"final"}],width:440} },
+      try:{ type:"mc", choices:["The half note","The quarter note","The whole note"], answer:0,
+        success:"✓ Bottom number 2 = half note gets the beat. The quarter is demoted to HALF a beat!",
+        fail:"2/2: the bottom 2 names the beat note…",
+        hint:"2 on the bottom = half note." } },
+    { say:"The full cut-time value chart: whole note = 2 beats · half = 1 · quarter = ½ · eighth = ¼. Every note is worth HALF its 4/4 count. \u{1F447} <b>In cut time, how many beats does a QUARTER note get?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"C|",notes:[
+        {p:"B4",d:"w",label:"2 beats"},{p:"B4",d:"h",label:"1 beat"},{p:"B4",d:"q",label:"½ beat"},{p:"B4",d:"8",label:"¼ beat"}],width:480} },
+      try:{ type:"mc", choices:["Half a beat","One beat","Two beats"], answer:0,
+        success:"✓ Quarters walk two-to-a-beat in cut time — like eighth notes used to in 4/4.",
+        fail:"Everything is halved from 4/4…",
+        hint:"In 4/4 it was 1 beat; now cut that." } },
+    { say:"Why bother? FEEL. The notes don't change — the <b>pulse</b> does. Fast marches and fast orchestral music are exhausting to count 'one-two-three-four' at speed; in cut time you feel two broad strides instead. \u{1F447} <b>Feel it yourself:</b>",
       try:{ type:"custom",
-        hint:"An 8th = 2 sixteenths. The dot adds HALF of that.",
-        mount:(container,fb)=>MF_L41_calc(container,fb) } },
-    { say:"So: <b>dotted 8th = ¾ beat = 3 of the beat's 4 sixteenth-slots</b>. That leaves exactly one slot — which is why the dotted 8th is almost always followed by a <b>single sixteenth</b>: together they make one clean beat. \u{1F447} <b>Dotted 8th + 16th adds up to…?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:60,time:"2/4",notes:[
-        {p:"B4",d:"8.",label:"1 e &"},{p:"B4",d:"16",label:"a"},{p:"B4",d:"q",label:"2"},{bar:"final"}],
-        beams:[[0,1],[1,1,2]],width:400} },
-      try:{ type:"mc", choices:["Exactly 1 beat (¾ + ¼)","1½ beats","¾ of a beat"], answer:0,
-        success:"✓ ¾ + ¼ = 1. The pair is a one-beat package — music's favorite long–short unit.",
-        fail:"Add the fractions: ¾ + ¼.",
-        hint:"Three slots + one slot = ?" } },
-    { say:"Counting it: the dotted 8th starting on the beat lasts through '<b>1 – e – &</b>', and the sixteenth snaps on '<b>a</b>'. Say it: 'ONE-ee-and-<b>a</b>, TWO-ee-and-<b>a</b>' — hold long, flick short. \u{1F447} <b>In this figure, on which syllable does the SIXTEENTH play?</b>",
-      try:{ type:"mc", choices:["a — the very last slot","e — the second slot","& — the middle"], answer:0,
-        success:"✓ Hold 1-e-&, play on 'a'. The little note ALWAYS lands late and quick — that's the strut.",
-        fail:"The dotted 8th eats the first THREE slots…",
-        hint:"3 slots held + the 4th played." } },
-    { say:"Ear check — dotted or even? \u{1F447} <b>Judge each pair:</b>",
-      try:{ type:"custom",
-        hint:"Long–short limps; even eighths march flat.",
+        hint:"Listen to the low thumps — four small steps vs two big strides.",
         mount:(container,fb)=>MF_L41_feel(container,fb) } },
-    { say:"One rhythm, three equivalent spellings: (1) an 8th <b>tied</b> to a 16th plus a 16th, (2) the <b>dot</b> replacing the tie, (3) the beamed pair with a <b>stub beam</b> on the 16th. They SOUND identical — the dot is just the tidiest spelling. \u{1F447} <b>Play the example, then: what does the dot replace?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:60,time:"2/4",notes:[
-        {p:"B4",d:"8",x:130},{p:"B4",d:"16",x:190},{p:"B4",d:"16",x:250},
-        {p:"B4",d:"8.",x:400},{p:"B4",d:"16",x:470},{bar:"final"}],
-        arcs:[{from:0,to:1,type:"tie"}],
-        beams:[[0,2],[1,2,2],[3,4],[4,4,2]],
-        brackets:[{from:0,to:2,label:"tied spelling"},{from:3,to:4,label:"dotted spelling"}],width:560} },
-      try:{ type:"mc", choices:["A tie to a sixteenth note","A rest","The second beam"], answer:0,
-        success:"✓ The dot = a built-in tie to one more sixteenth. Same ¾-beat sound, half the ink.",
-        fail:"Spelling 1 used a tie; spelling 2 swapped it for…",
-        hint:"Dot = tie, compressed." } },
-    { say:"Reading detail: in the beamed pair, the 16th carries a <b>partial beam</b> — a short SECOND beam stub that doesn't reach the dotted 8th. One full beam = the pair; the stub = 'this one's a sixteenth'. \u{1F447} <b>The stub beam tells you…?</b>",
-      try:{ type:"mc", choices:["Which note of the group is the sixteenth","Where the measure ends","That the note is staccato"], answer:0,
-        success:"✓ Full beam joins the pair; the little stub singles out the 16th. Now you can read the figure at sight.",
-        fail:"Only ONE note in the pair is a sixteenth — how does the beam show it?",
-        hint:"Two beams = sixteenth; the stub is beam #2." } }
+    { say:"Symbol drill — lock in the equivalences. \u{1F447} <b>Match every symbol to its meaning:</b>",
+      try:{ type:"custom",
+        hint:"C = 4/4. Slashed C = 2/2 = two half-note beats.",
+        mount:(container,fb)=>MF_L41_match(container,fb) } },
+    { say:"Name detail worth knowing: <b>alla breve</b> is Italian — 'according to the breve', the old long note that the half note descends from. When a conductor says 'we'll take it alla breve', they mean: count it <b>in 2</b>. \u{1F447} <b>'Alla breve' tells the players to…?</b>",
+      try:{ type:"mc", choices:["Count two half-note beats per measure","Play twice as loud","Repeat each measure"], answer:0,
+        success:"✓ Alla breve = cut time = 2/2 = two big beats. Three names, one meaning.",
+        fail:"It's the Italian name for the slashed C…",
+        hint:"Cut time's formal name." } }
   ],
   examples:[
-    { caption:"The long–short strut in action — count '1 e & a' and feel the hold-hold-hold-SNAP of every beat.",
-      staff:{clef:"treble",tempo:60,time:"4/4",notes:[
-        {p:"C5",d:"8.",label:"1 e &"},{p:"D5",d:"16",label:"a"},{p:"E5",d:"8.",label:"2 e &"},{p:"D5",d:"16",label:"a"},
-        {p:"C5",d:"8",label:"3"},{p:"D5",d:"8",label:"&"},{p:"C5",d:"q",label:"4"},{bar:"final"}],
-        beams:[[0,1],[1,1,2],[2,3],[3,3,2],[4,5]],width:660} },
-    { caption:"Three spellings, one sound: tied 8th+16th, then the dotted pair, then plain even 8ths for contrast — hear how the first two match and the third walks flat.",
-      staff:{clef:"treble",tempo:60,time:"3/4",notes:[
-        {p:"B4",d:"8"},{p:"B4",d:"16"},{p:"B4",d:"16"},
-        {p:"B4",d:"8."},{p:"B4",d:"16"},
-        {p:"B4",d:"8"},{p:"B4",d:"8"},{bar:"final"}],
-        arcs:[{from:0,to:1,type:"tie"}],
-        beams:[[0,2],[1,2,2],[3,4],[4,4,2],[5,6]],
-        brackets:[{from:0,to:2,label:"tie"},{from:3,to:4,label:"dot"},{from:5,to:6,label:"even"}],width:620} }
+    { caption:"The same melody twice: first in common time (four quarter-note beats), then in cut time (two half-note beats). Play both — the notes match, the stride doubles.",
+      staff:{clef:"treble",tempo:76,time:"C",notes:[
+        {p:"C5",d:"q",label:"1"},{p:"E5",d:"q",label:"2"},{p:"G4",d:"q",label:"3"},{p:"C5",d:"q",label:"4"},{bar:"final"}],width:400} },
+    { caption:"Cut time in action — count the big TWO: whole notes take 2 beats, halves take 1, quarters just half a beat each.",
+      staff:{clef:"treble",tempo:168,time:"C|",notes:[
+        {p:"C5",d:"h",label:"1"},{p:"G4",d:"h",label:"2"},{bar:"single"},
+        {p:"E5",d:"q",label:"1"},{p:"D5",d:"q",label:"&"},{p:"C5",d:"h",label:"2"},{bar:"single"},
+        {p:"C5",d:"w",label:"1 – 2"},{bar:"final"}],width:560} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Dot Detective Sprint (45s)",
-      intro:"Note values with and without dots — name them before the clock!",
-      miaIntro:"Spot the dots, do the math! \u{1F575}",
-      spec:{gen:"note-value", params:{values:["8","8.","16","q","q."],ask:"name"}, seconds:45},
-      result:(score)=>score>=9?score+" values in 45 seconds — dot mathematician!":null },
-    { type:"rhythm-tap", title:"Game 2 · Strut Tap Lab",
-      intro:"Tap the dotted rhythms — hold looong, snap short!",
-      miaIntro:"Feel the limp: 1-e-&-A! \u{1F998}",
-      spec:{tempo:60, rounds:3, patterns:[
-        ["8.","16","q","q"],
-        ["q","8.","16","q"],
-        ["8.","16","8.","16"]]},
-      result:(score)=>score!==null?"That strut is officially yours!":null },
-    { type:"value-race", title:"Game 3 · Beat-Math Race (45s)",
-      intro:"How many beats? Dotted values included — calculate at speed!",
-      miaIntro:"¾ is the number of the day! \u{1F9EE}",
-      spec:{seconds:45, values:["8","8.","16","q","q.","h."], ask:"beats"},
-      result:(score)=>score>=9?"Fraction calculations at full tempo!":null },
-    { type:"measure-build", title:"Game 4 · One-Beat Workshop",
-      intro:"Build exactly one beat — the dotted 8th needs its little partner!",
-      miaIntro:"¾ + ¼ = the perfect pair! \u{1F9F1}",
-      spec:{beats:1, unique:false, buttons:[
-        {t:"8.",label:"Dotted 8th",beats:0.75,item:{p:"B4",d:"8."}},
-        {t:"16",label:"Sixteenth",beats:0.25,item:{p:"B4",d:"16"}},
-        {t:"8",label:"Eighth",beats:0.5,item:{p:"B4",d:"8"}}]},
-      result:(score)=>score!==null?"Every beat balanced — dots and all!":null }
+    { type:"gen-race", title:"Game 1 · Symbol Sprint (45s)",
+      intro:"C or 𝄵? 4/4 or 2/2? Match the symbols and rules at speed!",
+      miaIntro:"Two symbols, zero hesitation! \u{1F3C3}",
+      spec:{gen:"term-match", params:{subject:"symbol", pool:[
+        ["Common time (C)","another way of writing 4/4"],
+        ["Cut time (𝄵)","another way of writing 2/2"],
+        ["Alla breve","the Italian name for cut time"],
+        ["2/2 top number","2 beats per measure"],
+        ["2/2 bottom number","the half note receives one beat"],
+        ["Cut-time quarter note","worth only half a beat"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" symbol matches — badge decoder!":null },
+    { type:"measure-build", title:"Game 2 · Cut-Time Constructor",
+      intro:"Fill a 2/2 measure: exactly TWO half-note beats' worth!",
+      miaIntro:"Two big beats — build them! \u{1F9F1}",
+      spec:{beats:2, unique:false, buttons:[
+        {t:"h",label:"Half Note (1 beat here!)",beats:1,item:{p:"B4",d:"h"}},
+        {t:"q",label:"Quarter (½ beat here!)",beats:0.5,item:{p:"B4",d:"q"}},
+        {t:"w",label:"Whole Note (2 beats here!)",beats:2,item:{p:"B4",d:"w"}},
+        {t:"rh",label:"Half Rest (1 beat)",beats:1,item:{rest:"h"}}]},
+      result:(score)=>score!==null?"Measures built alla breve!":null },
+    { type:"rhythm-tap", title:"Game 3 · March Tap Lab",
+      intro:"Tap cut-time rhythms — feel every measure as TWO strides!",
+      miaIntro:"Left, right! Left, right! \u{1F6B6}",
+      spec:{tempo:80, rounds:3, beatsPerBar:4, patterns:[
+        ["h","q","q","h"],
+        ["q","q","h","h"],
+        ["h","h","q","q","q","q"]]},
+      result:(score)=>score!==null?"You marched straight through it!":null },
+    { type:"term-race", title:"Game 4 · Meter Vocabulary Race",
+      intro:"Common, cut, alla breve, beat unit — the full Unit 10 wrap-up race!",
+      miaIntro:"Last race of Unit 10! \u{1F3C1}",
+      spec:{rounds:8, reverse:true, pool:[
+        ["Common Time","the symbol C — equals 4/4"],
+        ["Cut Time","the slashed C — equals 2/2"],
+        ["Alla Breve","Italian name for cut time"],
+        ["Beat Unit","the note value that receives one beat"],
+        ["Half note in 2/2","receives exactly one beat"],
+        ["Whole note in 2/2","receives two beats"]]},
+      result:(score)=>score>=7?"Unit 10 vocabulary: complete!":null }
   ],
-  practiceIntro:"20 practice questions — dot math, counting, the three spellings, stub beams. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — symbols, conversions, and the cut-time value chart. Answer right and the next appears automatically!",
   practice:[
-    { gen:"note-value", params:{values:["8","8.","16","q","q."],ask:"name"}, count:4 },
-    { gen:"note-value", params:{values:["8","8.","16","q","q.","h."],ask:"beats"}, count:4 },
-    { gen:"term-match", params:{subject:"term", pool:[["Dotted Eighth Note","¾ beat — three sixteenths"],["The dot","adds half of the note's own value"],["Long–short rhythm","dotted 8th followed by a 16th"],["Partial beam","the stub that marks the 16th in a beamed pair"]], reverse:true}, count:3 },
-    { type:"mc", q:"A dotted eighth note equals how many sixteenth notes?", choices:["3","2","4"], answer:0,
-      explain:"2 (the 8th) + 1 (the dot) = 3." },
-    { type:"mc", q:"A dotted eighth note receives…", choices:["¾ of a beat","½ of a beat","1 beat"], answer:0,
-      explain:"3 of the beat's 4 sixteenth-slots." },
-    { type:"mc", q:"A dotted 8th is usually followed by…", choices:["a single sixteenth note","a half note","another dotted 8th"], answer:0,
-      explain:"¾ + ¼ completes the beat." },
-    { type:"mc", q:"Starting on beat 1, a dotted 8th lasts through…", choices:["1 – e – &","1 – e","1 only"], answer:0,
-      explain:"Three sixteenth-slots; the 16th then plays on 'a'." },
-    { type:"truefalse", q:"A dot always adds half of the note's original value.", answer:true,
-      explain:"True for every note size — half, quarter, or eighth." },
-    { type:"truefalse", q:"A dotted 8th + 16th lasts longer than two even 8ths.", answer:false,
-      explain:"Both fill exactly one beat — the SPLIT differs, not the total." },
-    { type:"mc", q:"Which tied pair equals a dotted eighth?", choices:["8th tied to a 16th","8th tied to an 8th","16th tied to a 16th"], answer:0,
-      explain:"½ + ¼ = ¾." },
-    { type:"mc", q:"In a beamed dotted-8th + 16th pair, the stub beam belongs to…", choices:["the sixteenth","the dotted 8th","both notes"], answer:0,
-      explain:"The stub is the 16th's second beam." }
+    { gen:"term-match", params:{subject:"symbol", pool:[["Common time (C)","another way of writing 4/4"],["Cut time (𝄵)","another way of writing 2/2"],["Alla breve","the Italian name for cut time"],["Beat unit","the note value that gets one beat"]], reverse:true}, count:4 },
+    { type:"mc", q:"C is known as ____ time.", choices:["common","cut","triple"], answer:0,
+      explain:"C = common time = 4/4." },
+    { type:"mc", q:"𝄵 is known as ____ time.", choices:["cut (alla breve)","common","compound"], answer:0,
+      explain:"The slashed C = cut time = 2/2." },
+    { type:"mc", q:"𝄵 has ____ beats per measure, and the ____ note receives one beat.", choices:["2 · half","4 · quarter","2 · quarter"], answer:0,
+      explain:"2/2 = two half-note beats." },
+    { type:"mc", q:"In cut time, a whole note receives…", choices:["2 beats","4 beats","1 beat"], answer:0,
+      explain:"Half its 4/4 value — like everything else." },
+    { type:"mc", q:"In cut time, an eighth note receives…", choices:["¼ beat","½ beat","1 beat"], answer:0,
+      explain:"Halved from its 4/4 value of ½." },
+    { type:"mc", q:"In cut time, a dotted half note receives…", choices:["1½ beats","3 beats","2 beats"], answer:0,
+      explain:"1 (half) + ½ (the dot) = 1½." },
+    { type:"truefalse", q:"Common time and 4/4 are exactly the same meter.", answer:true,
+      explain:"C is just a symbol for 4/4." },
+    { type:"truefalse", q:"In cut time the quarter note still gets one full beat.", answer:false,
+      explain:"The HALF note is the beat; quarters get ½." },
+    { type:"mc", q:"Fast marches are often written in cut time because…", choices:["two big beats are easier to feel at speed","it uses less ink","quarter notes are forbidden at speed"], answer:0,
+      explain:"Two strides beat four scrambling steps." },
+    { type:"mc", q:"Which are the THREE names for the same thing?", choices:["cut time · alla breve · 2/2","common time · alla breve · 4/4","cut time · common time · 2/4"], answer:0,
+      explain:"One meter, three labels." }
   ],
-  miaQuizIntro:"Hold three slots, snap the fourth — show me the strut!",
+  miaQuizIntro:"Two symbols, one slash of difference — final quiz of Unit 10!",
   quiz:[
-    { type:"mc", q:"A dot after a note increases its length by…", choices:["half of its original value","its full value","one beat","one sixteenth"], answer:0,
-      explain:"The universal dot rule.", hint:"Same rule since dotted halves." },
-    { type:"mc", q:"A dotted eighth note equals…", choices:["3 sixteenth notes","2 sixteenth notes","4 sixteenth notes","1 quarter note"], answer:0,
-      explain:"2 + 1 = 3 sixteenths = ¾ beat.", hint:"8th is 2; the dot adds half of 2." },
-    { type:"mc", q:"In 2/4, 3/4, or 4/4 time, a dotted eighth note equals…", choices:["¾ of a beat","½ of a beat","1½ beats","¼ of a beat"], answer:0,
-      explain:"Three of the four sixteenth-slots.", hint:"Think in slots: 3 of 4." },
-    { type:"mc", q:"The dotted 8th + 16th figure adds up to…", choices:["one full beat","1½ beats","¾ of a beat","half a beat"], answer:0,
-      explain:"¾ + ¼ = 1.", hint:"A tidy one-beat package." },
-    { type:"truefalse", q:"A dotted eighth note is usually followed by a sixteenth note.", answer:true,
-      explain:"The classic long–short pairing.", hint:"What fills the last slot?" },
-    { type:"truefalse", q:"The dotted-8th + 16th rhythm sounds identical to two even eighth notes.", answer:false,
-      explain:"¾+¼ vs ½+½ — the strut vs the flat walk.", hint:"Remember the ear lab." },
-    { type:"mc", q:"Counting '1 e & a', the 16th after a dotted 8th plays on…", choices:["a","e","&","1"], answer:0,
-      explain:"Hold 1-e-&, snap on 'a'.", hint:"The LAST slot." },
-    { type:"mc", q:"Which tied pair sounds the same as a dotted 8th?", choices:["an 8th tied to a 16th","an 8th tied to an 8th","a 16th tied to a 16th","a quarter tied to a 16th"], answer:0,
-      explain:"½ + ¼ = ¾ — the dot is a compressed tie.", hint:"The dot replaces which tie?" },
-    { type:"mc", q:"Name this rhythm figure.",
-      staff:{clef:"treble",notes:[{p:"B4",d:"8."},{p:"B4",d:"16"}],beams:[[0,1],[1,1,2]],width:200},
-      choices:["Dotted 8th + sixteenth","Two even 8ths","8th + two 16ths"], answer:0,
-      explain:"Dot on the first note, stub beam on the second.", hint:"See the dot? See the stub?" },
-    { type:"mc", q:"The short stub beam in the figure marks…", choices:["the sixteenth note","a repeat","a staccato note"], answer:0,
-      explain:"It's the 16th's second beam, kept short.", hint:"Beam #2, abbreviated." },
-    { type:"mc", q:"The long–short dotted rhythm is common in…", choices:["marches, jazz, and popular music","only slow ballads","only drum music"], answer:0,
-      explain:"It powers grooves in marches, dances, jazz and pop.", hint:"Where have you heard the long–short rhythm?" },
-    { type:"mc", q:"A dotted QUARTER note equals…", choices:["1½ beats","¾ beat","2 beats"], answer:0,
-      explain:"1 + ½ — same dot rule, bigger note.", hint:"Scale the rule up." },
+    { type:"mc", q:"The symbol C stands for…", choices:["common time (4/4)","cut time (2/2)","the note C","crescendo"], answer:0,
+      explain:"A symbol, not a letter-name.", hint:"No slash = the familiar four." },
+    { type:"mc", q:"The symbol 𝄵 stands for…", choices:["cut time (2/2)","common time (4/4)","3/4 time","compound time"], answer:0,
+      explain:"The slash cuts 4/4 down to 2/2.", hint:"The line = the cut." },
+    { type:"mc", q:"Cut time is also called…", choices:["alla breve","a cappella","allargando","alberti bass"], answer:0,
+      explain:"Italian: 'according to the breve'.", hint:"Sounds like 'brief'." },
+    { type:"mc", q:"In 2/2 time, the TOP number means…", choices:["2 beats per measure","half notes only","2 measures per line"], answer:0,
+      explain:"Top = how many beats.", hint:"Same job as 4/4's top 4." },
+    { type:"mc", q:"In 2/2 time, the BOTTOM number means…", choices:["the half note receives one beat","two notes per beat","play twice as fast"], answer:0,
+      explain:"Bottom = which note IS the beat.", hint:"2 stands for the HALF note." },
+    { type:"truefalse", q:"In cut time, a half note receives one beat.", answer:true,
+      explain:"The half note is the beat unit.", hint:"2 on the bottom." },
+    { type:"truefalse", q:"Switching a piece from 4/4 to cut time changes which notes are written.", answer:false,
+      explain:"The notes stay — the COUNT and feel change.", hint:"What did the feel-lab prove?" },
+    { type:"mc", q:"In cut time, a quarter note is worth…", choices:["½ beat","1 beat","2 beats","¼ beat"], answer:0,
+      explain:"Half of its 4/4 value.", hint:"Everything is halved." },
+    { type:"mc", q:"In cut time, a whole note is worth…", choices:["2 beats","4 beats","1 beat","8 beats"], answer:0,
+      explain:"Two half-note beats.", hint:"How many halves fit inside?" },
+    { type:"mc", q:"A cut-time measure can contain…", choices:["one whole note, or two half notes, or four quarters","only half notes","exactly four beats of quarters"], answer:0,
+      explain:"Anything summing to 2 half-note beats.", hint:"Total = 2 beats." },
+    { type:"mc", q:"Why do fast pieces prefer cut time?", choices:["Two big beats are easier to feel than four fast ones","It makes the piece shorter","It avoids bar lines"], answer:0,
+      explain:"Broad strides instead of a sprint-count.", hint:"March feel." },
+    { type:"mc", q:"Name this time signature.",
+      staff:{clef:"treble",time:"C|",notes:[{p:"B4",d:"h"},{p:"B4",d:"h"},{bar:"final"}],width:240},
+      choices:["Cut time — 2/2","Common time — 4/4","2/4"], answer:0,
+      explain:"The C wears its slash: alla breve.", hint:"Look for the vertical line." },
     /* generated */
-    { gen:"note-value", params:{values:["8","8.","16","q","q."],ask:"name"}, count:3 },
-    { gen:"note-value", params:{values:["8","8.","16","q","q.","h."],ask:"beats"}, count:3 },
-    { gen:"term-match", params:{subject:"term", pool:[["Dotted Eighth Note","¾ beat — three sixteenths"],["The dot","adds half of the note's own value"],["Long–short rhythm","dotted 8th followed by a 16th"]], reverse:true}, count:2 }
+    { gen:"term-match", params:{subject:"symbol", pool:[["Common time (C)","another way of writing 4/4"],["Cut time (𝄵)","another way of writing 2/2"],["Alla breve","the Italian name for cut time"],["Beat unit","the note value that gets one beat"]], reverse:true}, count:4 },
+    { gen:"note-value", params:{values:["w","h","q","8"],ask:"name"}, count:2 }
   ],
   vocabulary:[
-    {term:"Dotted Eighth Note", def:"An eighth note plus a dot — worth three sixteenth notes, or ¾ of a beat in simple meter.",
-      staff:{clef:"treble",notes:[{p:"B4",d:"8."}],width:120}},
-    {term:"Dot", def:"Increases a note's duration by half of its original value — for an 8th, that's one extra 16th."},
-    {term:"Long–Short Rhythm", def:"The characteristic rhythm of a dotted 8th followed by a 16th — hold ¾, snap ¼.",
-      staff:{clef:"treble",notes:[{p:"B4",d:"8."},{p:"B4",d:"16"}],beams:[[0,1],[1,1,2]],width:160}},
-    {term:"Partial Beam", def:"The short second-beam stub that marks the sixteenth inside a beamed dotted-8th + 16th pair."}
+    {term:"Common Time (C)", def:"A symbol meaning 4/4 time — four beats per measure, quarter note = one beat."},
+    {term:"Cut Time (𝄵) / Alla Breve", def:"A symbol meaning 2/2 time — two beats per measure, HALF note = one beat. Every note is worth half its 4/4 count.",
+      staff:{clef:"treble",time:"C|",notes:[{p:"B4",d:"h"},{p:"B4",d:"h"},{bar:"final"}],width:200}},
+    {term:"Beat Unit", def:"The note value that receives one beat — named by the BOTTOM number of the time signature."},
+    {term:"Meter", def:"The organization of beats into measures."}
   ],
   mistakes:[],
   summary:[
-    "✔ Dot rule, smaller target: <b>dotted 8th = 2 + 1 = 3 sixteenths = ¾ beat</b>.",
-    "✔ Its natural partner is a single <b>16th</b>: ¾ + ¼ = one clean beat of LONG–short.",
-    "✔ Count: hold '<b>1 e &</b>', play on '<b>a</b>'.",
-    "✔ Three equal spellings: tied 8th+16th · dotted pair · full beam with a <b>stub</b> on the 16th.",
-    "✔ Don't rush the little note — the snap comes LATE."
+    "✔ <b>C = common time = 4/4</b> — nothing new but the badge.",
+    "✔ <b>𝄵 = cut time = alla breve = 2/2</b>: 2 beats per measure, <b>half note = 1 beat</b>.",
+    "✔ Cut-time chart: whole 2 · half 1 · quarter ½ · eighth ¼ — everything halved from 4/4.",
+    "✔ The notes don't change — the <b>pulse</b> does: two broad strides instead of four steps.",
+    "✔ Fast marches love cut time; conductors say 'in 2'."
   ],
   tips:[
-    "Say 'HUMP-ty' — the dotted pair is exactly the rhythm of that word said with a swagger.",
-    "Most common mistake: playing the pair like a triplet (too soft a limp). Keep the 16th razor-late: 3 slots + 1.",
-    "See a dot? Instantly think '+half'. See a stub beam? Instantly think '16th'.",
-    "Next lesson: two famous SYMBOLS replace the numbers — common time and cut time."
+    "See the slash BEFORE you play — misreading 𝄵 as C means counting twice as many beats as the band.",
+    "Practice converting aloud: 'in cut time this half note is ONE, this quarter is a half…'.",
+    "The Stars and Stripes Forever and most Sousa marches: cut time. Feel them stride in 2.",
+    "Unit 10 complete! Next: Unit 11 — 3/8 and 6/8, where the EIGHTH note takes the beat."
   ],
-  rewards:{ badge:"Strut Master", icon:"\u{1F998}" },
+  rewards:{ badge:"Time Cutter", icon:"\u{2702}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect score with perfect swagger! \u{1F998}\u{1F389}",
-  miaPass:"Passed! Keep the snap late: 1-e-&…A!",
+  miaPerfect:"A perfect score, cut clean in two! \u{2702}\u{1F389}",
+  miaPass:"Passed! Remember the slash: it halves EVERYTHING.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Walk A was even eighths (½+½); Walk B was the dotted strut (¾+¼). Same beat length — completely different feel.",
-      play:()=>{for(let k=0;k<2;k++){MFAudio.tone(72,.3,k*.44,.5);MFAudio.tone(76,.3,k*.44+.22,.5);} for(let k=0;k<2;k++){MFAudio.tone(72,.4,1.3+k*.44,.5);MFAudio.tone(76,.12,1.3+k*.44+.33,.5);}} },
-    learn:{ label:"dotted eighths",
-      explain:"Dot adds half: 8th (2 sixteenths) + 1 = 3 sixteenths = ¾ beat. Partner it with one 16th for a full beat; count 1-e-&-A; the stub beam marks the 16th.",
-      hint:"¾ + ¼ = 1. Hold long, snap late.",
-      play:()=>{MFAudio.tone(72,.5,0,.5);MFAudio.tone(76,.14,.66,.5);} },
+      explain:"The plain C is common time (4/4). The slashed C is cut time (2/2) — the line literally cuts the count in half.",
+      play:()=>{[0,1,2,3].forEach(k=>MFAudio.tone(45,.1,k*.4,.5));[0,1].forEach(k=>MFAudio.tone(45,.14,2+k*.8,.65));} },
+    learn:{ label:"common & cut time",
+      explain:"C = 4/4. Slashed C = 2/2 = alla breve: 2 beats, half note = 1 beat, all values halved. Notes stay the same — the pulse widens.",
+      hint:"The slash halves everything.",
+      play:()=>{MFAudio.tone(60,.35,0,.5);MFAudio.tone(60,.35,.8,.5);} },
     example:{ label:"the examples",
-      explain:"Example 1 struts through a full measure; example 2 lines up the three spellings — tie, dot, and (for contrast) even eighths." },
+      explain:"Example 1 walks the melody in common time; example 2 strides in cut time — count the big TWO with the labels." },
     game:{ label:"the games",
-      explain:"Sprint the dot names, tap the strut, race the beat math, then build one-beat packages.",
-      hint:"In the tap lab: whisper '1-e-&-A' and tap only the capital letters." },
+      explain:"Sprint the symbols, build 2/2 measures, march the tap lab, then race the vocabulary.",
+      hint:"In the constructor: a half note = ONE beat here!" },
     quiz:{ label:"this question",
-      explain:"One formula answers nearly everything: dotted 8th = 3 sixteenths = ¾ beat, and its partner 16th lands on 'a'.",
-      play:()=>{MFAudio.tone(72,.5,0,.5);MFAudio.tone(74,.14,.66,.5);MFAudio.tone(76,.4,.9,.5);} }
+      explain:"Two conversions solve it all: C = 4/4, 𝄵 = 2/2 (half note = the beat, values halved).",
+      play:()=>{MFAudio.tone(60,.3,0,.5);MFAudio.tone(64,.3,.4,.5);MFAudio.tone(67,.5,.8,.5);} }
   }
 };

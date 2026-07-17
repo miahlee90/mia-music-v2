@@ -1,347 +1,266 @@
-/* Lesson 52 — Triads: 2nd Inversion (AEMT Book 3, Unit 13)
-   Built from drafts/UNIT 13 – Lesson 52.md; AEMT3 p.84 verified by render.
-   Core: invert a 1st-inversion triad again (bass 3rd moves up an octave) =
-   2nd INVERSION — the 5th is ALWAYS the bottom note; the "6/4 chord";
-   close-position trick: in BOTH inversions the root is the UPPER note of the 4th.
+/* Lesson 52 (7.4, formerly L85) — Diatonic Triads (Book 4, Unit 21 — SELF-AUTHORED)
+   Core: build a triad on EVERY scale degree. Major key qualities:
+   I ii iii IV V vi vii° = M m m M M m dim. Harmonic minor:
+   i ii° III+ iv V VI vii° (L60 introduced this — reviewed here).
+   Case convention: upper = major, lower = minor, ° = dim, + = aug.
+   This lesson is the prerequisite for Roman numeral analysis.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* flip-again lab: start from 1st inversion, tap the bass to flip once more */
-function MF_L52_flip(container,fb){
-  const ROUNDS=[
-    {name:"C major", first:["E4","G4","C5"], second:["G4","C5","E5"]},
-    {name:"G major", first:["B3","D4","G4"], second:["D4","G4","B4"]}];
+/* quality detective: name the quality of the triad on each degree of C major */
+function MF_L52_quality(container,fb){
+  const DEG=[["I","C-E-G","M",0],["ii","D-F-A","m",1],["iii","E-G-B","m",2],["IV","F-A-C","M",3],["V","G-B-D","M",4],["vi","A-C-E","m",5],["vii°","B-D-F","d",6]];
+  const CH={0:[60,64,67],1:[62,65,69],2:[64,67,71],3:[65,69,72],4:[67,71,74],5:[69,72,76],6:[71,74,77]};
+  const ORDER=[0,3,1,4,6,2,5];
   let r=0;
-  container.innerHTML=`<div class="big-q l52-q" style="text-align:center"></div>
-    <div class="l52-staff"></div>
-    <div style="text-align:center"><button class="play l52-next" style="display:none">▶ Next chord</button></div>`;
-  const q=container.querySelector(".l52-q"), holder=container.querySelector(".l52-staff"), nxt=container.querySelector(".l52-next");
-  function draw(ps,label,clickable){
-    Staff.render(holder,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w",label}:{p,d:"w",chord:true}),
-      width:250, clickNotes:clickable,
-      onNote: clickable? (i)=>{
-        const R=ROUNDS[r];
-        if(i===0){
-          draw(R.second,"2nd inversion",false);
-          R.second.forEach(p=>MFAudio.tone(MFAudio.midi(p),1.0,.1,.32));
-          fb(true,`✓ ${R.first.map(p=>p[0]).join("-")} became ${R.second.map(p=>p[0]).join("-")} — now the 5TH is the bottom note. That's 2nd inversion!`);
-          r++;
-          if(r<ROUNDS.length) nxt.style.display="inline-block";
-          else q.textContent="Great! The chord name stayed the same — only the order changed.";
-        } else { MFAudio.tone(40,.2); fb(false,"Tap the LOWEST note — that's the one that jumps up an octave."); }
-      } : undefined});
-  }
+  container.innerHTML=`<div class="big-q l85q-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play l85q-play">▶ Hear the triad</button></div>
+    <div class="choices chips l85q-ch"><button>Major</button><button>Minor</button><button>Diminished</button></div>`;
+  const q=container.querySelector(".l85q-q"), pl=container.querySelector(".l85q-play"), ch=container.querySelector(".l85q-ch");
   function ask(){
-    const R=ROUNDS[r]; nxt.style.display="none";
-    q.innerHTML=`${R.name} in <b>1st inversion</b>: ${R.first.map(p=>p[0]).join("-")}. Tap the <b>lowest note</b> to move it up one octave.`;
-    draw(R.first,"1st inversion",true);
+    if(r>=ORDER.length){ q.textContent="Excellent! All seven diatonic qualities identified."; pl.style.display="none"; ch.style.display="none"; return; }
+    const D=DEG[ORDER[r]];
+    q.innerHTML=`Triad ${r+1} of 7 — degree <b>${D[0]}</b> (${D[1]}). What quality?`;
   }
-  nxt.onclick=()=>ask();
-  ask();
-}
-
-/* three-way detective: bass first, then position (root / 1st / 2nd) */
-function MF_L52_detect(container,fb){
-  const ROUNDS=[
-    {ps:["G4","C5","E5"], name:"C major", pos:2},
-    {ps:["E4","G4","C5"], name:"C major", pos:1},
-    {ps:["C4","F4","A4"], name:"F major", pos:2},
-    {ps:["G4","B4","D5"], name:"G major", pos:0},
-    {ps:["D4","G4","B4"], name:"G major", pos:2}];
-  const POS=["Root position","1st inversion","2nd inversion"];
-  let r=0, found=false, score=0;
-  container.innerHTML=`<div class="big-q l52d-q" style="text-align:center"></div>
-    <div class="l52d-staff"></div>
-    <div class="choices chips l52d-ch" style="display:none"><button>Root position</button><button>1st inversion</button><button>2nd inversion</button></div>`;
-  const q=container.querySelector(".l52d-q"), holder=container.querySelector(".l52d-staff"), ch=container.querySelector(".l52d-ch");
-  function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Great job! You identified every chord position."; holder.innerHTML=""; ch.style.display="none"; return; }
-    const R=ROUNDS[r]; found=false; ch.style.display="none";
-    q.innerHTML=`Tap the <b>lowest note</b> first. (Chord ${r+1} of ${ROUNDS.length})`;
-    Staff.render(holder,{clef:"treble",notes:R.ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:220,clickNotes:true,
-      onNote:(i,p)=>{
-        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
-        if(found) return;
-        if(i===0){ found=true; q.innerHTML=`✓ The lowest note is <b>${R.ps[0][0]}</b>. Now identify the chord position.`; ch.style.display=""; }
-        else fb(false,"Go lower — the BOTTOM note runs this show.");
-      }});
-  }
+  pl.onclick=()=>{ const D=DEG[ORDER[r]]; if(!D) return; CH[D[3]].forEach(m=>MFAudio.tone(m,.9,.05,.3)); };
   [...ch.children].forEach((b,i)=>b.onclick=()=>{
-    const R=ROUNDS[r];
-    if(i===R.pos){ score++; MFAudio.yay();
-      fb(true,`✓ ${R.ps[0][0]} is the ${["root","3rd","5th"][R.pos]} of ${R.name} → ${POS[R.pos]}.`);
-      r++; setTimeout(ask,1200); }
-    else { MFAudio.tone(40,.2); fb(false,`Spell ${R.name} in 3rds and find ${R.ps[0][0]}'s job: root, 3rd or 5th?`); }
+    const D=DEG[ORDER[r]]; if(!D) return;
+    const map={0:"M",1:"m",2:"d"};
+    if(map[i]===D[2]){ CH[D[3]].forEach(m=>MFAudio.tone(m,.7,.05,.28));
+      fb(true,`✓ ${D[0]} (${D[1]}) is ${i===0?"MAJOR":i===1?"minor":"diminished"} — the pattern M-m-m-M-M-m-d° never changes in major keys.`);
+      r++; setTimeout(ask,1300);
+    } else { MFAudio.tone(40,.2); fb(false,"Stack the 3rds and measure them — or recall the pattern M-m-m-M-M-m-d°."); }
   });
   ask();
 }
 
-/* keyboard builder: 2nd inversions — 5th, root, 3rd upward */
-function MF_L52_build(container,fb){
-  const ROUNDS=[
-    {name:"C major", pcs:[7,0,4], letters:["G (the 5th — in the bass!)","C (the root)","E (the 3rd on top)"]},
-    {name:"F major", pcs:[0,5,9], letters:["C (the 5th — in the bass!)","F (the root)","A (the 3rd on top)"]},
-    {name:"G major", pcs:[2,7,11], letters:["D (the 5th — in the bass!)","G (the root)","B (the 3rd on top)"]}];
-  let r=0,k=0,last=null,got=[];
-  container.innerHTML=`<div class="big-q l52b-q" style="text-align:center"></div>
-    <div class="l52b-staff"></div><div class="l52b-kb"></div>`;
-  const q=container.querySelector(".l52b-q"), sh=container.querySelector(".l52b-staff"), kh=container.querySelector(".l52b-kb");
-  function drawStaff(){
-    if(!got.length){ sh.innerHTML=""; return; }
-    const NAMES={0:"C",2:"D",4:"E",5:"F",7:"G",9:"A",11:"B"};
-    const ps=got.map(m=>NAMES[m%12]+(Math.floor(m/12)-1));
-    Staff.render(sh,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:190});
-  }
-  function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Excellent! You built all three 2nd inversion triads."; return; }
-    k=0; last=null; got=[]; drawStaff();
-    q.innerHTML=`Build <b>${ROUNDS[r].name}</b> in <b>2nd inversion</b>. Press <b>${ROUNDS[r].letters[0]}</b> first.`;
-  }
-  Keyboard.create(kh,{start:60,octaves:2,labels:true,
-    onKey:m=>{
-      const R=ROUNDS[r]; if(!R) return;
-      const want=R.pcs[k];
-      if(m%12===want && (last===null || m>last)){
-        last=m; got.push(m); k++; drawStaff();
-        if(k>=3){ got.forEach(x=>MFAudio.tone(x,1.0,.1,.32));
-          fb(true,`✓ ${R.name}, 2nd inversion — 5th in the bass, root in the middle, 3rd on top.`);
-          r++; setTimeout(ask,1400); }
-        else q.innerHTML=`Now play <b>${R.letters[k]}</b> above the note you just played.`;
-      } else if(m%12===want){ MFAudio.tone(40,.2); fb(false,"Right letter — but stack UPWARD from the bass."); }
-      else { MFAudio.tone(40,.2); fb(false,k===0? `Which note is the 5TH of ${R.name}? That one goes in the bass.` : "Follow the recipe: 5th, then root, then 3rd."); }
-    }});
-  ask();
-}
-
-LESSON_CONTENT[52]={stackFigures:true,
-  welcome:"Lesson 51 flipped the chord once. Today… we flip it AGAIN! \u{2696}\u{FE0F}",
+LESSON_CONTENT[52]={
+  welcome:"Build a diatonic triad on each scale degree.",
   hook:{
-    say:"<b>Three C major chords — same notes, different positions.</b> Listen carefully. <b>Which chord has the 5th as the lowest note?</b>",
+    say:"<b>Build a triad on each degree of the major scale by stacking diatonic thirds.</b> Listen to all seven triads. \u{1F447} <b>Do they have the same quality?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Chord A</button>
-          <button class="play hk-b">▶ Chord B</button>
-          <button class="play hk-c">▶ Chord C</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Chord C — G, the 5th, is the lowest note</button><button>Chord A — the 5th is on the bottom</button><button>Chord B — E is the 5th</button></div>`;
+          <button class="play hk-a">▶ Play all seven triads</button></div>
+          <div class="choices hk-ch" style="display:none"><button>No — some are major, some are minor, and one is diminished</button><button>Yes — all seven are major</button><button>Yes — all seven are minor</button></div>`;
+        const CH=[[60,64,67],[62,65,69],[64,67,71],[65,69,72],[67,71,74],[69,72,76],[71,74,77],[72,76,79]];
         const ch=container.querySelector(".hk-ch");
-        let heard=new Set();
-        const show=()=>{ if(heard.size>=3) setTimeout(()=>ch.style.display="",1200); };
-        container.querySelector(".hk-a").onclick=()=>{ [60,64,67].forEach(m=>MFAudio.tone(m,1.1,0,.33)); heard.add("a"); show(); };
-        container.querySelector(".hk-b").onclick=()=>{ [64,67,72].forEach(m=>MFAudio.tone(m,1.1,0,.33)); heard.add("b"); show(); };
-        container.querySelector(".hk-c").onclick=()=>{ [67,72,76].forEach(m=>MFAudio.tone(m,1.1,0,.33)); heard.add("c"); show(); };
+        container.querySelector(".hk-a").onclick=()=>{ CH.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.55,i*.6,.26))); setTimeout(()=>ch.style.display="",CH.length*600+300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Chord C was G-C-E — the 5th (G) is the lowest note. That's 2ND INVERSION, today's lesson!");
-          else fb(false,"Name each chord's bottom note, then ask: is it the root, the 3rd, or the 5th of C-E-G?");
+          if(i===0) fb(true,"✓ Correct. In a major key, the diatonic triads are major on scale degrees 1, 4, and 5; minor on 2, 3, and 6; and diminished on 7.");
+          else fb(false,"Listen again and compare the quality of each triad. The seventh triad contains a diminished fifth.");
         });
       } }
   },
   objectives:[
-    "Create a 2nd inversion by inverting a 1st-inversion triad again",
-    "Recognize 2nd inversion: the 5th is ALWAYS the bottom note",
-    "Say the full bass ladder: root → 3rd → 5th",
-    "Explain the nickname 6/4 chord",
-    "Use the close-position trick: the root sits on TOP of the interval of a 4th",
-    "Build 2nd-inversion triads on the staff and keyboard"
+    "Build a triad on every degree of the major scale",
+    "Memorize the major-key pattern: M-m-m-M-M-m-dim",
+    "Write the numerals with correct case: I ii iii IV V vi vii°",
+    "Review the harmonic-minor pattern: i ii° III+ iv V VI vii°",
+    "Identify any diatonic triad's quality by ear and by eye",
+    "Prepare for Roman numeral analysis"
   ],
   steps:[
-    { say:"<b>Quick Review:</b> In <b>root position</b>, the root is the lowest note. In <b>1st inversion</b>, the 3rd is the lowest note. \u{1F447} <b>If we invert the chord one more time, which chord tone becomes the lowest note?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[
-        {p:"C4",d:"w",label:"root position"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"1st inversion"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"G4",d:"w",label:"…and next?"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:480} },
-      try:{ type:"mc", choices:["The 5th","The 7th","The root again"], answer:0,
-        success:"✓ Root, 3rd… 5th! The bass climbs through the chord tones one flip at a time.",
-        fail:"Follow the ladder: root position → 3rd in the bass → next chord tone up…",
-        hint:"A triad only owns three tones: root, 3rd, 5th." } },
-    { say:"Move the <b>lowest note</b> up one octave. The <b>5th</b> becomes the lowest note, creating <b>2nd INVERSION</b>. \u{1F447}",
-      try:{ type:"custom",
-        hint:"Tap the LOWEST note of the 1st-inversion stack.",
-        mount:(container,fb)=>MF_L52_flip(container,fb) } },
-    { say:"<b>2nd Inversion Rule:</b> In <b>2nd inversion</b>, the <b>5th</b> is the lowest note. The chord name does <b>not</b> change. \u{1F447} <b>G–C–E is…?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[
-        {p:"G4",d:"w",label:"C: G-C-E"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"F: C-F-A"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"G: D-G-B"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:480} },
-      try:{ type:"mc", choices:["C major, 2nd inversion","G major, root position","C major, 1st inversion"], answer:0,
-        success:"✓ Rearranged into thirds: C-E-G. The bass G is the 5th → 2nd inversion. (G major would be G-B-D — the B gives it away.)",
-        fail:"Rearrange G-C-E into thirds. What root do you get?",
-        hint:"Rearrange the notes into thirds to name the chord, THEN check the lowest note." } },
-    { say:"<b>Why is it called a 6/4 chord?</b> Figured bass measures intervals <b>above the bass note</b>. In <b>G–C–E</b>, C is a <b>4th</b> above G, and E is a <b>6th</b> above G. That's why this inversion is called a <b>6/4 chord</b> — the 6 written above the 4. \u{1F447} <b>The numbers in 6/4 are measured from which note?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[
-        {p:"G4",d:"w",label:"6/4"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:200} },
-      try:{ type:"mc", choices:["The bass (lowest) note","The root","The top note"], answer:0,
-        success:"✓ Always from the BASS. This idea grows into a whole system next lesson — figured bass!",
-        fail:"6 what and 4 what? Sixth and fourth ABOVE something…",
-        hint:"The same note that decides the inversion." } },
-    { say:"<b>Finding the Root in Close Position:</b> In close-position inversions, look for the <b>4th</b> inside the chord. The <b>upper note of the 4th</b> is always the <b>root</b>. In E-G-C the 4th is G→C; in G-C-E it's G→C again — and C is the root both times! \u{1F447} <b>In close position, where is the root?</b>",
+    { say:"<b>Diatonic Triads:</b> Build a diatonic triad by stacking two thirds above a scale degree while using only notes from the given scale. A seven-note scale produces one diatonic triad on each of its seven degrees. \u{1F447} <b>A triad diatonic to a given scale uses…</b>",
       show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"G4",d:"w",label:"the 4th"},{p:"C5",d:"w"},
-        {p:"E4",d:"w",label:"1st inv."},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"G4",d:"w",label:"2nd inv."},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],
-        steps:[{from:0,to:1,label:"4th"}],width:640} },
-      try:{ type:"mc", choices:["on TOP of the 4th","below the 4th","outside the chord"], answer:0,
-        success:"✓ Find the 4th, take its top note — that's your root and your chord name. Instant identification!",
-        fail:"G up to C… which of those two is the root of C major?",
-        hint:"4th = G→C here. The root is C." } },
-    { say:"<b>Identify the inversion.</b> Find the <b>lowest note</b> first, then name the chord position. \u{1F447}",
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"ii"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"E4",d:"w",label:"iii"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:560} },
+      try:{ type:"mc", choices:["Only notes from that scale","Any chromatic notes","Only notes played on black keys"], answer:0,
+        success:"✓ Correct. A triad diatonic to a specific scale is constructed entirely from notes in that scale.",
+        fail:"Check whether every chord member belongs to the given scale.",
+        hint:"Use only the seven notes of the specified scale." } },
+    { say:"<b>The Major-Scale Triad Pattern:</b> Stacking diatonic thirds on the seven degrees of any major scale produces the following pattern: <b>major–minor–minor–major–major–minor–diminished</b>. In Roman numerals: I–ii–iii–IV–V–vi–vii°. \u{1F447} <b>Which scale degrees support major diatonic triads in a major key?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Degree</th><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#2F6DA8">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#C05A21">ii</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#C05A21">iii</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#2F6DA8">IV</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#2F6DA8">V</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#C05A21">vi</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">vii°</td></tr>
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Quality</th><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#2F6DA8">Major</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#C05A21">minor</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#C05A21">minor</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#2F6DA8">Major</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#2F6DA8">Major</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;color:#C05A21">minor</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800">dim</td></tr></table>` },
+      try:{ type:"mc", choices:["1, 4, and 5: I, IV, and V","2, 3, and 6: ii, iii, and vi","Only scale degree 1: I"], answer:0,
+        success:"✓ Correct. The diatonic triads on scale degrees 1, 4, and 5 are major. The triads on 2, 3, and 6 are minor, and the triad on 7 is diminished.",
+        fail:"Recall the major-scale pattern: I–ii–iii–IV–V–vi–vii°.",
+        hint:"Scale degrees 1, 4, and 5." } },
+    { say:"<b>Roman-Numeral Case and Symbols:</b> An uppercase Roman numeral indicates a triad with a major third above its root; without an additional symbol, it represents a major triad. A lowercase numeral without an additional symbol represents a minor triad. Add ° for a diminished triad and + for an augmented triad: I, ii, vii°, and III+. \u{1F447} <b>What does the Roman numeral “vi” indicate?</b>",
+      try:{ type:"mc", choices:["A minor triad built on scale degree 6","A major triad built on scale degree 6","A diminished triad built on scale degree 6"], answer:0,
+        success:"✓ Correct. The lowercase numeral indicates minor quality, and vi identifies scale degree 6 as the root.",
+        fail:"Read both the numeral and its capitalization.",
+        hint:"A lowercase numeral without an additional symbol indicates a minor triad." } },
+    { say:"<b>Triads from the Harmonic Minor Scale:</b> Raising the 7th scale degree changes several triad qualities. Most importantly, <b>V becomes major</b> and <b>vii° becomes diminished</b>, creating a stronger pull to the tonic. \u{1F447} <b>When triads are built from the harmonic minor scale, what is the quality of V?</b>",
+      try:{ type:"mc", choices:["Major, because it contains the raised seventh scale degree","Minor","Diminished"], answer:0,
+        success:"✓ Correct. The raised seventh is the third of the dominant triad, changing v to V.",
+        fail:"Identify the raised scale degree and its position within the dominant triad.",
+        hint:"The raised seventh is the third of V." } },
+    { say:"Identify each triad's quality from its notation and sound. \u{1F447}",
       try:{ type:"custom",
-        hint:"Tap the bass, spell the chord in 3rds, match the bass to root/3rd/5th.",
-        mount:(container,fb)=>MF_L52_detect(container,fb) } },
-    { say:"<b>Build these chords in 2nd inversion.</b> \u{1F447}",
-      try:{ type:"custom",
-        hint:"5th in the bass, root in the middle, 3rd on top.",
-        mount:(container,fb)=>MF_L52_build(container,fb) } },
-    { say:"<b>How is 2nd inversion used?</b> A <b>2nd inversion</b> chord sounds less stable than root position or 1st inversion. It is often used as a <b>passing chord</b> between stronger chords. \u{1F447} <b>A composer would most likely use a 6/4 chord to…</b>",
-      try:{ type:"mc", choices:["pass smoothly between two stronger chords","end a piece with a big final chord","replace the tonic forever"], answer:0,
-        success:"✓ It's a mover, not a settler. You'll hear exactly this in Lesson 55's smooth progressions.",
-        fail:"Would you END a piece on a chord that feels off-balance?",
-        hint:"Balancing on its 5th, the chord wants to keep walking." } }
+        hint:"In a major scale, the pattern is major–minor–minor–major–major–minor–diminished.",
+        mount:(container,fb)=>MF_L52_quality(container,fb) } },
+    { say:"<b>Why This Matters:</b> Diatonic triads provide a foundation for tonal harmony. Understanding their roots and qualities prepares students to study chord progressions, cadences, and Roman-numeral analysis. \u{1F447} <b>How many root-position triads can be constructed on the seven degrees of a given seven-note scale?</b>",
+      try:{ type:"mc", choices:["Seven — one on each scale degree","Three","Twelve"], answer:0,
+        success:"✓ Correct. A seven-note scale provides seven possible triad roots, producing one diatonic triad on each scale degree.",
+        fail:"Build one triad on each of the seven scale degrees.",
+        hint:"Count the scale degrees." } },
+    { say:"<b>Review:</b> \u{1F447} <b>In a major key, what is the quality of the diatonic triad on scale degree 7?</b>",
+      try:{ type:"mc", choices:["Diminished: vii°","Major: VII","Augmented: VII+"], answer:0,
+        success:"✓ Correct. The leading-tone triad consists of two stacked minor thirds and contains a diminished fifth, so it is labeled vii°.",
+        fail:"Recall the quality of the final triad in the major-scale pattern.",
+        hint:"I–ii–iii–IV–V–vi–?" } }
   ],
   examples:[
-    { caption:"The complete journey of one chord: C major in root position, 1st inversion, 2nd inversion — and home again an octave up. Same three letters the whole way.",
-      staff:{clef:"treble",tempo:60,notes:[
-        {p:"C4",d:"w",label:"root"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"1st inv."},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"G4",d:"w",label:"2nd inv."},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},
-        {p:"C5",d:"w",label:"root (8va)"},{p:"E5",d:"w",chord:true},{p:"G5",d:"w",chord:true}],width:560},
+    { caption:"The complete C major triad ladder: I ii iii IV V vi vii° and home again — listen for bright (M), dark (m) and tense (°) as it climbs.",
+      staff:{clef:"treble",tempo:76,notes:[
+        {p:"C4",d:"q",label:"I"},{p:"E4",d:"q",chord:true},{p:"G4",d:"q",chord:true},
+        {p:"D4",d:"q",label:"ii"},{p:"F4",d:"q",chord:true},{p:"A4",d:"q",chord:true},
+        {p:"E4",d:"q",label:"iii"},{p:"G4",d:"q",chord:true},{p:"B4",d:"q",chord:true},
+        {p:"F4",d:"q",label:"IV"},{p:"A4",d:"q",chord:true},{p:"C5",d:"q",chord:true},
+        {p:"G4",d:"q",label:"V"},{p:"B4",d:"q",chord:true},{p:"D5",d:"q",chord:true},
+        {p:"A4",d:"q",label:"vi"},{p:"C5",d:"q",chord:true},{p:"E5",d:"q",chord:true},
+        {p:"B4",d:"q",label:"vii°"},{p:"D5",d:"q",chord:true},{p:"F5",d:"q",chord:true},
+        {p:"C5",d:"w",label:"I"},{p:"E5",d:"w",chord:true},{p:"G5",d:"w",chord:true},{bar:"final"}],width:680},
       kb:{start:60,octaves:2,labels:true} },
-    { caption:"The 6/4 chord at work: I, then IV in 2nd inversion, then I. The bass never moves off C — the F chord visits while the floor stays still. (Lesson 55 builds on exactly this!)",
-      staff:{clef:"treble",tempo:70,notes:[
-        {p:"C4",d:"w",label:"C (I)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"F/C (IV 6/4)"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"C (I)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:480},
-      kb:{start:60,octaves:1,labels:true} }
+    { caption:"A harmonic-minor ladder in A minor: i ii° III+ iv V VI vii° — the G♯ colors III+ augmented, V major and vii° diminished.",
+      staff:{clef:"treble",tempo:76,notes:[
+        {p:"A3",d:"q",label:"i"},{p:"C4",d:"q",chord:true},{p:"E4",d:"q",chord:true},
+        {p:"B3",d:"q",label:"ii°"},{p:"D4",d:"q",chord:true},{p:"F4",d:"q",chord:true},
+        {p:"C4",d:"q",label:"III+"},{p:"E4",d:"q",chord:true},{p:"G#4",d:"q",chord:true},
+        {p:"D4",d:"q",label:"iv"},{p:"F4",d:"q",chord:true},{p:"A4",d:"q",chord:true},
+        {p:"E4",d:"q",label:"V"},{p:"G#4",d:"q",chord:true},{p:"B4",d:"q",chord:true},
+        {p:"F4",d:"q",label:"VI"},{p:"A4",d:"q",chord:true},{p:"C5",d:"q",chord:true},
+        {p:"G#4",d:"q",label:"vii°"},{p:"B4",d:"q",chord:true},{p:"D5",d:"q",chord:true},
+        {p:"A4",d:"w",label:"i"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:680},
+      kb:{start:57,octaves:1.5833,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Three-Position Sprint (45s)",
-      intro:"Root, 1st or 2nd? All three positions in the mix now — read that bass note!",
-      miaIntro:"The full lineup this time! \u{1F50D}",
-      spec:{gen:"inversion-id", params:{subject:"triad", ask:"position"}, seconds:45},
-      result:(score)=>score>=8?score+" chords placed — three-position mastery!":null },
-    { type:"key-climb", title:"Game 2 · 6/4 Ladder",
-      intro:"Climb C, F and G major — each in 2nd inversion: 5th, root, 3rd!",
-      miaIntro:"Nine keys, three 6/4 chords! \u{1FA9C}",
-      spec:{seq:[67,72,76, 60,65,69, 62,67,71],
-        names:["G (5th of C)","C (root)","E (3rd)","C (5th of F)","F (root)","A (3rd)","D (5th of G)","G (root)","B (3rd)"],
-        start:60, octaves:1.3333, title:"C → F → G major, all in 2nd inversion"},
-      result:(score)=>score!==null?"Three 6/4 chords climbed clean!":null },
-    { type:"symbol-hunt", title:"Game 3 · Position Spotter II",
-      intro:"Root, 1st and 2nd inversions on cards — click what each round names!",
-      miaIntro:"Bottom note, bottom note, bottom note! \u{1F440}",
+    { type:"gen-race", title:"Game 1 · Triad-Quality Pattern (45s)",
+      intro:"Identify the diatonic triad quality on each major-scale degree before time runs out.",
+      miaIntro:"Major–minor–minor–major–major–minor–diminished.",
+      spec:{gen:"term-match", params:{subject:"term", pool:[
+        ["I, IV, V in major","major triads"],
+        ["ii, iii, vi in major","minor triads"],
+        ["vii°","diminished"],
+        ["Uppercase numeral","major quality"],
+        ["Lowercase numeral","minor quality"],
+        ["° symbol","diminished"],
+        ["+ symbol","augmented"],
+        ["III+ (harmonic minor)","augmented triad"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Major-scale triad pattern completed!":null },
+    { type:"key-climb", title:"Game 2 · Climb the Triad Roots",
+      intro:"Play the roots of the seven diatonic triads in C major, ascending from C to B.",
+      miaIntro:"Each scale degree becomes a triad root.",
+      spec:{seq:[60,62,64,65,67,69,71,72],
+        names:["C (I)","D (ii)","E (iii)","F (IV)","G (V)","A (vi)","B (vii°)","C (I)"],
+        start:60, octaves:1, title:"Diatonic roots, degree by degree"},
+      result:(score)=>score!==null?"You played all seven triad roots correctly.":null },
+    { type:"symbol-hunt", title:"Game 3 · Which Triad Is It?",
+      intro:"Examine each diatonic triad in C major and select its Roman numeral.",
+      miaIntro:"Identify the root, scale degree, and triad quality.",
       spec:{rounds:6, pool:[
-        {label:"Root position (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"1st inversion (E-G-C)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
-        {label:"2nd inversion (G-C-E)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:150}},
-        {label:"2nd inversion (C-F-A)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"Spotter supreme — nothing slips by!":null },
-    { type:"order-tap", title:"Game 4 · Bass-Ladder Order",
-      intro:"Tap the positions of C major, then F major, in flip order — root, 1st, 2nd!",
-      miaIntro:"Climb the ladder in order! \u{1FA9C}",
-      spec:{sequence:["C-E-G (root)","E-G-C (1st)","G-C-E (2nd)","F-A-C (root)","A-C-F (1st)","C-F-A (2nd)"],
-        title:"Tap each chord in flip order: C major first, then F major"},
-      result:(stars)=>stars>=2?"The bass ladder is second nature now!":null }
+        {label:"ii (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}},
+        {label:"IV (F-A-C)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
+        {label:"vi (A-C-E)", spec:{clef:"treble",notes:[{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:150}},
+        {label:"vii° (B-D-F)", spec:{clef:"treble",notes:[{p:"B4",d:"w"},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"You matched the triads with their Roman numerals.":null },
+    { type:"term-race", title:"Game 4 · Roman-Numeral Quality",
+      intro:"Identify each triad's quality from its Roman numeral and symbol.",
+      miaIntro:"Read the capitalization and any quality symbol.",
+      spec:{rounds:8, reverse:true, pool:[
+        ["I","major tonic triad"],
+        ["ii","minor supertonic triad"],
+        ["iii","minor mediant triad"],
+        ["IV","major subdominant triad"],
+        ["V","major dominant triad"],
+        ["vi","minor submediant triad"],
+        ["vii°","diminished leading-tone triad"],
+        ["i (minor key)","minor tonic triad"]]},
+      result:(score)=>score>=6?"You interpreted the Roman numerals correctly.":null }
   ],
-  practiceIntro:"20 practice questions — all three positions, spellings, the 6/4 nickname and the 4th trick. Answer right and the next appears automatically!",
+  practiceIntro:"Complete 20 practice questions on triad qualities, Roman-numeral notation, and major and harmonic-minor scale patterns. The next question will appear after each correct answer.",
   practice:[
-    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:6 },
-    { gen:"term-match", params:{subject:"term", pool:[["2nd inversion","the 5th is the lowest note"],["6/4 chord","another name for 2nd inversion"],["1st inversion","the 3rd is the lowest note"],["Root position","the root is the lowest note"],["The 4th trick","the root is the UPPER note of the 4th"]], reverse:true}, count:4 },
-    { type:"mc", q:"To create a 2nd inversion from a 1st-inversion triad, move the ____ up one octave.", choices:["bass note (the 3rd)","top note (the root)","middle note (the 5th)"], answer:0,
-      explain:"E-G-C → G-C-E: the lowest note keeps jumping." },
-    { type:"mc", q:"G-C-E is which chord, in which position?", choices:["C major, 2nd inversion","G major, root position","E minor, 1st inversion"], answer:0,
-      explain:"Rearrange: C-E-G — with the 5th (G) in the bass." },
-    { type:"mc", q:"C-F-A is F major in…", choices:["2nd inversion","root position","1st inversion"], answer:0,
-      explain:"C is the 5th of F-A-C → 2nd inversion." },
-    { type:"mc", q:"Which chord tone is the lowest note in each position?", choices:["root → 3rd → 5th","root → 5th → 3rd","3rd → root → 5th"], answer:0,
-      explain:"Each flip promotes the next chord tone into the bass." },
-    { type:"mc", q:"In close position, the ROOT of an inverted triad is always…", choices:["the upper note of the 4th","the lower note of the 4th","the middle note"], answer:0,
-      explain:"Find the 4th, take its top note — works for 1st AND 2nd inversions." },
-    { type:"mc", q:"Which inversion is usually the least stable?", choices:["2nd inversion","root position","they sound identical"], answer:0,
-      explain:"The 6/4 chord usually passes through rather than resting." },
-    { type:"truefalse", q:"A 2nd-inversion triad has the root in the bass.", answer:false,
-      explain:"The 5TH is in the bass — the root moved to the middle." },
-    { type:"truefalse", q:"Changing the inversion changes the chord name.", answer:false,
-      explain:"Still the same letters, still the same chord." },
-    { type:"truefalse", q:"The figured-bass nickname for 2nd inversion is 6/4.", answer:true,
-      explain:"A 6th and a 4th above the bass — full story in Lesson 54." },
-    { type:"truefalse", q:"Every 2nd-inversion chord must be in close position.", answer:false,
-      explain:"Open-position 2nd inversions exist too — the bass note still rules." }
-  ],
-  miaQuizIntro:"Final quiz! Three positions, one rule: the bass note tells all.",
-  quiz:[
-    { type:"mc", q:"Which chord tone is the LOWEST note of a 2nd-inversion triad?", choices:["The 5th","The root","The 3rd","The 7th"], answer:0,
-      explain:"5th in the bass = 2nd inversion, always.", hint:"Root → 3rd → … what's next on the ladder?" },
-    { type:"mc", q:"Another name for a 2nd-inversion triad is the…", choices:["6/4 chord","5/3 chord","6 chord","7 chord"], answer:0,
-      explain:"6th + 4th above the bass give the nickname.", hint:"Two numbers, counted up from the bass." },
-    { type:"mc", q:"Which of these is the 2nd inversion of C major?", choices:["G-C-E","C-E-G","E-G-C","C-G-E"], answer:0,
-      explain:"5th (G) in the bass, root and 3rd stacked above.", hint:"Which spelling starts on the 5th?" },
-    { type:"truefalse", q:"A 2nd-inversion triad has the root in the bass.", answer:false,
-      explain:"That's root position. 2nd inversion floats on its 5th.", hint:"Check the ladder." },
-    { type:"truefalse", q:"Changing the inversion changes the chord name.", answer:false,
-      explain:"G-C-E, E-G-C, C-E-G — all C major.", hint:"Same letters, same family." },
-    { type:"mc", q:"A 2nd inversion is made from a 1st inversion by…", choices:["moving the lowest note (the 3rd) up an octave","moving the highest note down an octave","adding a 4th note"], answer:0,
-      explain:"The bass keeps leaping to the top, one flip at a time.", hint:"Same move as Lesson 51, applied again." },
-    { type:"mc", q:"Name this chord and its position.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:200},
-      choices:["F major, 2nd inversion","C major, root position","F major, 1st inversion"], answer:0,
-      explain:"Rearrange: F-A-C; the bass C is the 5th → 2nd inversion.", hint:"The 4th (C→F) has the root on top." },
-    { type:"mc", q:"Name this chord and its position.",
-      staff:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:200},
-      choices:["G major, 2nd inversion","D major, root position","G major, 1st inversion"], answer:0,
-      explain:"G-B-D with the 5th (D) in the bass.", hint:"D→G is a 4th — root on top of it." },
-    { type:"mc", q:"A student says, \u{201C}G–C–E is a G major chord because G is the lowest note.\u{201D} Why is the student incorrect?", choices:["It's C major in 2nd inversion. The bass note shows the inversion, not the chord name.","The student is right","It's E minor"], answer:0,
-      explain:"Rearrange in 3rds: C-E-G. G is merely the bass on duty.", hint:"Same trap as Lesson 51 — rearrange first!" },
-    { type:"mc", q:"In close position, where does the ROOT sit relative to the interval of a 4th?", choices:["It is the upper note of the 4th","It is the lower note of the 4th","It never touches the 4th"], answer:0,
-      explain:"The shortcut for BOTH inversions: spot the 4th interval, grab its upper note — that's the root.", hint:"G→C in our examples… and C is the root." },
-    { type:"mc", q:"Which statement is correct?", choices:["Second inversion places the 5th in the bass","Second inversion places the 3rd in the bass","Second inversion changes a major chord into minor","Every 2nd inversion is in open position"], answer:0,
-      explain:"5th in the bass — the other options mix up the rules.", hint:"Today's rule, verbatim." },
-    { type:"mc", q:"Why is IV in 2nd inversion used in this progression? (C → F/C → C)", choices:["So the bass could stay on C while the harmony changed","To make the chord louder","To turn F major into F minor"], answer:0,
-      explain:"A still bass + moving harmony = the classic 6/4 move.", hint:"What did the bass do — or rather, NOT do?" },
-    /* generated */
-    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:4 },
-    { gen:"term-match", params:{subject:"term", pool:[["2nd inversion","5th in the bass"],["6/4 chord","2nd inversion's nickname"],["1st inversion","3rd in the bass"],["Root position","root in the bass"]], reverse:true}, count:2 },
-    { gen:"triad-id", params:{ask:"root"}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["I IV V","major"],["ii iii vi","minor"],["vii°","diminished"],["Uppercase","major"],["Lowercase","minor"],["°","diminished"]], reverse:true}, count:6 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:3 },
+    { type:"mc", q:"How many triads can be built on the degrees of a given seven-note scale?", choices:["7","3","12"], answer:0,
+      explain:"Build one triad on each of the seven scale degrees." },
+    { type:"mc", q:"Which sequence shows the diatonic triad qualities produced by a major scale?", choices:["M-m-m-M-M-m-dim","M-M-M-m-m-m-dim","m-M-m-M-m-M-m"], answer:0,
+      explain:"Fixed for every major key." },
+    { type:"mc", q:"In G major, what is the quality and Roman numeral of the diatonic triad A-C-E?", choices:["Minor: ii","Major: II","Diminished: ii°"], answer:0,
+      explain:"Degree 2 is always minor in major keys." },
+    { type:"mc", q:"When triads are built from the harmonic minor scale, the triad rooted on the raised seventh is…", choices:["Diminished: vii°","Major: VII","Minor: vii"], answer:0,
+      explain:"Same as major's vii° — the leading-tone triad." },
+    { type:"truefalse", q:"An uppercase Roman numeral without an additional quality symbol indicates a major triad.", answer:true,
+      explain:"An augmented triad also uses an uppercase numeral but adds the symbol +." },
+    { type:"truefalse", q:"In a major key, the diatonic iii triad is minor.", answer:true,
+      explain:"Lowercase iii = minor." },
+    { type:"truefalse", q:"When triads are built strictly from the harmonic minor scale, III+ is augmented.", answer:true,
+      explain:"The raised seventh forms an augmented fifth above the third scale degree. In tonal minor harmony, the unaltered major III is also common." },
+    { gen:"triad-id", params:{}, count:3 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
   ],
   vocabulary:[
-    {term:"2nd Inversion", def:"A triad with its 5th as the lowest note — made by inverting a 1st-inversion chord once more.",
-      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:130}},
-    {term:"6/4 Chord", def:"The nickname for 2nd inversion: the intervals above the bass are a 6th and a 4th."},
-    {term:"Bass Note", def:"The lowest note of a chord. It decides the POSITION — never the chord's name."},
-    {term:"The 4th Trick", def:"In close position, both inversions contain an interval of a 4th — and the ROOT is always its upper note."}
+    {term:"Diatonic Triads", def:"The seven triads built on the scale degrees using only the key's own notes."},
+    {term:"Major-Key Pattern", def:"I ii iii IV V vi vii° = M-m-m-M-M-m-diminished. Identical in every major key."},
+    {term:"Harmonic-Minor Pattern", def:"i ii° III+ iv V VI vii° — the raised 7th creates III+, major V and vii°."},
+    {term:"Case Convention", def:"UPPERCASE = major · lowercase = minor · ° = diminished · + = augmented."}
   ],
   mistakes:[],
   summary:[
-    "✔ Flip a 1st-inversion triad again and you get <b>2nd inversion: the 5th is ALWAYS the bottom note</b> (C-E-G → E-G-C → G-C-E).",
-    "✔ The bass ladder: <b>root → 3rd → 5th</b>. Three tones, three positions.",
-    "✔ 2nd inversion's nickname is the <b>6/4 chord</b> — a 6th and a 4th above the bass.",
-    "✔ Close-position shortcut: <b>the root is the upper note of the 4th</b> in BOTH inversions.",
-    "✔ The 6/4 chord is a <b>passing, less-stable</b> sound — it moves on rather than settling."
+    "✔ Seven degrees → <b>seven diatonic triads</b>, built only from the key's notes.",
+    "✔ Major keys: <b>M-m-m-M-M-m-d°</b> — I ii iii IV V vi vii°, always.",
+    "✔ Harmonic minor: <b>i ii° III+ iv V VI vii°</b> — the raised 7th does the coloring.",
+    "✔ <b>Case shows quality</b>: I vs i, plus ° and +.",
+    "✔ This family is the vocabulary for progressions, cadences and analysis."
   ],
   tips:[
-    "Fast ID at a glance: root position = even stack; 1st inversion = gap on top; 2nd inversion = gap at the BOTTOM (the 4th sits between the two lowest notes).",
-    "Piano drill: play C-E-G → E-G-C → G-C-E → C-E-G an octave up. Do it in F and G too — you just played every triad position that exists.",
-    "Hear it: 2nd inversion sounds unstable — beautiful, but ready to move on.",
-    "Lesson 53 asks the big question: a V7 chord has FOUR notes… so how many inversions can IT have?"
+    "Memorize by groups: majors 1-4-5, minors 2-3-6, diminished 7 — three facts instead of seven.",
+    "At the keyboard, play the triad ladder daily in one new key — the pattern transfers by itself.",
+    "vii° sounds like V7 missing its root — they share three notes and one job.",
+    "Next lesson: give every chord its NUMERAL and its FUNCTION — Roman numeral analysis."
   ],
-  rewards:{ badge:"6/4 Master", icon:"\u{2696}\u{FE0F}" },
+  rewards:{ badge:"Chord Family Keeper", icon:"\u{1F3D7}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! Root, 1st, 2nd — you own every position of the triad! \u{2696}\u{FE0F}\u{1F389}",
-  miaPass:"Passed! The 5th-in-the-bass rule is locked in. Lesson 53 inverts a FOUR-note chord…",
+  miaQuizIntro:"Quiz: Apply the major-scale triad pattern and interpret Roman-numeral quality symbols.",
+  quiz:[
+    { type:"mc", q:"A triad diatonic to a specified scale is constructed from…", choices:["only notes belonging to that scale","any chromatic pitches","only pitches played on black keys"], answer:0,
+      explain:"Every chord member belongs to the specified scale.", hint:"Check each chord member against the scale." },
+    { type:"mc", q:"Which quality pattern results from building triads on every degree of a major scale?", choices:["M-m-m-M-M-m-dim","M-M-M-m-m-m-dim","The pattern varies randomly"], answer:0,
+      explain:"Fixed and universal.", hint:"Three majors: 1, 4, 5." },
+    { type:"mc", q:"Which scale degrees support minor diatonic triads in a major key?", choices:["2, 3, and 6","1, 4, and 5","5 and 7"], answer:0,
+      explain:"ii, iii, vi.", hint:"The lowercase trio." },
+    { type:"mc", q:"What is the quality of the diatonic triad on scale degree 7 of a major scale?", choices:["Diminished","Major","Augmented"], answer:0,
+      explain:"vii° — two minor 3rds.", hint:"The ° degree." },
+    { type:"mc", q:"What does the Roman numeral IV indicate?", choices:["A major triad rooted on scale degree 4","A minor triad rooted on scale degree 4","A diminished triad rooted on scale degree 4"], answer:0,
+      explain:"Uppercase = major.", hint:"Read the case." },
+    { type:"mc", q:"What does the Roman numeral vii° indicate?", choices:["A diminished triad rooted on scale degree 7","A major triad rooted on scale degree 7","An augmented triad rooted on scale degree 7"], answer:0,
+      explain:"The lowercase numeral identifies the root's scale degree, and ° indicates diminished quality.", hint:"The circle." },
+    { type:"mc", q:"Identify the Roman numeral in C major.",
+      staff:{clef:"treble",notes:[{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:160},
+      choices:["vi — A minor","VI — A major","IV — F major"], answer:0,
+      explain:"A-C-E is a minor triad rooted on scale degree 6, so it is labeled vi.", hint:"Root A = degree 6." },
+    { type:"mc", q:"When triads are constructed strictly from the harmonic minor scale, which triad is augmented?", choices:["III+","V","iv"], answer:0,
+      explain:"The raised seventh forms an augmented fifth above the root of III+.", hint:"The + symbol." },
+    { type:"mc", q:"Why is V major when it is constructed from the harmonic minor scale?", choices:["The raised seventh is the third of V","Every dominant triad in every musical context is major","The minor-key signature automatically includes the raised seventh"], answer:0,
+      explain:"The leading tone forms the major third of the dominant triad.", hint:"Identify the third of the dominant triad." },
+    { type:"truefalse", q:"The diatonic triad-quality pattern is the same for every major scale.", answer:true,
+      explain:"It is identical in every major key.", hint:"Universal." },
+    { type:"truefalse", q:"A triad built on scale degree 2 of the harmonic minor scale is diminished.", answer:true,
+      explain:"Using the harmonic minor pitch collection, scale degrees 2, 4, and 6 form a diminished triad.", hint:"The minor pattern's second slot." },
+    { type:"mc", q:"In F major, how is the diatonic triad G-B♭-D labeled?", choices:["ii — G minor","II — G major","vii° — E diminished"], answer:0,
+      explain:"Degree 2 of F major, minor quality.", hint:"Count from F." }
+  ],
+  miaPerfect:"Perfect score! You accurately constructed and labeled the seven diatonic triads of the major scale.",
+  miaPass:"You passed! Next, you will apply these triads in Roman-numeral analysis.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Chord A = C-E-G (root), B = E-G-C (1st inversion), C = G-C-E — the 5th in the bass: 2nd inversion.",
-      play:()=>{[67,72,76].forEach(m=>MFAudio.tone(m,1,0,.33));} },
-    learn:{ label:"2nd inversion",
-      explain:"Flip a 1st inversion again: the 3rd leaves the bass and the 5th takes over. Nickname: 6/4 chord. Close-position trick: the root tops the interval of a 4th.",
-      hint:"Bass ladder: root → 3rd → 5th.",
-      play:()=>{[67,72,76].forEach(m=>MFAudio.tone(m,1,.1,.33));} },
+      explain:"Seven triads on seven degrees produced three qualities: major (I, IV, V), minor (ii, iii, vi) and diminished (vii°).",
+      play:()=>{const CH=[[60,64,67],[62,65,69],[64,67,71],[65,69,72],[67,71,74],[69,72,76],[71,74,77],[72,76,79]];CH.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.5,i*.55,.26)));} },
+    learn:{ label:"diatonic triads",
+      explain:"Triad per degree, key notes only. Major: M-m-m-M-M-m-d°. Harmonic minor: i ii° III+ iv V VI vii°. Case shows quality; ° dim, + aug.",
+      hint:"Majors 1-4-5, minors 2-3-6, dim 7.",
+      play:()=>{[60,64,67].forEach(m=>MFAudio.tone(m,.6,0,.3));[62,65,69].forEach(m=>MFAudio.tone(m,.6,.7,.3));[71,74,77].forEach(m=>MFAudio.tone(m,.7,1.4,.3));} },
     example:{ label:"the examples",
-      explain:"Example 1 walks one chord through all three positions; example 2 parks the bass on C while IV visits in 2nd inversion." },
+      explain:"Example 1 climbs all seven C major triads; example 2 climbs A harmonic minor — hear the G♯ recolor III, V and vii." },
     game:{ label:"the games",
-      explain:"Sprint all three positions, climb the 6/4 ladder, spot positions on cards, then tap the flip order.",
-      hint:"The gap in the stack tells you where the 4th is." },
+      explain:"Sprint the pattern, walk the roots, match numerals on cards, then decode case and symbols at speed.",
+      hint:"Case = quality." },
     quiz:{ label:"this question",
-      explain:"Rearrange the letters in 3rds for the NAME; match the bass to root/3rd/5th for the POSITION. The 4th trick speeds everything up.",
-      play:()=>{[60,64,67].forEach(m=>MFAudio.tone(m,.7,0,.33));[64,67,72].forEach(m=>MFAudio.tone(m,.7,.8,.33));[67,72,76].forEach(m=>MFAudio.tone(m,.9,1.6,.33));} }
+      explain:"Two memorized patterns answer everything: M-m-m-M-M-m-d° (major) and i ii° III+ iv V VI vii° (harmonic minor).",
+      play:()=>{[65,69,72].forEach(m=>MFAudio.tone(m,.6,0,.3));[69,72,76].forEach(m=>MFAudio.tone(m,.6,.7,.3));} }
   }
 };

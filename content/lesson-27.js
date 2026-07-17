@@ -1,4 +1,4 @@
-/* Lesson 27 — The Sharp Scales: G and D Major (AEMT Book 2, Unit 7)
+/* Lesson 27 (4.2) — The Sharp Scales: G and D Major (AEMT Book 2, Unit 7)
    Built from drafts/UNIT 7 – Lesson 27.md; AEMT p.44 verified by render.
    QA note honored: sharps exist to PRESERVE the W–W–H–W–W–W–H pattern — not
    arbitrary notes to memorize; staff completion verified at the keyboard.

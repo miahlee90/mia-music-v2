@@ -1,241 +1,232 @@
-/* Lesson 97 — Voice Leading Basics (Book 4, Unit 24 — SELF-AUTHORED)
-   Core: SATB — four voices, their ranges and vertical spacing (≤ octave
-   between adjacent upper voices); no VOICE CROSSING; move voices as little
-   as possible (common tones, steps); avoid parallel 5ths/octaves (intro).
+/* Lesson 97 (14.8, formerly L91) — Common Song Forms (Book 4, Unit 22 — SELF-AUTHORED)
+   Binary/ternary/rondo (L73-75) get ONE review step only. New material:
+   STROPHIC (same music, new words each verse), THROUGH-COMPOSED (new music
+   throughout), 32-BAR AABA, VERSE-CHORUS form.
    NOTE: edit by FULL-FILE REWRITE only. */
 
 LESSON_CONTENT[97]={
-  welcome:"Good voice leading creates smooth, independent melodic lines while supporting the harmony.",
+  welcome:"Song forms are common patterns used mainly in vocal music — how verses, choruses, and other sections are organized.",
   hook:{
-    say:"<b>Listen to two ways of connecting the same chords.</b> Version A uses several large leaps, while Version B retains a common tone and uses smaller melodic intervals. \u{1F447} <b>Which version creates smoother voice leading?</b>",
+    say:"<b>Listen to two verses that use the same music with different lyrics.</b> \u{1F447} <b>What remains the same, and what changes?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Version A — several large leaps</button>
-          <button class="play hk-b">▶ Version B — common tone and stepwise motion</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Version B — the voices connect through smaller intervals</button><button>Version A — larger leaps always produce smoother lines</button></div>`;
+          <button class="play hk-a">▶ Verse 1</button>
+          <button class="play hk-b">▶ Verse 2</button></div>
+          <div class="choices hk-ch" style="display:none"><button>The music repeats while the lyrics change</button><button>Each verse uses completely new music</button><button>Neither the music nor the lyrics change</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ [48,64,67,72].forEach(m=>MFAudio.tone(m,.9,.05,.26)); [65,69,72,77].forEach(m=>MFAudio.tone(m,1.0,1.0,.26)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2300); };
-        container.querySelector(".hk-b").onclick=()=>{ [48,64,67,72].forEach(m=>MFAudio.tone(m,.9,.05,.26)); [53,65,69,72].forEach(m=>MFAudio.tone(m,1.0,1.0,.26)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2300); };
+        const MEL=[64,64,65,67,67,65,64,62,60];
+        container.querySelector(".hk-a").onclick=()=>{ MEL.forEach((m,i)=>MFAudio.tone(m,.3,i*.3,.42)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2900); };
+        container.querySelector(".hk-b").onclick=()=>{ MEL.forEach((m,i)=>MFAudio.tone(m,.3,i*.3,.42)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2900); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. Version B retains the common tone C and connects the remaining upper voices primarily by step. Voice leading considers how each individual line moves from one chord to the next.");
-          else fb(false,"Version A uses unnecessary leaps. Listen for the version in which each individual voice forms a more connected melodic line.");
+          if(i===0) fb(true,"✓ Correct. Both verses use the same music with different lyrics. This design is called strophic form.");
+          else fb(false,"Compare the melody and accompaniment of the two verses. They use the same musical setting.");
         });
       } }
   },
   objectives:[
-    "Identify the four SATB voices",
-    "Understand basic spacing and voice order",
-    "Keep common tones when possible",
-    "Move voices by step or small intervals",
-    "Avoid voice crossing",
-    "Recognize parallel fifths and octaves (introduction only)"
+    "Understand what song forms are — patterns in vocal music",
+    "Strophic: same music, new lyrics each verse",
+    "Modified strophic and through-composed",
+    "AABA: A A B A, with B as the bridge",
+    "Verse–chorus: verses alternate with a recurring chorus",
+    "Match real songs to their forms"
   ],
   steps:[
-    { say:"<b>The Four Voices (SATB):</b> from <b>highest to lowest</b> — <b>S</b>oprano, <b>A</b>lto, <b>T</b>enor, <b>B</b>ass. In keyboard-style notation, soprano and alto share the <b>treble staff</b>; tenor and bass share the <b>bass staff</b>. \u{1F447} <b>What is the standard high-to-low order of SATB voices?</b>",
-      try:{ type:"mc", choices:["Soprano, alto, tenor, bass","Bass, tenor, alto, soprano","Soprano, tenor, alto, bass"], answer:0,
-        success:"✓ Correct. SATB is ordered from the highest voice, soprano, to the lowest voice, bass.",
-        fail:"Begin with the highest voice.",
-        hint:"S–A–T–B." } },
-    { say:"<b>Working Ranges:</b> these are practical <b>working ranges</b> for beginning SATB writing — not absolute vocal limits. Real ranges vary with the singer and the music. \u{1F447} <b>Which SATB voice normally occupies the lowest range?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Voice</th><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#2F6DA8">Soprano</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#A9821F">Alto</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#C05A21">Tenor</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800">Bass</td></tr>
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Range</th><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">C4–G5</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">G3–D5</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">C3–G4</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">E2–C4</td></tr></table>` },
-      try:{ type:"mc", choices:["Bass","Tenor","Alto"], answer:0,
-        success:"✓ Correct. The bass normally occupies the lowest range in SATB texture.",
-        fail:"Recall the high-to-low SATB order.",
-        hint:"Bass is the lowest voice." } },
-    { say:"<b>Spacing — one rule:</b> keep <b>adjacent upper voices (S–A and A–T) within an octave</b>. <b>Tenor–bass may be wider</b> — even more than an octave — as long as both stay in range. \u{1F447} <b>Which adjacent voice pair may normally be separated by more than an octave?</b>",
-      try:{ type:"mc", choices:["Tenor and bass","Soprano and alto","Alto and tenor"], answer:0,
-        success:"✓ Correct. Tenor and bass may be separated by more than an octave, while the adjacent upper voices normally remain within an octave.",
-        fail:"Identify the adjacent pair that includes the bass.",
-        hint:"The tenor–bass spacing rule is less restrictive." } },
-    { say:"<b>Voice Crossing:</b> keep the order <b>S above A above T above B</b>. <b>Voice crossing</b> is when a lower voice rises above a higher one (e.g., alto above soprano) — avoided in beginning writing because it blurs which line is which. \u{1F447} <b>At the same moment, the alto is written above the soprano. What is this called?</b>",
-      show:{ type:"html", html:`<div style="display:flex;gap:24px;justify-content:center;font-size:14px;text-align:center">
-        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 20px">
-          <div style="font-weight:800;color:#2F6DA8;margin-bottom:5px">Correct ✓</div>
-          <div style="line-height:1.8;font-weight:700">S<br>A<br>T<br>B</div>
-          <div style="font-size:11px;color:#555;margin-top:4px">high → low, in order</div></div>
-        <div style="border:2px solid #C05A21;border-radius:10px;padding:8px 20px">
-          <div style="font-weight:800;color:#C05A21;margin-bottom:5px">Crossing ✗</div>
-          <div style="line-height:1.8;font-weight:700"><span style="color:#C05A21">A</span><br><span style="color:#C05A21">S</span><br>T<br>B</div>
-          <div style="font-size:11px;color:#555;margin-top:4px">A rose above S</div></div></div>` },
-      try:{ type:"mc", choices:["Voice crossing","Contrary motion","Pedal point"], answer:0,
-        success:"✓ Correct. The vertical order of the soprano and alto has been reversed, creating voice crossing.",
-        fail:"Compare the vertical order of the two voices.",
-        hint:"Maintain S above A above T above B in these exercises." } },
-    { say:"<b>Efficient Voice Leading — the heart of this lesson:</b> <b>keep common tones</b> in the same voice, and move the remaining voices <b>by step</b> whenever possible. Avoid unnecessary leaps. (The bass leaps more freely, since it carries the chord roots.) \u{1F447} <b>Two adjacent chords share the pitch G. Which choice often creates efficient voice leading?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:72,notes:[
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"B3",d:"w",label:"V (G stays)"},{p:"D4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{bar:"final"}],width:440} },
-      try:{ type:"mc", choices:["Retain G in the same voice when other considerations allow","Move G by an unnecessary octave","Omit G automatically"], answer:0,
-        success:"✓ Correct. Retaining a common tone can connect the chords smoothly, provided the result also follows range, spacing, doubling, and tendency-tone guidelines.",
-        fail:"Check whether the common tone can remain in the same voice without creating another problem.",
-        hint:"Retain common tones when practical." } },
-    { say:"<b>Doubling — three starter rules:</b> a triad has 3 tones but SATB has 4 voices, so one tone is doubled.<br>• <b>Double the root</b> — usually safest.<br>• <b>Don't double the leading tone</b> — it pulls up to the tonic.<br>• In a seventh chord, the <b>chordal 7th resolves down</b> by step. \u{1F447} <b>Which chord member should normally not be doubled in introductory SATB writing?</b>",
-      try:{ type:"mc", choices:["The leading tone","The tonic","The dominant"], answer:0,
-        success:"✓ Correct. The leading tone normally resolves upward to the tonic, so doubling it creates two strong tendency tones requiring resolution.",
-        fail:"Which tone has the strongest pull to resolve?",
-        hint:"It resolves up to the tonic." } },
-    { say:"<b>Parallel Fifths and Octaves (introduction):</b> when two voices move together from one perfect <b>5th</b> (or <b>octave</b>) to another, their independence is weakened — so these parallels are normally avoided. You will study this more deeply later. \u{1F447} <b>Why are parallel perfect fifths normally avoided in common-practice SATB writing?</b>",
-      try:{ type:"mc", choices:["They weaken the independence of the two voice lines","They automatically reduce the dynamic level","They change the key signature"], answer:0,
-        success:"✓ Correct. Successive perfect fifths or octaves in similar motion can make two voices sound less independent.",
-        fail:"Consider the effect of successive perfect intervals on melodic independence.",
-        hint:"Track the same pair of voices through both chords." } },
-    { say:"<b>Review:</b> \u{1F447} <b>Which describes smoother voice leading between two chords?</b>",
-      try:{ type:"mc", choices:["Hold the common tones and move the other voices by step","Leap every voice to a new register","Let the alto cross above the soprano"], answer:0,
-        success:"✓ Correct. Held common tones plus stepwise motion in the other voices give the smoothest connection.",
-        fail:"Which option keeps each line connected and in order?",
-        hint:"Hold what is shared; step the rest." } }
+    { say:"<b>What are song forms?</b> Song forms are common organizational patterns used mainly in <b>vocal music</b>. Unlike binary, ternary, or rondo forms, they describe how <b>verses, choruses, and other vocal sections</b> are organized.<br>Quick review of the section forms: binary (two sections), ternary (A–B–A), rondo (A returns between episodes). \u{1F447} <b>What is ABA form called?</b>",
+      try:{ type:"mc", choices:["Ternary form","Binary form","Rondo form"], answer:0,
+        success:"✓ Correct. Ternary form consists of an opening section, a contrasting section, and a return of the opening section.",
+        fail:"Count the three-part design: A–B–A.",
+        hint:"ABA has three formal parts." } },
+    { say:"<b>Strophic Form:</b> each verse (stanza) is sung to the same music — only the lyrics change (<b>A–A–A</b>). Common in hymns, folk songs, and traditional songs.<br><b>Modified Strophic:</b> the same basic music returns, but one or more verses include meaningful musical changes. \u{1F447} <b>In a strictly strophic song, what normally changes from one verse to the next?</b>",
+      try:{ type:"mc", choices:["The lyrics","The complete melody and harmony","The key in every verse"], answer:0,
+        success:"✓ Correct. Each verse presents new text using the same musical setting.",
+        fail:"Compare the musical setting of the two verses.",
+        hint:"The music repeats while the text changes." } },
+    { say:"<b>Through-Composed Form:</b> each new section receives new music, with little or no large-scale repetition. Often used when the music closely follows the meaning of the text. \u{1F447} <b>Which statement best describes through-composed form?</b>",
+      try:{ type:"mc", choices:["New music accompanies successive portions of the text without a recurring large-scale section","One complete musical section repeats for every verse","The music must be instrumental"], answer:0,
+        success:"✓ Correct. A through-composed song avoids a regularly recurring large-scale section, although smaller musical ideas may return.",
+        fail:"Look for continuously developing large-scale musical sections.",
+        hint:"The same complete musical setting does not return for each stanza." } },
+    { say:"<b>32-Bar AABA Form</b> — one of the most important song forms. Four 8-bar sections: <b>A A B A</b>. The <b>B section (bridge)</b> provides contrast before the final return of A. (In jazz, one full statement of the form is called a chorus.) \u{1F447} <b>Which section provides the principal contrast in AABA form?</b>",
+      show:{ type:"html", html:`<div style="display:flex;gap:8px;justify-content:center;font-weight:800;font-size:15px">
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 14px;color:#2F6DA8">A<br><span style="font-weight:400;font-size:12px;color:#555">8 bars</span></div>
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 14px;color:#2F6DA8">A<br><span style="font-weight:400;font-size:12px;color:#555">8 bars</span></div>
+        <div style="border:2px solid #C05A21;border-radius:10px;padding:8px 14px;color:#C05A21">B<br><span style="font-weight:400;font-size:12px;color:#555">bridge</span></div>
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 14px;color:#2F6DA8">A<br><span style="font-weight:400;font-size:12px;color:#555">8 bars</span></div></div>` },
+      try:{ type:"mc", choices:["The B section, or bridge","The first A section","The final A section"], answer:0,
+        success:"✓ Correct. The B section provides contrast in the third part of the form before A returns.",
+        fail:"Identify the only contrasting letter in A–A–B–A.",
+        hint:"Three A sections surround one contrasting section." } },
+    { say:"<b>Verse–Chorus Form</b> — the backbone of most popular songs. <b>Verses</b> tell the story (new lyrics, similar music). The <b>chorus</b> repeats the main musical and lyrical idea. Many songs also add a <b>bridge</b>. \u{1F447} <b>In a typical verse–chorus song, which section normally returns with substantially the same lyrics and music?</b>",
+      try:{ type:"mc", choices:["The chorus","The verse","Neither section"], answer:0,
+        success:"✓ Correct. The recurring music and lyrics help make the chorus recognizable.",
+        fail:"Which section normally returns with the same central text and music?",
+        hint:"Identify the recurring section that often contains the song's principal hook." } },
+    { say:"<b>Distinguishing Song Forms:</b> identify the major sections, see which ones return and whether their music or lyrics change, then map the order — A–A–A, A–A–B–A, or verse–chorus–verse–chorus. \u{1F447} <b>A song follows verse–chorus–verse–chorus–bridge–chorus. How is its form best described?</b>",
+      try:{ type:"mc", choices:["Verse–chorus form with a bridge","Strophic form","Through-composed form"], answer:0,
+        success:"✓ Correct. The recurring chorus alternates with verses, and a contrasting bridge appears before the final chorus.",
+        fail:"Identify the section that returns after each verse.",
+        hint:"Look for the recurring chorus." } },
+    { say:"<b>Review:</b> \u{1F447} <b>A hymn presents five stanzas using the same musical setting. What is its form?</b>",
+      try:{ type:"mc", choices:["Strophic","AABA","Through-composed"], answer:0,
+        success:"✓ Correct. Each stanza uses the same music with different lyrics, creating strophic form.",
+        fail:"Compare the musical setting used for each stanza.",
+        hint:"A–A–A–A–A." } }
   ],
   examples:[
-    { caption:"I–IV–V–I with smooth voice leading (upper voices on one staff): common tones held, steps everywhere else, bass doing the leaping.",
-      staff:{clef:"treble",tempo:69,notes:[
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"IV"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"B3",d:"w",label:"V"},{p:"D4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:620},
-      kb:{start:57,octaves:1.58,labels:true} },
-    { caption:"Spacing on display: the first chord spreads the top voices too far (hollow); the second keeps S–A and A–T inside an octave (balanced). Hear the difference.",
-      staff:{clef:"treble",tempo:60,notes:[
-        {p:"C4",d:"w",label:"hollow"},{p:"G4",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"single"},
-        {p:"C4",d:"w",label:"balanced"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:420},
-      kb:{start:57,octaves:1.58,labels:true} }
+    { caption:"① A section — a 4-bar miniature: this melody plays twice (A A), yields to a bridge (B), then returns (A).",
+      staff:{clef:"treble",tempo:92,time:"4/4",notes:[
+        {p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{bar:"single"},
+        {p:"G4",d:"h"},{p:"E4",d:"h"},{bar:"single"},
+        {p:"D4",d:"q"},{p:"F4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{bar:"single"},
+        {p:"C5",d:"w",label:"A ends"},{bar:"final"}],width:680},
+      kb:{start:60,octaves:1,labels:true} },
+    { caption:"② Bridge (B) — a 3-bar miniature: new harmony color and direction, built to make A's return feel like home.",
+      staff:{clef:"treble",tempo:92,time:"4/4",notes:[
+        {p:"A4",d:"q"},{p:"C5",d:"q"},{p:"E5",d:"h",label:"new color"},{bar:"single"},
+        {p:"D5",d:"q"},{p:"B4",d:"q"},{p:"G4",d:"h",label:"turning…"},{bar:"single"},
+        {p:"F4",d:"q"},{p:"G4",d:"q"},{p:"B4",d:"h",label:"…toward A"},{bar:"final"}],width:620},
+      kb:{start:60,octaves:1.33,labels:true} },
+    { caption:"③ Full AABA — now the A and the B combined: hear A, A, B, then A returning home. The two A's frame the contrasting bridge.",
+      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
+        {p:"C5",d:"q",label:"A"},{p:"G4",d:"q"},{p:"C5",d:"h"},{bar:"single"},
+        {p:"C5",d:"q",label:"A"},{p:"G4",d:"q"},{p:"C5",d:"h"},{bar:"single"},
+        {p:"G4",d:"q",label:"B"},{p:"B4",d:"q"},{p:"D5",d:"q"},{p:"B4",d:"q"},{bar:"single"},
+        {p:"C5",d:"q",label:"A"},{p:"G4",d:"q"},{p:"C5",d:"h",label:"home"},{bar:"final"}],width:560},
+      kb:{start:65,octaves:0.9167,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · SATB Guidelines (45s)",
-      intro:"Identify SATB voices, working ranges, spacing, and basic voice-leading guidelines.",
-      miaIntro:"Check range, spacing, crossing, and overlap.",
+    { type:"gen-race", title:"Game 1 · Song-Form Identification (45s)",
+      intro:"Identify each song form from its pattern of repetition and contrast.",
+      miaIntro:"Identify the sections and determine what returns.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["SATB","soprano, alto, tenor, bass"],
-        ["Adjacent upper voices","within an octave"],
-        ["Tenor–bass gap","may exceed an octave"],
-        ["Voice crossing","forbidden — keep the order"],
-        ["Common tone","hold it in the same voice"],
-        ["Other voices","move by step when possible"],
-        ["Parallel 5ths/octaves","avoided — independence dies"],
-        ["The leaping voice","usually the bass"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — SATB guidelines identified!":null },
-    { type:"order-tap", title:"Game 2 · Arrange the Voices",
-      intro:"Arrange the SATB voices from highest to lowest.",
-      miaIntro:"Soprano–alto–tenor–bass.",
-      spec:{sequence:["Soprano — highest","Alto","Tenor","Bass — lowest"],
-        title:"The four-voice stack"},
-      result:(stars)=>stars>=2?"You arranged the voices correctly.":null },
-    { type:"symbol-hunt", title:"Game 3 · Evaluate the Voicing",
-      intro:"Examine each voicing for range, spacing, crossing, overlap, and doubling.",
-      miaIntro:"Check every voice, not only the chord spelling.",
-      spec:{rounds:6, pool:[
-        {label:"Balanced spacing", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
-        {label:"Hollow top (S–A over an octave)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G5",d:"w",chord:true}],width:150}},
-        {label:"Common tone held (I→V)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"C5",d:"w",chord:true},{p:"G4",d:"w"},{p:"B4",d:"w",chord:true}],width:170}},
-        {label:"Leaping upper voices (rough)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"C5",d:"w",chord:true},{p:"A4",d:"w"},{p:"F5",d:"w",chord:true}],width:170}}]},
-      result:(score)=>score>=5?"You evaluated the voicings correctly.":null },
-    { type:"term-race", title:"Game 4 · Guideline or Misconception?",
-      intro:"Distinguish common-practice SATB guidelines from inaccurate absolute statements.",
-      miaIntro:"Remember that these guidelines are style-specific.",
+        ["Strophic","same music every verse"],
+        ["Through-composed","new music throughout"],
+        ["32-bar AABA","A A bridge A"],
+        ["Verse-chorus","story alternates with the hook"],
+        ["The bridge","AABA's B section"],
+        ["The chorus","repeats words AND music"],
+        ["The verse","new words, same music"],
+        ["Hymns and folk songs","often strophic"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Song-form challenge completed!":null },
+    { type:"order-tap", title:"Game 2 · Assemble AABA Form",
+      intro:"Arrange the four sections of a thirty-two-bar AABA form.",
+      miaIntro:"A–A–B–A.",
+      spec:{sequence:["A — first 8 bars","A — repeated 8","B — the bridge","A — home again"],
+        title:"One 32-bar chorus"},
+      result:(stars)=>stars>=2?"You assembled the AABA form correctly.":null },
+    { type:"order-tap", title:"Game 3 · Build a Verse–Chorus Song",
+      intro:"Arrange the sections to form one possible verse–chorus song structure.",
+      miaIntro:"Verse–chorus–verse–chorus.",
+      spec:{sequence:["Verse 1 — the story begins","Chorus — the hook","Verse 2 — story continues","Chorus — the hook again","Bridge — a new angle","Final chorus"],
+        title:"One possible verse–chorus song"},
+      result:(stars)=>stars>=2?"You assembled a common verse–chorus structure.":null },
+    { type:"term-race", title:"Game 4 · Name That Form",
+      intro:"Read each description and identify the song form.",
+      miaIntro:"Identify what repeats, what changes, and where contrast occurs.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Keep common tones","real rule"],
-        ["Move by step when possible","real rule"],
-        ["Never let voices cross","real rule"],
-        ["Avoid parallel perfect 5ths","real rule"],
-        ["S–A within an octave","real rule"],
-        ["Every voice must leap","myth"],
-        ["The alto may top the soprano","myth"],
-        ["Bass may sit far below tenor","real rule"]]},
-      result:(score)=>score>=6?"You classified the statements correctly.":null }
+        ["5 verses, identical music","strophic"],
+        ["No large section regularly returns","through-composed"],
+        ["A A B A in 32 bars","AABA form"],
+        ["Verses alternate with a hook","verse-chorus"],
+        ["Two contrasting sections","AB (binary)"],
+        ["Statement, contrast, return","ABA (ternary)"],
+        ["A keeps coming back with new episodes","rondo"],
+        ["The bridge's job","contrast before A returns"]]},
+      result:(score)=>score>=6?"You identified the song forms correctly.":null }
   ],
-  practiceIntro:"Complete 20 practice questions on SATB ranges, spacing, crossing, overlap, doubling, tendency tones, and voice leading.",
+  practiceIntro:"Complete 20 practice questions on strophic, modified strophic, through-composed, AABA, and verse–chorus forms. The next question will appear after each correct answer.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["S","soprano"],["A","alto"],["T","tenor"],["B","bass"],["Common tone","hold it"],["Step motion","the default"]], reverse:true}, count:6 },
-    { gen:"triad-id", params:{}, count:2 },
-    { type:"mc", q:"SATB stands for…", choices:["soprano, alto, tenor, bass","strings and two brass","slow and then bright"], answer:0,
-      explain:"SATB stands for soprano, alto, tenor, and bass." },
-    { type:"mc", q:"Adjacent upper voices should stay within…", choices:["an octave","a 3rd","two octaves"], answer:0,
-      explain:"Soprano–alto and alto–tenor normally remain within an octave." },
-    { type:"mc", q:"Which voice pair may be spaced beyond an octave?", choices:["Tenor and bass","Soprano and alto","Alto and tenor"], answer:0,
-      explain:"Tenor–bass spacing may exceed an octave within practical vocal ranges." },
-    { type:"mc", q:"When two chords share a pitch, an efficient option is to…", choices:["retain it in the same voice when practical","move it by octave automatically","omit it automatically"], answer:0,
-      explain:"Common-tone retention." },
-    { type:"truefalse", q:"Voice crossing occurs when a lower voice moves above an adjacent higher voice, or a higher voice moves below an adjacent lower voice.", answer:true,
-      explain:"Crossing is any reversal of the normal order of adjacent voices." },
-    { type:"truefalse", q:"Parallel perfect fifths are normally avoided in common-practice SATB writing.", answer:true,
-      explain:"They weaken the independence of the two voices." },
-    { type:"truefalse", q:"In root-position chorale-style progressions, the bass often uses larger intervals than the upper voices.", answer:true,
-      explain:"The bass frequently presents chord roots, but its line should remain coherent and singable." },
-    { gen:"term-match", params:{subject:"term", pool:[["Crossing","forbidden swap"],["Parallel 5ths","independence lost"],["Spacing","octave rule up top"],["Bass","the leaper"]], reverse:true}, count:3 },
+    { gen:"term-match", params:{subject:"term", pool:[["Strophic","A A A…"],["Through-composed","no recurring large section"],["AABA","bridge third"],["Verse-chorus","story + hook"],["Bridge","the B of AABA"]], reverse:true}, count:6 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
+    { type:"mc", q:"In strophic form, each stanza normally uses…", choices:["the same or essentially the same music","entirely new music","only the bridge"], answer:0,
+      explain:"New words, one tune." },
+    { type:"mc", q:"Through-composed form normally…", choices:["avoids a regularly recurring large-scale section","repeats the same complete section for every stanza","must follow AABA form"], answer:0,
+      explain:"Smaller motives may return, but the same complete musical setting does not regularly repeat." },
+    { type:"mc", q:"What is the sectional order of thirty-two-bar AABA form?", choices:["A–A–B–A","A–B–C–D","A–B–A–B"], answer:0,
+      explain:"Four eight-measure sections." },
+    { type:"mc", q:"In AABA form, the B section is commonly called…", choices:["the bridge","the coda","the verse"], answer:0,
+      explain:"Contrast before A returns." },
+    { type:"truefalse", q:"In a typical verse–chorus song, the chorus returns with substantially the same lyrics and music.", answer:true,
+      explain:"The recurring chorus keeps substantially the same words and music." },
+    { type:"truefalse", q:"A hymn that presents several stanzas using the same music is strophic.", answer:true,
+      explain:"Same music with new text for each stanza creates strophic form." },
+    { type:"truefalse", q:"An AABA form totals 32 measures when each of its four sections contains 8 measures.", answer:true,
+      explain:"4 × 8 = 32." },
+    { gen:"term-match", params:{subject:"term", pool:[["Binary","AB"],["Ternary","ABA"],["Rondo","ABACA"],["Chorus","words + music repeat"]], reverse:true}, count:3 },
     { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
   ],
   vocabulary:[
-    {term:"SATB", def:"Soprano, Alto, Tenor, Bass."},
-    {term:"Voice Leading", def:"Move each voice as smoothly as possible. Keep common tones. Prefer stepwise motion."},
-    {term:"Spacing", def:"S–A and A–T normally stay within one octave. T–B may exceed an octave."},
-    {term:"Voice Independence", def:"Avoid voice crossing, parallel fifths, and parallel octaves."}
+    {term:"Strophic Form", def:"Same music for every verse. Only the lyrics change. (A A A…)"},
+    {term:"Modified Strophic Form", def:"Same basic music, with meaningful changes in some verses."},
+    {term:"Through-Composed Form", def:"New music throughout. Little or no large-scale repetition."},
+    {term:"32-Bar AABA Form", def:"Four 8-bar sections: A A B A. B = the bridge (contrast)."},
+    {term:"Verse-Chorus Form", def:"Verses tell the story; the chorus repeats the main idea. Often plus a bridge."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>SATB</b> = Soprano, Alto, Tenor, Bass.",
-    "✔ Keep <b>common tones</b> whenever possible.",
-    "✔ Move voices mostly <b>by step</b>.",
-    "✔ Avoid <b>voice crossing</b>.",
-    "✔ <b>Root doubling</b> is usually safest.",
-    "✔ Avoid doubling the <b>leading tone</b>.",
-    "✔ <b>Parallel fifths and octaves</b> weaken voice independence."
+    "✔ Song forms describe common structures used in <b>vocal music</b>.",
+    "✔ <b>Strophic</b> = same music for every verse.",
+    "✔ <b>Modified strophic</b> = same basic music with changes.",
+    "✔ <b>Through-composed</b> = new music throughout.",
+    "✔ <b>AABA</b> = A A B A (B = bridge).",
+    "✔ <b>Verse–chorus</b> = verses alternate with a recurring chorus."
   ],
   tips:[
-    "Write the outer voices (S and B) first — if they sound good together, the middle fills easily.",
-    "Check parallels the mechanical way: find every P5/P8 pair, then look one chord ahead.",
-    "Piano players: practice I-IV-V-I holding common tones — your hands learn voice leading before your eyes do.",
-    "Next lesson: dominants that point at chords OTHER than I — secondary dominants."
+    "Radio exercise: label tonight's songs V-C-V-C-B-C — you'll find the form everywhere.",
+    "AABA hides inside many verse-chorus songs: choruses themselves often run AABA internally.",
+    "Writing strophic verses? Make the melody neutral enough to carry different words — that's the craft.",
+    "Unit 22 complete! Next unit: chords grow a fourth note — the seventh chords."
   ],
-  rewards:{ badge:"Part Writer", icon:"\u{1F465}" },
+  rewards:{ badge:"Songsmith", icon:"\u{1F3A4}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Check range, spacing, common tones, tendency tones, crossing, overlap, and parallel perfect intervals.",
+  miaQuizIntro:"Quiz: Identify the sections, determine what repeats, and locate the contrast.",
   quiz:[
-    { type:"mc", q:"The four voices, high to low:", choices:["S, A, T, B","B, T, A, S","S, T, A, B"], answer:0,
-      explain:"Soprano to bass.", hint:"The acronym." },
-    { type:"mc", q:"In keyboard-style notation, which voices share the treble staff?", choices:["Soprano and alto","Tenor and bass","Alto and tenor"], answer:0,
-      explain:"S stems up, A stems down.", hint:"The top pair." },
-    { type:"mc", q:"The octave spacing guideline applies to…", choices:["adjacent upper voices (S–A, A–T)","tenor and bass","all pairs equally"], answer:0,
-      explain:"The bass is exempt.", hint:"Up top only." },
-    { type:"mc", q:"Voice crossing is…", choices:["a voice moving past its neighbor — avoided","a good blending technique","required at cadences"], answer:0,
-      explain:"It reverses the normal order of adjacent voices.", hint:"S above A above T above B." },
-    { type:"mc", q:"Two consecutive chords share the pitch E. Which choice often creates efficient voice leading?", choices:["Retain E in the same voice when practical","Move E up an octave automatically","Omit E automatically"], answer:0,
-      explain:"Common-tone retention.", hint:"The anchor note." },
-    { type:"mc", q:"When no common tone can be retained, the upper voices should generally…", choices:["use the smallest singable motions that satisfy harmonic and tendency-tone requirements","leap as far as possible","move in parallel octaves"], answer:0,
-      explain:"Smallest singable motion, within harmonic and tendency-tone requirements.", hint:"Small, singable motion." },
-    { type:"mc", q:"Why are parallel perfect fifths and octaves normally avoided in common-practice SATB writing?", choices:["They weaken the perceptual independence of the voices","They are highly dissonant","They are impossible to sing"], answer:0,
-      explain:"Successive perfect intervals reduce the independence of the two lines.", hint:"Independence." },
-    { type:"mc", q:"In root-position chorale-style progressions, which voice often makes larger leaps because it presents chord roots?", choices:["The bass","The alto","The soprano"], answer:0,
-      explain:"Root motion lives downstairs.", hint:"The foundation." },
-    { type:"truefalse", q:"The standard working ranges of alto and soprano overlap, although the alto generally occupies a lower tessitura.", answer:true,
-      explain:"Their ranges overlap; the alto simply sits lower on average.", hint:"Ranges overlap." },
-    { type:"truefalse", q:"Good voice leading always moves each voice by the smallest mathematically possible interval.", answer:false,
-      explain:"Efficient motion matters, but tendency tones, melodic shape, spacing, independence, and harmonic function also apply.", hint:"Not purely mathematical." },
-    { type:"mc", q:"In introductory SATB chorale writing, soprano and alto separated by a tenth normally violate which guideline?", choices:["Upper-voice spacing","Vocal order","Harmonic rhythm"], answer:0,
-      explain:"Upper pairs stay within the octave.", hint:"Count the gap." },
-    { type:"mc", q:"Which chord member should normally not be doubled in introductory common-practice SATB writing?", choices:["The leading tone","The tonic","A stable chord root"], answer:0,
-      explain:"The leading tone has a strong tendency to resolve upward to the tonic.", hint:"The tone that pulls to tonic." }
+    { type:"mc", q:"Strophic form uses…", choices:["the same or essentially the same music for each stanza","entirely new music for each stanza","instrumental music only"], answer:0,
+      explain:"A A A — words change, tune stays.", hint:"Many hymns use strophic form, but the form also appears in other musical styles." },
+    { type:"mc", q:"Which statement best describes through-composed form?", choices:["It avoids a regularly recurring large-scale section","It repeats one complete musical setting for every stanza","It must contain exactly 32 measures"], answer:0,
+      explain:"Small musical ideas may return, but no complete large-scale section recurs regularly.", hint:"Follow the continuing large-scale development of the music." },
+    { type:"mc", q:"What is the sectional order of thirty-two-bar AABA form?", choices:["A–A–B–A","A–B–A–C","B–A–A–B"], answer:0,
+      explain:"Four eights, bridge third.", hint:"Three A's." },
+    { type:"mc", q:"What is the common name for the B section in AABA form?", choices:["Bridge","Introduction","Outro"], answer:0,
+      explain:"The bridge provides contrast before the final return of A.", hint:"Crosses to A's return." },
+    { type:"mc", q:"In a typical verse–chorus song, the verses normally…", choices:["use similar music with different lyrics","use completely unrelated music and lyrics","appear only once"], answer:0,
+      explain:"Successive verses normally continue the text using the same or similar musical setting.", hint:"Compare the music and lyrics of successive verses." },
+    { type:"mc", q:"In a typical verse–chorus song, the chorus…", choices:["returns with substantially the same lyrics and music","never returns","contains no melody"], answer:0,
+      explain:"The recurring chorus often contains the song's principal hook.", hint:"Identify the recurring section." },
+    { type:"mc", q:"A five-stanza folk ballad uses the same music for every stanza. What is its form?", choices:["Strophic","AABA","Through-composed"], answer:0,
+      explain:"A per verse.", hint:"One tune, many texts." },
+    { type:"mc", q:"An art song continually introduces new large-scale music as the poem unfolds, without returning to a complete previous section. What is its form?", choices:["Through-composed","Strophic","Verse–chorus"], answer:0,
+      explain:"Music travels with the text.", hint:"No complete section returns." },
+    { type:"truefalse", q:"In AABA form, the contrasting B section occupies the third formal position.", answer:true,
+      explain:"A A B A.", hint:"Count the slots." },
+    { type:"truefalse", q:"A verse–chorus song may include a bridge in addition to its verses and choruses.", answer:true,
+      explain:"A bridge often appears later in a song, but its placement may vary.", hint:"The late-song contrast." },
+    { type:"mc", q:"Which form is represented by V–C–V–C–B–C?", choices:["Verse–chorus form with a bridge","Strophic form","Rondo form"], answer:0,
+      explain:"The sequence alternates verses and choruses, followed by a bridge and returning chorus.", hint:"Hook keeps returning." },
+    { type:"mc", q:"Which strategy is most useful for beginning a song-form analysis?", choices:["Identify the sections, determine what repeats, and locate contrasting material","Measure only the dynamics and tempo","Identify only the key and meter"], answer:0,
+      explain:"Formal analysis begins by mapping sections and their relationships.", hint:"Begin by mapping the sections." }
   ],
-  miaPerfect:"Perfect score! You accurately applied the introductory SATB voice-leading guidelines.",
-  miaPass:"You passed! Next, you will study secondary dominants.",
+  miaPerfect:"Perfect score! You accurately identified strophic, through-composed, AABA, and verse–chorus forms.",
+  miaPass:"You passed and completed unit 22. Next, you will study seventh chords.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Version B held the common tone and stepped the rest — voice leading: smallest useful motion per voice.",
-      play:()=>{[48,64,67,72].forEach(m=>MFAudio.tone(m,.9,.05,.26));[53,65,69,72].forEach(m=>MFAudio.tone(m,1.0,1.0,.26));} },
-    learn:{ label:"voice leading",
-      explain:"SATB ranges; S–A/A–T within an octave; no crossing; hold common tones, step the rest; avoid parallel 5ths/octaves.",
-      hint:"Hold, step, don't cross.",
-      play:()=>{[48,64,67,72].forEach(m=>MFAudio.tone(m,.8,.05,.26));[47,62,67,74].forEach(m=>MFAudio.tone(m,.9,.95,.26));} },
+      explain:"Both verses used identical music — with changing words, that is strophic form.",
+      play:()=>{[64,64,65,67,67,65,64,62,60].forEach((m,i)=>MFAudio.tone(m,.3,i*.3,.42));} },
+    learn:{ label:"song forms",
+      explain:"Strophic (A A A), modified strophic (recurring music with changes), through-composed (no recurring large section), 32-bar AABA (bridge third), verse-chorus (verses alternate with a recurring chorus).",
+      hint:"What repeats, and how?",
+      play:()=>{[60,64,67,69,67].forEach((m,i)=>MFAudio.tone(m,.32,i*.3,.42));} },
     example:{ label:"the examples",
-      explain:"Example 1 voice-leads I-IV-V-I with held common tones; example 2 contrasts balanced vs hollow spacing." },
+      explain:"Example ① is the A phrase; example ② the bridge; example ③ plays the whole AABA so you hear the two A's frame the B." },
     game:{ label:"the games",
-      explain:"Sprint the rules, stack the choir, judge voicings on cards, then separate rules from myths.",
-      hint:"Smoothness is the goal." },
+      explain:"Identify the forms, assemble AABA, build a verse-chorus song in order, then name forms from descriptions.",
+      hint:"Bridge = the B slot." },
     quiz:{ label:"this question",
-      explain:"The checklist: ranges ok? spacing within octaves up top? order uncrossed? common tones held? parallels avoided?",
-      play:()=>{[48,64,67,72].forEach(m=>MFAudio.tone(m,.9,.05,.26));} }
+      explain:"One method: find what repeats. Whole tune per verse = strophic; no recurring large section = through-composed; AABA = bridge third; verse/chorus alternation = verse-chorus form.",
+      play:()=>{[60,64,67,72].forEach((m,i)=>MFAudio.tone(m,.34,i*.3,.42));} }
   }
 };

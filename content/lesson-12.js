@@ -1,306 +1,339 @@
-/* Lesson 12 — Dotted Half Note (AEMT Book 1, Unit 3)
-   Built from drafts/UNIT 3 – Lesson 12.md.
-   QA note honored: "a dot adds HALF the original value, not one fixed beat" —
-   the 2 + 1 = 3 equation repeats across steps, games, practice and quiz.
+/* Lesson 12 (2.3, formerly L8) — 4/4 Time Signature and Note Values (AEMT Book 1, Unit 2)
+   Built from the instructor's design document (drafts/UNIT 2 – Lesson 8.md, incl. NotebookLM block)
+   QA note honored: "build four beats" repeated in multiple forms (step drill, builder game,
+   judge game, generated quiz/practice questions).
+   Uses staff.js v4.1 (time signatures incl. Common Time "C"), games.js v4.1 (measure-judge).
    NOTE: edit by FULL-FILE REWRITE only. */
 
+/* tap-along-the-beat activity (unique L8 prefix: safe for check.html batch load) */
+function MF_L12_tapBeat(container,fb){
+  const tempo=90, spb=60/tempo, total=8;
+  let t0=0, taps=[], on=false, timers=[];
+  container.innerHTML=`<div class="big-q tb-q" style="text-align:center">Press start, listen to the count-in, then TAP on every beat — 1, 2, 3, 4, 1, 2, 3, 4!</div>
+    <div style="text-align:center"><button class="play tb-start">▶ Start the beat</button>
+    <button class="play tb-tap" style="display:none;min-width:200px;padding:20px 28px;font-size:1.25rem">\u{1F44F} TAP</button></div>
+    <div class="tb-count" style="text-align:center;font-size:2rem;font-weight:800;color:var(--primary);min-height:44px"></div>`;
+  const q=container.querySelector(".tb-q"), cnt=container.querySelector(".tb-count"),
+        startB=container.querySelector(".tb-start"), tapB=container.querySelector(".tb-tap");
+  tapB.onclick=()=>{ if(!on)return; taps.push(performance.now()-t0); MFAudio.click(0,.35); };
+  startB.onclick=()=>{
+    startB.style.display="none"; taps=[]; timers.forEach(clearTimeout); timers=[];
+    MFAudio.ac();
+    /* 4 count-in + 8 beats to tap */
+    for(let i=0;i<4;i++) MFAudio.click(i*spb,.5,i===0);
+    for(let i=0;i<total;i++) MFAudio.click((4+i)*spb,.5,i%4===0);
+    t0=performance.now();
+    for(let i=0;i<4;i++) timers.push(setTimeout(()=>{cnt.textContent="…"+(i+1);}, i*spb*1000));
+    for(let i=0;i<total;i++) timers.push(setTimeout(()=>{cnt.textContent=String(i%4+1);}, (4+i)*spb*1000));
+    timers.push(setTimeout(()=>{ tapB.style.display="inline-block"; on=true; q.textContent="TAP with every beat — feel the 4-beat cycle!"; }, Math.max(0,4*spb*1000-500)));
+    timers.push(setTimeout(()=>{
+      on=false; tapB.style.display="none"; cnt.textContent="";
+      const tol=spb*0.45*1000, expected=[];
+      for(let i=0;i<total;i++) expected.push((4+i)*spb*1000);
+      const used=new Set(); let hits=0;
+      expected.forEach(t=>{ let best=-1,bd=1e9;
+        taps.forEach((tp,j)=>{ if(used.has(j))return; const d=Math.abs(tp-t); if(d<bd){bd=d;best=j;} });
+        if(best>=0&&bd<=tol){ used.add(best); hits++; } });
+      startB.style.display="inline-block"; startB.textContent="▶ Try again";
+      if(hits>=6) fb(true,`✓ ${hits} of ${total} taps right on the beat — you FEEL 4/4 time now! Notice how beat 1 pulls stronger, like a heartbeat.`);
+      else fb(false,`You landed ${hits} of ${total}. No problem — press start again, count OUT LOUD (1-2-3-4), and let the clicks carry you.`);
+    }, (4+total)*spb*1000+600));
+  };
+}
+
 LESSON_CONTENT[12]={
-  welcome:"Today a tiny dot does a BIG job. \u{1F50D}",
+  welcome:"Lesson 8 — the rhythmic roadmap arrives! \u{1F5FA}\u{FE0F}",
   hook:{
-    say:"Have you ever noticed a little dot next to a note? That tiny dot has a big job! Press play — same half note, first plain, then <b>with a dot</b>. What changed?",
+    say:"Every piece of music has a rhythm. But how do musicians know how many beats belong in each measure? That's the job of the <b>Time Signature</b>! Press play and count along — <b>which beat feels the strongest?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div class="hk-staff"></div>
-          <div style="text-align:center"><button class="play hk-play">▶ Plain… then dotted</button></div>
-          <div class="choices hk-ch" style="display:none"><button>It got LOUDER</button><button>It got LONGER</button><button>It got higher</button></div>`;
-        Staff.render(container.querySelector(".hk-staff"),{clef:"treble",notes:[{p:"G4",d:"h",label:"half note"},{p:"G4",d:"h",dot:true,label:"dotted half note"}],width:340});
+        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ Feel the beat</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Beat 1</button><button>Beat 2</button><button>Beat 3</button><button>Beat 4</button></div>`;
         const ch=container.querySelector(".hk-ch");
         container.querySelector(".hk-play").onclick=()=>{
-          const spb=60/80;
-          for(let k=0;k<2;k++) MFAudio.click(k*spb,.4,k===0);
-          MFAudio.tone(67,2*spb*.95,0);
-          for(let k=0;k<3;k++) MFAudio.click((3+k)*spb,.4,k===0);
-          MFAudio.tone(67,3*spb*.95,3*spb);
-          setTimeout(()=>{ ch.style.display=""; },6*spb*1000+400);
+          const spb=60/90;
+          for(let i=0;i<8;i++) MFAudio.click(i*spb,i%4===0?.6:.35,i%4===0);
+          setTimeout(()=>{ ch.style.display=""; },8*spb*1000+300);
         };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===1) fb(true,"✓ LONGER — two beats became THREE. That's the dot's whole job: it stretches the note!");
-          else fb(false,"Same pitch, same volume — listen to how LONG each one rings.");
+          if(i===0) fb(true,"✓ Beat 1! Music in 4/4 pulses in groups of four — STRONG-2-3-4, like a heartbeat. The time signature is what announces those groups.");
+          else fb(false,"Listen once more — one beat is louder and pulls the group behind it. Which one starts each cycle?");
         });
       } }
   },
   objectives:[
-    "Explain what a dot does to a note",
-    "Calculate the value of a dotted half note",
-    "Count a dotted half note correctly",
-    "Recognize dotted half notes in 3/4 time",
-    "Compare a dotted half note with three quarter notes",
-    "Perform rhythms containing dotted half notes"
+    "Identify a Time Signature",
+    "Explain the meaning of the top and bottom numbers",
+    "Recognize Common Time (C)",
+    "Count rhythms in 4/4 time",
+    "Build complete 4-beat measures",
+    "Identify whether a measure is complete or incomplete"
   ],
   steps:[
-    { say:"The rule: <b>a dot adds HALF of the note's original value</b>. Half note = 2 beats. Half of 2 = 1. So: <b>2 + 1 = 3 beats</b>. A <b>Dotted Half Note</b> lasts <b>3 beats</b>. \u{1F447} <b>What does a dot add to a note?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"B4",d:"h",label:"2 beats"},{p:"B4",d:"h",dot:true,label:"2 + 1 = 3 beats"}],width:340} },
+    /* Step 1 — what the time signature is; top number */
+    { say:"At the start of every song sit two numbers — the <b>Time Signature</b>, your rhythmic roadmap. In <b>4/4 time</b>, the <b>TOP number</b> tells you: <b>4 beats in every measure</b>. \u{1F447} <b>What does the TOP number tell you?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"4/4",notes:[{p:"C4",d:"q",label:"1"},{p:"D4",d:"q",label:"2"},{p:"E4",d:"q",label:"3"},{p:"F4",d:"q",label:"4"},{bar:"final"}],width:400} },
       try:{ type:"mc",
-        choices:["Half of the note's own value","Always exactly 1 beat","It doubles the note"], answer:0,
-        success:"✓ The dot adds HALF of whatever the note is worth — for a half note that's 1 more beat: 2 + 1 = 3.",
-        fail:"Careful — the dot is proportional, not fixed. It adds HALF of the note's own value.",
-        hint:"2 + 1 = 3. Where did the 1 come from?" } },
-    { say:"Add the dot yourself! \u{1F447} <b>Click the dot button to attach it — then listen to the note grow:</b>",
+        choices:["How many beats fit in each measure","Which note gets one beat","How fast to play"], answer:0,
+        success:"✓ The top 4 = four beats per measure. Every container in this piece holds exactly four.",
+        fail:"The TOP number counts the beats per container.",
+        hint:"Top = how many. (Bottom is coming next!)" } },
+    /* Step 2 — bottom number */
+    { say:"The <b>BOTTOM number</b> answers a different question: <b>which note gets one beat?</b> A bottom <b>4</b> means the <b>Quarter Note</b> is the beat. So 4/4 = four beats per measure, quarter note gets the beat. \u{1F447} <b>In 4/4, which note receives one beat?</b>",
+      try:{ type:"mc",
+        choices:["The Quarter Note","The Whole Note","The Half Note"], answer:0,
+        success:"✓ Bottom 4 = quarter note gets one beat. (So a half note takes 2 of those beats, and a whole note takes all 4!)",
+        fail:"Bottom number 4 stands for the QUARTER note.",
+        hint:"4 at the bottom → quarter." } },
+    /* Step 3 — Common Time */
+    { say:"Because 4/4 is <b>the most common time signature in all of music</b>, musicians have a shortcut: a big letter <b>C</b>, called <b>Common Time</b>. Same meaning, different look. \u{1F447} <b>Compare — what does the big C mean?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"C",notes:[{p:"G4",d:"q",label:"1"},{p:"G4",d:"q",label:"2"},{p:"G4",d:"h",label:"3-4"},{bar:"final"}],width:380} },
+      try:{ type:"mc",
+        choices:["Exactly the same as 4/4","A different, faster meter","“Coda” — jump to the end"], answer:0,
+        success:"✓ C = Common Time = 4/4. Two symbols, one meaning!",
+        fail:"The big C is just 4/4 written with a different symbol.",
+        hint:"C stands for Common Time." } },
+    /* Step 4 — count the beat (Activity 1: tap rhythm) */
+    { say:"Time to FEEL it. 4/4 pulses like a heartbeat: <b>1 - 2 - 3 - 4</b>, over and over. \u{1F447} <b>Tap along with the metronome:</b>",
       try:{ type:"custom",
-        hint:"Watch the count: 2 beats before the dot, 3 after.",
+        hint:"Count out loud with the clicks — the accented click is always beat 1.",
+        mount:(container,fb)=>MF_L12_tapBeat(container,fb) } },
+    /* Step 5 — complete or not? (Activity 3) */
+    { say:"A 4/4 measure MUST add up to exactly 4 beats — no more, no less. Be the inspector! \u{1F447} <b>Complete or incomplete?</b>",
+      try:{ type:"custom",
+        hint:"Add every note: whole = 4, half = 2, quarter = 1. Compare the total to the top number.",
         mount:(container,fb)=>{
-          let dotted=false;
-          container.innerHTML=`<div class="ad-staff"></div>
-            <div style="text-align:center"><button class="play ad-dot">\u{2795} Add the dot</button>
-            <button class="play ad-play">▶ Play it</button></div>
-            <div class="big-q ad-q" style="text-align:center"></div>`;
-          const st=container.querySelector(".ad-staff"), q=container.querySelector(".ad-q");
-          function draw(){
-            Staff.render(st,{clef:"treble",notes:[{p:"G4",d:"h",dot:dotted,label:dotted?"2 + 1 = 3 beats":"2 beats"}],width:280});
-            q.textContent=dotted?"Dotted Half Note — 3 beats!":"Half Note — 2 beats";
+          const rounds=[
+            {toks:["h","q","q"],complete:true},{toks:["q","q","q"],complete:false},
+            {toks:["w"],complete:true},{toks:["h","q"],complete:false},{toks:["q","q","h"],complete:true}];
+          const B={w:4,h:2,q:1};
+          let i=0;
+          container.innerHTML=`<div class="big-q cn-q" style="text-align:center"></div><div class="cn-staff"></div>
+            <div class="choices cn-ch"><button>✓ Complete (4 beats)</button><button>✗ Incomplete</button></div>`;
+          const q=container.querySelector(".cn-q"), st=container.querySelector(".cn-staff"), ch=container.querySelector(".cn-ch");
+          function ask(){
+            Staff.render(st,{clef:"treble",time:"4/4",notes:[...rounds[i].toks.map(d=>({p:"B4",d})),{bar:"final"}],width:320});
+            q.textContent=`Measure ${i+1} of ${rounds.length}: complete or incomplete?`;
           }
-          container.querySelector(".ad-dot").onclick=function(){
-            if(dotted) return;
-            dotted=true; this.disabled=true; MFAudio.yay(); draw();
-            fb(true,"✓ Dot attached! The half note just grew from 2 beats to 3. Press ▶ to hear the difference.");
-          };
-          container.querySelector(".ad-play").onclick=()=>{
-            const spb=60/80, n=dotted?3:2;
-            for(let k=0;k<n;k++) MFAudio.click(k*spb,.4,k===0);
-            MFAudio.tone(67,n*spb*.95,0);
-          };
-          draw();
-        } } },
-    { say:"Count it: hold the dotted half note through <b>ONE-two-three</b>. \u{1F447} <b>Press play, count the clicks while it rings, then answer:</b>",
-      try:{ type:"custom",
-        hint:"Count only the clicks that sound WHILE the note is still ringing.",
-        mount:(container,fb)=>{
-          let played=false;
-          container.innerHTML=`<div class="bc-staff"></div>
-            <div style="text-align:center"><button class="play bc-play">▶ Play with the beat</button></div>
-            <div class="choices chips bc-ch"></div>`;
-          Staff.render(container.querySelector(".bc-staff"),{clef:"treble",time:"3/4",notes:[{p:"G4",d:"h",dot:true},{bar:"final"}],width:280});
-          const ch=container.querySelector(".bc-ch");
-          [2,3,4].forEach(n=>{
-            const b=document.createElement("button"); b.textContent=n;
-            b.onclick=()=>{
-              if(!played){ fb(false,"Play it first and count the clicks!"); return; }
-              if(n===3){ ch.style.display="none";
-                fb(true,"✓ THREE beats — the dotted half note fills an entire 3/4 measure with one single sound!"); }
-              else fb(false,"Count again: the note keeps ringing… how many clicks fit inside it?");
-            };
-            ch.appendChild(b);
+          [...ch.children].forEach((b,bi)=>b.onclick=()=>{
+            const cur=rounds[i], said=bi===0, ok=said===cur.complete;
+            const sum=cur.toks.reduce((s,d)=>s+B[d],0);
+            const mathTxt=cur.toks.map(d=>B[d]).join(" + ")+" = "+sum;
+            if(ok){ MFAudio.yay(); i++;
+              if(i>=rounds.length){ ch.style.display="none"; q.textContent="Inspection complete!";
+                fb(true,"✓ All five inspected correctly! You can spot a missing beat from across the room."); }
+              else { fb(true,`✓ Right — ${mathTxt}${cur.complete?", exactly full!":", so it's missing "+(4-sum)+"."} Next measure…`); ask(); } }
+            else { MFAudio.tone(40,.25); fb(false,`Add it up: ${mathTxt} — ${cur.complete?"that IS exactly 4.":"that's not 4 yet."} Try again.`); }
           });
-          container.querySelector(".bc-play").onclick=()=>{
-            const spb=60/80;
-            for(let k=0;k<3;k++) MFAudio.click(k*spb,.5,k===0);
-            MFAudio.tone(67,3*spb*.95,0);
-            played=true;
-          };
+          ask();
         } } },
-    { say:"Dotted half note vs three quarter notes — SAME total time, different slicing. \u{1F447} <b>Which lasts longer?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"B4",d:"h",dot:true,label:"1 sound, 3 beats"},{p:"B4",d:"q",label:"1"},{p:"B4",d:"q",label:"2"},{p:"B4",d:"q",label:"3"}],width:420} },
-      try:{ type:"mc",
-        choices:["They last the SAME — 3 beats each","The dotted half lasts longer","The three quarters last longer"], answer:0,
-        success:"✓ Equal! One long sound or three short ones — both fill exactly 3 beats.",
-        fail:"Add them up: dot = 2+1 = 3; quarters = 1+1+1 = 3.",
-        hint:"Do the beat math on both sides." } },
-    { say:"Now build! A 3/4 measure holds 3 beats — and today you have a NEW brick. \u{1F447} <b>Fill the measure THREE different ways:</b>",
+    /* Step 6 — build measures (Activity 2, QA: repeated build practice).
+       Options drawn as notation CARDS per instructor sketch — incl. a CLEF trap card. */
+    { say:"Now BUILD. Fill the 4/4 measure with exactly <b>4 beats</b> — then do it again a <b>different</b> way. Click the note cards below. (Careful — one card is not a note value at all!) \u{1F447}",
       try:{ type:"custom",
-        hint:"Dotted Half (3) alone · Half (2) + Quarter (1) · three Quarters.",
+        hint:"Whole = 4, Half = 2, Quarter = 1 — total must be exactly 4. And a clef has no beats!",
         mount:(container,fb)=>{
-          const BT=[{t:"D",label:"Dotted Half Note",beats:3,item:{p:"B4",d:"h",dot:true}},
-                    {t:"h",label:"Half Note",beats:2,item:{p:"B4",d:"h"}},
-                    {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}}];
+          const B={w:4,h:2,q:1};
           let cur=[],sum=0,found=[],doneItems=[];
-          container.innerHTML=`<div class="b3-staff"></div><div class="big-q b3-q" style="text-align:center"></div>
-            <div class="choices b3-ch"></div>`;
-          const st=container.querySelector(".b3-staff"), q=container.querySelector(".b3-q"), ch=container.querySelector(".b3-ch");
-          const BTNS_LOCAL=BT;
-          BTNS_LOCAL.forEach(bt=>{ const b=document.createElement("button");
-            b.style.cssText="border-radius:10px;padding:6px 10px;min-width:104px";
-            const d0=document.createElement("div"); b.appendChild(d0);
-            Staff.render(d0,{clef:"none",notes:[bt.item],width:100});
-            const nm=document.createElement("div"); nm.style.cssText="font-weight:700;font-size:13px";
-            nm.textContent=bt.label.replace(/\s*\([^)]*\)\s*$/,""); b.appendChild(nm);
-            b.onclick=()=>add(bt); ch.appendChild(b); });
-          const clr=document.createElement("button"); clr.className="ghost"; clr.textContent="↺ Clear";
-          clr.onclick=()=>{ cur=[];sum=0;draw(); }; ch.appendChild(clr);
+          container.innerHTML=`<div class="bf-staff"></div>
+            <div class="big-q bf-q" style="text-align:center"></div>
+            <div class="bf-cards" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px"></div>
+            <div style="text-align:center;margin-top:8px"><button class="ghost bf-clear">↺ Clear</button></div>`;
+          const st=container.querySelector(".bf-staff"), q=container.querySelector(".bf-q"),
+                grid=container.querySelector(".bf-cards");
           function draw(){
-            const items=[...doneItems,...cur.map(bt=>bt.item)];
-            if(found.length>=3&&items.length&&items[items.length-1].bar==="single") items[items.length-1]={bar:"final"};
-            for(let m=found.length;m<3;m++) items.push({bar: m===3-1? "final":"single"});
-            Staff.render(st,{clef:"treble",time:"3/4",notes:items,width:470});
-            q.textContent=`Beats: ${sum} of 3 · Ways found: ${found.length} of 3`;
+            const items=[...doneItems,...cur.map(d=>({p:"B4",d}))];
+            if(found.length>=2&&items.length&&items[items.length-1].bar==="single") items[items.length-1]={bar:"final"};
+            for(let m=found.length;m<2;m++) items.push({bar: m===1? "final":"single"});
+            Staff.render(st,{clef:"treble",time:"4/4",notes:items,width:440});
+            q.textContent=`Beats: ${sum} of 4 · Measures built: ${found.length} of 2`;
           }
-          function add(bt){
-            if(sum+bt.beats>3){ fb(false,`Too many — that would make ${sum+bt.beats}. The container holds exactly 3!`); return; }
-            cur.push(bt); sum+=bt.beats; MFAudio.tone(71,bt.beats*.4); draw();
-            if(sum===3){
-              const key=cur.map(x=>x.t).sort().join("");
-              if(found.includes(key)){ fb(false,"Already found that way — clear and discover another!"); cur=[];sum=0; setTimeout(draw,900); return; }
+          function add(v){
+            if(sum+B[v]>4){ fb(false,`That would make ${sum+B[v]} beats — the top number says exactly 4! Clear or choose smaller.`); return; }
+            cur.push(v); sum+=B[v]; MFAudio.tone(71,B[v]*.4); draw();
+            if(sum===4){
+              const key=cur.slice().sort().join("");
+              if(found.includes(key)){ fb(false,"Same combination as before — clear and build a DIFFERENT one!"); cur=[];sum=0; setTimeout(draw,900); return; }
               found.push(key);
-              let t=0; cur.forEach(bt=>{ MFAudio.tone(71,bt.beats*.45,t); t+=bt.beats*.5; });
-              doneItems.push(...cur.map(bt=>bt.item), {bar:"single"});
+              let t=0; cur.forEach(d=>{ MFAudio.tone(71,B[d]*.45,t); t+=B[d]*.5; });
+              doneItems.push(...cur.map(d=>({p:"B4",d})), {bar:"single"});
               cur=[]; sum=0; draw();
-              if(found.length>=3){ ch.style.display="none"; q.textContent="All three ways found!";
-                fb(true,"✓ Dotted half · half+quarter · three quarters — every way to fill 3/4. The dotted half does it with ONE sound!"); }
-              else fb(true,`✓ Exactly 3 beats — it stays on the staff. ${3-found.length} more way${3-found.length>1?"s":""} to find…`);
+              if(found.length>=2){ grid.style.display="none"; container.querySelector(".bf-clear").style.display="none";
+                q.textContent="Two measures composed!";
+                fb(true,"✓ Two different complete measures — the top number is satisfied, and so is Mia!"); }
+              else fb(true,"✓ Exactly 4 beats — it stays on the staff as measure 1. Now build a DIFFERENT combination…");
             }
           }
+          const CARDS=[["A","Whole","w",[{p:"B4",d:"w"}]],
+                       ["B","Half","h",[{p:"B4",d:"h"}]],
+                       ["C","Quarter","q",[{p:"B4",d:"q"}]],
+                       ["D","Clef",null,[]]];
+          CARDS.forEach(([L,name,v,notes])=>{
+            const bcard=document.createElement("button");
+            bcard.className="notecard";
+            bcard.style.cssText="border-radius:10px;padding:8px 10px;min-width:118px";
+            const tag=document.createElement("div"); tag.style.cssText="font-weight:800;font-size:12px;color:var(--muted)"; tag.textContent=L;
+            const dd=document.createElement("div");
+            const nm=document.createElement("div"); nm.style.cssText="font-weight:800;color:var(--primary)"; nm.textContent=name;
+            bcard.appendChild(tag); bcard.appendChild(dd); bcard.appendChild(nm);
+            Staff.render(dd,{clef:"treble",notes,width:110});
+            bcard.onclick=()=>{ if(v) add(v);
+              else { MFAudio.tone(40,.25); fb(false,"That's the CLEF — it names the notes but has NO duration, so it can't fill any beats. Pick a note value!"); } };
+            grid.appendChild(bcard);
+          });
+          container.querySelector(".bf-clear").onclick=()=>{ cur=[];sum=0;draw(); };
           draw();
-        } } },
-    { say:"Read a 3/4 line that uses the dotted half. Count: <b>1-2-3 held</b>, then quarters. \u{1F447}",
-      try:{ type:"custom",
-        hint:"The dotted half rings through all three counts of its measure.",
-        mount:(container,fb)=>{
-          const spec={clef:"treble",time:"3/4",tempo:100,
-            notes:[{p:"C4",d:"q",label:"1"},{p:"E4",d:"q",label:"2"},{p:"G4",d:"q",label:"3"},{bar:"single"},{p:"E4",d:"h",dot:true,label:"1-2-3"},{bar:"final"}],width:420};
-          container.innerHTML=`<div class="rd-staff"></div><div style="text-align:center"><button class="play rd-play">▶ Play & count along</button></div>`;
-          const api=Staff.render(container.querySelector(".rd-staff"),spec);
-          container.querySelector(".rd-play").onclick=()=>{
-            const total=Staff.play(spec,api);
-            setTimeout(()=>fb(true,"✓ Quarters walking, then one dotted half SINGING through the whole measure — classic 3/4!"),total*1000+300);
-          };
         } } }
   ],
   examples:[
-    { caption:"The dotted half note fills a whole 3/4 measure: hold it through ONE-two-three.",
-      staff:{clef:"treble",tempo:100,time:"3/4",notes:[{p:"G4",d:"h",dot:true,label:"1-2-3"},{bar:"single"},{p:"E4",d:"q",label:"1"},{p:"F4",d:"q",label:"2"},{p:"G4",d:"q",label:"3"},{bar:"single"},{p:"C4",d:"h",dot:true,label:"1-2-3"},{bar:"final"}],width:460} },
-    { caption:"2 + 1 = 3: a half note plus a quarter note fills one measure — the dotted half note fills the next in a single sound.",
-      staff:{clef:"treble",tempo:100,time:"3/4",notes:[{p:"D4",d:"h",label:"1-2"},{p:"D4",d:"q",label:"3"},{bar:"single"},{p:"D4",d:"h",dot:true,label:"1-2-3"},{bar:"final"}],width:420} }
+    { caption:"4/4 in action — count 1, 2, 3, 4 in every measure. The time signature promises each container holds four.",
+      staff:{clef:"treble",tempo:90,time:"4/4",notes:[{p:"C4",d:"q",label:"1"},{p:"E4",d:"q",label:"2"},{p:"G4",d:"q",label:"3"},{p:"E4",d:"q",label:"4"},{bar:"single"},{p:"F4",d:"h",label:"1-2"},{p:"D4",d:"h",label:"3-4"},{bar:"final"}],width:440} },
+    { caption:"The same rhythm written with the big C — Common Time. It sounds IDENTICAL, because C simply means 4/4.",
+      staff:{clef:"treble",tempo:90,time:"C",notes:[{p:"C4",d:"q",label:"1"},{p:"E4",d:"q",label:"2"},{p:"G4",d:"q",label:"3"},{p:"E4",d:"q",label:"4"},{bar:"single"},{p:"F4",d:"h",label:"1-2"},{p:"D4",d:"h",label:"3-4"},{bar:"final"}],width:440} }
   ],
   games:[
-    { type:"value-race", title:"Game 1 · Dot Flash",
-      intro:"Whole? Half? Dotted half? Quarter? The dot is tiny — spot it FAST! 10 rounds.",
-      miaIntro:"Game time — don't let that little dot sneak past you! \u{1F50D}",
-      spec:{rounds:10, ask:"name", values:["h","h.","q","w"]},
-      result:(score)=>score>=9?"No dot escapes your eyes now!":null },
-    { type:"rhythm-tap", title:"Game 2 · 3/4 Tap with Dots",
-      intro:"Tap 3/4 rhythms — including the loooong dotted half. Hold your tap-hand steady through 3 beats!",
-      miaIntro:"One tap can last three whole beats — hold it steady! \u{1F44F}",
-      spec:{tempo:100, rounds:3, beatsPerBar:3, patterns:[["h."],["q","q","q"],["h","q"],["q","h"]]},
-      result:(score)=>score>=5?"You FELT the 3-beat note — that's the hard part, done!":null },
-    { type:"measure-build", title:"Game 3 · Three Ways to Three",
-      intro:"Fill the 3/4 measure with exactly 3 beats — find <b>all three</b> combinations, dotted half included!",
-      miaIntro:"Builder challenge: three bricks, three ways, three beats! \u{1F3D7}\u{FE0F}",
-      spec:{beats:3, unique:true, rounds:3, buttons:[
-        {t:"D",label:"Dotted Half Note",beats:3,item:{p:"B4",d:"h",dot:true}},
-        {t:"h",label:"Half Note",beats:2,item:{p:"B4",d:"h"}},
-        {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}}]},
-      result:(stars)=>stars>=3?"All three ways, no overflow — 3/4 completely conquered!":null },
-    { type:"measure-judge", title:"Game 4 · 3/4 Inspector Returns",
-      intro:"Complete or incomplete? Now the measures hold 3 beats — and the dot changes the math!",
-      miaIntro:"Inspector — the dot makes the maths sneakier. Stay sharp! \u{1F50D}",
-      spec:{rounds:8, beats:3},
-      result:(score)=>score>=7?"The dot couldn't fool you — inspector level: expert!":null }
+    { type:"rhythm-tap", title:"Game 1 · Tap in 4/4",
+      intro:"Listen to a full 4/4 measure, then <b>tap it back in time</b>. The count-in is your best friend — 1, 2, 3, 4, GO!",
+      miaIntro:"Time to make the time signature physical — tap those measures back! \u{1F44F}",
+      spec:{tempo:90, rounds:3, patterns:[["q","q","q","q"],["h","q","q"],["q","q","h"],["h","h"],["w"]]},
+      result:(score)=>score>=8?"Right on the beat, measure after measure — 4/4 lives in your hands now!":null },
+    { type:"measure-judge", title:"Game 2 · Complete or Not?",
+      intro:"You're the measure inspector: does each measure hold exactly <b>4 beats</b>? Judge fast — 8 rounds.",
+      miaIntro:"Inspector Mia needs a deputy. Check every container for missing beats! \u{1F50D}",
+      spec:{rounds:8, beats:4},
+      result:(score)=>score>=7?"Seven or more — no incomplete measure escapes your eyes!":null },
+    { type:"measure-build", title:"Game 3 · Four-Beat Builder",
+      intro:"The classic challenge: there are <b>four different ways</b> to fill a 4/4 measure with whole, half, and quarter notes. Find them ALL!",
+      miaIntro:"Builder time again — the top number demands exactly four! \u{1F3D7}\u{FE0F}",
+      spec:{beats:4, unique:true},
+      result:(stars)=>stars>=3?"All four combinations, zero overflow — master builder of Common Time!":null },
+    { type:"symbol-hunt", title:"Game 4 · Find the Time Signature",
+      intro:"Click the symbol Mia names — <b>4/4</b>, <b>Common Time</b>, clefs, bars… can you tell them apart at a glance?",
+      miaIntro:"Last game! 4/4 and its shorthand C are hiding among the other symbols. \u{1F3AF}",
+      spec:{rounds:6, pool:[
+        {label:"4/4 Time Signature", spec:{clef:"treble",time:"4/4",notes:[]}},
+        {label:"Common Time (C)", spec:{clef:"treble",time:"C",notes:[]}},
+        {label:"Treble Clef", spec:{clef:"treble",notes:[]}},
+        {label:"Double Bar", spec:{clef:"treble",notes:[{bar:"final"}]}},
+        {label:"Whole Note", spec:{clef:"treble",notes:[{p:"B4",d:"w"}]}},
+        {label:"Quarter Note", spec:{clef:"treble",notes:[{p:"B4",d:"q"}]}}]},
+      result:(score)=>score>=5?"Sharp! You can spot Common Time in a crowd.":null }
   ],
-  practiceIntro:"20 practice questions — dot math, dotted half counting, and 3/4 measures. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — top and bottom numbers, Common Time, complete measures, and beat math. Answer right and the next appears automatically!",
   practice:[
-    { gen:"note-value", params:{values:["h","h.","q","w"], ask:"beats"}, count:4 },
-    { gen:"note-value", params:{values:["h","h.","q"], ask:"name"}, count:3 },
-    { gen:"measure-complete", params:{beats:3}, count:3 },
-    { type:"mc", q:"A dot adds…", choices:["half of the note's original value","exactly one beat, always","a whole beat and a half"], answer:0,
-      explain:"Proportional, not fixed: half of whatever the note is worth." },
-    { type:"mc", q:"Dotted half note = ____ beats.", choices:["2","3","4"], answer:1,
-      explain:"2 + 1 = 3." },
-    { type:"truefalse", q:"A dot doubles the value of a note.", answer:false,
-      explain:"It adds HALF the value — 2 becomes 3, not 4." },
-    { type:"truefalse", q:"A dotted half note fills one complete measure of 3/4 time.", answer:true,
-      explain:"3 beats = the whole container, one single sound." },
-    { type:"mc", q:"A dotted half note equals…", choices:["three quarter notes","two quarter notes","a whole note"], answer:0,
-      explain:"3 beats = 1+1+1." },
-    { type:"mc", q:"Half note + dot: where does the extra beat come from?", choices:["half of the half note's 2 beats","the time signature","the next measure"], answer:0,
-      explain:"Half of 2 = 1. So 2 + 1 = 3." },
-    { type:"truefalse", q:"The dot sits just to the RIGHT of the notehead.", answer:true,
-      explain:"A small dot beside the head — easy to miss, big effect!" },
-    { type:"mc", q:"In which time signature does the dotted half note fill a whole measure?", choices:["3/4","2/4","4/4"], answer:0,
-      explain:"3 beats = one full 3/4 measure." },
-    { type:"truefalse", q:"Half note (2) + quarter note (1) lasts the same as a dotted half note.", answer:true,
-      explain:"Both total 3 beats — different slicing, same time." },
-    { type:"mc", q:"Count a dotted half note in 3/4 as…", choices:["ONE-two-three, held","ONE, then silence","ONE-two, stop"], answer:0,
-      explain:"One sound sustained through all three counts." },
+    { gen:"measure-complete", params:{beats:4}, count:4 },
+    { gen:"rhythm-count", params:{values:["h","q"],maxNotes:3}, count:3 },
+    { gen:"note-value", params:{ask:"beats"}, count:2 },
+    { gen:"measure-count", params:{min:2,max:4}, count:2 },
+    { type:"mc", q:"The TOP number of a time signature tells you…", choices:["how many beats per measure","which note gets one beat","the speed of the piece"], answer:0,
+      explain:"Top = how many beats fit in each measure." },
+    { type:"mc", q:"The BOTTOM number of a time signature tells you…", choices:["which note value receives one beat","how many measures the piece has","how loud to play"], answer:0,
+      explain:"Bottom = which note is the beat. A bottom 4 = quarter note." },
+    { type:"mc", q:"The big letter C at the start of a staff means…", choices:["Common Time — the same as 4/4","the note C","Coda"], answer:0,
+      explain:"C = Common Time = 4/4. Identical meaning." },
+    { type:"truefalse", q:"In 4/4, a Whole Note fills an entire measure.", answer:true,
+      explain:"4 beats — exactly what the top number demands." },
+    { type:"truefalse", q:"4/4 is the most common time signature in music.", answer:true,
+      explain:"That's exactly why its shortcut is called COMMON time." },
+    { type:"mc", q:"In 4/4, which is an INCOMPLETE measure?", choices:["Quarter + Quarter + Quarter","Half + Half","Whole"], answer:0,
+      explain:"1+1+1 = only 3 beats — one short of the promised 4." },
+    { type:"truefalse", q:"The top and bottom numbers of a time signature mean the same thing.", answer:false,
+      explain:"Top = how many beats; bottom = which note gets the beat. Different jobs!" },
+    { type:"mc", q:"In 4/4 time, a Half Note lasts…", choices:["2 of the 4 beats","all 4 beats","half a beat"], answer:0,
+      explain:"The quarter gets 1 beat, so the half note takes 2 of them." },
+    { type:"truefalse", q:"Counting in 4/4 goes “1 - 2 - 3 - 4” in every measure.", answer:true,
+      explain:"Like a heartbeat — and beat 1 feels the strongest." },
     /* — from the unit review sheet — */
-    { type:"mc", q:"In 4/4 time, a dotted half note receives ____ beats.", choices:["3","4","2"], answer:0, explain:"2 + 1 = 3 beats — the same value in any time signature." }
+    { type:"mc", q:"When a time signature contains a 4 as the TOP number, it means…", choices:["4 beats in each measure","the quarter note receives one beat","4 measures per line"], answer:0, explain:"The top number counts the beats per measure." },
+    { type:"mc", q:"When a time signature contains a 4 as the BOTTOM number, it means…", choices:["a quarter note receives one beat","4 beats in each measure","play at a moderate tempo"], answer:0, explain:"The bottom number names the note that receives one beat." }
   ],
-  miaQuizIntro:"Quiz time! Remember the golden equation: 2 + 1 = 3. Go!",
+  miaQuizIntro:"Quiz time! Top number, bottom number, the big C, and plenty of beat math. Count like a heartbeat — go!",
   quiz:[
-    { type:"mc", q:"What does a dot do to a note?", choices:["Makes it louder","Adds one beat","Increases its value by half of its original duration","Makes it shorter"], answer:2,
-      explain:"The dot adds HALF the note's own value.", hint:"Proportional, not fixed." },
-    { type:"mc", q:"How many beats does a dotted half note receive?", choices:["2","3","4","5"], answer:1,
-      explain:"2 + 1 = 3 beats.", hint:"The golden equation." },
-    { type:"mc", q:"A half note is worth…", choices:["1 beat","2 beats","3 beats","4 beats"], answer:1,
-      explain:"Two beats — before any dot.", hint:"Review from Lesson 6." },
-    { type:"truefalse", q:"A dotted half note lasts three beats.", answer:true,
-      explain:"2 + 1 = 3.", hint:"Add the dot's bonus." },
-    { type:"truefalse", q:"A dot doubles the value of a note.", answer:false,
-      explain:"It adds HALF — a half note becomes 3 beats, not 4.", hint:"2 + 1, not 2 × 2." },
-    { type:"truefalse", q:"A dotted half note fills one complete measure of 3/4 time.", answer:true,
-      explain:"3 beats = the whole 3/4 container.", hint:"How many beats in 3/4?" },
-    { type:"mc", q:"Which note lasts 3 beats?",
-      staff:{clef:"treble",notes:[{p:"B4",d:"h",label:"1"},{p:"B4",d:"h",dot:true,label:"2"},{p:"B4",d:"q",label:"3"}],width:340},
-      choices:["1","2","3"], answer:1,
-      explain:"Number 2 has the dot — 2 + 1 = 3 beats.", hint:"Find the dot!" },
+    /* draft Q1–Q12, adapted */
+    { type:"mc", q:"In 4/4 Time, how many beats are in each measure?", choices:["2","3","4","8"], answer:2,
+      explain:"The top number says 4 — four beats per measure.", hint:"Look at the TOP number." },
+    { type:"mc", q:"In 4/4 Time, which note receives one beat?", choices:["Whole Note","Half Note","Quarter Note","Eighth Note"], answer:2,
+      explain:"The bottom 4 stands for the quarter note.", hint:"Look at the BOTTOM number." },
+    { type:"mc", q:"What does the TOP number tell us?", choices:["Which note receives one beat","How many beats are in each measure","How many notes are in a song","How fast to play"], answer:1,
+      explain:"Top = beats per measure.", hint:"How many fit in the container?" },
+    { type:"mc", q:"What does the BOTTOM number tell us?", choices:["The number of measures","Which note value receives one beat","The tempo","The key signature"], answer:1,
+      explain:"Bottom = which note is the beat (4 = quarter note).", hint:"Which note is the heartbeat?" },
+    { type:"truefalse", q:"A Whole Note fills an entire measure in 4/4 Time.", answer:true,
+      explain:"4 beats = the whole container.", hint:"How many beats does a whole note get?" },
+    { type:"truefalse", q:"The top number tells us which note receives one beat.", answer:false,
+      explain:"That's the BOTTOM number's job — the top counts beats per measure.", hint:"Careful — the two numbers have different jobs." },
+    { type:"mc", q:"Which of these means COMMON TIME?", choices:["A large letter C at the start of the staff","The numbers 3/4","A double bar line","The treble clef"], answer:0,
+      explain:"The big C is the shortcut for 4/4 — Common Time.", hint:"It's a letter, not a number." },
     { type:"mc", q:"Which matching is correct?",
-      choices:["Quarter → 1 · Half → 2 · Dotted Half → 3","Quarter → 2 · Half → 3 · Dotted Half → 4","Quarter → 1 · Half → 3 · Dotted Half → 2"], answer:0,
-      explain:"1, 2, and 2+1=3.", hint:"The dot adds half." },
-    { type:"mc", q:"A dot adds ____ of the note's original value.", choices:["half","all","a quarter"], answer:0,
-      explain:"Half — always proportional.", hint:"The golden rule." },
-    { type:"mc", q:"A dotted half note equals ____ beats.", choices:["2","3","4"], answer:1,
-      explain:"Three.", hint:"2 + 1." },
-    { type:"mc", q:"Which fills one complete measure of 3/4?",
-      choices:["Dotted Half Note","Half Note","Quarter + Quarter"], answer:0,
-      explain:"3 beats exactly. (Half = 2; two quarters = 2 — both incomplete.)",
-      hint:"Which one totals 3?" },
-    { type:"mc", q:"Which statement is correct?",
-      choices:["A dotted half note lasts two beats","A dot always adds one beat","A dotted half note is equal in duration to three quarter notes","A dotted half note cannot be used in 3/4 time"], answer:2,
-      explain:"3 beats = three quarter notes. And 3/4 is its favorite home!",
-      hint:"Do the beat math." },
-    /* generated */
-    { gen:"note-value", params:{values:["h","h.","q"], ask:"beats"}, count:3 },
-    { gen:"measure-complete", params:{beats:3}, count:2 },
-    { gen:"rhythm-count", params:{values:["h","q"],maxNotes:3}, count:2 },
-    { gen:"note-name", params:{clef:"treble"}, count:1 }
+      choices:["Top number → beats per measure · Bottom number → note that gets one beat · C → Common Time (4/4)",
+               "Top number → note that gets one beat · Bottom number → beats per measure · C → Coda",
+               "Top number → tempo · Bottom number → measures · C → the note C"], answer:0,
+      explain:"Top counts the beats, bottom names the beat note, C = Common Time.",
+      hint:"Remember each number's job." },
+    { type:"mc", q:"In 4/4 Time there are ____ beats in each measure.", choices:["2","3","4","8"], answer:2,
+      explain:"Four — the top number promises it.", hint:"4/4: the first 4." },
+    { type:"mc", q:"The ____ Note receives one beat in 4/4 Time.", choices:["Whole","Half","Quarter","Eighth"], answer:2,
+      explain:"Bottom number 4 = quarter note gets the beat.", hint:"4/4: the second 4." },
+    { type:"mc", q:"Which of these fills one complete measure in 4/4?",
+      choices:["Half + Quarter + Quarter","Quarter + Quarter + Quarter","Half + Quarter"], answer:0,
+      explain:"2+1+1 = 4 ✓. The others total 3 — incomplete.",
+      hint:"Add each list — which reaches exactly 4?" },
+    { type:"mc", q:"Which measure is NOT complete in 4/4 Time?",
+      choices:["Whole Note","Half + Half","Quarter + Quarter + Quarter","Half + Quarter + Quarter"], answer:2,
+      explain:"1+1+1 = 3 beats — one beat short. All the others total exactly 4.",
+      hint:"One of these only reaches 3." },
+    /* generated — fresh every attempt */
+    { gen:"measure-complete", params:{beats:4}, count:3 },
+    { gen:"rhythm-count", params:{values:["w","h","q"],maxNotes:2}, count:2 },
+    { gen:"note-value", params:{ask:"beats"}, count:2 },
+    { gen:"measure-count", params:{min:2,max:4}, count:1 }
   ],
   vocabulary:[
-    {def:"A dot after a note increases the note's duration by half the original value.", term:"Dot", staff:{clef:"none",notes:[{p:"B4",d:"h",dot:true}],width:140}},
-    {def:"In 3/4 and 4/4 time signatures, it receives 3 beats (2 + 1).", term:"Dotted Half Note", staff:{clef:"none",notes:[{p:"B4",d:"h",dot:true}],width:140}},
-    {def:"The length of time a note is held.", term:"Duration"}
+    {def:"Appears at the beginning of the music after the clef sign. It contains two numbers.", term:"Time Signature", staff:{clef:"none",time:"4/4",notes:[],width:140}},
+    {def:"Tells how many beats are in each measure.", term:"Top Number"},
+    {def:"Indicates what type of note receives 1 beat.", term:"Bottom Number"},
+    {def:"The sign C — it means the same as 4/4 time.", term:"Common Time", staff:{clef:"none",time:"C",notes:[],width:140}}
   ],
-  mistakes:[],
+  mistakes:[
+    "<b>Swapping the two numbers</b> — top counts the beats, bottom names the beat note.",
+    "<b>Reading C as the note C</b> — at the start of the staff it means Common Time (4/4).",
+    "<b>Accepting 3-beat measures in 4/4</b> — every measure must total exactly 4.",
+    "<b>Overfilling a measure</b> — 5 beats is just as wrong as 3.",
+    "<b>Counting 1-2-3-4 without an accent</b> — beat 1 is the strong one; feel the cycle."
+  ],
   summary:[
-    "✔ A <b>dot</b> adds <b>half of the note's original value</b> — never a fixed beat.",
-    "✔ Dotted Half Note = <b>2 + 1 = 3 beats</b>.",
-    "✔ It fills one complete <b>3/4 measure</b> with a single sound.",
-    "✔ Dotted half = <b>three quarter notes</b> in total time.",
-    "✔ Three ways to fill 3/4: <b>♩♩♩ · half+quarter · dotted half</b>."
+    "✔ The <b>Time Signature</b> is the rhythmic roadmap at the start of the staff.",
+    "✔ <b>Top number</b> = beats per measure; <b>bottom number</b> = which note gets one beat.",
+    "✔ <b>4/4</b>: four beats per measure, quarter note gets the beat.",
+    "✔ The big <b>C</b> = <b>Common Time</b> = exactly 4/4.",
+    "✔ Every measure must be <b>complete</b> — beats adding up to the top number."
   ],
   tips:[
-    "Whenever you meet a dotted note, say the equation out loud: “2 plus 1 equals 3.”",
-    "The dot is proportional — later you'll dot a QUARTER note and get 1½ beats (Lesson 17!).",
-    "In 3/4 music, scan for dotted halves first — they mark the calmest measures.",
-    "\u{1F517} Next lesson: curved lines that GLUE notes together — ties and slurs!"
+    "Read a time signature like a sentence: “FOUR beats per measure, QUARTER note gets the beat.”",
+    "When a measure looks suspicious, add the beats out loud — inspector style.",
+    "Beat 1 is home base. If you get lost while counting, listen for the strong pulse and restart there.",
+    "\u{1F5FA}\u{FE0F} Next lesson: silence gets its own symbols — whole, half, and quarter RESTS!"
   ],
-  rewards:{ badge:"Dot Detective", icon:"\u{1F50D}" },
+  rewards:{ badge:"Common Time Keeper", icon:"\u{1F552}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! 2 + 1 = 3, and you + this lesson = unstoppable. \u{1F50D}\u{1F389}",
-  miaPass:"You passed! The dot's secret is yours. Review below or retry for the perfect run.",
+  miaPerfect:"A PERFECT score! Top number, bottom number, the big C — the rhythmic roadmap is yours. See you among the rests! \u{1F552}\u{1F389}",
+  miaPass:"You passed! 4/4 is officially your home meter. Review below or go for the perfect run — fresh questions every time.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"A dot after a note stretches it by half its own value. Half note (2) + dot (1) = 3 beats.",
-      play:()=>{const s=.7;MFAudio.tone(67,2*s*.95,0);MFAudio.tone(67,3*s*.95,2.6*s);} },
-    learn:{ label:"the dotted half note",
-      explain:"Dot = +half the original value. Half note 2 → dotted half 3. It fills a 3/4 measure alone, and equals three quarter notes.",
-      hint:"Say it: 2 + 1 = 3.",
-      play:()=>{const s=.6;MFAudio.tone(67,3*s*.95,0);[67,67,67].forEach((m,i)=>MFAudio.tone(m,s*.9,(3.5+i)*s));} },
+      explain:"Music pulses in repeating groups. The time signature announces the group size — in 4/4, count 1-2-3-4 with a strong beat 1.",
+      play:()=>{const s=.65;for(let i=0;i<8;i++) MFAudio.click(i*s,i%4===0?.6:.35,i%4===0);} },
+    learn:{ label:"the time signature",
+      explain:"Top number: how many beats per measure. Bottom number: which note gets one beat (4 = quarter). Big C = Common Time = 4/4. Every measure must total the top number exactly.",
+      hint:"Say it as a sentence: “four beats per measure, quarter note gets the beat.”",
+      play:()=>{const s=.6;[60,64,67,64].forEach((m,i)=>MFAudio.tone(m,s*.9,i*s));} },
     example:{ label:"the examples",
-      explain:"Hear the dotted half SING through all three counts while the quarters walk — same 3 beats, different characters." },
+      explain:"Both examples are the SAME rhythm — one written 4/4, one written C. Common Time is just 4/4 written with a different symbol." },
     game:{ label:"the games",
-      explain:"Spot dots at speed, tap 3-beat holds, build all three fillings of 3/4, and inspect sneaky dotted measures.",
-      hint:"Always do the beat math: the dot adds half." },
+      explain:"Tap full measures, inspect for missing beats, build every 4-beat combination, and hunt the symbols.",
+      hint:"Everything comes back to one rule: the beats in a measure must total the top number." },
     quiz:{ label:"this question",
-      explain:"One rule runs this whole quiz: the dot adds half of the note's own value. 2 + 1 = 3.",
-      play:()=>{MFAudio.tone(67,1.8,0);} }
+      explain:"Two jobs to remember: TOP counts beats per measure, BOTTOM names the beat note. And C is 4/4 — always.",
+      play:()=>{MFAudio.click(0,.5,true);MFAudio.click(.6,.35);MFAudio.click(1.2,.35);MFAudio.click(1.8,.35);} }
   }
 };

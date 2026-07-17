@@ -1,333 +1,351 @@
-/* Lesson 69 — Composing a Melody in a Minor Key (AEMT Book 3, Unit 17)
-   Built from drafts/UNIT 17 – Lesson 69.md; AEMT3 p.109 verified by render.
-   Core: same method as major — melody from CHORD TONES of the progression,
-   decorated with passing/neighboring tones. First and last note tends to be
-   the root of the i chord; V(7) precedes the last chord. The book's model
-   (Pat-A-Pan, D minor) labels notes R / 3 / 5 / U / L / P.
+/* Lesson 69 (9.3, formerly L55) — Major Chord Progressions (AEMT Book 3, Unit 13 FINALE)
+   Built from drafts/UNIT 13 – Lesson 55.md; AEMT3 p.87 verified by render.
+   Core: chords that move = a CHORD PROGRESSION; I-IV-V(7) contain every note
+   of the major scale → they can ACCOMPANY most simple melodies; root-position-only
+   writing sounds choppy → IV becomes IV⁶₄, V becomes V⁶, V7 becomes V⁶₅;
+   smooth versions keep a COMMON TONE between neighboring chords.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* compose in D minor: pick chord tones over i - iv - i - V7 - i */
-function MF_L69_compose(container,fb){
-  const MEAS=[
-    {label:"i", sym:"Dm", tones:{D:62,F:65,A:69}, chord:[50,62,65,69], must:"D",
-      note:"Rule: begin on the root of i."},
-    {label:"iv", sym:"Gm", tones:{G:67,"B♭":70,D:74}, chord:[43,58,62,67],
-      note:"Any tone of G-B♭-D fits here."},
-    {label:"i", sym:"Dm", tones:{D:74,F:77,A:69}, chord:[50,62,65,69],
-      note:"Home again — any D-minor tone."},
-    {label:"V7", sym:"A7", tones:{A:69,"C♯":73,E:76,G:79}, chord:[45,61,64,67],
-      note:"The dominant — C♯ (the raised 7th of D minor!) creates the strongest pull."},
-    {label:"i", sym:"Dm", tones:{D:74}, chord:[50,62,65,69], must:"D",
-      note:"Rule: end on the root of the final i."}];
-  let k=0; const picked=[];
-  container.innerHTML=`<div class="big-q l69c-q" style="text-align:center"></div>
-    <div class="l69c-map" style="text-align:center;margin:10px 0;letter-spacing:normal"></div>
-    <div class="choices chips l69c-ch"></div>
-    <div style="text-align:center"><button class="play l69c-play" style="display:none">▶ Play YOUR minor composition</button></div>`;
-  const q=container.querySelector(".l69c-q"), map=container.querySelector(".l69c-map"), ch=container.querySelector(".l69c-ch"), pl=container.querySelector(".l69c-play");
+/* common-tone finder: hear two chords, tap the shared note */
+function MF_L69_common(container,fb){
+  const ROUNDS=[
+    {a:{name:"I (C-E-G)", ps:["C4","E4","G4"]}, b:{name:"IV (F-A-C)", ps:["F4","A4","C5"]}, shared:"C",
+      expl:"C lives in both chords — keep it in the same voice and only two notes need to move."},
+    {a:{name:"I (C-E-G)", ps:["C4","E4","G4"]}, b:{name:"V (G-B-D)", ps:["G4","B4","D5"]}, shared:"G",
+      expl:"G is the 5th of I and the root of V — the bridge between them."},
+    {a:{name:"I (C-E-G)", ps:["C4","E4","G4"]}, b:{name:"V7 (G-B-D-F)", ps:["G4","B4","D5","F5"]}, shared:"G",
+      expl:"Same bridge, one extra note: V7 still shares its G with the tonic."}];
+  let r=0;
+  container.innerHTML=`<div class="big-q l55c-q" style="text-align:center"></div>
+    <div class="l55c-staff"></div>
+    <div style="text-align:center"><button class="play l55c-hear">▶ Hear both chords</button></div>`;
+  const q=container.querySelector(".l55c-q"), holder=container.querySelector(".l55c-staff"), hear=container.querySelector(".l55c-hear");
+  function ask(){
+    if(r>=ROUNDS.length){ q.textContent="Excellent! You found every common tone."; holder.innerHTML=""; hear.style.display="none"; return; }
+    const R=ROUNDS[r];
+    q.innerHTML=`${R.a.name} then ${R.b.name}: tap the note <b>shared by both chords</b>.`;
+    const notes=[...R.a.ps.map((p,ix)=>ix===0?{p,d:"w",label:R.a.name.split(" ")[0]}:{p,d:"w",chord:true}),
+                 ...R.b.ps.map((p,ix)=>ix===0?{p,d:"w",label:R.b.name.split(" ")[0]}:{p,d:"w",chord:true})];
+    const bStart=R.a.ps.length;
+    Staff.render(holder,{clef:"treble",notes,width:400,clickNotes:true,
+      onNote:(i,p)=>{
+        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
+        if(i<bStart){ fb(false,"Tap inside the SECOND chord — find its borrowed note."); return; }
+        if(p[0]===ROUNDS[r].shared){ MFAudio.yay(); fb(true,`✓ ${ROUNDS[r].shared} is the COMMON TONE. ${ROUNDS[r].expl}`);
+          r++; setTimeout(ask,1500); }
+        else fb(false,`${p[0]} belongs only to the second chord. Which letter appears in BOTH spellings?`);
+      }});
+  }
+  hear.onclick=()=>{
+    const R=ROUNDS[r]; if(!R) return;
+    R.a.ps.forEach(p=>MFAudio.tone(MFAudio.midi(p),.9,0,.32));
+    R.b.ps.forEach(p=>MFAudio.tone(MFAudio.midi(p),1.1,1.0,.32));
+  };
+  ask();
+}
+
+/* smooth-or-choppy listening lab */
+function MF_L69_smooth(container,fb){
+  let hA=false,hB=false;
+  const CHOPPY=[[48,64,67,72],[53,65,69,72],[48,64,67,72],[55,67,71,74,77],[48,64,67,72]];
+  const SMOOTH=[[48,64,67,72],[48,65,69,72],[48,64,67,72],[47,67,71,74,77],[48,64,67,72]];
+  function playProg(rows){ rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.05,.28))); }
+  container.innerHTML=`<div class="big-q" style="text-align:center">Listen to both examples. Which bass line sounds smoother?</div>
+    <div style="text-align:center">
+      <button class="play l55-a">▶ Version A (all root position)</button>
+      <button class="play l55-b">▶ Version B (with inversions)</button></div>
+    <div class="choices l55-ch" style="display:none"><button>Version B — the bass barely moved</button><button>Version A — leaps are smoother</button></div>`;
+  const ch=container.querySelector(".l55-ch");
+  container.querySelector(".l55-a").onclick=()=>{ playProg(CHOPPY); hA=true; if(hB) setTimeout(()=>ch.style.display="",5600); };
+  container.querySelector(".l55-b").onclick=()=>{ playProg(SMOOTH); hB=true; if(hA) setTimeout(()=>ch.style.display="",5600); };
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    if(i===0) fb(true,"✓ Version B used IV⁶₄ and V⁶₅ — the bass stayed on C, dipped one half step to B, and came home. Version A's bass leapt C→F→C→G→C. Smoothness = inversions + common tones!");
+    else fb(false,"Play both again and follow only the LOWEST voice. Which one could you hum?");
+  });
+}
+
+/* build-a-smooth-progression: choose the position for each chord */
+function MF_L69_build(container,fb){
+  const SLOTS=[
+    {q:"The IV chord (the first blank): which position keeps the bass ON C (the common tone with I)?",
+      choices:["IV⁶₄ (C-F-A)","IV root position (F-A-C)"], right:0,
+      expl:"2nd inversion puts the IV chord's 5th — C — in the bass: no leap at all."},
+    {q:"The V7 chord (the next blank): which position lets the bass slide just a half step from C?",
+      choices:["V⁶₅ (B-D-F-G)","V7 root position (G-B-D-F)"], right:0,
+      expl:"1st inversion puts B in the bass — one half step below C. The bass melts home: C-B-C."}];
+  let s=0;
+  container.innerHTML=`<div class="big-q l55b-q" style="text-align:center"></div>
+    <div class="l55b-map" style="text-align:center;font-weight:800;font-size:15px;letter-spacing:1px;margin:8px 0"></div>
+    <div class="choices l55b-ch"></div>
+    <div style="text-align:center"><button class="play l55b-play" style="display:none">▶ Play YOUR smooth progression</button></div>`;
+  const q=container.querySelector(".l55b-q"), map=container.querySelector(".l55b-map"), ch=container.querySelector(".l55b-ch"), pl=container.querySelector(".l55b-play");
+  const picked=[];
   function drawMap(){
-    map.innerHTML=MEAS.map((m,i)=>{
-      const done=i<picked.length, cur=(i===k && k<MEAS.length);
-      const note=done?picked[i].name:"?";
-      const bg=cur?"var(--accent,#4f7cff)":done?"#e6efff":"#f2f4f8";
-      const fg=cur?"#fff":done?"#1f4bd8":"#8a93a3";
-      const bd=cur?"var(--accent,#4f7cff)":done?"#bcd2ff":"#dde2ea";
-      return `<span style="display:inline-block;min-width:56px;margin:3px;padding:6px 6px;border-radius:10px;border:1.5px solid ${bd};background:${bg};color:${fg};text-align:center;vertical-align:top">
-        <span style="display:block;font-size:10.5px;font-weight:600;opacity:.85">m.${i+1}</span>
-        <span style="display:block;font-size:15px;font-weight:800;line-height:1.35">${m.sym}</span>
-        <span style="display:block;font-size:13px;font-weight:700">${note}</span></span>`;
-    }).join("");
+    map.textContent="I → "+(picked[0]||"?")+" → I → "+(picked[1]||"?")+" → I";
   }
   function ask(){
     drawMap();
-    if(k>=MEAS.length){ q.textContent="Excellent! Your melody is complete. Press play!"; ch.innerHTML=""; pl.style.display="inline-block"; return; }
-    const M=MEAS[k];
-    q.innerHTML=`Measure ${k+1} — chord: <b>${M.sym} (${M.label})</b>. ${M.must?`<b>Required: ${M.must}</b> — `:""}pick your melody note. <i>${M.note}</i>`;
-    ch.innerHTML="";
-    const opts=Object.keys(M.tones);
-    if(!M.must) opts.push(k===1?"E":"B♮");
-    opts.sort(()=>Math.random()-.5).forEach(name=>{
-      const b=document.createElement("button"); b.textContent=name;
+    if(s>=SLOTS.length){
+      q.textContent="Great! Listen to your chord progression.";
+      ch.innerHTML=""; pl.style.display="inline-block"; return;
+    }
+    q.innerHTML=SLOTS[s].q; ch.innerHTML="";
+    SLOTS[s].choices.forEach((c,i)=>{
+      const b=document.createElement("button"); b.textContent=c;
       b.onclick=()=>{
-        const M2=MEAS[k];
-        if(M2.must && name!==M2.must){ MFAudio.tone(40,.2); fb(false,`The ${k===0?"first":"last"} note tends to be the root of i — that's ${M2.must}.`); return; }
-        if(M2.tones[name]===undefined){ MFAudio.tone(40,.2); fb(false,`${name} is not a tone of ${M2.sym}. Start with a chord tone — non-harmonic tones come later!`); return; }
-        MFAudio.tone(M2.tones[name],.7,.05,.44);
-        M2.chord.forEach(m=>MFAudio.tone(m,.8,.05,.2));
-        picked.push({name, midi:M2.tones[name]}); k++;
-        fb(true,`✓ Great! ${name} is a chord tone of ${M2.sym} — your melody fits the chords.`);
-        setTimeout(ask,1000);
+        if(i===SLOTS[s].right){ MFAudio.yay(); picked.push(c.split(" ")[0]); fb(true,"✓ "+SLOTS[s].expl); s++; setTimeout(ask,1300); }
+        else { MFAudio.tone(40,.2); fb(false,"That version forces the bass to LEAP. Which choice keeps the bass next to C?"); }
       };
       ch.appendChild(b);
     });
   }
   pl.onclick=()=>{
-    picked.forEach((p,i)=>{
-      MFAudio.tone(p.midi,.8,i*.88,.46);
-      MEAS[i].chord.forEach(m=>MFAudio.tone(m,.85,i*.88,.2));
-    });
-    setTimeout(()=>fb(true,"✓ Root of i at both ends, A7 setting up the close — your own minor melody."),4900);
+    const rows=[[48,64,67,72],[48,65,69,72],[48,64,67,72],[47,67,71,74,77],[48,64,67,72]];
+    rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.05,.28)));
+    setTimeout(()=>fb(true,"✓ I → IV⁶₄ → I → V⁶₅ → I: the smooth-progression pattern, built by you."),5400);
   };
   ask();
 }
 
-/* label detective: decode R/3/5/U/L/P on a D-minor phrase */
-function MF_L69_labels(container,fb){
-  const ROUNDS=[
-    {ps:["D4","D4","A4"], chord:"Dm (D-F-A)", target:null, labels:["R","R","5"], ask:2, answer:"5",
-      expl:"D is the root (R, twice); A is the chord's 5th → label 5."},
-    {ps:["A4","G4","A4"], chord:"Dm (D-F-A)", ask:1, answer:"L",
-      expl:"A…G…A — leaves the 5th, goes BELOW, returns: G is a Lower neighboring tone (L)."},
-    {ps:["F4","E4","D4"], chord:"Dm (D-F-A)", ask:1, answer:"P",
-      expl:"F (3) down to D (R) through E: a Passing tone (P)."}];
-  const OPTS=["R","3","5","P","U","L"];
-  let r=0;
-  container.innerHTML=`<div class="big-q l69l-q" style="text-align:center"></div>
-    <div class="l69l-staff"></div>
-    <div class="choices chips l69l-ch"></div>`;
-  const q=container.querySelector(".l69l-q"), holder=container.querySelector(".l69l-staff"), ch=container.querySelector(".l69l-ch");
-  function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Excellent! You identified all the labels."; holder.innerHTML=""; ch.innerHTML=""; return; }
-    const R=ROUNDS[r];
-    q.innerHTML=`Harmony: <b>${R.chord}</b>. What label belongs under the <b>${["first","second","third"][R.ask]}</b> note?`;
-    Staff.render(holder,{clef:"treble",notes:R.ps.map((p,i)=>({p,d:"q",label:i===R.ask?"?":undefined})),width:300});
-    ch.innerHTML="";
-    OPTS.forEach(o=>{
-      const b=document.createElement("button"); b.textContent=o;
-      b.onclick=()=>{
-        const R2=ROUNDS[r];
-        if(o===R2.answer){
-          R2.ps.forEach((p,ix)=>MFAudio.tone(MFAudio.midi(p),.45,.05+ix*.4,.42));
-          fb(true,`✓ ${R2.expl}`);
-          r++; setTimeout(ask,1500); }
-        else { MFAudio.tone(40,.2); fb(false,"Is the note IN D-F-A (then R/3/5) or outside it (then P/U/L by its journey)?"); }
-      };
-      ch.appendChild(b);
-    });
-  }
-  ask();
-}
-
-LESSON_CONTENT[69]={
-  welcome:"Composing a melody in a minor key. \u{1F58B}\u{FE0F}",
+LESSON_CONTENT[69]={stackFigures:true,
+  welcome:"The Unit 13 finale — where inversions stop being theory and start making music flow. \u{1F30A}",
   hook:{
-    say:"<b>Here is a simple chord progression in a minor key:</b> i - iv - V7 - i. Listen to the chords alone, then with a composed melody. <b>How can you create a melody that fits these chords?</b>",
+    say:"<b>A chord progression is a series of chords.</b> Listen to these two examples. Both use the same chords. <b>Which one sounds smoother?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Chords alone</button>
-          <button class="play hk-b">▶ Chords + melody</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Build it from each chord's own tones</button><button>Play it more slowly</button><button>Use a special clef</button></div>`;
-        const chords=[[50,62,65,69],[43,58,62,67],[45,61,64,67],[50,62,65,69]];
-        const mel=[74,70,73,74];
+          <button class="play hk-a">▶ Version A</button>
+          <button class="play hk-b">▶ Version B</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Version B — its bass moves by small steps</button><button>Version A — large leaps sound smoother</button><button>They sound exactly the same</button></div>`;
+        const A=[[48,64,67,72],[53,65,69,72],[55,67,71,74],[48,64,67,72]];
+        const B=[[48,64,67,72],[48,65,69,72],[47,67,71,74],[48,64,67,72]];
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ chords.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.25))); hA=true; if(hB) setTimeout(()=>ch.style.display="",3900); };
-        container.querySelector(".hk-b").onclick=()=>{ chords.forEach((row,i)=>{ row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2)); MFAudio.tone(mel[i],.8,i*.9,.46); }); hB=true; if(hA) setTimeout(()=>ch.style.display="",3900); };
+        const play=rows=>rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.28)));
+        container.querySelector(".hk-a").onclick=()=>{ play(A); hA=true; if(hB) setTimeout(()=>ch.style.display="",4300); };
+        container.querySelector(".hk-b").onclick=()=>{ play(B); hB=true; if(hA) setTimeout(()=>ch.style.display="",4300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ D from Dm, B♭ from Gm, C♯ from A7 — the melody is built from each chord's own tones, so it inherits the minor mood automatically. Same method as Lesson 67, new mode. Today: composing in minor!");
-          else fb(false,"Tempo and clef don't create the fit. Listen to WHICH notes were chosen…");
+          if(i===0) fb(true,"✓ Both versions used the same chords — I, IV, V, I. Version B put IV and V in INVERSIONS, so the bass moved C-C-B-C instead of leaping C-F-G-C. Smoother bass movement is called good VOICE LEADING — today's lesson!");
+          else fb(false,"Both versions used the same chords. Listen again and follow only the LOWEST voice of each version.");
         });
       } }
   },
   objectives:[
-    "Compose a minor melody the same way as a major one",
-    "Analyze first: numerals below, symbols above",
-    "Build the melody from chord tones — including the raised 7th in V(7)",
-    "Add passing and neighboring tones",
-    "Begin and end on the root of i; V(7) precedes the last chord",
-    "Read the model's labels: R / 3 / 5 / U / L / P"
+    "Define a chord progression",
+    "Explain why I, IV and V can accompany most simple melodies",
+    "Swap V7 in place of V",
+    "Smooth a progression: IV → IV⁶₄, V → V⁶, V7 → V⁶₅",
+    "Find common tones and keep them in the same voice",
+    "Play the smooth pattern: I → IV⁶₄ → I → V⁶ (or V⁶₅) → I"
   ],
   steps:[
-    { say:"<b>Composing a Melody in a Minor Key:</b> Composing in a minor key follows the same process as composing in a major key. Build the melody from the tones of the chord progression. \u{1F447} <b>What changes when composing in a minor key?</b>",
-      try:{ type:"mc", choices:["Only the chords — the method stays identical","Everything about the method","You may not use passing tones"], answer:0,
-        success:"✓ Only the chords change — the process stays the same.",
-        fail:"Compare with Lesson 67's checklist…",
-        hint:"Method vs materials." } },
-    { say:"<b>Analyze the Chords:</b> Before writing the melody, identify the Roman numerals and chord symbols. In D minor: i = Dm · iv = Gm · V7 = A7. \u{1F447} <b>Why does A7 contain C♯?</b>",
-      try:{ type:"mc", choices:["D minor's harmonic scale raises its 7th, which is A7's 3rd","A7 always has sharps","It's borrowed from D major"], answer:0,
-        success:"✓ Lesson 60's logic rides along: the raised 7th (C♯) lives inside V7 and pulls to D.",
-        fail:"What note is a half step below D — and which chord owns it?",
-        hint:"The leading tone of D minor." } },
-    { say:"<b>Beginning and Ending:</b> Most minor melodies begin and end on the <b>root of the i chord</b>. A <b>V (or V7)</b> chord usually comes before the final i chord. \u{1F447} <b>Which note is the best opening note in D minor?</b>",
-      try:{ type:"mc", choices:["D","A","F"], answer:0,
-        success:"✓ D — the root of i, at both ends. The same rule as major.",
-        fail:"The root of the i chord in D minor is…",
-        hint:"The key's own name." } },
-    { say:"<b>Reading the Labels:</b> R = root · 3 = third · 5 = fifth · U = upper neighbor · L = lower neighbor · P = passing tone. Identify the labels. \u{1F447}",
+    { say:"<b>What is a Chord Progression?</b> A <b>chord progression</b> is a series of chords played one after another. The three primary chords — <b>I, IV, and V</b> — contain all seven notes of the major scale, so they can accompany many simple melodies. \u{1F447} <b>Together, which notes do I, IV, and V contain in C major?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:420} },
+      try:{ type:"mc", choices:["All seven: C-E-G + F-A-C + G-B-D","Only five of them","Only the notes with sharps"], answer:0,
+        success:"✓ C-D-E-F-G-A-B — every letter appears. Whatever note a simple melody sings, one of these three chords contains it. That's why they're the accompaniment kings.",
+        fail:"List them: I gives C,E,G; IV adds F,A; V adds B,D…",
+        hint:"Three chords × three notes, minus shared ones = 7 letters." } },
+    { say:"<b>Using V7:</b> The <b>V7 chord</b> is often used instead of <b>V</b> because it creates a <b>stronger pull</b> back to the tonic. \u{1F447} <b>In C major, which chord replaces G–B–D?</b>",
+      try:{ type:"mc", choices:["G-B-D-F (G7)","G-B-D-F♯","F-A-C-E"], answer:0,
+        success:"✓ Just add the minor 7th — Lesson 50's chord slides right into the progression.",
+        fail:"V7 = V + a minor 7th above the root…",
+        hint:"Lesson 50's chord." } },
+    { say:"<b>Why Use Inversions?</b> If every chord stays in <b>root position</b>, the bass often makes large leaps. Using inversions creates <b>smoother bass movement</b>. \u{1F447} <b>Listen to both examples. Which bass line sounds smoother?</b>",
       try:{ type:"custom",
-        hint:"In the chord → R/3/5. Outside it → P (passing), U (above), L (below).",
-        mount:(container,fb)=>MF_L69_labels(container,fb) } },
-    { say:"Compose a five-measure melody using the given progression: <b>i - iv - i - V7 - i</b> in D minor. \u{1F447}",
+        hint:"Follow only the lowest sound of each chord.",
+        mount:(container,fb)=>MF_L69_smooth(container,fb) } },
+    { say:"<b>Creating a Smoother Progression:</b> Changing the inversion of IV, V, or V7 helps the bass move by smaller intervals. This creates <b>better voice leading</b>. <b>Voice leading means moving each note as smoothly as possible from one chord to the next.</b> \u{1F447} <b>Which note moves down an octave to create IV⁶₄?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"IV⁶₄"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"B3",d:"w",label:"V⁶₅"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:580} },
+      try:{ type:"mc", choices:["Its 5th — the C","Its root — the F","Its 3rd — the A"], answer:0,
+        success:"✓ C drops to the bass — and since C is exactly the note IV shares with I, the bass doesn't move at all between I and IV⁶₄!",
+        fail:"Which note of F-A-C would land the bass on the tonic?",
+        hint:"The dropped note becomes the new bass — you want it to be C." } },
+    { say:"<b>Common Tones:</b> A <b>common tone</b> is a note shared by two neighboring chords. Keeping common tones in the same voice helps create <b>smooth voice leading</b>. \u{1F447} <b>Find the common tones:</b>",
       try:{ type:"custom",
-        hint:"Start with chord tones; D at both ends; try the C♯ over A7 for the strongest pull.",
-        mount:(container,fb)=>MF_L69_compose(container,fb) } },
-    { say:"<b>Adding Non-Harmonic Tones:</b> After building the melody with chord tones, add passing and neighboring tones. <b>Remember: start with chord tones. Add non-harmonic tones to make the melody smoother and more interesting.</b> \u{1F447} <b>Where do these tones usually appear?</b>",
-      try:{ type:"mc", choices:["On weak beats, between chord tones","On every strong beat","Only in the bass"], answer:0,
-        success:"✓ On weak beats, between chord tones — the same rule as in major.",
-        fail:"Same rule as in major…",
-        hint:"Chord tones on strong beats; decorations on weak beats." } },
-    { say:"<b>Try Another Key:</b> Apply the same process in E minor (Em - Am - B7 - Em). \u{1F447} <b>Which melody note creates the strongest pull to the tonic?</b>",
-      try:{ type:"mc", choices:["D♯ — the raised 7th, a half step under E","B — the root","A — the 7th"], answer:0,
-        success:"✓ D♯ — the leading tone, a half step below E. Place it near the end of the phrase.",
-        fail:"Which note of B-D♯-F♯-A is a half step from the tonic E?",
-        hint:"The raised 7th, always." } }
+        hint:"Compare the spellings letter by letter.",
+        mount:(container,fb)=>MF_L69_common(container,fb) } },
+    { say:"<b>A Smooth Chord Progression:</b> I → IV⁶₄ → I → V⁶ (or V⁶₅) → I. Each pair of neighboring chords shares at least one common tone. \u{1F447} <b>Which note is shared by I and V⁶₅?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"IV⁶₄"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"B3",d:"w",label:"V⁶₅"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:620} },
+      try:{ type:"mc", choices:["G — the 5th of I and the root of V7","C — it's in every chord","B — the leading tone"], answer:0,
+        success:"✓ G holds steady while B-D-F lean in around it. Every joint in this progression has its own little anchor.",
+        fail:"Spell both: C-E-G and G-B-D-F. One letter overlaps…",
+        hint:"I and V7 share exactly one note." } },
+    { say:"Arrange the chords to create the smoothest bass line. \u{1F447}",
+      try:{ type:"custom",
+        hint:"Keep the bass ON or NEXT TO C at every step.",
+        mount:(container,fb)=>MF_L69_build(container,fb) } }
   ],
   examples:[
-    { caption:"A composed D-minor melody with labels: chord tones (R, 3, 5) on the strong beats; a lower neighbor (L) decorates a weak one.",
-      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
-        {p:"D4",d:"q",label:"R"},{p:"F4",d:"q",label:"3"},{p:"A4",d:"q",label:"5"},{p:"G4",d:"q",label:"L"},{bar:"single"},
-        {p:"A4",d:"q",label:"5"},{p:"Bb4",d:"q",label:"3/iv"},{p:"G4",d:"h",label:"R/iv"},{bar:"single"},
-        {p:"A4",d:"q",label:"R/V7"},{p:"C#5",d:"q",label:"3/V7"},{p:"E5",d:"h",label:"5/V7"},{bar:"single"},
-        {p:"D5",d:"w",label:"R/i — home"},{bar:"final"}],width:800},
-      kb:{start:60,octaves:1.3333,labels:true} },
-    { caption:"The same melody twice: chord tones only, then with a passing tone and an upper neighbor added.",
-      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
-        {p:"D4",d:"h",label:"chord tones"},{p:"F4",d:"h"},{bar:"single"},{p:"A4",d:"h"},{p:"D5",d:"h"},{bar:"double"},
-        {p:"D4",d:"q",label:"+ P & U"},{p:"E4",d:"q",label:"P"},{p:"F4",d:"q"},{p:"G4",d:"q",label:"P"},{bar:"single"},{p:"A4",d:"q"},{p:"Bb4",d:"q",label:"U"},{p:"A4",d:"q"},{p:"D5",d:"q"},{bar:"final"}],width:800},
-      kb:{start:60,octaves:1.3333,labels:true} }
+    { caption:"The CHOPPY version: I-IV-I-V7-I, everything in root position. A fine progression — but watch and hear the bass LEAP: C up to F, back down, up to G…",
+      staff:{clef:"treble",tempo:70,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:620},
+      kb:{start:60,octaves:2,labels:true} },
+    { caption:"The SMOOTH version: I-IV⁶₄-I-V⁶₅-I. Common tones hold their places, the bass whispers C-C-C-B-C, and the same harmony suddenly sounds like one connected thought.",
+      staff:{clef:"treble",tempo:70,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"IV⁶₄"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"B3",d:"w",label:"V⁶₅"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:620},
+      kb:{start:59,octaves:1,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Label Sprint (45s)",
-      intro:"R, 3, 5, U, L, P — race the labels!",
-      miaIntro:"Six little letters! \u{26A1}",
-      spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["R","the melody note is the chord's root"],
-        ["3","the melody note is the chord's 3rd"],
-        ["5","the melody note is the chord's 5th"],
-        ["P","a passing tone between two chord tones"],
-        ["U","an upper neighboring tone"],
-        ["L","a lower neighboring tone"],
-        ["First & last note (minor)","the root of the i chord"],
-        ["Before the final chord","V or V7"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — label-literate!":null },
-    { type:"key-climb", title:"Game 2 · Play a Model Phrase",
-      intro:"Perform a labeled minor phrase: R-R-5-5-L-5-3-R in D minor!",
-      miaIntro:"Composer's fingers on! \u{1FA9C}",
-      spec:{seq:[62,62,69,69,67,69, 65,62],
-        names:["D (R)","D (R)","A (5)","A (5)","G (L — the lower neighbor!)","A (5)","F (3)","D (R — home)"],
-        start:57, octaves:1.1667, title:"A Pat-A-Pan-style phrase in D minor"},
-      result:(score)=>score!==null?"Model phrase performed!":null },
-    { type:"symbol-hunt", title:"Game 3 · Minor Safe-Note Spotter",
-      intro:"A D-minor chord is called — click the melody fragment that fits inside it!",
-      miaIntro:"Chord-tone check! \u{1F440}",
+    { type:"gen-race", title:"Game 1 · Toolkit Sprint (45s)",
+      intro:"Positions AND figures, triads AND sevenths — the full Unit 13 arsenal at speed!",
+      miaIntro:"Everything from Lessons 51-54! \u{1F9F0}",
+      spec:{gen:"inversion-id", params:{subject:"both", ask:"both"}, seconds:45},
+      result:(score)=>score>=8?score+" — the whole toolkit is sharp!":null },
+    { type:"key-climb", title:"Game 2 · Smooth-Progression Climb",
+      intro:"Play the smooth progression chord by chord: I, IV⁶₄, V⁶₅, I — bottom to top!",
+      miaIntro:"Feel the bass hold its ground! \u{1FA9C}",
+      spec:{seq:[60,64,67, 60,65,69, 59,62,65,67, 60,64,67],
+        names:["C (I: bass)","E","G","C (IV⁶₄: same bass!)","F","A","B (V⁶₅: half step down)","D","F","G","C (I: home)","E","G"],
+        start:59, octaves:1, title:"I → IV⁶₄ → V⁶₅ → I, note by note"},
+      result:(score)=>score!==null?"You just PLAYED smooth voice leading!":null },
+    { type:"symbol-hunt", title:"Game 3 · Progression Chord Spotter",
+      intro:"The four chords of the smooth progression — click what each round names!",
+      miaIntro:"Know your cast of characters! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"Fits Dm (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"q"},{p:"F4",d:"q"},{p:"A4",d:"q"},{p:"F4",d:"q"}],width:170}},
-        {label:"Fits Gm (G-B♭-D)", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"Bb4",d:"q"},{p:"D5",d:"q"},{p:"Bb4",d:"q"}],width:170}},
-        {label:"Fits A7 (A-C♯-E-G)", spec:{clef:"treble",notes:[{p:"A4",d:"q"},{p:"C#5",d:"q"},{p:"E5",d:"q"},{p:"G5",d:"q"}],width:170}},
-        {label:"Fits NO single chord", spec:{clef:"treble",notes:[{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"}],width:170}}]},
-      result:(score)=>score>=5?"Chord tones spotted on sight!":null },
-    { type:"term-race", title:"Game 4 · Minor Composer's Race",
-      intro:"The method, the frame, the raised 7th — everything from Lessons 68-69!",
-      miaIntro:"Compose at speed! \u{1F3C1}",
-      spec:{rounds:8, reverse:true, pool:[
-        ["Composing in minor","same method as major, minor chords"],
-        ["The melody's source","each measure's chord tones"],
-        ["The decorations","passing & neighboring tones (weak beats)"],
-        ["First & last note","root of i"],
-        ["The pre-final chord","V or V7"],
-        ["C♯ over A7 in D minor","the raised 7th — maximum pull"],
-        ["V7 of D minor","A7 (A-C♯-E-G)"],
-        ["V7 of E minor","B7 (B-D♯-F♯-A)"]]},
-      result:(score)=>score>=6?"Minor composing: mastered!":null }
+        {label:"I (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"IV⁶₄ (C-F-A)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}},
+        {label:"V⁶₅ (B-D-F-G)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"V⁶ (B-D-G)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"Cast memorized — you're the director now!":null },
+    { type:"term-race", title:"Game 4 · UNIT 13 GRAND FINALE Race",
+      intro:"The victory lap: inversions, figures, progressions — all five lessons!",
+      miaIntro:"Everything you've built this unit — GO! \u{1F3C6}",
+      spec:{rounds:10, reverse:true, pool:[
+        ["Chord progression","chords moving from one to another"],
+        ["Common tone","a note shared by two neighboring chords"],
+        ["Voice leading","moving each voice the shortest distance"],
+        ["1st inversion","the 3rd is in the bass"],
+        ["2nd inversion","the 5th is in the bass"],
+        ["3rd inversion","the 7th is in the bass (V7 only)"],
+        ["6/4","the figure for a 2nd-inversion triad"],
+        ["6/5","the figure for a 1st-inversion V7"],
+        ["The smooth formula","I → IV⁶₄ → I → V⁶(₅) → I"],
+        ["Why I, IV, V accompany melodies","together they contain the whole scale"]]},
+      result:(score)=>score>=8?"UNIT 13 CHAMPION — inversions conquered!":null }
   ],
-  practiceIntro:"20 practice questions — method, labels and the minor frame. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — progressions, common tones and the smoothing recipe. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["R","chord root in the melody"],["3","chord 3rd in the melody"],["5","chord 5th in the melody"],["P","passing tone"],["U","upper neighbor"],["L","lower neighbor"]], reverse:true}, count:6 },
-    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 },
-    { type:"mc", q:"Composing a melody in a minor key is…", choices:["similar to composing in a major key","entirely different","not possible with three chords"], answer:0,
-      explain:"Same process, different chords." },
-    { type:"mc", q:"What is the melody based on?", choices:["The tones in the chord accompaniment","Random chromatic notes","The drum part"], answer:0,
-      explain:"Chord tones are the source." },
-    { type:"mc", q:"The first and last note of a minor melody tends to be…", choices:["the root of the i chord","the 5th of V","the raised 7th"], answer:0,
-      explain:"Home at both ends — minor edition." },
-    { type:"mc", q:"In D minor, the V7 chord is…", choices:["A7 (A-C♯-E-G)","A minor 7","G7"], answer:0,
-      explain:"The raised C♯ makes it major-with-a-7th." },
-    { type:"mc", q:"Which note is a chord tone over G minor (G-B♭-D)?", choices:["B♭","C","E"], answer:0,
-      explain:"Only chord tones form the framework." },
-    { type:"mc", q:"The label 'U' under a melody note means…", choices:["upper neighboring tone","unison","up-bow"], answer:0,
-      explain:"A visit from above, then home." },
-    { type:"truefalse", q:"Non-harmonic tones make a composed minor melody more interesting.", answer:true,
-      explain:"They add smoothness and interest in both modes." },
-    { type:"truefalse", q:"A V or V7 usually precedes the final chord in a minor composition.", answer:true,
-      explain:"The frame rule survives the mode change." },
-    { type:"truefalse", q:"The labels under the melody notes name their chord-member roles.", answer:true,
-      explain:"Each names its note's chord-member role." },
-    { type:"truefalse", q:"The raised 7th should be avoided in a minor melody.", answer:false,
-      explain:"No — it is the leading tone inside V7, pulling to the tonic." }
+    { gen:"inversion-id", params:{subject:"both", ask:"both"}, count:6 },
+    { gen:"term-match", params:{subject:"term", pool:[["Chord progression","a sequence of moving chords"],["Common tone","a note two chords share"],["Voice leading","smooth movement between chords"],["Nearest motion","each voice moves the shortest distance"],["IV⁶₄","the IV chord with its 5th in the bass"]], reverse:true}, count:4 },
+    { type:"mc", q:"Chords that move from one to another are called a…", choices:["chord progression","scale","cadenza"], answer:0,
+      explain:"Progress = move forward." },
+    { type:"mc", q:"Why can I, IV, and V accompany many simple melodies?", choices:["together they contain all the notes of the major scale","they are the loudest chords","they never change position"], answer:0,
+      explain:"C-E-G + F-A-C + G-B-D = all seven letters." },
+    { type:"mc", q:"In many progressions, the V chord is replaced by…", choices:["V7","IV","vii"], answer:0,
+      explain:"Same function, stronger pull to I." },
+    { type:"mc", q:"A progression using only root-position chords often sounds…", choices:["choppy — the bass leaps","smoother than inversions","out of tune"], answer:0,
+      explain:"Root-to-root bass motion means constant 4th and 5th leaps." },
+    { type:"mc", q:"Which notes move down an octave in V7 to create V⁶₅?", choices:["the 3rd, 5th and 7th","only the root","just the 7th"], answer:0,
+      explain:"G-B-D-F → B-D-F-G = V⁶₅, bass one half step under the tonic." },
+    { type:"mc", q:"In the smooth pattern I → IV⁶₄ → I, the bass line is…", choices:["C — C — C (it never moves)","C — F — C","C — A — C"], answer:0,
+      explain:"IV⁶₄ borrows the common tone C as its bass." },
+    { type:"truefalse", q:"A common tone is a note shared by two consecutive chords.", answer:true,
+      explain:"Keep it in the same voice for smooth writing." },
+    { type:"truefalse", q:"Good voice leading moves every voice as far as possible.", answer:false,
+      explain:"The opposite — the SHORTEST possible distance." },
+    { type:"truefalse", q:"I and IV in C major share the note C.", answer:true,
+      explain:"C-E-G and F-A-C overlap on C." },
+    { type:"truefalse", q:"Inversions change which chords appear in a progression.", answer:false,
+      explain:"Same chords, new arrangements — that's the whole point." }
   ],
-  miaQuizIntro:"Quiz! Same checklist, minor palette — and let the C♯ do its magic.",
+  miaQuizIntro:"The Unit 13 finale quiz! Bass lines, common tones, figures — bring it all.",
   quiz:[
-    { type:"mc", q:"What is the basic process for composing a melody in a minor key?", choices:["The same as major: analyze, chord tones, non-harmonic tones, beginning and ending","A special minor-only method","Free improvisation with no rules"], answer:0,
-      explain:"One process, both modes.", hint:"Lesson 67's four steps." },
-    { type:"mc", q:"What should most melody notes come from?", choices:["The tones of the chord accompaniment","The chromatic scale","A different key"], answer:0,
-      explain:"Each measure's chord provides the notes that fit.", hint:"The hook's discovery." },
-    { type:"mc", q:"Begin by analyzing the progression and writing…", choices:["Roman numerals under the chords, symbols above the staff","the melody first","the tempo marking"], answer:0,
-      explain:"Analysis shows which notes fit each harmony.", hint:"Numerals below, symbols above." },
-    { type:"mc", q:"The first and last note of the melody tends to be…", choices:["the root of the i chord","any chord tone","the leading tone"], answer:0,
-      explain:"D to D in D minor.", hint:"The root of i." },
-    { type:"truefalse", q:"A V (or V7) usually precedes the last chord.", answer:true,
-      explain:"The universal cadence rule.", hint:"Fourth lesson in a row!" },
-    { type:"truefalse", q:"The labels U and L mark upper and lower neighboring tones.", answer:true,
-      explain:"The model's decoration marks.", hint:"Lesson 66 vocabulary." },
-    { type:"mc", q:"Which note is not part of the A7 chord?", choices:["D","A","C♯","E"], answer:0,
-      explain:"A7 = A-C♯-E-G; D is not a chord tone.", hint:"Spell A7." },
-    { type:"mc", q:"A melody measure over Dm reads A-G-A. The G is labeled…", choices:["L — lower neighboring tone","P — passing tone","5 — a chord tone"], answer:0,
-      explain:"A…A — same tone, from below → L.", hint:"Same landing = neighbor." },
-    { type:"mc", q:"A melody measure over Dm reads F-E-D. The E is labeled…", choices:["P — passing tone","U — upper neighbor","3 — a chord tone"], answer:0,
-      explain:"3 down to R through E → P.", hint:"Different landing = passing." },
-    { type:"mc", q:"Why does C♯ create a strong pull to D?", choices:["It is the leading tone, one half step below the tonic","It is the loudest available note","It cancels the minor key"], answer:0,
-      explain:"Leading tone → tonic.", hint:"What is a half step above C♯?" },
-    { type:"mc", q:"Composing over Em - Am - B7 - Em, your last note should be…", choices:["E","B","D♯"], answer:0,
-      explain:"Root of the final i.", hint:"The frame rule, transposed." },
-    { type:"mc", q:"Can two different melodies fit the same chord progression?", choices:["Yes — different melodies can use the same progression successfully","No — only one melody is correct","Only in major keys"], answer:0,
-      explain:"Chord tones offer many valid paths.", hint:"Uniqueness is the point." },
+    { type:"mc", q:"A chord progression is…", choices:["a sequence of chords","a single chord","a scale","a melody"], answer:0,
+      explain:"Chords in motion, one to the next.", hint:"Pro-GRESS." },
+    { type:"mc", q:"A common tone is…", choices:["a note shared by two consecutive chords","a repeated rhythm","the bass note","the highest note"], answer:0,
+      explain:"The shared note that connects neighboring chords.", hint:"Common = shared." },
+    { type:"mc", q:"Why are inversions used in chord progressions?", choices:["To create smoother voice leading","To make chords louder","To change the key","To add more notes"], answer:0,
+      explain:"Inversions let the bass walk instead of leap.", hint:"Think of version B in the hook." },
+    { type:"truefalse", q:"Good voice leading usually minimizes the distance each voice moves.", answer:true,
+      explain:"Move less → sound smoother.", hint:"The Memory Tip." },
+    { type:"truefalse", q:"The best voice leading always requires large leaps.", answer:false,
+      explain:"Exactly backwards — nearest motion wins.", hint:"Would you rather walk or jump?" },
+    { type:"mc", q:"Which pair of chords shares the note C?", choices:["C major and F major","C major and D major","G major and D major","D major and A major"], answer:0,
+      explain:"C-E-G and F-A-C both contain C.", hint:"Spell each pair." },
+    { type:"mc", q:"In the lesson's smooth I → IV → I → V7 → I progression, which inversion is used for IV?", choices:["2nd inversion (IV⁶₄)","root position","3rd inversion"], answer:0,
+      explain:"Its 5th (C) drops to the bass — the common tone with I.", hint:"Which figure kept the bass on C?" },
+    { type:"mc", q:"In the same smooth progression, which inversion is used for V (or V7)?", choices:["1st inversion (V⁶ or V⁶₅)","2nd inversion","root position"], answer:0,
+      explain:"3rd (B) in the bass — a half step from home.", hint:"The bass sang C-B-C." },
+    { type:"mc", q:"What is the bass line of I → IV⁶₄ → I → V⁶₅ → I in C major?", choices:["C - C - C - B - C","C - F - C - G - C","C - A - C - F - C"], answer:0,
+      explain:"Two common-tone basses plus one half-step neighbor.", hint:"Almost nothing moves." },
+    { type:"mc", q:"A student writes every chord in root position, creating large leaps between chords. What important idea is missing?", choices:["Voice leading","Key signature","Tempo","Meter"], answer:0,
+      explain:"Smooth part-writing = common tones + nearest motion.", hint:"It's today's title concept." },
+    { type:"mc", q:"Identify this progression chord (in C major).",
+      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:200},
+      choices:["IV⁶₄ — F major with C in the bass","IV in root position","I with a wrong note"], answer:0,
+      explain:"F-A-C flipped so its 5th anchors the bass.", hint:"Spell it in 3rds: F-A-C." },
+    { type:"mc", q:"Identify this progression chord (in C major).",
+      staff:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:200},
+      choices:["V⁶₅ — G7 with B in the bass","V7 in root position","I⁶"], answer:0,
+      explain:"G-B-D-F with the 3rd (B) in the bass: the smooth dominant.", hint:"Four notes — find the 2nd, root on top." },
     /* generated */
-    { gen:"term-match", params:{subject:"term", pool:[["R/3/5","chord-member labels"],["P","passing tone"],["U/L","the neighboring tones"],["The frame","root of i at both ends"]], reverse:true}, count:3 },
-    { gen:"rel-key", params:{ask:"both"}, count:2 },
-    { gen:"triad-quality", params:{quals:["M","m"]}, count:1 }
+    { gen:"inversion-id", params:{subject:"both", ask:"both"}, count:4 },
+    { gen:"term-match", params:{subject:"term", pool:[["Common tone","note shared by neighboring chords"],["Voice leading","shortest-distance part movement"],["IV⁶₄","IV with the common tone C in the bass"],["V⁶₅","V7 with the leading tone in the bass"]], reverse:true}, count:2 },
+    { gen:"degree-name", params:{ask:"name"}, count:2 }
   ],
   vocabulary:[
-    {term:"Composing in Minor", def:"Creating a melody for a minor-key progression — same steps as major: analyze, chord tones, non-harmonic tones, beginning and ending."},
-    {term:"R / 3 / 5 / U / L / P", def:"The full label set: chord members (root/3rd/5th) plus the non-harmonic tones (upper, lower, passing)."},
-    {term:"The Minor Frame", def:"Begin and end on the ROOT of i; V(7) — with its raised 7th — precedes the final chord."},
-    {term:"The C♯ Effect", def:"In D minor, the raised 7th inside A7 pulls straight to D — put it late in the phrase and the ending writes itself.",
-      staff:{clef:"treble",notes:[{p:"C#5",d:"h"},{p:"D5",d:"h"}],width:260}}
+    {term:"Chord Progression", def:"A sequence of chords moving from one to another — the harmonic engine of nearly all music."},
+    {term:"Common Tone", def:"A note shared by two consecutive chords. Keep it in the same voice for smoothness."},
+    {term:"Voice Leading", def:"The craft of moving each voice the shortest possible distance from chord to chord."},
+    {term:"IV⁶₄", def:"The IV chord in 2nd inversion — its 5th (the tonic note!) in the bass.",
+      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:130}},
+    {term:"V⁶₅", def:"The V7 chord in 1st inversion — the leading tone in the bass, a half step from home.",
+      staff:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:130}}
   ],
   mistakes:[],
   summary:[
-    "✔ Minor composing = <b>major composing with minor chords</b>: analyze → chord tones → non-harmonic tones → beginning and ending.",
-    "✔ Build from <b>chord tones</b>; add P/U/L on <b>weak beats</b>.",
-    "✔ Begin and end on the <b>root of i</b>; <b>V(7)</b> before the close.",
-    "✔ The labels: <b>R, 3, 5, U, L, P</b> — read them, then write with them.",
-    "✔ The <b>raised 7th</b> (C♯ in D minor) is your strongest melodic magnet."
+    "✔ A <b>chord progression</b> is chords in motion; <b>I, IV and V(7) contain the whole major scale</b>, so they can accompany most simple melodies.",
+    "✔ All-root-position writing sounds <b>choppy</b> — the bass must leap.",
+    "✔ The fixes: <b>IV → IV⁶₄</b> (5th drops), <b>V → V⁶</b>, <b>V7 → V⁶₅</b> (3rd in the bass).",
+    "✔ <b>Common tones stay put</b>; every other voice moves the <b>nearest</b> distance.",
+    "✔ The formula: <b>I → IV⁶₄ → I → V⁶(₅) → I</b>, bass line C-C-C-B-C. <b>UNIT 13 COMPLETE!</b> \u{1F389}"
   ],
   tips:[
-    "Give your minor melody ONE C♯ moment near the end — listeners will feel the homecoming without knowing why.",
-    "The 3rd of i (F in D minor) is the single most 'minor-sounding' melody note. Lean on it when you want maximum mood.",
-    "Label everything you write for a week — R/3/5/P/U/L. Analysis and composition are the same muscle.",
-    "Next lesson, something completely different: a 12-bar progression born in America's south — the BLUES."
+    "Play the smooth progression daily in C — then try it in G (bass G-G-G-F♯-G) and F (bass F-F-F-E-F). The shape transfers to every major key.",
+    "Hymns, pop ballads, film scores: when the harmony sounds like it's breathing rather than jumping, you're hearing common tones held in place.",
+    "Arranger's habit: before moving ANY voice, ask \u{201C}can it stay?\u{201D} The best move is often no move.",
+    "Unit 14 opens a new world: what happens to scales — and all these chords — in MINOR keys…"
   ],
-  rewards:{ badge:"Minor Composer", icon:"\u{1F58B}\u{FE0F}" },
+  rewards:{ badge:"Smooth Operator — Unit 13 Champion", icon:"\u{1F30A}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! You can compose minor melodies with confidence. \u{1F58B}\u{FE0F}\u{1F389}",
-  miaPass:"Passed! Two modes of composing conquered. Now — the blues is calling…",
+  miaPerfect:"A PERFECT finale to Unit 13 — your progressions are beautifully smooth! \u{1F30A}\u{1F3C6}\u{1F389}",
+  miaPass:"Passed — and Unit 13 is COMPLETE! Inversions, figures, progressions: all yours. \u{1F389}",
   mia:{
     hook:{ label:"the welcome",
-      explain:"The melody drew from each chord's own tones — D from Dm, B♭ from Gm, C♯ from A7 — inheriting the minor mood note by note.",
-      play:()=>{const chords=[[50,62,65,69],[43,58,62,67],[45,61,64,67],[50,62,65,69]],mel=[74,70,73,74];chords.forEach((row,i)=>{row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2));MFAudio.tone(mel[i],.8,i*.9,.46);});} },
-    learn:{ label:"minor composing",
-      explain:"Same process as major. i=Dm, iv=Gm, V7=A7 (with the raised C♯). Begin and end on the root of i; add P/U/L on weak beats.",
-      hint:"Analyze → chord tones → non-harmonic tones → beginning and ending.",
-      play:()=>{[62,65,69,67,69].forEach((m,i)=>MFAudio.tone(m,.5,i*.42,.42));} },
+      explain:"Both versions were I-IV-V-I. Version B flipped IV and V into inversions so the bass walked C-C-B-C instead of leaping C-F-G-C.",
+      play:()=>{const B=[[48,64,67,72],[48,65,69,72],[47,67,71,74],[48,64,67,72]];B.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.28)));} },
+    learn:{ label:"smooth progressions",
+      explain:"I-IV-V(7) cover the whole scale. Root-only = choppy; IV⁶₄ and V⁶(₅) keep common tones in place and the bass moving by step: I → IV⁶₄ → I → V⁶₅ → I.",
+      hint:"Common tones stay; everything else moves the least.",
+      play:()=>{[[48,64,67,72],[48,65,69,72],[48,64,67,72],[47,67,71,74,77],[48,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.26)));} },
     example:{ label:"the examples",
-      explain:"Example 1 is a fully labeled minor melody; example 2 shows the same melody before and after adding non-harmonic tones." },
+      explain:"Example 1 is the choppy all-root version; example 2 is the smooth rewrite — same chords, walking bass line C-C-C-B-C." },
     game:{ label:"the games",
-      explain:"Sprint the labels, perform a model phrase, spot chord tones, then race the composer facts.",
-      hint:"R/3/5 inside the chord; P/U/L outside it." },
+      explain:"Sprint the whole toolkit, physically play the smooth progression, spot its four chords, then run the Unit 13 victory lap.",
+      hint:"Bass first. Always bass first." },
     quiz:{ label:"this question",
-      explain:"Everything reduces to the four steps — and in minor, the raised 7th inside V7 pulls to the tonic.",
-      play:()=>{[45,61,64,67].forEach(m=>MFAudio.tone(m,.8,0,.3));[50,62,65,69].forEach(m=>MFAudio.tone(m,1,.9,.3));} }
+      explain:"Two ideas answer nearly everything: common tones stay in place, and inversions exist to shorten the bass's journey.",
+      play:()=>{[[48,64,67,72],[47,67,71,74,77],[48,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.28)));} }
   }
 };

@@ -1,288 +1,348 @@
-/* Lesson 14 — Repeat Sign, 1st and 2nd Endings (AEMT Book 1, Unit 4)
-   Built from drafts/UNIT 4 – Lesson 14.md.
-   QA note honored: the sequence "Play → 1st Ending → Repeat → Skip 1st → 2nd Ending"
-   is rehearsed visually and interactively in steps, games and quiz.
+/* Lesson 14 (2.5, formerly L10) — 2/4 Time Signature (AEMT Book 1, Unit 3) — v2 COLLEGE-TONE REWRITE
+   Content grounded in AEMT1 p.16 (definitions, beat-value table, whole-rest rule,
+   half-rest/whole-note prohibition) and its exercise types (complete the measures,
+   circle incorrect measures, draw bar lines). Per instructor (DD-26): no "march/
+   waltz", no "STRONG-weak" — textbook/dictionary-based explanations only.
+   Option styles per DD-27: notation cards + A/B/C/D worksheet choices.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* which-ending drill (unique L14 prefix) */
-function MF_L14_whichEnding(container,fb){
-  const rounds=[
-    {q:"FIRST time through the section — which ending do you play?",a:0,why:"First trip → 1st ending, then back to the repeat sign."},
-    {q:"You repeated the section. SECOND time through — which ending?",a:1,why:"Second trip → SKIP the 1st ending, play the 2nd."},
-    {q:"Second time through, you reach the 1st ending bracket. What do you do?",a:2,why:"Skip it! Jump straight over to the 2nd ending."},
-    {q:"You just played the 1st ending. Where do you go now?",a:3,why:"Back to the repeat sign (or the beginning) to play the section again."}];
-  let i=0;
-  container.innerHTML=`<div class="big-q we-q" style="text-align:center"></div>
-    <div class="choices we-ch"><button>1st Ending</button><button>2nd Ending</button><button>Skip it</button><button>Go back and repeat</button></div>`;
-  const q=container.querySelector(".we-q"), ch=container.querySelector(".we-ch");
-  function ask(){ q.textContent=`Situation ${i+1} of ${rounds.length}: `+rounds[i].q; }
-  [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-    const cur=rounds[i];
-    if(bi===cur.a){ MFAudio.yay(); i++;
-      if(i>=rounds.length){ ch.style.display="none"; q.textContent="Roadmap mastered!";
-        fb(true,"✓ All four situations handled — first trip takes exit 1, second trip skips to exit 2!"); }
-      else { fb(true,"✓ "+cur.why+" Next situation…"); ask(); } }
-    else { MFAudio.tone(40,.25); fb(false,cur.why); }
-  });
-  ask();
-}
-
 LESSON_CONTENT[14]={
-  welcome:"Unit 4! Today music learns to say “again!” \u{1F501}",
+  welcome:"Unit 3 — a new time signature.",
   hook:{
-    say:"Have you ever listened to a song that repeats your favorite part? Instead of writing the same music twice, composers use <b>repeat signs</b> — a double bar with <b>two dots</b>. \u{1F447} <b>Which bar line says “play it again”?</b>",
+    say:"You know 4/4. Now listen to this example — there is a two-beat count-off, then the music. <b>Count along: how many beats are in each measure?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div class="hk-staff"></div>
-          <div class="choices hk-ch"><button>1</button><button>2</button></div>`;
-        Staff.render(container.querySelector(".hk-staff"),{clef:"treble",
-          notes:[{bar:"final",label:"1",x:232},{bar:"repeat-end",label:"2"}],width:420});
-        const ch=container.querySelector(".hk-ch"); ch.classList.add("chips");
+        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ Count-off, then the example</button></div>
+          <div class="choices chips hk-ch" style="display:none"><button>2</button><button>3</button><button>4</button></div>`;
+        const ch=container.querySelector(".hk-ch");
+        container.querySelector(".hk-play").onclick=()=>{
+          const spb=60/92;
+          for(let k=0;k<2;k++) MFAudio.click(k*spb,.55,k===0);
+          const mel=[[60,1],[64,1],[67,1],[64,1],[60,2]]; let b=2;
+          mel.forEach(([m,len])=>{ MFAudio.tone(m,len*spb*.9,b*spb); b+=len; });
+          for(let k=2;k<8;k+=1) MFAudio.click(k*spb,k%2===0?.5:.3,k%2===0);
+          setTimeout(()=>{ ch.style.display=""; },8*spb*1000+300);
+        };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===1) fb(true,"✓ Number 2 — the two DOTS make it a repeat sign: “go back and play the section again!” (Number 1, with no dots, just means the end.)");
-          else fb(false,"That's the plain double bar — THE END. Look for the one with two little dots.");
+          if(i===0) fb(true,"✓ Two beats per measure. This is <b>2/4 time</b> — today's lesson.");
+          else fb(false,"Listen again and count with the clicks — the pattern repeats every TWO beats.");
         });
       } }
   },
   objectives:[
-    "Identify repeat signs",
-    "Explain how repeat signs work",
-    "Follow 1st and 2nd endings correctly",
-    "Know which ending to skip on the repeat",
-    "Read simple musical roadmaps",
-    "Perform repeated sections accurately"
+    "Define the 2/4 time signature",
+    "State the beat values of notes and rests in 2/4 time",
+    "Compare 2/4 with 4/4",
+    "Complete measures in 2/4 using notes and rests",
+    "Identify measures with an incorrect number of beats",
+    "Place bar lines correctly in 2/4 time"
   ],
   steps:[
-    { say:"A <b>repeat sign</b> is a double bar with <b>two dots facing the music</b>. When you reach it, go back and <b>play the section again</b>. If there is <b>no facing repeat sign earlier</b>, return to the <b>very beginning</b> — notice the front of this line has no repeat sign at all. \u{1F447} <b>What does a repeat sign tell you to do?</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"4/4",notes:[
-        {p:"C4",d:"h",label:"1"},{p:"E4",d:"h"},{bar:"single"},
-        {p:"G4",d:"h",label:"2"},{p:"E4",d:"h"},{bar:"single"},
-        {p:"F4",d:"h",label:"3"},{p:"D4",d:"h"},{bar:"single"},
-        {p:"E4",d:"h",label:"4"},{p:"C4",d:"h"},{bar:"repeat-end"}],width:470} },
+    { say:"In <b>2/4 time</b>: the <b>2</b> means there are <b>2 beats per measure</b>; the <b>4</b> means the <b>quarter note receives 1 beat</b>. \u{1F447} <b>What does the bottom number 4 mean?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"2/4",notes:[{p:"C4",d:"q",label:"1"},{p:"E4",d:"q",label:"2"},{bar:"single"},{p:"G4",d:"h",label:"1-2"},{bar:"final"}],width:400} },
       try:{ type:"mc",
-        choices:["Go back and play the section again","Stop playing","Play louder"], answer:0,
-        success:"✓ The dots say “again!” — one more trip through the section.",
-        fail:"Two dots + double bar = REPEAT.",
-        hint:"What does “repeat” mean?" } },
-    { say:"Now the clever part: <b>1st and 2nd endings</b>. First time: play ending <b>1</b>, then repeat. Second time: <b>SKIP ending 1</b> and play ending <b>2</b>. \u{1F447} <b>Watch and listen — the player takes BOTH trips:</b>",
-      try:{ type:"custom",
-        hint:"Trip 1: A → B → ending 1 → repeat. Trip 2: A → B → skip → ending 2.",
-        mount:(container,fb)=>{
-          const A={p:"C4",d:"h",label:"A"}, B={p:"E4",d:"h",label:"B"},
-                E1={p:"G4",d:"w",label:"1st ending"}, E2={p:"C5",d:"w",label:"2nd ending"};
-          const spec={clef:"treble",time:"4/4",tempo:110,
-            notes:[A,B,{bar:"single"},E1,{bar:"repeat-end"},E2,{bar:"final"}],
-            endings:[{from:3,to:3,n:1},{from:5,to:5,n:2}],width:460};
-          container.innerHTML=`<div class="re-staff"></div>
-            <div style="text-align:center"><button class="play re-play">▶ Play both trips</button></div>
-            <div class="big-q re-q" style="text-align:center"></div>`;
-          const api=Staff.render(container.querySelector(".re-staff"),spec);
-          const q=container.querySelector(".re-q");
-          container.querySelector(".re-play").onclick=()=>{
-            const spb=60/110;
-            const order=[[0,0],[1,2],[3,4],[0,8],[1,10],[5,12]]; /* [itemIndex, startBeat] — trip2 skips ending 1 */
-            q.textContent="Trip 1: A → B → 1st ending → repeat…";
-            order.forEach(([idx,beat])=>{
-              const n=spec.notes[idx];
-              setTimeout(()=>api.highlight(idx), beat*spb*1000);
-              MFAudio.tone(MFAudio.midi(n.p), (n.d==="w"?4:2)*spb*.9, beat*spb);
-            });
-            setTimeout(()=>{ q.textContent="Trip 2: A → B → SKIP 1st → 2nd ending!"; }, 8*spb*1000);
-            setTimeout(()=>{ api.highlight(null); q.textContent="";
-              fb(true,"✓ Hear it? Trip 1 ended on the LOW note (1st ending), trip 2 skipped it and ended HIGH (2nd ending)."); }, 16.5*spb*1000);
-          };
-        } } },
-    { say:"Your turn to navigate. \u{1F447} <b>What do you do in each situation?</b>",
-      try:{ type:"custom",
-        hint:"First trip → 1st ending. Second trip → skip 1st, play 2nd.",
-        mount:(container,fb)=>MF_L14_whichEnding(container,fb) } },
-    { say:"Why bother? Repeat signs <b>save space</b> — one written section, played twice. A whole verse-chorus song can fit on one page! \u{1F447} <b>Why do composers use repeat signs?</b>",
+        choices:["The quarter note receives 1 beat","There are 4 beats per measure","Only 4 measures may be written"], answer:0,
+        success:"✓ The bottom 4 assigns the beat to the quarter note — exactly as in 4/4.",
+        fail:"The bottom number names the note that receives one beat.",
+        hint:"Same bottom number as 4/4." } },
+    { say:"2/4 and 4/4 <b>both have 4 as the bottom number</b>, so a quarter note receives 1 beat in each. <b>The difference:</b> 2/4 has <b>2 beats per measure</b>, while 4/4 has <b>4</b>. \u{1F447} <b>What is the difference between 2/4 and 4/4?</b>",
       try:{ type:"mc",
-        choices:["To save space and avoid writing music twice","To make the piece louder","To confuse performers"], answer:0,
-        success:"✓ One section, two trips — half the ink, same music!",
-        fail:"Think practically: what would the page look like WITHOUT repeat signs?",
-        hint:"Composers are efficient." } },
-    { say:"Put the whole journey in order. \u{1F447} <b>Tap the performance steps in sequence:</b>",
+        choices:["The number of beats per measure","Which note receives the beat","The speed of the music"], answer:0,
+        success:"✓ Only the measure length differs — 2 beats versus 4. The beat note is the same.",
+        fail:"Both share the bottom 4 — compare the TOP numbers.",
+        hint:"Compare 2 and 4 on top." } },
+    { say:"Beat values in <b>2/4 time</b>:<br>\u2022 Quarter note or quarter rest = <b>1 beat</b><br>\u2022 Half note = <b>2 beats</b><br>\u2022 A FULL measure of silence is always written with the <b>whole rest</b> \u2014 in every time signature.<br><br>One writing rule to remember: <b>a half rest and a whole note are never used in 2/4 time.</b><br>\u{1F447} <b>Which two symbols are never used in 2/4 time?</b>",
+      try:{ type:"mc",
+        choices:["A half rest and a whole note","A quarter note and a quarter rest","A half note and a whole rest"], answer:0,
+        success:"✓ Correct — in 2/4, silence for the full measure is written with the WHOLE rest, and the whole note simply doesn't fit.",
+        fail:"Check the rule text again: two symbols are excluded from 2/4 writing.",
+        hint:"One rest and one note are excluded." } },
+    { say:"<b>Complete the measures.</b> Each measure below is missing one symbol. Choose the card that completes it with exactly <b>2 beats</b>. \u{1F447}",
       try:{ type:"custom",
-        hint:"Play through, take exit 1, go back, play through, take exit 2.",
+        hint:"Add the beats already in the measure, then supply the difference.",
         mount:(container,fb)=>{
-          const seq=["Play A","Play B","1st Ending","Repeat!","Play A again","Play B again","Skip to 2nd Ending"];
-          let next=0;
-          container.innerHTML=`<div class="big-q po-q" style="text-align:center">Tap the steps in performance order:</div>
-            <div class="po-done" style="text-align:center;font-weight:700;min-height:30px;color:var(--primary)"></div>
-            <div class="choices po-ch"></div>`;
-          const done=container.querySelector(".po-done"), ch=container.querySelector(".po-ch");
-          [...seq].sort(()=>Math.random()-.5).forEach(s=>{
-            const b=document.createElement("button"); b.textContent=s;
+          const rounds=[
+            {given:[{p:"C4",d:"q",label:"1"}],need:1,accept:["q","Q"],text:"one more beat"},
+            {given:[],need:2,accept:["h","W"],text:"a full two beats"},
+            {given:[{rest:"q",label:"1"}],need:1,accept:["q","Q"],text:"one more beat"}];
+          const CARDS=[["q","Quarter Note",{p:"E4",d:"q"},1],["h","Half Note",{p:"E4",d:"h"},2],
+                       ["Q","Quarter Rest",{rest:"q"},1],["W","Whole Rest",{rest:"w"},2]];
+          let i=0;
+          container.innerHTML=`<div class="big-q cm-q" style="text-align:center"></div><div class="cm-staff"></div>
+            <div class="cm-cards" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:8px"></div>`;
+          const q=container.querySelector(".cm-q"), st=container.querySelector(".cm-staff"), grid=container.querySelector(".cm-cards");
+          CARDS.forEach(([t,name,item,beats])=>{
+            const b=document.createElement("button");
+            b.className="notecard";
+            b.style.cssText="border-radius:10px;padding:6px 10px;min-width:108px";
+            const d=document.createElement("div"); b.appendChild(d);
+            Staff.render(d,{clef:"none",notes:[item],width:100});
+            const nm=document.createElement("div"); nm.style.cssText="font-weight:700;font-size:13px"; nm.textContent=name; b.appendChild(nm);
             b.onclick=()=>{
-              if(s===seq[next]){ next++; b.disabled=true; MFAudio.tone(60+next*2,.25);
-                done.textContent=seq.slice(0,next).join(" → ");
-                if(next===seq.length){ ch.style.display="none";
-                  fb(true,"✓ The full roadmap: through the section, exit 1, back, through again, straight to exit 2!"); } }
-              else { MFAudio.tone(40,.25); fb(false,`Not yet — what happens ${next===0?"first":"after “"+seq[next-1]+"”"}?`); }
+              const cur=rounds[i];
+              if(cur.accept.includes(t)){
+                Staff.render(st,{clef:"treble",time:"2/4",notes:[...cur.given,item,{bar:"final"}],width:320});
+                if(!item.rest) MFAudio.tone(64,beats*.45); else MFAudio.click(0,.35);
+                i++;
+                if(i>=rounds.length){ grid.style.display="none"; q.textContent="All measures completed.";
+                  fb(true,"✓ Every measure now holds exactly 2 beats — notes and rests both count toward the total."); }
+                else { fb(true,"✓ Exactly 2 beats. Next measure…"); setTimeout(ask,1200); }
+              } else {
+                const sum=cur.given.reduce((s,g)=>s+(g.d==="h"?2:1),0);
+                fb(false,`This measure already holds ${sum} beat${sum!==1?"s":""} — it needs ${cur.text} (${cur.need}). And remember: no half rests in 2/4.`);
+              }
             };
-            ch.appendChild(b);
+            grid.appendChild(b);
           });
+          function ask(){
+            const cur=rounds[i];
+            Staff.render(st,{clef:"treble",time:"2/4",notes:[...cur.given,{bar:"final"}],width:320});
+            q.textContent=`Measure ${i+1} of ${rounds.length}: choose the symbol that completes it.`;
+          }
+          ask();
+        } } },
+    { say:"<b>Find the measure with the incorrect number of beats.</b> Three measures are correct; one is not. \u{1F447} <b>Click A, B, C or D:</b>",
+      try:{ type:"custom",
+        hint:"Count each measure against the top number: exactly 2 beats.",
+        mount:(container,fb)=>{
+          const rounds=[
+            {items:[[{p:"C4",d:"q"},{p:"D4",d:"q"}],[{p:"E4",d:"h"}],[{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"E4",d:"q"}],[{rest:"q"},{p:"D4",d:"q"}]],bad:2,why:"C holds 3 beats — one too many for 2/4."},
+            {items:[[{p:"G4",d:"h"}],[{p:"E4",d:"q"}],[{p:"C4",d:"q"},{rest:"q"}],[{rest:"w"}]],bad:1,why:"B holds only 1 beat — a 2/4 measure needs exactly 2. (D is fine: the whole rest fills any full measure.)"}];
+          let r=0;
+          container.innerHTML=`<div class="big-q ic-q" style="text-align:center"></div><div class="ic-staff"></div>
+            <div class="choices chips ic-ch"><button>A</button><button>B</button><button>C</button><button>D</button></div>`;
+          const q=container.querySelector(".ic-q"), st=container.querySelector(".ic-staff"), ch=container.querySelector(".ic-ch");
+          function ask(){
+            const cur=rounds[r], items=[], spans=[];
+            cur.items.forEach((meas,mi)=>{
+              const s0=items.length;
+              meas.forEach(n=>items.push(Object.assign({},n)));
+              spans.push([s0,items.length-1]);
+              items.push({bar:mi<cur.items.length-1?"single":"final"});
+            });
+            Staff.render(st,{clef:"treble",time:"2/4",notes:items,width:470});
+            const svg=st.querySelector("svg");
+            const startX=110, L=items.length;
+            const xAt=i2=> (items[i2]&&items[i2].bar!==undefined&&i2===L-1)? 470-16 : startX+i2*((470-40-startX)/(L-1));
+            let prev=startX-24;
+            const NS="http://www.w3.org/2000/svg";
+            spans.forEach(([s0,s1],mi)=>{
+              const nxt=xAt(s1+1);
+              const x=(prev+nxt)/2;
+              const tx=document.createElementNS(NS,"text");
+              tx.setAttribute("x",x);tx.setAttribute("y",127);tx.setAttribute("text-anchor","middle");
+              tx.setAttribute("class","lbl");tx.setAttribute("font-weight","800");tx.textContent="ABCD"[mi];
+              svg.appendChild(tx);
+              prev=nxt;
+            });
+            q.textContent=`Line ${r+1} of ${rounds.length}: which measure has the INCORRECT number of beats?`;
+          }
+          [...ch.children].forEach((b,bi)=>b.onclick=()=>{
+            const cur=rounds[r];
+            if(bi===cur.bad){ MFAudio.click(0,.4,true); r++;
+              if(r>=rounds.length){ ch.style.display="none"; q.textContent="Both lines checked.";
+                fb(true,"✓ You found every faulty measure — counting against the top number never fails."); }
+              else { fb(true,"✓ "+cur.why+" Next line…"); ask(); } }
+            else { MFAudio.tone(40,.25); fb(false,"Count that measure again — it holds exactly 2 beats. "+cur.why); }
+          });
+          ask();
+        } } },
+    { say:"Let's organize the melody!<br>Count the beats from left to right.<br>Every time you reach <b>2 beats</b>, place a bar line.<br>There are only <b>TWO</b> correct places.<br>\u{1F447} <b>Click the correct two positions:</b>",
+      try:{ type:"custom",
+        hint:"Count from the start: a bar line belongs after every 2 beats.",
+        mount:(container,fb)=>{
+          const seq=[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"h"},{p:"D4",d:"q"},{p:"C4",d:"q"}];
+          const cand=[{g:0,letter:"A"},{g:1,letter:"B"},{g:2,letter:"C"},{g:3,letter:"D"}];
+          const correct=new Set([1,2]);
+          const placed=new Set(), W=460, NS="http://www.w3.org/2000/svg";
+          container.innerHTML=`<div class="bl-staff"></div><div class="choices chips bl-ch"></div>`;
+          const st=container.querySelector(".bl-staff"), ch=container.querySelector(".bl-ch");
+          cand.forEach(c=>{ const b=document.createElement("button"); b.textContent=c.letter;
+            b.onclick=()=>pick(c,b); ch.appendChild(b); });
+          function items(){
+            const out=[]; seq.forEach((n,j)=>{ out.push(n); if(placed.has(j)) out.push({bar:"single"}); });
+            if(placed.size===correct.size) out.push({bar:"final"});
+            return out;
+          }
+          function draw(){
+            const its=items();
+            Staff.render(st,{clef:"treble",time:"2/4",notes:its,width:W});
+            const svg=st.querySelector("svg");
+            const startX=110, L=its.length;
+            const xAt=i2=> L===1? (startX+W-40)/2 : startX+i2*((W-40-startX)/(L-1));
+            const idxMap=[]; let k=0;
+            seq.forEach((n,j)=>{ idxMap[j]=k; k++; if(placed.has(j)) k++; });
+            cand.forEach(c=>{
+              if(placed.has(c.g)) return;
+              const xa=xAt(idxMap[c.g]), xb=c.g+1<seq.length? xAt(idxMap[c.g+1]) : W-16;
+              const x=(xa+xb)/2;
+              const ln=document.createElementNS(NS,"line");
+              ln.setAttribute("x1",x);ln.setAttribute("y1",112);ln.setAttribute("x2",x);ln.setAttribute("y2",96);
+              ln.setAttribute("stroke","#33415c");ln.setAttribute("stroke-width","2");
+              const hd=document.createElementNS(NS,"polygon");
+              hd.setAttribute("points",`${x-4},99 ${x+4},99 ${x},91`); hd.setAttribute("fill","#33415c");
+              const tx=document.createElementNS(NS,"text");
+              tx.setAttribute("x",x);tx.setAttribute("y",127);tx.setAttribute("text-anchor","middle");
+              tx.setAttribute("class","lbl");tx.setAttribute("font-weight","800");tx.textContent=c.letter;
+              svg.appendChild(ln);svg.appendChild(hd);svg.appendChild(tx);
+            });
+          }
+          function pick(c,b){
+            if(placed.has(c.g)||b.disabled) return;
+            if(correct.has(c.g)){
+              placed.add(c.g); b.disabled=true; MFAudio.yay();
+              draw();
+              if([...correct].every(g=>placed.has(g))){
+                ch.style.display="none";
+                const spec={clef:"treble",time:"2/4",tempo:92,notes:items(),width:W};
+                const api=Staff.render(st,spec); Staff.play(spec,api);
+                fb(true,"✓ Bar lines after beats 2 and 4 — three measures of exactly 2 beats each, closed by a double bar.");
+              } else fb(true,"✓ A bar line belongs there. One more…");
+            } else { MFAudio.tone(40,.25);
+              fb(false,"Count from the last bar line — a bar line belongs exactly where the count reaches 2."); }
+          }
+          draw();
         } } }
   ],
   examples:[
-    { caption:"Four measures ending with a repeat sign. There is no facing sign at the front, so the performer returns to the very BEGINNING and plays all four measures again.",
-      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
-        {p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"h"},{bar:"single"},
-        {p:"F4",d:"h"},{p:"D4",d:"h"},{bar:"single"},
-        {p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"h"},{bar:"single"},
-        {p:"E4",d:"h"},{p:"C4",d:"h"},{bar:"repeat-end"}],
-        playOrder:[0,1,2,4,5,7,8,9,11,12, 0,1,2,4,5,7,8,9,11,12],width:470} },
-    { caption:"1st and 2nd endings: trip one takes bracket 1 and repeats; trip two skips to bracket 2 and finishes. Press play and follow BOTH trips.",
-      staff:{clef:"treble",tempo:100,time:"4/4",notes:[{p:"C4",d:"h",label:"A"},{p:"E4",d:"h",label:"B"},{bar:"single"},{p:"G4",d:"w",label:"1st"},{bar:"repeat-end"},{p:"C5",d:"w",label:"2nd"},{bar:"final"}],endings:[{from:3,to:3,n:1},{from:5,to:5,n:2}],
-      playOrder:[0,1,3, 0,1,5],width:460} }
+    { caption:"A line in 2/4 — count “1 2 | 1 2” with the playback. The half note fills a complete measure.",
+      staff:{clef:"treble",tempo:92,time:"2/4",notes:[{p:"C4",d:"q",label:"1"},{p:"E4",d:"q",label:"2"},{bar:"single"},{p:"G4",d:"q",label:"1"},{p:"E4",d:"q",label:"2"},{bar:"single"},{p:"C4",d:"h",label:"1-2"},{bar:"final"}],width:440} },
+    { caption:"Rests in 2/4: the quarter rest takes 1 beat; a full measure of silence is written with the whole rest.",
+      staff:{clef:"treble",tempo:92,time:"2/4",notes:[{p:"D4",d:"q",label:"1"},{rest:"q",label:"2"},{bar:"single"},{rest:"w",label:"1-2"},{bar:"single"},{p:"D4",d:"h",label:"1-2"},{bar:"final"}],width:440} }
   ],
   games:[
-    { type:"order-tap", title:"Game 1 · Roadmap Runner",
-      intro:"Tap the performance steps in the correct order — before the music gets lost!",
-      miaIntro:"Run the roadmap — every step in order! \u{1F3C3}",
-      spec:{title:"Tap the journey in order — repeat trip included!",
-        sequence:["Play the section","1st Ending","Back to the repeat sign","Play the section again","Skip the 1st Ending","2nd Ending"]},
-      result:(stars)=>stars>=3?"A flawless journey — GPS-level navigation!":null },
-    { type:"symbol-hunt", title:"Game 2 · Sign Hunt",
-      intro:"Repeat sign, double bar, final bar — they're all cousins. Click the one Mia names!",
-      miaIntro:"Cousins that look alike — spot the DOTS! \u{1F50D}",
+    { type:"rhythm-tap", title:"Game 1 · 2/4 Rhythm Tap",
+      intro:"Listen to a 2/4 measure, then tap it back precisely. The count-off gives you the tempo.",
+      miaIntro:"Two-beat measures — listen, then tap. \u{1F3AF}",
+      spec:{tempo:92, rounds:3, beatsPerBar:2, patterns:[["q","q"],["h"],["q","rq"],["rq","q"]]},
+      result:(score)=>score>=4?"Precise tapping in 2/4 — well done.":null },
+    { type:"measure-judge", title:"Game 2 · Correct or Incorrect?",
+      intro:"Does each measure hold exactly <b>2 beats</b>?",
+      miaIntro:"Check every measure against the top number. \u{1F50D}",
+      spec:{rounds:8, beats:2},
+      result:(score)=>score>=7?"Sharp beat-counting — barely a miss.":null },
+    { type:"measure-build", title:"Game 3 · Complete the Measure",
+      intro:"Fill 2/4 measures with exactly <b>2 beats</b>, using the note cards. Find both combinations.",
+      miaIntro:"Build with the cards — exactly two beats. \u{1F3D7}\u{FE0F}",
+      spec:{beats:2, unique:true, rounds:2},
+      result:(stars)=>stars>=3?"Both combinations found without overflow.":null },
+    { type:"symbol-hunt", title:"Game 4 · Time Signature Identification",
+      intro:"2/4, 3/4, 4/4 and C — identify the one named. Read the top number carefully.",
+      miaIntro:"Identify each signature at sight. \u{1F3AF}",
       spec:{rounds:6, pool:[
-        {label:"Repeat Sign", spec:{clef:"treble",notes:[{bar:"repeat-end"}]}},
-        {label:"Double Bar (end of piece)", spec:{clef:"treble",notes:[{bar:"final"}]}},
-        {label:"Single Bar Line", spec:{clef:"treble",notes:[{bar:"single"}]}},
-        {label:"1st Ending Bracket", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{bar:"repeat-end"}],endings:[{from:0,to:0,n:1}]}},
-        {label:"Whole Note", spec:{clef:"treble",notes:[{p:"B4",d:"w"}]}}]},
-      result:(score)=>score>=5?"Dots, brackets, bars — all sorted!":null },
-    { type:"term-race", title:"Game 3 · Roadmap Terms",
-      intro:"Quick — what does each sign mean? 8 rounds of roadmap vocabulary.",
-      miaIntro:"Speed vocabulary — signs and their jobs! \u{26A1}",
-      spec:{rounds:8, pool:[
-        ["Repeat Sign","Go back and play the section again"],
-        ["1st Ending","Played only the FIRST time through"],
-        ["2nd Ending","Played after the repeat, replacing the 1st"],
-        ["Double Bar","The end of the piece"],
-        ["Roadmap","Directions telling you where to go next in the music"],
-        ["Bar Line","Divides music into measures"]]},
-      result:(score)=>score>=7?"Roadmap vocabulary — memorized!":null },
-    { type:"rhythm-tap", title:"Game 4 · Tap It Twice",
-      intro:"A repeat in rhythm form: listen once, tap it back — then the SAME pattern returns for its repeat. Consistency wins!",
-      miaIntro:"Repeat practice for your hands — same rhythm, two trips! \u{1F44F}",
-      spec:{tempo:96, rounds:3, patterns:[["q","q","h"],["q","q","h"],["h","q","q"],["h","q","q"]]},
-      result:(score)=>score>=8?"Identical both trips — that's what repeat signs dream of!":null }
+        {label:"2/4 Time Signature", spec:{clef:"treble",time:"2/4",notes:[]}},
+        {label:"3/4 Time Signature", spec:{clef:"treble",time:"3/4",notes:[]}},
+        {label:"4/4 Time Signature", spec:{clef:"treble",time:"4/4",notes:[]}},
+        {label:"Common Time (C)", spec:{clef:"treble",time:"C",notes:[]}}]},
+      result:(score)=>score>=5?"Every signature identified correctly.":null }
   ],
-  practiceIntro:"20 practice questions — repeat signs, endings, and the performance order. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — definitions, beat values, and measure checking in 2/4. Answer correctly and the next appears automatically.",
   practice:[
-    { gen:"measure-complete", params:{beats:4}, count:3 },
-    { gen:"rhythm-count", params:{values:["h","q"],maxNotes:3}, count:2 },
-    { gen:"note-value", params:{values:["h","h.","q","w"], ask:"beats"}, count:2 },
-    { gen:"note-name", params:{clef:"treble"}, count:2 },
-    { type:"mc", q:"A repeat sign looks like…", choices:["a double bar with two dots","a curved line","a large letter C"], answer:0,
-      explain:"The dots face the section to repeat." },
-    { type:"mc", q:"When you reach a repeat sign, you…", choices:["go back and play the section again","stop","skip to the end"], answer:0,
-      explain:"One more trip through the music." },
-    { type:"truefalse", q:"The 1st ending is played only the first time through.", answer:true,
-      explain:"First trip only — then back to the repeat." },
-    { type:"truefalse", q:"After repeating, you play the 1st ending again.", answer:false,
-      explain:"Second trip SKIPS the 1st ending and plays the 2nd." },
-    { type:"mc", q:"On the second trip, which ending do you play?", choices:["2nd Ending","1st Ending","Both"], answer:0,
-      explain:"Skip 1, play 2 — the different exit." },
-    { type:"truefalse", q:"Repeat signs save space on the page.", answer:true,
-      explain:"One written section = two performed sections." },
-    { type:"mc", q:"Where do you go from a repeat sign if there is no facing repeat sign earlier?", choices:["back to the beginning","to the next measure","to the 2nd ending"], answer:0,
-      explain:"No start-repeat? Then repeat from the very beginning." },
-    { type:"truefalse", q:"The numbers 1 and 2 above bracket lines mark the endings.", answer:true,
-      explain:"Bracket 1 = first trip, bracket 2 = second trip." },
-    { type:"mc", q:"The performance order with endings is…", choices:["A · B · 1st · repeat · A · B · 2nd","A · B · 1st · 2nd","A · 1st · B · 2nd"], answer:0,
-      explain:"Through, exit 1, back, through, exit 2." },
-    { type:"truefalse", q:"A repeat sign and the final double bar look exactly the same.", answer:false,
-      explain:"The repeat sign has DOTS — the final bar doesn't." },
-    { type:"mc", q:"Why do composers use 1st and 2nd endings?", choices:["so the repeat can END differently the second time","to make the piece longer to write","to change the tempo"], answer:0,
-      explain:"Same section, different exit — without rewriting everything." },
+    { gen:"measure-complete", params:{beats:2}, count:4 },
+    { gen:"rhythm-count", params:{values:["h","q"],maxNotes:2}, count:3 },
+    { gen:"note-value", params:{ask:"beats"}, count:2 },
+    { gen:"measure-count", params:{min:2,max:4}, count:2 },
+    { type:"mc", q:"In 2/4 time, the top number 2 means…", choices:["there are 2 beats per measure","the half note receives one beat","the piece has 2 measures"], answer:0,
+      explain:"Top number = beats per measure." },
+    { type:"mc", q:"In 2/4 time, the bottom number 4 means…", choices:["the quarter note receives 1 beat","there are 4 beats per measure","play at a moderate speed"], answer:0,
+      explain:"Bottom 4 = quarter note gets the beat, as in 4/4." },
+    { type:"mc", q:"The difference between 2/4 and 4/4 is…", choices:["the number of beats per measure","which note receives the beat","the pitch of the notes"], answer:0,
+      explain:"2 beats versus 4 — the beat note is the same." },
+    { type:"truefalse", q:"In 2/4 time, a half note receives 2 beats.", answer:true,
+      explain:"It fills a complete 2/4 measure." },
+    { type:"truefalse", q:"A whole rest is used for a full measure of rest in 2/4 time.", answer:true,
+      explain:"The whole rest fills any full measure — even a 2-beat one." },
+    { type:"truefalse", q:"A half rest may be written in 2/4 time.", answer:false,
+      explain:"By convention, half rests and whole notes are never used in 2/4." },
+    { type:"truefalse", q:"A whole note may be written in 2/4 time.", answer:false,
+      explain:"Four beats cannot fit a two-beat measure." },
+    { type:"mc", q:"Counting in 2/4 is written…", choices:["1 2 | 1 2","1 2 3 | 1 2 3","1 2 3 4"], answer:0,
+      explain:"Two counts per measure, restarting after each bar line." },
+    { type:"mc", q:"Which fills one complete 2/4 measure?", choices:["Half note","Whole note","Half note + quarter note"], answer:0,
+      explain:"Exactly 2 beats. The others give 4 and 3." },
     /* — from the unit review sheet — */
-    { type:"mc", q:"Repeat signs are two dots placed before or after a ______.", choices:["double bar","clef","time signature"], answer:0, explain:"Dots + double bar = the repeat sign." },
-    { type:"mc", q:"A 4-measure section ends with a repeat sign. How many measures does the performer play in total?", choices:["8","4","6"], answer:0, explain:"The section is played twice: 4 × 2 = 8." }
+    { type:"mc", q:"In 2/4 time, a whole rest receives ____ beats.", choices:["2 — it fills the whole measure","4","1"], answer:0, explain:"The whole rest always fills the FULL measure — in 2/4 that is 2 beats." },
+    { type:"mc", q:"Which time signature fits a measure containing two quarter notes only?", choices:["2/4","3/4","4/4"], answer:0, explain:"1 + 1 = 2 beats — a 2/4 measure." }
   ],
-  miaQuizIntro:"Quiz time! First trip, exit 1 — second trip, exit 2. Navigate!",
+  miaQuizIntro:"Quiz time — twenty questions on 2/4. Count carefully.",
   quiz:[
-    { type:"mc", q:"What does a repeat sign tell you to do?", choices:["Stop playing","Repeat a section of music","Play louder","Change the tempo"], answer:1,
-      explain:"Go back and play the section again.", hint:"Its name says it all." },
-    { type:"mc", q:"What identifies a repeat sign?", choices:["A single bar line","A double bar with two dots","A sharp sign","A fermata"], answer:1,
-      explain:"The two dots are the giveaway.", hint:"Look for dots." },
-    { type:"mc", q:"When do you play the 1st ending?", choices:["Every time","Only the first time through","Only the second time","Never"], answer:1,
-      explain:"First trip only — then repeat.", hint:"Its number is a clue." },
-    { type:"truefalse", q:"You play the 1st ending again after the repeat.", answer:false,
-      explain:"Second trip skips it — straight to the 2nd ending.", hint:"Different exit on trip two." },
-    { type:"truefalse", q:"You play the 2nd ending after repeating the section.", answer:true,
-      explain:"That's its whole job — the second-trip exit.", hint:"Trip two." },
-    { type:"truefalse", q:"Repeat signs help save space in written music.", answer:true,
-      explain:"Write once, play twice.", hint:"Efficient composers!" },
-    { type:"mc", q:"During the second time through, which ending should you SKIP?", choices:["1st Ending","2nd Ending","Neither"], answer:0,
-      explain:"Jump over bracket 1, land in bracket 2.", hint:"You already played it once." },
-    { type:"mc", q:"Which matching is correct?",
-      choices:["Repeat Sign → repeat the section · 1st Ending → first time only · 2nd Ending → after the repeat",
-               "Repeat Sign → stop · 1st Ending → always · 2nd Ending → never",
-               "Repeat Sign → play louder · 1st Ending → after the repeat · 2nd Ending → first time"], answer:0,
-      explain:"The complete roadmap in one line.", hint:"First trip, second trip." },
-    { type:"mc", q:"A repeat sign tells you to ____ the section.", choices:["repeat","skip","end"], answer:0,
-      explain:"Play it again!", hint:"The name is the answer." },
-    { type:"mc", q:"On the second time through, skip the ____ ending.", choices:["1st","2nd","final"], answer:0,
-      explain:"Skip 1, play 2.", hint:"Which one did you already play?" },
-    { type:"mc", q:"Which is the correct performance order?",
-      choices:["A → B → 1st Ending → Repeat → A → B → 2nd Ending",
-               "A → B → 1st Ending → 2nd Ending → A → B",
-               "A → 1st Ending → 2nd Ending → B"], answer:0,
-      explain:"Through the section, exit 1, back, through again, exit 2.",
-      hint:"Two full trips." },
+    { type:"mc", q:"How many beats are in one measure of 2/4 time?", choices:["1","2","3","4"], answer:1,
+      explain:"The top number says 2.", hint:"Read the top number." },
+    { type:"mc", q:"In 2/4 time, which note receives one beat?", choices:["Whole Note","Half Note","Quarter Note","Eighth Note"], answer:2,
+      explain:"The bottom 4 assigns the beat to the quarter note.", hint:"Read the bottom number." },
+    { type:"truefalse", q:"The top number of a time signature tells how many beats are in each measure.", answer:true,
+      explain:"Top = how many; bottom = which note.", hint:"Same rule as 4/4." },
+    { type:"truefalse", q:"A measure of 2/4 time contains three beats.", answer:false,
+      explain:"Two beats.", hint:"The top number." },
+    { type:"mc", q:"2/4 and 4/4 both have 4 as the bottom number. This means…", choices:["a quarter note receives 1 beat in both","both have 4 beats per measure","both are played at the same speed"], answer:0,
+      explain:"The shared bottom number fixes the beat note.", hint:"What does the bottom number control?" },
+    { type:"mc", q:"In 2/4 time, a half note receives…", choices:["1 beat","2 beats","4 beats"], answer:1,
+      explain:"Two beats — a complete measure.", hint:"Note values do not change." },
+    { type:"mc", q:"For a FULL measure of rest in 2/4 time, use…", choices:["a whole rest","a half rest","two eighth rests"], answer:0,
+      explain:"The whole rest marks a full measure of silence in any meter.", hint:"The full-measure silence rule." },
+    { type:"mc", q:"Which two symbols are NEVER used in writing 2/4 time?", choices:["Half rest and whole note","Quarter rest and quarter note","Whole rest and half note"], answer:0,
+      explain:"The whole rest replaces the half rest for full-measure silence; the whole note cannot fit.", hint:"One rest, one note." },
+    { type:"mc", q:"How many measures are shown?",
+      staff:{clef:"treble",time:"2/4",notes:[{p:"B4",d:"q"},{p:"B4",d:"q"},{bar:"single"},{p:"B4",d:"h"},{bar:"single"},{p:"B4",d:"q"},{rest:"q"},{bar:"final"}],width:400},
+      choices:["2","3","4"], answer:1,
+      explain:"Three measures of two beats each.", hint:"Count the spaces between bar lines." },
+    { type:"truefalse", q:"This measure is complete.",
+      staff:{clef:"treble",time:"2/4",notes:[{p:"B4",d:"q"},{bar:"final"}],width:260},
+      answer:false,
+      explain:"Only 1 beat — 2/4 requires exactly 2.", hint:"Compare with the top number." },
+    { type:"mc", q:"Which completes a 2/4 measure that already contains one quarter note?",
+      choices:["One quarter note or one quarter rest","One half note","One whole rest"], answer:0,
+      explain:"1 + 1 = 2. A half note would overflow to 3.", hint:"Supply exactly one beat." },
     { type:"mc", q:"Which statement is correct?",
-      choices:["The 1st ending is played every time","The 2nd ending is played before the repeat","On the second time through, you skip the 1st ending and continue to the 2nd ending","Repeat signs mean to stop playing"], answer:2,
-      explain:"The golden rule of endings.", hint:"Trip two takes the other exit." },
+      choices:["A quarter note has a different value in 2/4 than in 4/4","The quarter note equals one beat in both 2/4 and 4/4","2/4 and 4/4 have the same number of beats per measure","A measure of 2/4 contains four beats"], answer:1,
+      explain:"The bottom 4 keeps the quarter note as the beat; only the measure length differs.",
+      hint:"The shared bottom number." },
     /* generated */
-    { gen:"measure-complete", params:{beats:4}, count:3 },
-    { gen:"rhythm-count", params:{values:["h","q"],maxNotes:3}, count:2 },
-    { gen:"note-value", params:{values:["h","h.","q"], ask:"beats"}, count:2 },
+    { gen:"measure-complete", params:{beats:2}, count:3 },
+    { gen:"rhythm-count", params:{values:["h","q"],maxNotes:2}, count:2 },
+    { gen:"note-value", params:{ask:"beats"}, count:2 },
     { gen:"note-name", params:{clef:"treble"}, count:1 }
   ],
   vocabulary:[
-    {def:"Return to the beginning, or to the previous repeat sign at the beginning of the section.", term:"Repeat Sign", staff:{clef:"none",notes:[{bar:"repeat-end"}],width:140}},
-    {def:"Play through the 1st ending to the repeat sign, then go back.", term:"1st Ending", staff:{clef:"none",notes:[{p:"B4",d:"w"},{bar:"repeat-end"}],endings:[{from:0,to:0,n:1}],width:150}},
-    {def:"When repeating, skip the 1st ending and play the 2nd ending.", term:"2nd Ending"},
-    {def:"Signs that tell the performer the order in which the music is played.", term:"Roadmap"}
+    {def:"Two beats per measure; the quarter note receives one beat.", term:"2/4 Time", staff:{clef:"none",time:"2/4",notes:[],width:140}},
+    {def:"Contains two numbers: the upper tells how many beats are in each measure, the lower indicates what type of note receives 1 beat.", term:"Time Signature"},
+    {def:"Means to rest for a whole measure — in 2/4 it receives 2 beats.", term:"Whole Rest", staff:{clef:"none",notes:[{rest:"w"}],width:140}},
+    {def:"Not used in 2/4 time — a measure holds only two beats.", term:"Half Rest · Whole Note"}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Repeat sign</b> = double bar + two dots: play the section <b>again</b>.",
-    "✔ First trip → play the <b>1st ending</b>, then go back.",
-    "✔ Second trip → <b>skip the 1st</b>, play the <b>2nd ending</b>.",
-    "✔ Repeats <b>save space</b> — write once, play twice.",
-    "✔ The order: A → B → 1st → repeat → A → B → 2nd."
+    "✔ <b>2/4</b>: 2 = <b>two beats per measure</b>; 4 = the <b>quarter note receives 1 beat</b>.",
+    "✔ 2/4 and 4/4 share the bottom 4 — only the <b>measure length</b> differs.",
+    "✔ ♩ or ♩-rest = 1 beat; half note = 2 beats.",
+    "✔ A <b>whole rest</b> marks a full measure of silence — even in 2/4.",
+    "✔ A <b>half rest</b> and a <b>whole note</b> are never used in 2/4 time."
   ],
   tips:[
-    "Trace the route with your finger BEFORE playing — every wrong turn you catch early is a save.",
-    "The dots always face the music they want repeated.",
-    "First time through, play ending 1; on the repeat, skip ending 1 and play ending 2 — never both.",
-    "\u{1F3C3} Next lesson: notes get FASTER — eighth notes split the beat in two!"
+    "Count aloud in twos — “1 2 | 1 2” — and let the bar line restart the count.",
+    "Checking a measure? Add every note AND rest, then compare with the top number.",
+    "Remember the writing rule: full-measure silence = whole rest, in every meter.",
+    "Next lesson: the same system with three beats — 3/4 time."
   ],
-  rewards:{ badge:"Roadmap Reader", icon:"\u{1F501}" },
+  rewards:{ badge:"2/4 Time Expert", icon:"\u{1F4CF}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A PERFECT journey — not one wrong turn! Eighth notes are revving up next. \u{1F501}\u{1F389}",
-  miaPass:"You passed! The musical roadmap is in your hands. Review below or take the route once more.",
+  miaPerfect:"A perfect score on 2/4 — definitions, values and rules all in place. 3/4 is next. \u{1F389}",
+  miaPass:"Passed. Review the summary if you like, or retry for a perfect run — several questions regenerate each attempt.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Repeat signs recycle music: a double bar with two dots sends you back for another trip through the section.",
-      play:()=>{[60,64,67].forEach((m,i)=>MFAudio.tone(m,.3,i*.3));[60,64,67].forEach((m,i)=>MFAudio.tone(m,.3,1.2+i*.3));} },
-    learn:{ label:"repeats and endings",
-      explain:"Repeat sign = go back. Endings: first trip plays bracket 1 then repeats; second trip skips bracket 1 and plays bracket 2.",
-      hint:"First trip exit 1, second trip exit 2.",
-      play:()=>{[60,64,67,72].forEach((m,i)=>MFAudio.tone(m,.3,i*.28));} },
+      explain:"The example repeats its pattern every two beats — the defining feature of 2/4 time.",
+      play:()=>{const s=.62;for(let k=0;k<6;k++) MFAudio.click(k*s,k%2===0?.55:.3,k%2===0);} },
+    learn:{ label:"2/4 time",
+      explain:"2 = two beats per measure; 4 = quarter note receives one beat. Whole rest for a full silent measure; half rest and whole note are not written in 2/4.",
+      hint:"Compare every measure with the top number.",
+      play:()=>{const s=.6;[60,64].forEach((m,i)=>MFAudio.tone(m,s*.9,i*s));[67,64].forEach((m,i)=>MFAudio.tone(m,s*.9,(2+i)*s));} },
     example:{ label:"the examples",
-      explain:"Example 1 wraps a section in repeat dots; example 2 adds the two exits — watch trip two skip bracket 1." },
+      explain:"Both examples count in twos; note the whole rest filling a complete silent measure in example 2." },
     game:{ label:"the games",
-      explain:"Run the roadmap in order, hunt the dotted signs, race the vocabulary, and tap a rhythm that repeats.",
-      hint:"When lost, ask: which trip am I on?" },
+      explain:"Tap 2/4 rhythms, judge measures against the top number, complete measures with the cards, and identify signatures at sight.",
+      hint:"Everything rests on one comparison: the measure total versus the top number." },
     quiz:{ label:"this question",
-      explain:"Everything reduces to the journey: play through, exit 1, repeat, skip exit 1, exit 2, done.",
-      play:()=>{MFAudio.tone(72,.3,0);MFAudio.tone(67,.3,.35);MFAudio.tone(72,.3,.7);} }
+      explain:"Two definitions and two writing rules cover this quiz: 2 beats per measure, quarter note = 1 beat, whole rest for full silence, no half rest / whole note in 2/4.",
+      play:()=>{MFAudio.click(0,.55,true);MFAudio.click(.6,.3);} }
   }
 };

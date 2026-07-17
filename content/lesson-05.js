@@ -1,4 +1,4 @@
-/* Lesson 5 — Ledger Lines (low and high notes) (AEMT Book 1, Unit 1)
+/* Lesson 5 (1.5) — Ledger Lines (low and high notes) (AEMT Book 1, Unit 1)
    v2 — rebuilt from the instructor's design document (drafts/UNIT 1 – Lesson 5.md)
    Final quiz doubles as the Unit 1 review (25 questions; full mastery page = Phase 2).
    NOTE: edit by FULL-FILE REWRITE only. */

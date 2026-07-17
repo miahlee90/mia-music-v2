@@ -1,203 +1,421 @@
-/* Lesson 105 — The Neapolitan Chord (Book 4, Unit 26 — SELF-AUTHORED)
-   Core: ♭II — a MAJOR triad on the lowered 2nd degree; usually FIRST
-   INVERSION (N⁶); PREDOMINANT function → V; darkest in minor keys.
+/* Lesson 105 (15.5, formerly L108) — Chord Extensions: 9ths, 11ths, and 13ths (Book 4, Unit 27 — SELF-AUTHORED)
+   Core: stack 3rds past the 7th -> 9th, 11th, 13th chords. Numbers = compound
+   2/4/6. Bare numbers = dominant family. Practical voicings omit tones (the
+   unaltered 5th first; the 3rd in a dominant 11th; the natural 11th in a
+   dominant 13th). 13 is the ceiling (the 15th repeats the root).
+   Interactive score+audio examples live INSIDE Learn by Doing.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-LESSON_CONTENT[105]={stackFigures:true,
-  welcome:"The Neapolitan is a chromatic predominant chord built on the lowered second scale degree.",
+/* ---- shared interactive core: grand-staff score(s) + playback + keyboard sync + question ---- */
+function MF_L105_mount(container,fb,cfg){
+  let h=`<div style="text-align:center;font-weight:800;font-size:12.5px;color:#5a4a12;margin-bottom:4px">${cfg.heading}</div>`;
+  const specs=cfg.staves||[cfg.staff];
+  specs.forEach((s,si)=>{ if(cfg.staveLabels&&cfg.staveLabels[si]) h+=`<div style="text-align:center;font-size:11px;color:#5a5f6b;margin-top:${si?6:0}px">${cfg.staveLabels[si]}</div>`;
+    h+=`<div class="l108-st${si}"></div>`; });
+  if(cfg.midLabel) h+=`<div style="text-align:center;font-size:11.5px;color:#2F6DA8;font-weight:700;margin-top:2px">${cfg.midLabel}</div>`;
+  h+=`<div class="l108-btns" style="text-align:center;margin-top:6px;display:flex;gap:6px;justify-content:center;flex-wrap:wrap"></div>`;
+  if(cfg.kb) h+=`<div class="l108-kb" style="margin-top:8px"></div>`;
+  if(cfg.analysis) h+=`<div style="margin-top:8px">${cfg.analysis}</div>`;
+  if(cfg.caption) h+=`<div style="text-align:center;font-size:11.5px;color:#5a5f6b;font-style:italic;margin-top:6px">${cfg.caption}</div>`;
+  h+=`<div class="choices l108-ch" style="margin-top:10px"></div>`;
+  container.innerHTML=h;
+  const apis=specs.map((s,si)=>Staff.render(container.querySelector(".l108-st"+si),s));
+  const kbApi=cfg.kb?Keyboard.create(container.querySelector(".l108-kb"),cfg.kb):null;
+  function playStaff(si,tempo){ si=si||0; const s=specs[si], api=apis[si];
+    const spec=tempo?Object.assign({},s,{tempo:tempo}):s;
+    const pApi={svg:api.svg,highlight:(ix,keep)=>{ api.highlight(ix,keep);
+      if(ix!=null&&kbApi){ const n=s.notes[ix]; if(n&&n.bar===undefined&&(n.p||n.sound)) kbApi.press(MFAudio.midi(n.sound||n.p),true); } }};
+    Staff.play(spec,pApi); }
+  function blockPlay(midis,si,indices,dur){ si=si||0; dur=dur||1.3; const api=apis[si];
+    midis.forEach(m=>MFAudio.tone(m,dur,0,0.34));
+    api.highlight(null); (indices||[]).forEach(ix=>api.highlight(ix,true)); if(kbApi)midis.forEach(m=>kbApi.press(m,true));
+    setTimeout(()=>api.highlight(null),(dur+0.1)*1000); }
+  function mel(si,indices,midis,gap){ si=si||0; gap=gap||0.55; const api=apis[si];
+    midis.forEach((m,k)=>{ MFAudio.tone(m,0.6,k*gap,0.5);
+      setTimeout(()=>{ api.highlight(null); api.highlight(indices[k],true); if(kbApi)kbApi.press(m,true); },k*gap*1000); });
+    setTimeout(()=>api.highlight(null),(midis.length*gap+0.6)*1000); }
+  function arp(si,indices,midis,gap){ si=si||0; gap=gap||0.42; const api=apis[si];
+    midis.forEach((m,k)=>{ MFAudio.tone(m,0.6,k*gap,0.5);
+      setTimeout(()=>{ api.highlight(indices[k],true); if(kbApi)kbApi.press(m,true); },k*gap*1000); });
+    setTimeout(()=>api.highlight(null),(midis.length*gap+0.9)*1000); }
+  function playSeq(steps,gap,dur){ gap=gap||1.1; dur=dur||0.95;
+    steps.forEach((st,k)=>{ const t=k*gap;
+      st.midis.forEach(m=>MFAudio.tone(m,dur,t,0.34));
+      setTimeout(()=>{ apis.forEach(a=>a.highlight(null)); (st.indices||[]).forEach(ix=>apis[st.si||0].highlight(ix,true)); if(kbApi)st.midis.forEach(m=>kbApi.press(m,true)); },t*1000); });
+    setTimeout(()=>apis.forEach(a=>a.highlight(null)),(steps.length*gap+dur)*1000); }
+  const H={playStaff,blockPlay,mel,arp,playSeq,apis,kbApi};
+  const bwrap=container.querySelector(".l108-btns");
+  cfg.buttons.forEach(bt=>{ const b=document.createElement("button"); b.className="play"; b.textContent=bt.label; b.onclick=()=>bt.run(H); bwrap.appendChild(b); });
+  const ch=container.querySelector(".l108-ch");
+  const qs=cfg.questions||(cfg.question?[cfg.question]:[]);
+  let qi=0;
+  function renderQ(){ ch.innerHTML="";
+    const q=qs[qi]; if(!q) return;
+    if(q.q){ const qd=document.createElement("div"); qd.style.cssText="font-weight:700;margin-bottom:6px"; qd.innerHTML=q.q; ch.appendChild(qd); }
+    if(qi>0){ const m=document.createElement("div"); m.style.cssText="color:#2e7d32;font-weight:700;font-size:12px;margin-bottom:4px"; m.textContent=qs[qi-1].ok; ch.appendChild(m); }
+    q.choices.forEach((c,i)=>{ const b=document.createElement("button"); b.textContent=c;
+      b.onclick=()=>{ if(i===q.answer){ if(qi>=qs.length-1) fb(true,q.ok); else { qi++; renderQ(); } }
+        else { MFAudio.tone(40,.2,0,.3); fb(false,q.no); } };
+      ch.appendChild(b); }); }
+  renderQ();
+}
+/* ---- listening comparison panel (in Learn by Doing) ---- */
+function MF_L105_colors(container,fb){
+  container.innerHTML=`<div style="text-align:center;font-weight:800;color:#5a4a12;margin-bottom:8px">Compare the Colors of the Extensions</div>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+      <button class="play" data-k="c9">▶ C9</button>
+      <button class="play" data-k="c11">▶ C11(no 3rd)</button>
+      <button class="play" data-k="c13">▶ C13</button>
+      <button class="play" data-k="prog">▶ Dm9–G13–Cmaj9</button></div>
+    <div class="l108col-msg" style="min-height:16px;font-weight:700;font-size:12px;margin-top:6px;text-align:center;color:#2e7d32"></div>
+    <div class="choices l108col-ch" style="margin-top:6px"></div>`;
+  const play=(midis,when,dur)=>midis.forEach(m=>MFAudio.tone(m,dur||1.3,when||0,0.32));
+  const seq=(chords,gap)=>chords.forEach((c,i)=>play(c,i*(gap||1.0),0.9));
+  const B={ c9:()=>play([48,52,58,62]), c11:()=>play([48,58,62,65]), c13:()=>play([48,52,58,69]),
+    prog:()=>seq([[50,53,60,64],[43,53,59,64],[48,52,59,62]],1.0) };
+  container.querySelectorAll("button[data-k]").forEach(b=>b.onclick=()=>B[b.dataset.k]());
+  const qs=[
+    {q:"Which example contains a natural 11th while omitting the major 3rd?",choices:["C11(no 3rd)","C9","C13"],answer:0,ok:"✓ Correct. C11(no 3rd) keeps the 11th (F) and drops the major 3rd to avoid the E–F clash."},
+    {q:"Which example emphasizes the 13th while omitting the natural 11th?",choices:["C13","C9","C11(no 3rd)"],answer:0,ok:"✓ Correct. The practical C13 keeps the 3rd, 7th, and 13th and omits the natural 11th."}
+  ];
+  const ch=container.querySelector(".l108col-ch"), msg=container.querySelector(".l108col-msg");
+  let qi=0;
+  function render(){ ch.innerHTML=""; const q=qs[qi];
+    const qd=document.createElement("div"); qd.style.cssText="font-weight:700;margin-bottom:6px"; qd.textContent=q.q; ch.appendChild(qd);
+    q.choices.forEach((c,i)=>{ const b=document.createElement("button"); b.textContent=c;
+      b.onclick=()=>{ if(i===q.answer){ if(qi>=qs.length-1) fb(true,q.ok); else { msg.textContent=q.ok; qi++; render(); } }
+        else { MFAudio.tone(40,.2,0,.3); fb(false,"Listen again and compare the highlighted extension in each example."); } };
+      ch.appendChild(b); }); }
+  render();
+}
+/* ---- compact replay panel for the final listening section ---- */
+function MF_L105_review(host){
+  host.innerHTML=`<div style="text-align:center;font-weight:700;color:#5a5f6b;margin-bottom:8px">Replay the Learn-by-Doing examples</div>
+    <div style="display:flex;gap:6px;justify-content:center;flex-wrap:wrap">
+      <button class="play" data-k="build">▶ Build 9–11–13</button>
+      <button class="play" data-k="c11">▶ Practical C11</button>
+      <button class="play" data-k="c13">▶ Practical C13</button>
+      <button class="play" data-k="prog">▶ Extended ii–V–I</button></div>`;
+  const play=(midis,when,dur)=>midis.forEach(m=>MFAudio.tone(m,dur||1.3,when||0,0.32));
+  const seq=(chords,gap,dur)=>chords.forEach((c,i)=>play(c,i*(gap||1.0),dur||0.9));
+  const B={ build:()=>seq([[48,52,55,58,62],[48,52,55,58,62,65],[48,52,55,58,62,65,69]],1.2,1.0),
+    c11:()=>seq([[48,58,62,65],[41,57,60,64,67]],1.1), c13:()=>seq([[48,52,58,69],[41,57,60,64,67]],1.1),
+    prog:()=>seq([[50,53,60,64],[43,53,59,64],[48,52,59,62]],1.0) };
+  host.querySelectorAll("button[data-k]").forEach(b=>b.onclick=()=>B[b.dataset.k]());
+}
+
+LESSON_CONTENT[105]={
+  welcome:"Extended chords continue the stack of thirds beyond the seventh.",
   hook:{
-    say:"<b>In A minor, a B♭ major chord appears</b> and moves toward the dominant. Listen to the progression. \u{1F447} <b>What harmonic function does the B♭ major chord perform?</b>",
+    say:"<b>Listen as thirds are added above a seventh chord.</b> \u{1F447} <b>Which compound intervals are added to create ninth, eleventh, and thirteenth chords?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play i → N⁶ → V → i</button></div>
-          <div class="choices hk-ch" style="display:none"><button>It prepares the dominant and functions as a predominant</button><button>It functions as the tonic throughout</button><button>Silent</button></div>`;
+        container.innerHTML=`<div style="text-align:center"><button class="play hk-a">▶ Build the complete stack</button></div>
+          <div class="choices hk-ch" style="display:none"><button>The stack extends to the 9th, 11th, and 13th</button><button>The stack contains only a root-position triad</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{ [[60,64,69],[62,65,70],[59,64,68],[60,64,69]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.27))); setTimeout(()=>ch.style.display="",4*900+300); };
+        container.querySelector(".hk-a").onclick=()=>{ [[55,59,62,65],[55,59,62,65,69],[55,59,65,69,72,76]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.9,i*1.0,.30))); setTimeout(()=>ch.style.display="",3400); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. B♭-D-F is the Neapolitan chord in A minor. It is a major triad built on ♭2 and commonly provides predominant function before V.");
-          else fb(false,"B♭ is chromatic in A minor. Listen to how the chord prepares the dominant E major.");
+          if(i===0) fb(true,"✓ Correct. Continuing the tertian stack beyond the seventh produces the ninth, eleventh, and thirteenth. These are called chord extensions.");
+          else fb(false,"Count the compound intervals above the root: 9th, 11th, and 13th.");
         });
       } }
   },
   objectives:[
-    "Build the Neapolitan: a major triad on ♭2",
-    "Use its standard first-inversion form, N⁶, with scale degree 4 in the bass",
-    "Identify its predominant function leading toward V",
-    "Trace ♭2 downward toward the leading tone",
-    "Recognize the Neapolitan in both minor and major keys",
-    "Recognize N⁶ by ear and in notation"
+    "Build 9th, 11th, and 13th chords by continuing the stack of thirds",
+    "Relate 9, 11, and 13 to their simple interval equivalents",
+    "Interpret bare 9, 11, and 13 symbols as dominant-family chords",
+    "Compare theoretical chord stacks with practical performance voicings",
+    "Voice dominant 11th chords with the 11th present and the 3rd often omitted",
+    "Voice dominant 13th chords with the 3rd, 7th, and 13th emphasized",
+    "Hear extended chords in practical ii–V–I progressions"
   ],
   steps:[
-    { say:"<b>The Neapolitan Chord:</b> a <b>major triad built on the lowered second scale degree, ♭2</b>. In A minor, lower B to B♭ and build the major triad <b>B♭–D–F</b>. The chord is labeled ♭II in root position and most commonly appears in first inversion as N⁶, or ♭II⁶. \u{1F447} <b>What is the quality of the Neapolitan triad?</b>",
-      try:{ type:"mc", choices:["Major","Minor","Diminished"], answer:0,
-        success:"✓ Correct. The Neapolitan is a major triad built on the lowered second scale degree.",
-        fail:"Identify the intervals B♭-D and D-F.",
-        hint:"Major third plus minor third." } },
-    { say:"<b>First Inversion — N⁶:</b> the Neapolitan most commonly appears in <b>first inversion</b>. Its chordal third — the key's <b>fourth scale degree</b> — appears in the bass. In A minor, B♭–D–F becomes D–F–B♭ with D in the bass. \u{1F447} <b>Which pitch appears in the bass of N⁶ in A minor?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:72,notes:[
-        {p:"D4",d:"w",label:"N⁶: D in the bass"},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{bar:"final"}],width:300} },
-      try:{ type:"mc", choices:["D, scale degree 4","B♭, scale degree ♭2","A, the tonic"], answer:0,
-        success:"✓ Correct. D is the third of the B♭ major triad and scale degree 4 in A minor.",
-        fail:"Identify the chordal third of B♭-D-F.",
-        hint:"First inversion places the chordal third in the bass." } },
-    { say:"<b>Function:</b> the Neapolitan normally has <b>predominant</b> function and prepares <b>V</b>. It may move directly to V or pass through a cadential i⁶₄. Common patterns in A minor include N⁶–V–i and N⁶–i⁶₄–V–i. It occupies a position similar to ii°⁶ or iv but remains a distinct chromatic harmony. \u{1F447} <b>Which function does the Neapolitan most commonly serve?</b>",
-      try:{ type:"mc", choices:["Predominant","Dominant","Tonic"], answer:0,
-        success:"✓ Correct. The Neapolitan commonly prepares the dominant.",
-        fail:"Identify the function that commonly prepares V.",
-        hint:"Predominant → dominant → tonic." } },
-    { say:"<b>Voice Leading:</b> the lowered second scale degree commonly descends toward the leading tone. In a direct N⁶–V progression in A minor, B♭ may move directly to G♯, a diminished third. When a cadential i⁶₄ intervenes, the line may descend stepwise B♭–A–G♯. In the bass, scale degree 4 commonly rises to 5, while ♭6 often falls to 5. Other arrangements are possible depending on context. \u{1F447} <b>In a common N⁶–i⁶₄–V progression in A minor, how may ♭2 move?</b>",
-      try:{ type:"mc", choices:["B♭-A-G♯, descending toward the leading tone","Up by octave only","It must remain unchanged"], answer:0,
-        success:"✓ Correct. The line may move directly from B♭ to G♯ or pass through A when a cadential i⁶₄ intervenes.",
-        fail:"Follow the voice containing scale degree ♭2.",
-        hint:"B♭ may move through A toward G♯." } },
-    { say:"<b>Use in Major and Minor Keys:</b> the Neapolitan appears more frequently in <b>minor-key</b> repertoire, where scale degree ♭6 already belongs to the diatonic collection — though ♭2 stays chromatic even in minor. It also appears in <b>major keys</b> through chromatic alteration of scale degrees 2 and 6. In C minor or C major it is spelled D♭-F-A♭: the same pitches, but its relationship to the surrounding scale differs. \u{1F447} <b>In which mode has the Neapolitan historically been especially common?</b>",
-      try:{ type:"mc", choices:["Minor, although it also occurs in major","Whole-tone music only","Unpitched percussion music"], answer:0,
-        success:"✓ Correct. The Neapolitan is especially common in minor-key tonal music but also appears in major-key contexts.",
-        fail:"Compare the chord tones with the parallel major and minor scales.",
-        hint:"In minor, scale degree ♭6 is already diatonic, but ♭2 remains chromatic." } },
-    { say:"<b>Review:</b> \u{1F447} <b>Which major triad is the Neapolitan chord in E minor?</b>",
-      try:{ type:"mc", choices:["F major: F-A-C","F♯ major: F♯-A♯-C♯","B major: B-D♯-F♯"], answer:0,
-        success:"✓ Correct. Lower scale degree 2 from F♯ to F♮ and build a major triad: F-A-C. In first inversion, N⁶ is A-C-F.",
-        fail:"Lower scale degree 2 and build a major triad on the resulting pitch.",
-        hint:"The Neapolitan root is one half step above the tonic." } }
+    { say:"<b>Continuing the Stack:</b> Adding a third above a seventh chord produces a <b>ninth chord</b>. Adding another third produces an <b>eleventh chord</b>, and adding one more produces a <b>thirteenth chord</b>. The complete theoretical C13 stack is C–E–G–B♭–D–F–A: root, third, fifth, seventh, ninth, eleventh, and thirteenth. These are complete theoretical stacks; practical performance voicings normally contain fewer notes. \u{1F447} <b>How many different chord members are in a complete theoretical ninth chord?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14px;min-width:300px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Chord</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Complete stack (on C)</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#2F6DA8">C9</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">C–E–G–B\u{266D}–D</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#A9821F">C11</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">C–E–G–B\u{266D}–D–F</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#C05A21">C13</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">C–E–G–B\u{266D}–D–F–A</td></tr></table>` },
+      try:{ type:"mc", choices:["Five","Three","Nine"], answer:0,
+        success:"✓ Correct. A complete ninth chord contains the root, third, fifth, seventh, and ninth.",
+        fail:"Count the different chord members in C–E–G–B♭–D.",
+        hint:"A complete seventh chord plus one additional third." } },
+    { say:"<b>Build the Dominant Extension Stack:</b> Below, the complete theoretical stack is written on C across three measures. Play it as block chords, then as stacked thirds to hear each new extension enter from the bottom. \u{1F447} <b>Answer after exploring the score.</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L105_mount(c,fb,{
+        heading:"C dominant: V in F major",
+        staff:{clef:"grand",keysig:"F",time:"4/4",tempo:60,notes:[
+          {p:"C3",d:"w",clef:"bass",label:"C9"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"G3",d:"w",chord:true,clef:"bass"},{p:"Bb3",d:"w",chord:true,clef:"bass",acc:"none"},{p:"D4",d:"w",chord:true},{bar:"single"},
+          {p:"C3",d:"w",clef:"bass",label:"C11"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"G3",d:"w",chord:true,clef:"bass"},{p:"Bb3",d:"w",chord:true,clef:"bass",acc:"none"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{bar:"single"},
+          {p:"C3",d:"w",clef:"bass",label:"C13"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"G3",d:"w",chord:true,clef:"bass"},{p:"Bb3",d:"w",chord:true,clef:"bass",acc:"none"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"final"}],width:480},
+        kb:{start:48,octaves:2,labels:true},
+        midLabel:"Root → 3rd → 5th → 7th → 9th → 11th → 13th",
+        buttons:[
+          {label:"▶ Play as block chords", run:H=>H.playStaff(0)},
+          {label:"▶ Play as stacked thirds", run:H=>H.arp(0,[13,14,15,16,17,18,19],[48,52,55,58,62,65,69])}
+        ],
+        caption:"These complete stacks demonstrate chord construction. Performers normally use fewer notes in practical voicings.",
+        question:{ q:"Which pitch is added to C11 to create the complete theoretical C13 stack?",
+          choices:["A, the thirteenth","F, the eleventh","C, the root"], answer:0,
+          ok:"Correct. A is a thirteenth above C and completes the theoretical C13 stack.",
+          no:"C11 already contains F (the 11th). The next third above F is A, the thirteenth." } }) } },
+    { say:"<b>Extension Numbers:</b> Chord extensions are named as compound intervals above the root: the 9th = a compound 2nd, the 11th = a compound 4th, the 13th = a compound 6th. Hear each interval from C, then compare all three. \u{1F447} <b>What is the simple equivalent of a thirteenth?</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L105_mount(c,fb,{
+        heading:"Extension intervals above C",
+        staff:{clef:"treble",tempo:0,notes:[
+          {p:"C4",d:"w",label:"M9"},{p:"D5",d:"w",chord:true},{bar:"single"},
+          {p:"C4",d:"w",label:"P11"},{p:"F5",d:"w",chord:true},{bar:"single"},
+          {p:"C4",d:"w",label:"M13"},{p:"A5",d:"w",chord:true},{bar:"final"}],width:360},
+        kb:{start:60,octaves:1.9167,labels:true},
+        buttons:[
+          {label:"▶ Hear root to 9th", run:H=>H.mel(0,[0,1],[60,74])},
+          {label:"▶ Hear root to 11th", run:H=>H.mel(0,[3,4],[60,77])},
+          {label:"▶ Hear root to 13th", run:H=>H.mel(0,[6,7],[60,81])},
+          {label:"▶ Hear all three", run:H=>{ H.mel(0,[0,1],[60,74]); setTimeout(()=>H.mel(0,[3,4],[60,77]),1300); setTimeout(()=>H.mel(0,[6,7],[60,81]),2600); }}
+        ],
+        midLabel:"9th = compound 2nd · 11th = compound 4th · 13th = compound 6th",
+        question:{ q:"What is the simple equivalent of a thirteenth?",
+          choices:["Sixth","Third","Fifth"], answer:0,
+          ok:"✓ Correct. Subtracting 7 from 13 gives 6, so a thirteenth is a compound sixth.",
+          no:"Reduce the compound interval: 13 − 7 = 6." } }) } },
+    { say:"<b>Chord-Symbol Quality:</b> When 9, 11, or 13 follows a bare root letter, the symbol normally indicates a dominant-seventh foundation: C9 = C7 with an added ninth, C11 = C7 with upper extensions through the eleventh, C13 = C7 with a thirteenth extension. Major- and minor-seventh foundations must be identified explicitly: Cmaj9, Cm9, Cmaj13, or Cm11. An added-tone symbol such as Cadd9 adds the ninth without implying a seventh. \u{1F447} <b>Which seventh does C9 contain?</b>",
+      try:{ type:"mc", choices:["B♭, a minor seventh above C","B♮, a major seventh above C","No seventh"], answer:0,
+        success:"✓ Correct. C9 is based on C7, so it contains B♭. Use Cmaj9 for a chord containing B♮.",
+        fail:"Begin with C7 and add D, the ninth.",
+        hint:"A bare root followed by 9 implies a dominant-seventh-quality foundation." } },
+    { say:"<b>C9, Cmaj9, Cm9, and Cadd9:</b> These four symbols on the same root sound clearly different. Play each and compare, listening especially to the seventh. \u{1F447} <b>Answer after comparing.</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L105_mount(c,fb,{
+        heading:"Root: C — isolated chord-symbol comparison",
+        staff:{clef:"grand",time:"4/4",tempo:66,notes:[
+          {p:"C3",d:"w",clef:"bass",label:"C9"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"Bb3",d:"w",chord:true,clef:"bass"},{p:"D4",d:"w",chord:true},{bar:"single"},
+          {p:"C3",d:"w",clef:"bass",label:"Cmaj9"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"B3",d:"w",chord:true,clef:"bass"},{p:"D4",d:"w",chord:true},{bar:"single"},
+          {p:"C3",d:"w",clef:"bass",label:"Cm9"},{p:"Eb3",d:"w",chord:true,clef:"bass"},{p:"Bb3",d:"w",chord:true,clef:"bass"},{p:"D4",d:"w",chord:true},{bar:"single"},
+          {p:"C3",d:"w",clef:"bass",label:"Cadd9"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"G3",d:"w",chord:true,clef:"bass"},{p:"D4",d:"w",chord:true},{bar:"final"}],width:520},
+        kb:{start:48,octaves:1.3333,labels:true},
+        buttons:[
+          {label:"▶ C9", run:H=>H.blockPlay([48,52,58,62],0,[0,1,2,3])},
+          {label:"▶ Cmaj9", run:H=>H.blockPlay([48,52,59,62],0,[5,6,7,8])},
+          {label:"▶ Cm9", run:H=>H.blockPlay([48,51,58,62],0,[10,11,12,13])},
+          {label:"▶ Cadd9", run:H=>H.blockPlay([48,52,55,62],0,[15,16,17,18])},
+          {label:"▶ Compare all four", run:H=>H.playSeq([
+            {si:0,midis:[48,52,58,62],indices:[0,1,2,3]},{si:0,midis:[48,52,59,62],indices:[5,6,7,8]},
+            {si:0,midis:[48,51,58,62],indices:[10,11,12,13]},{si:0,midis:[48,52,55,62],indices:[15,16,17,18]}],1.15)}
+        ],
+        caption:"Sevenths: C9 = B♭ (dominant) · Cmaj9 = B♮ (major) · Cm9 = E♭ and B♭ (minor) · Cadd9 = no seventh.",
+        question:{ q:"Which chord adds a ninth without including a seventh?",
+          choices:["Cadd9","C9","Cmaj9"], answer:0,
+          ok:"Correct. Cadd9 contains C–E–G–D and has no seventh. C9 contains the dominant seventh B♭.",
+          no:"An added-tone symbol adds the ninth but no seventh." } }) } },
+    { say:"<b>Practical Voicing:</b> The third and seventh normally define chord quality and function, while the named extension should be audible. The unaltered fifth is often omitted, while an altered fifth normally remains. The root may be omitted by a pianist or guitarist when a bass instrument supplies it. In a dominant 11th chord, the 11th must be present; because a natural 11th forms a minor ninth with the major third, the third is often omitted, producing a common 9sus4-type sonority. In a dominant 13th chord, the natural 11th is usually omitted, while the third, seventh, and thirteenth receive priority. The ninth may be included or omitted according to the voicing, style, and available instruments. \u{1F447} <b>Which chord member is often the first omitted from a large unaltered dominant voicing?</b>",
+      try:{ type:"mc", choices:["The perfect fifth","The named extension","The third in every context"], answer:0,
+        success:"✓ Correct. An unaltered perfect fifth is generally the first omission. In a dominant 11th the 3rd may also be omitted (it conflicts with the natural 11th), and in a dominant 13th the natural 11th is normally omitted.",
+        fail:"Identify the chord member that contributes the least new information when it is an unaltered perfect fifth.",
+        hint:"The unaltered perfect fifth is generally the first omission." } },
+    { say:"<b>Why the 3rd Is Often Omitted from C11:</b> The complete theoretical C11 contains both the major 3rd (E) and the natural 11th (F). Those two pitches form a harsh minor ninth. Hear the full stack, isolate the E–F clash, then hear the practical voicing resolve. \u{1F447} <b>Answer after listening.</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L105_mount(c,fb,{
+        heading:"C11 functioning as V in F major",
+        staves:[
+          {clef:"grand",keysig:"F",time:"4/4",tempo:60,notes:[
+            {p:"C3",d:"w",clef:"bass",label:"C11"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"G3",d:"w",chord:true,clef:"bass"},{p:"Bb3",d:"w",chord:true,clef:"bass",acc:"none"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{bar:"final"}],width:240},
+          {clef:"grand",keysig:"F",time:"4/4",tempo:60,notes:[
+            {p:"C3",d:"w",clef:"bass",label:"C11(no 3rd)"},{p:"Bb3",d:"w",chord:true,clef:"bass",acc:"none"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{bar:"single"},
+            {p:"F2",d:"w",clef:"bass",label:"Fmaj9"},{p:"A3",d:"w",chord:true,clef:"bass"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:360}
+        ],
+        staveLabels:["Complete theoretical C11 — major 3rd (E) and natural 11th (F): a minor-ninth conflict","Practical resolution"],
+        kb:{start:41,octaves:2.5,labels:true},
+        buttons:[
+          {label:"▶ Hear the complete theoretical C11", run:H=>H.playStaff(0)},
+          {label:"▶ Hear the E–F clash (minor 9th)", run:H=>H.blockPlay([52,65],0,[1,5])},
+          {label:"▶ Play C11 → Fmaj9", run:H=>H.playStaff(1)}
+        ],
+        caption:"In a practical dominant 11th voicing, the 11th must remain because it is the named extension. The major 3rd is often omitted to avoid the E–F minor-ninth clash.",
+        question:{ q:"Which chord member is often omitted from an unaltered dominant 11th voicing?",
+          choices:["The major 3rd","The 11th","The minor 7th"], answer:0,
+          ok:"Correct. The 11th is the named extension and must remain. The 3rd is often omitted to avoid its minor-ninth conflict with the natural 11th.",
+          no:"The 11th is the named extension, so it stays. Find the tone that clashes with it." } }) } },
+    { say:"<b>A Practical Dominant 13th Voicing:</b> A four-note C13 can express the chord clearly with only the root, 3rd, 7th, and 13th. Play it resolving to Fmaj9. \u{1F447} <b>Answer after listening.</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L105_mount(c,fb,{
+        heading:"C13 resolving to Fmaj9  ·  C13 as V in F major",
+        staff:{clef:"grand",keysig:"F",time:"4/4",tempo:60,notes:[
+          {p:"C3",d:"w",clef:"bass",label:"C13"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"Bb3",d:"w",chord:true,clef:"bass",acc:"none"},{p:"A4",d:"w",chord:true},{bar:"single"},
+          {p:"F2",d:"w",clef:"bass",label:"Fmaj9"},{p:"A3",d:"w",chord:true,clef:"bass"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:340},
+        kb:{start:41,octaves:2.5,labels:true},
+        buttons:[
+          {label:"▶ Play C13 → Fmaj9", run:H=>H.playStaff(0)}
+        ],
+        analysis:`<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:12px">
+          <div style="background:#eaf5ea;border:1px solid #bfe0bf;border-radius:8px;padding:6px 10px"><b style="color:#2e7d32">Retained</b><br>C = root · E = 3rd · B♭ = 7th · A = 13th</div>
+          <div style="background:#f6eeea;border:1px solid #e0cabf;border-radius:8px;padding:6px 10px"><b style="color:#c05a21">Omitted</b><br>G = unaltered 5th · D = 9th (optional) · F = natural 11th</div></div>`,
+        question:{ q:"Which tones define this practical C13 voicing?",
+          choices:["Root, 3rd, 7th, and 13th","Root and 5th only","All seven theoretical chord members"], answer:0,
+          ok:"Correct. C–E–B♭–A clearly expresses C13 while omitting less essential or conflicting tones.",
+          no:"The 3rd and 7th define quality; the 13th is the named extension. Together with the root, those four tones carry the chord." } }) } },
+    { say:"<b>Compare G9 and G13:</b> Two practical dominant voicings that differ only in the named extension. Both keep the defining 3rd and 7th and omit the unaltered 5th. \u{1F447} <b>Answer after comparing.</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L105_mount(c,fb,{
+        heading:"Key: C major — G is the dominant",
+        staff:{clef:"grand",time:"4/4",tempo:66,notes:[
+          {p:"G2",d:"w",clef:"bass",label:"G9"},{p:"F3",d:"w",chord:true,clef:"bass"},{p:"B3",d:"w",chord:true,clef:"bass"},{p:"A4",d:"w",chord:true},{bar:"single"},
+          {p:"G2",d:"w",clef:"bass",label:"G13"},{p:"F3",d:"w",chord:true,clef:"bass"},{p:"B3",d:"w",chord:true,clef:"bass"},{p:"E4",d:"w",chord:true},{bar:"final"}],width:340},
+        kb:{start:41,octaves:2.5,labels:true},
+        buttons:[
+          {label:"▶ Play G9", run:H=>H.blockPlay([43,53,59,69],0,[0,1,2,3])},
+          {label:"▶ Play G13", run:H=>H.blockPlay([43,53,59,64],0,[5,6,7,8])},
+          {label:"▶ Compare G9 and G13", run:H=>H.playSeq([{si:0,midis:[43,53,59,69],indices:[0,1,2,3]},{si:0,midis:[43,53,59,64],indices:[5,6,7,8]}],1.3)}
+        ],
+        analysis:`<div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap;font-size:12px">
+          <div style="background:#eef1ff;border:1px solid #cdd5e1;border-radius:8px;padding:6px 10px"><b style="color:#2F6DA8">G9</b><br>G = root · B = 3rd · F = 7th · A = 9th</div>
+          <div style="background:#f6eeea;border:1px solid #e0cabf;border-radius:8px;padding:6px 10px"><b style="color:#C05A21">G13</b><br>G = root · B = 3rd · F = 7th · E = 13th</div></div>`,
+        caption:"Practical G9 and G13 voicings retain the defining 3rd and 7th and omit the unaltered 5th.",
+        question:{ q:"Which pitch supplies the 13th in G13?",
+          choices:["E","A","D"], answer:0,
+          ok:"✓ Correct. E is a thirteenth above G, so it supplies the 13th in G13.",
+          no:"Count a thirteenth above G: the simple sixth above G is E." } }) } },
+    { say:"<b>Extended ii–V–I in C Major:</b> The core jazz cadence, dressed in extensions: Dm9 → G13 → Cmaj9. Play it slowly, at tempo, or one chord at a time, and follow the smooth voice leading. \u{1F447} <b>Answer after listening.</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L105_mount(c,fb,{
+        heading:"Key: C major",
+        staff:{clef:"grand",time:"4/4",tempo:66,notes:[
+          {p:"D3",d:"w",clef:"bass",label:"Dm9"},{p:"F3",d:"w",chord:true,clef:"bass"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{bar:"single"},
+          {p:"G2",d:"w",clef:"bass",label:"G13"},{p:"F3",d:"w",chord:true,clef:"bass"},{p:"B3",d:"w",chord:true,clef:"bass"},{p:"E4",d:"w",chord:true},{bar:"single"},
+          {p:"C3",d:"w",clef:"bass",label:"Cmaj9"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"B3",d:"w",chord:true,clef:"bass"},{p:"D4",d:"w",chord:true},{bar:"final"}],width:460},
+        kb:{start:41,octaves:1.9167,labels:true},
+        buttons:[
+          {label:"▶ Play slowly", run:H=>H.playStaff(0,40)},
+          {label:"▶ Play at normal tempo", run:H=>H.playStaff(0,84)},
+          {label:"▶ Play each chord separately", run:H=>H.playSeq([
+            {si:0,midis:[50,53,60,64],indices:[0,1,2,3]},{si:0,midis:[43,53,59,64],indices:[5,6,7,8]},{si:0,midis:[48,52,59,62],indices:[10,11,12,13]}],1.8,1.3)}
+        ],
+        analysis:`<div style="text-align:center;font-size:12px;color:#5a5f6b">Voice leading: C4 → B3 → B3 · E4 → E4 → D4 · F3 → F3 → E3</div>`,
+        caption:"An extended ii–V–I progression in C major: Dm9–G13–Cmaj9.",
+        question:{ q:"What is the harmonic function of G13 in this progression?",
+          choices:["Dominant, resolving toward Cmaj9","Tonic","Predominant"], answer:0,
+          ok:"Correct. G13 is an extended dominant chord that resolves to the tonic, Cmaj9.",
+          no:"G is the fifth scale degree of C major; the chord built on it functions as the dominant." } }) } },
+    { say:"<b>Compare the Colors of the Extensions:</b> Listen across the examples you have built and answer both questions. \u{1F447} <b>Use the buttons, then choose.</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L105_colors(c,fb) } },
+    { say:"<b>Why Extensions Conventionally Stop at 13:</b> Continuing the diatonic stack of thirds above the thirteenth produces the fifteenth, which duplicates the root two octaves higher. The seven-note tertian stack has now included every diatonic pitch class; the fifteenth repeats the root. For this reason, 9, 11, and 13 are the conventional chord-extension numbers. <b>Remember: 9 = +2 · 11 = +4 · 13 = +6, all over a dominant 7th by default.</b> \u{1F447} <b>Why is 13 the highest conventional extension number?</b>",
+      try:{ type:"mc", choices:["The next stacked third produces the fifteenth, which duplicates the root","Performers cannot count above 13","The number 13 has a special rhythmic meaning"], answer:0,
+        success:"✓ Correct. A complete thirteenth stack contains all seven diatonic letter names; the fifteenth repeats the root.",
+        fail:"Continue the diatonic stack one third above the thirteenth.",
+        hint:"In a C13 stack, A is the thirteenth and the next third is C." } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which voicing provides a practical root-present C13 sonority?</b>",
+      try:{ type:"mc", choices:["C–E–B♭–A: root, third, seventh, and thirteenth","All seven theoretical chord members in every performance","C and G only"], answer:0,
+        success:"✓ Correct. C–E–B♭–A includes the root, the two guide tones, and the named extension. Other valid voicings may include the ninth, omit the root when a bassist supplies it, or redistribute the notes among registers.",
+        fail:"Identify the root, guide tones, and named extension.",
+        hint:"For this root-present dominant voicing, use C, E, B♭, and A." } }
   ],
   examples:[
-    { caption:"Key: A minor — i → N⁶ → V → i. In the direct N⁶–V connection, B♭ may move to G♯, a diminished third.",
-      staff:{clef:"grand",tempo:72,time:"4/4",notes:[
-        {p:"A2",d:"w",clef:"bass",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"single"},
-        {p:"D3",d:"w",clef:"bass",label:"N⁶"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{bar:"single"},
-        {p:"E3",d:"w",clef:"bass",label:"V"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{bar:"single"},
-        {p:"A2",d:"w",clef:"bass",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"final"}],width:640},
-      kb:{start:45,octaves:2.1667,labels:true} },
-    { caption:"Key: A minor — ♭2 → 1̂ → 7̂ → 1̂. With a cadential i⁶₄ between N⁶ and V, ♭2 descends stepwise B♭–A–G♯ before resolving to A.",
-      staff:{clef:"treble",tempo:76,time:"4/4",notes:[
-        {p:"Bb4",d:"q",label:"♭2 (B♭)"},{p:"A4",d:"q",label:"1̂ (A)"},{p:"G#4",d:"q",label:"7̂ (G♯)"},{p:"A4",d:"q",label:"1̂ (A)"},{bar:"final"}],width:480},
-      kb:{start:65,octaves:0.5,labels:true} },
-    { caption:"Key: A major — the same Neapolitan, B♭–D–F. In a major key both ♭2 (B♭) and ♭6 (F♮) are chromatic (A major's scale has F♯), and the tonic is major (C♯). Compare it with the A-minor version above.",
-      staff:{clef:"grand",tempo:72,time:"4/4",notes:[
-        {p:"A2",d:"w",clef:"bass",label:"I"},{p:"C#4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"single"},
-        {p:"D3",d:"w",clef:"bass",label:"N⁶"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{bar:"single"},
-        {p:"E3",d:"w",clef:"bass",label:"V"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{bar:"single"},
-        {p:"A2",d:"w",clef:"bass",label:"I"},{p:"C#4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"final"}],width:640},
-      kb:{start:45,octaves:2.1667,labels:true} }
+    { mount:(host)=>MF_L105_review(host) }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Neapolitan-Chord Identification",
-      intro:"Identify the Neapolitan's spelling, inversion, and predominant function.",
-      miaIntro:"Major triad on \u{266D}2, commonly in first inversion.",
+    { type:"gen-race", title:"Game 1 · Extended-Chord Identification (45s)",
+      intro:"Identify chord extensions, symbols, and practical voicings.",
+      miaIntro:"Identify the 9th, 11th, and 13th.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["The Neapolitan","a major triad on \u{266D}2"],
-        ["In A minor","B\u{266D}-D-F"],
-        ["Usual position","first inversion (N⁶)"],
-        ["N⁶'s bass note","the 4th scale degree"],
-        ["Function","predominant \u{2192} V"],
-        ["\u{266D}2 resolves","down toward the leading tone"],
-        ["More common in","minor"],
-        ["N of E minor","F major"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Neapolitan chords identified!":null },
-    { type:"key-climb", title:"Game 2 · Perform the Neapolitan Progression",
-      intro:"Play the complete progression i-N⁶-V-i in A minor: Am → B♭/D → E → Am. Then compare it with i-N⁶-i⁶₄-V-i.",
-      miaIntro:"Listen to the predominant-dominant-tonic motion.",
-      spec:{seq:[57,50,52,45],
-        chords:[[57,60,64],[50,53,58],[52,56,59],[45,48,52]],
-        names:["Am (i)","B♭/D (N⁶)","E major (V)","Am (i)"],
-        start:45, octaves:1.5833, title:"The Neapolitan progression: i - N⁶ - V - i"},
-      result:(score)=>score!==null?"You performed both Neapolitan progressions.":null },
-    { type:"symbol-hunt", title:"Game 3 · Identify the Neapolitan",
-      intro:"Examine each chord in A minor and select the Neapolitan chord or its first inversion.",
-      miaIntro:"Locate \u{266D}2 and confirm the major-triad spelling.",
+        ["9th chord","7th chord + a 3rd"],
+        ["The 9th","a compound 2nd"],
+        ["The 11th","a compound 4th"],
+        ["The 13th","a compound 6th"],
+        ["Bare number (C9)","dominant family"],
+        ["First note omitted","the unaltered 5th"],
+        ["Why stop at 13","the 15th repeats the root"],
+        ["C9 spelled","C-E-G-B\u{266D}-D"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?"Extended chords identified!":null },
+    { type:"key-climb", title:"Game 2 · Build a G13 Voicing",
+      intro:"First build the complete theoretical stack G–B–D–F–A–C–E. Then play a practical G13 voicing such as G–B–F–E, or B–F–A–E when a bass instrument supplies G.",
+      miaIntro:"Retain the guide tones and the thirteenth.",
+      spec:{seq:[55,59,65,76],
+        names:["G (root)","B (3rd)","F (7th)","E (13th)"],
+        start:53, octaves:1.9167, title:"A practical G13"},
+      result:(score)=>score!==null?"You compared the complete stack with a practical voicing.":null },
+    { type:"symbol-hunt", title:"Game 3 · Identify the Extension",
+      intro:"Examine each chord symbol and voicing, then identify the named extension.",
+      miaIntro:"Find the extension by its relationship to the root, not simply by the highest sounding pitch.",
       spec:{rounds:6, pool:[
-        {label:"N⁶ (D-F-B♭)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true}],width:150}},
-        {label:"iv (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}},
-        {label:"ii° (B-D-F)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}},
-        {label:"V (E-G♯-B)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"You identified the Neapolitan chord correctly.":null },
-    { type:"term-race", title:"Game 4 · Construct N⁶",
-      intro:"Construct the Neapolitan triad and place its chordal third in the bass.",
-      miaIntro:"Find \u{266D}2, build a major triad, and invert it.",
+        {label:"C9 (C-E-B♭-D)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
+        {label:"C13 (C-E-B♭-A)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{p:"A5",d:"w",chord:true}],width:150}},
+        {label:"Cmaj9 (C-E-B-D)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
+        {label:"Plain C7", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"You identified the extensions correctly.":null },
+    { type:"term-race", title:"Game 4 · Reduce and Construct",
+      intro:"Reduce compound intervals and construct their corresponding chord extensions.",
+      miaIntro:"9 → 2, 11 → 4, 13 → 6.",
       spec:{rounds:8, reverse:true, pool:[
-        ["N of A minor","B\u{266D} major"],
-        ["N of E minor","F major"],
-        ["N of D minor","E\u{266D} major"],
-        ["N of B minor","C major"],
-        ["N of C minor","D\u{266D} major"],
-        ["N's PD role","near ii\u{00B0}\u{2076} or iv"],
-        ["N⁶'s figure","6 (first inversion)"],
-        ["After N⁶ comes","V"]]},
-      result:(score)=>score>=6?"You constructed the Neapolitan chords correctly.":null }
+        ["9 − 7","2"],["11 − 7","4"],["13 − 7","6"],
+        ["C9's added note","D"],["C11's added note","F"],["C13's added note","A"],
+        ["Cmaj9's 7th","B natural"],["Cm9's triad","C minor"]]},
+      result:(score)=>score>=6?"You reduced and constructed the extensions correctly.":null }
   ],
-  practiceIntro:"Complete 20 practice questions on Neapolitan-chord spelling, inversion, function, and voice leading.",
+  practiceIntro:"Complete 20 practice questions on theoretical stacks, chord symbols, extensions, and practical voicings.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["\u{266D}II","the Neapolitan"],["N⁶","first inversion"],["Function","predominant"],["Target","V"],["More common in","minor"]], reverse:true}, count:6 },
-    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 },
-    { type:"mc", q:"The Neapolitan is built on…", choices:["the lowered 2nd degree","the raised 4th","the 7th"], answer:0, explain:"The Neapolitan is a major triad built on scale degree ♭2." },
-    { type:"mc", q:"In A minor, the Neapolitan is…", choices:["B♭ major","B major","G♯ diminished"], answer:0, explain:"In A minor, the Neapolitan is B♭-D-F." },
-    { type:"mc", q:"N⁶ means the Neapolitan in…", choices:["first inversion","root position","third inversion"], answer:0, explain:"N⁶ indicates the Neapolitan in first inversion." },
-    { type:"mc", q:"The Neapolitan's function is…", choices:["predominant","dominant","tonic"], answer:0, explain:"The Neapolitan normally serves predominant function." },
-    { type:"truefalse", q:"The Neapolitan is a major triad.", answer:true, explain:"The Neapolitan is a major triad built on ♭2." },
-    { type:"truefalse", q:"In common Neapolitan voice leading, ♭2 frequently descends toward the leading tone, either directly or through the tonic scale degree.", answer:true, explain:"B♭ may move directly to G♯ or pass through A." },
-    { type:"truefalse", q:"The Neapolitan is a chromatic chord in both major and minor keys.", answer:true, explain:"♭2 is chromatic in both modes, though the chord is especially common in minor-key repertoire." },
-    { gen:"term-match", params:{subject:"term", pool:[["N of D minor","E\u{266D}"],["N of E minor","F"],["N's PD role","near iv/ii\u{00B0}"],["N⁶ bass","degree 4"]], reverse:true}, count:3 },
-    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["9th","compound 2nd"],["11th","compound 4th"],["13th","compound 6th"],["Bare 9/13","dominant family"],["Omit first","the unaltered 5th"]], reverse:true}, count:6 },
+    { gen:"interval-quality", params:{ask:"quality"}, count:2 },
+    { type:"mc", q:"A complete ninth chord is a seventh chord plus…", choices:["another third above","a rest","a new root"], answer:0, explain:"A complete ninth chord adds another third above a seventh chord." },
+    { type:"mc", q:"C9 is theoretically spelled…", choices:["C–E–G–B♭–D","C–E–G–B♮–D","C–D–E–F–G"], answer:0, explain:"C9 is theoretically spelled C–E–G–B♭–D." },
+    { type:"mc", q:"The thirteenth above C is…", choices:["A","F","E"], answer:0, explain:"A is the thirteenth above C and the simple sixth above C." },
+    { type:"mc", q:"Cmaj9 and C9 differ in the quality of their…", choices:["seventh (B♮ vs B♭)","root","ninth"], answer:0, explain:"Cmaj9 and C9 differ in the quality of their seventh: B♮ versus B♭." },
+    { type:"truefalse", q:"An unaltered perfect fifth is often the first tone omitted from a dense extended-chord voicing.", answer:true, explain:"An altered fifth should remain when it defines the chord quality." },
+    { type:"truefalse", q:"In a practical dominant 11th voicing, the 3rd is often omitted while the 11th remains.", answer:true, explain:"The natural 11th clashes with the major 3rd, so the 3rd is often dropped; the 11th is the named extension and stays." },
+    { type:"truefalse", q:"A bare symbol such as C13 normally implies a dominant-seventh-quality foundation.", answer:true, explain:"Bare numbers indicate the dominant family." },
+    { gen:"term-match", params:{subject:"term", pool:[["G13's 13th","E"],["Essentials","root, 3rd, 7th + extension"],["Dom 11th omits","the 3rd"],["Dom 13th omits","the natural 11th"]], reverse:true}, count:3 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
   ],
   vocabulary:[
-    {term:"Neapolitan Chord (♭II)", def:"A major triad built on lowered scale degree 2."},
-    {term:"N⁶", def:"The Neapolitan in first inversion, with scale degree 4 in the bass."},
-    {term:"Predominant Function", def:"Prepares V, like ii°⁶ or iv."},
-    {term:"The ♭2 Resolution", def:"♭2 descends toward the leading tone, directly or through the tonic."}
+    {term:"Extended Chord", def:"A seventh chord extended by thirds to the 9th, 11th, or 13th."},
+    {term:"Default Quality", def:"A bare 9, 11, or 13 normally implies a dominant seventh."},
+    {term:"Practical Voicing", def:"Keep defining tones and the named extension; omit less essential tones."},
+    {term:"The 13 Ceiling", def:"The next stacked third is the 15th, which repeats the root."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>♭II</b> is a major triad built on the lowered second scale degree.",
-    "✔ <b>N⁶</b> is the standard first-inversion form, with scale degree 4 in the bass.",
-    "✔ The Neapolitan has <b>predominant function</b> and prepares V.",
-    "✔ <b>♭2 descends</b> toward the leading tone, directly or through the tonic.",
-    "✔ More common in <b>minor</b> but also occurs in major."
+    "✔ Continuing the stack of thirds produces the 9th, 11th, and 13th.",
+    "✔ A bare 9, 11, or 13 normally implies a dominant-seventh foundation.",
+    "✔ Complete theoretical stacks contain every intervening third; practical voicings use fewer notes.",
+    "✔ The unaltered 5th is commonly the first omitted tone.",
+    "✔ In a dominant 11th, the 11th remains and the 3rd is often omitted.",
+    "✔ In a dominant 13th, the 3rd, 7th, and 13th receive priority, while the natural 11th is usually omitted.",
+    "✔ A 15th repeats the root, so 13 is the highest conventional extension number."
   ],
   tips:[
-    "Fastest spell: go a half step above the tonic, build major, then flip to first inversion.",
-    "The N⁶ → V move often passes through a cadential i⁶₄ — listen for it in real scores.",
-    "Film composers use N for instant menace — listen for the flat-two glow under villains.",
-    "Next lesson: three chromatic chords named after countries — the augmented sixths."
+    "Two-hand recipe: left hand root+7th, right hand 3rd+extension — instant jazz.",
+    "The 9th is the friendliest extension — try Cmaj9 wherever Cmaj7 lived.",
+    "Dominant 11ths usually drop the 3rd (or become sus chords) to avoid the clash.",
+    "Next lesson: chords that replace or add without stacking — sus and add revisited."
   ],
-  rewards:{ badge:"Flat-Side Voyager", icon:"\u{1F30B}" },
+  rewards:{ badge:"Skyline Stacker", icon:"\u{1F5FC}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Major triad on ♭2, commonly in first inversion, with predominant function.",
+  miaQuizIntro:"Quiz: Construct the theoretical stack, interpret the chord symbol, and select a practical voicing.",
   quiz:[
-    { type:"mc", q:"The Neapolitan chord is a…", choices:["major triad on ♭2","minor triad on 2","diminished triad on 7"], answer:0, explain:"A major triad built on ♭2.", hint:"Its quality." },
-    { type:"mc", q:"In A minor the Neapolitan is spelled…", choices:["B♭-D-F","B-D-F","B♭-D♭-F"], answer:0, explain:"B♭-D-F in A minor.", hint:"Half step above A." },
-    { type:"mc", q:"Why 'N⁶'?", choices:["It appears in first inversion","It has six notes","It lasts six beats"], answer:0, explain:"N⁶ indicates first inversion, abbreviated from 6/3.", hint:"First-inversion figure." },
-    { type:"mc", q:"N⁶'s bass note in A minor is…", choices:["D","B♭","F"], answer:0, explain:"D, the chordal third and scale degree 4, is in the bass.", hint:"Diatonic bass." },
-    { type:"mc", q:"The Neapolitan most commonly serves which function?", choices:["predominant","dominant","tonic substitute"], answer:0, explain:"It normally prepares V, sometimes through a cadential i⁶₄.", hint:"Before V." },
-    { type:"mc", q:"Which progression shows a common use of the Neapolitan?", choices:["i → N⁶ → i⁶₄ → V → i","i → N⁶ → IV without dominant preparation","N⁶ as the final tonic"], answer:0, explain:"N⁶ commonly prepares a cadential i⁶₄ and dominant before tonic; a direct N⁶-V-i is also possible.", hint:"Through the dominant." },
-    { type:"mc", q:"In common Neapolitan voice leading, ♭2 frequently moves…", choices:["down toward the leading tone, directly or through scale degree 1","up to scale degree 3 in every case","nowhere in every case"], answer:0, explain:"B♭ may fall to G♯ directly or through A.", hint:"A diminished 3rd." },
-    { type:"mc", q:"Identify the chord in A minor.",
-      staff:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true}],width:160},
-      choices:["N⁶","iv","ii°"], answer:0, explain:"D-F-B♭ is a first-inversion B♭ major triad built on ♭2.", hint:"Find the B♭." },
-    { type:"truefalse", q:"The Neapolitan is diatonic to the minor scale.", answer:false, explain:"Its root, ♭2, is chromatic in both major and minor keys.", hint:"♭2 is chromatic." },
-    { type:"truefalse", q:"The Neapolitan can occupy a predominant position similar to ii°⁶ or iv.", answer:true, explain:"It fills a predominant slot but remains a distinct chromatic chord.", hint:"PD substitutes." },
-    { type:"mc", q:"What is the Neapolitan chord in D minor?", choices:["E♭ major","E major","F major"], answer:0, explain:"♭2 of D = E♭.", hint:"Half step above D." },
-    { type:"mc", q:"Which statement about the Neapolitan in major keys is accurate?", choices:["it may be created through chromatic alteration of scale degrees 2 and 6","it can never appear","it functions as the tonic chord"], answer:0, explain:"In a major key, the Neapolitan requires ♭2 and ♭6 and normally serves predominant function.", hint:"Chromatic alteration." }
+    { type:"mc", q:"Extended tertian chords continue stacking thirds beyond the…", choices:["Seventh","Root","Third only"], answer:0, explain:"Into 9-11-13 land.", hint:"Past the seventh chord." },
+    { type:"mc", q:"The 9th is a compound…", choices:["2nd","3rd","5th"], answer:0, explain:"9−7=2.", hint:"Subtract 7." },
+    { type:"mc", q:"The 11th is a compound…", choices:["4th","6th","2nd"], answer:0, explain:"11−7=4.", hint:"Subtract 7." },
+    { type:"mc", q:"The 13th is a compound…", choices:["6th","4th","7th"], answer:0, explain:"13−7=6.", hint:"Subtract 7." },
+    { type:"mc", q:"Which pitches form the complete theoretical C9 chord?", choices:["C–E–G–B♭–D","C–E–G–B♮–D","C–E–A–D"], answer:0, explain:"C7 + D.", hint:"Dominant default." },
+    { type:"mc", q:"Which symbol represents a major-seventh-based ninth chord on C?", choices:["Cmaj9","C9","Cm9"], answer:0, explain:"Say maj for B♮.", hint:"Name the quality explicitly." },
+    { type:"mc", q:"Which chord member is often omitted from a dense extended dominant voicing when it is unaltered?", choices:["Perfect fifth","Altered fifth","Named extension"], answer:0, explain:"An unaltered perfect fifth is the usual omission; an altered fifth should remain.", hint:"An unaltered fifth is often optional." },
+    { type:"mc", q:"Identify the chord.", staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:160},
+      choices:["C9 with the perfect fifth omitted","Cmaj7","C13"], answer:0, explain:"C, E, B♭, and D provide the root, third, minor seventh, and ninth.", hint:"The ninth need not be the highest note." },
+    { type:"truefalse", q:"A complete theoretical thirteenth chord contains seven different diatonic chord members.", answer:true, explain:"Actual performance voicings normally omit one or more members.", hint:"Count them." },
+    { type:"truefalse", q:"In a practical dominant 13th voicing, the natural 11th is usually omitted.", answer:true, explain:"The natural 11th clashes with the major 3rd, so it is normally left out while the 3rd, 7th, and 13th receive priority.", hint:"Priority: 3rd, 7th, 13th." },
+    { type:"mc", q:"In C major, Dm9–G13–Cmaj9 elaborates which progression?", choices:["ii–V–I","Twelve-bar blues","Plagal cadence"], answer:0, explain:"An extended ii–V–I.", hint:"Count degrees: 2–5–1." },
+    { type:"mc", q:"Which statement best describes practical extended-chord voicing?", choices:["Prioritize chord-defining tones and the named extension; omissions depend on chord type, instrumentation, and context","Every extended chord must contain all seven theoretical members","Every extended chord should contain only the root and fifth"], answer:0, explain:"Thirds, sevenths, alterations, and named extensions often define the chord, while roots and perfect fifths may be supplied or omitted according to context.", hint:"Chord-defining tones plus the named extension." }
   ],
-  miaPerfect:"Perfect score! You accurately constructed and analyzed the Neapolitan chord.",
-  miaPass:"You passed! Next, you will study augmented-sixth chords.",
+  miaPerfect:"Perfect score! You accurately constructed and interpreted ninth, eleventh, and thirteenth chords.",
+  miaPass:"You passed! Next, you will compare suspended and added-tone chords.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"B♭ major in A minor — the Neapolitan (♭II): chromatic predominant, driving into V.",
-      play:()=>{[[60,64,69],[62,65,70],[59,64,68],[60,64,69]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.27)));} },
-    learn:{ label:"the Neapolitan",
-      explain:"Major triad on ♭2, standard in first inversion (N⁶, degree-4 bass), predominant to V; ♭2 falls toward the leading tone.",
-      hint:"Half step up, made major.",
-      play:()=>{[50,53,58].forEach(m=>MFAudio.tone(m,.9,.05,.28));[52,56,59].forEach(m=>MFAudio.tone(m,1.0,1.0,.28));} },
+      explain:"The stack grew past the octave — 9th, 11th, then 13th: extended chords.",
+      play:()=>{[[55,59,62,65],[55,59,62,65,69],[55,59,65,69,76]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.9,.30)));} },
+    learn:{ label:"extended chords",
+      explain:"Stack 3rds past the 7th: 9/11/13 (compound 2/4/6). Bare numbers = dominant family. Voice the essentials; omit the unaltered 5th first (the 3rd in a dominant 11th, the natural 11th in a dominant 13th). Build, compare, and use each one in Learn by Doing.",
+      hint:"Minus 7 names the color.",
+      play:()=>{[55,59,65,69,76].forEach(m=>MFAudio.tone(m,.9,.05,.30));} },
     example:{ label:"the examples",
-      explain:"Example 1 runs the i-N⁶-V-i route in A minor; example 2 isolates ♭2 stepping down to the leading tone; example 3 shows the same Neapolitan in A major, where ♭2 and ♭6 are both chromatic." },
+      explain:"Replay the Learn-by-Doing scores: the 9–11–13 stack, the practical C11 and C13 voicings, and the extended ii–V–I." },
     game:{ label:"the games",
-      explain:"Sprint the facts, walk the bass route, spot N⁶ among lookalikes, then build Neapolitans across keys.",
-      hint:"D-F-B♭ vs D-F-A: one half step." },
+      explain:"Sprint the stacks, climb a G13, name extensions on cards, then reduce compounds at speed.",
+      hint:"Root-3rd-7th + color." },
     quiz:{ label:"this question",
-      explain:"Three checks: lowered 2nd as root? major quality? first inversion heading to V? Then it is the Neapolitan.",
-      play:()=>{[50,53,58].forEach(m=>MFAudio.tone(m,.9,.05,.28));} }
+      explain:"Subtract 7 to name the extension; check the 7th for family (B♭ = dominant, B = maj); essentials carry the sound.",
+      play:()=>{[55,59,65,69].forEach(m=>MFAudio.tone(m,.9,.05,.30));} }
   }
 };

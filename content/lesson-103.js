@@ -1,226 +1,262 @@
-/* Lesson 103 — Larger Instrumental Forms (Book 4, Unit 25 — SELF-AUTHORED)
-   Core: MINUET & TRIO (ternary of ternaries, 3/4, moderate) · SCHERZO
-   (its faster replacement) · MARCH (duple, trio section) · CONCERTO intro
-   (soloist vs orchestra, three movements, cadenza).
+/* Lesson 103 (15.3, formerly L106) — Augmented-Sixth Chords (Book 4, Unit 26 — SELF-AUTHORED)
+   Core: predominants built on ♭6 with the interval of an AUGMENTED 6TH
+   (♭6 up to ♯4) that expands OUTWARD to an octave on 5 (the V's root).
+   Italian (3 notes), French (adds 2), German (adds ♭3).
    NOTE: edit by FULL-FILE REWRITE only. */
 
+/* interactive resolution: grand-staff chord(s) + play (score & keyboard highlight in sync) + keyboard + a question */
+function MF_L103_res(container,fb,cfg){
+  container.innerHTML=`<div style="text-align:center;font-weight:800;font-size:12.5px;color:#5a4a12;margin-bottom:2px">${cfg.heading}</div>
+    <div class="l106-st"></div>
+    <div style="text-align:center;margin-top:6px"><button class="play l106-pl">${cfg.playLabel}</button></div>
+    <div class="l106-kb" style="margin-top:8px"></div>
+    <div class="choices l106-ch" style="margin-top:10px"></div>`;
+  const api=Staff.render(container.querySelector(".l106-st"),cfg.staff);
+  let kbApi=null;
+  if(cfg.kb) kbApi=Keyboard.create(container.querySelector(".l106-kb"),cfg.kb);
+  const pApi=kbApi?{svg:api.svg,highlight:(ix,keep)=>{ api.highlight(ix,keep);
+    if(ix!=null){ const n=cfg.staff.notes[ix]; if(n&&n.rest===undefined&&n.bar===undefined&&(n.p||n.sound)) kbApi.press(MFAudio.midi(n.sound||n.p),true); } }}:api;
+  container.querySelector(".l106-pl").onclick=()=>Staff.play(cfg.staff,pApi);
+  const ch=container.querySelector(".l106-ch");
+  cfg.choices.forEach((c,i)=>{ const b=document.createElement("button"); b.textContent=c;
+    b.onclick=()=>{ if(i===cfg.answer) fb(true,cfg.ok); else { MFAudio.tone(40,.2); fb(false,cfg.no); } };
+    ch.appendChild(b); });
+}
+
 LESSON_CONTENT[103]={
-  welcome:"Compare instrumental movement forms and multi-movement genres.",
+  welcome:"Augmented-sixth chords use contrary half-step motion to approach the dominant.",
   hook:{
-    say:"<b>Listen to a triple-meter dance, a contrasting middle section, and the return of the opening dance.</b> \u{1F447} <b>Which movement form does this describe?</b>",
+    say:"<b>Two voices form an augmented sixth and move outward by half step, arriving on pitches an octave apart.</b> \u{1F447} <b>Which scale degree do they approach?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Minuet → trio → minuet</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Minuet and trio—a large ternary design</button><button>A fugue</button><button>Twelve-bar blues</button></div>`;
+          <button class="play hk-a">▶ Play the augmented sixth resolving outward</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Both voices approach scale degree 5, an octave apart</button><button>Both voices move inward to a unison on the tonic</button><button>Nowhere</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{
-          let t=0; const q=.42;
-          /* Minuet (A) — bright, high, C major */
-          [72,76,79,77,74,71].forEach(m=>{MFAudio.tone(m,q*.9,t,.28);t+=q;});
-          MFAudio.tone(72,q*1.8,t,.30);t+=q*2;
-          /* Trio (B) — lower register, softer, a NEW key (F#), smoother motion */
-          MFAudio.tone(62,q*.95,t,.15);t+=q; MFAudio.tone(66,q*.95,t,.15);t+=q; MFAudio.tone(69,q*.95,t,.15);t+=q;
-          MFAudio.tone(67,q*1.9,t,.15);t+=q*2; MFAudio.tone(62,q*.95,t,.15);t+=q;
-          MFAudio.tone(67,q*1.8,t,.15);t+=q*2;
-          /* Minuet (A) returns — bright and high again */
-          [72,76,79].forEach(m=>{MFAudio.tone(m,q*.9,t,.28);t+=q;});
-          MFAudio.tone(72,q*1.8,t,.30);t+=q*2;
-          setTimeout(()=>ch.style.display="",t*1000+400);
-        };
+        container.querySelector(".hk-a").onclick=()=>{ MFAudio.tone(53,.9,.05,.34); MFAudio.tone(63,.9,.05,.34); MFAudio.tone(52,1.1,1.0,.34); MFAudio.tone(64,1.1,1.0,.34); setTimeout(()=>ch.style.display="",2400); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. Minuet–trio–minuet creates an overall ternary design. The trio provides contrast before the opening minuet returns.");
-          else fb(false,"Compare the three-part plan with ternary form: A–B–A.");
+          if(i===0) fb(true,"✓ Correct. In A minor, F and D♯ form an augmented sixth. F descends by half step to E4, while D♯ ascends by half step to E5. The two voices arrive on scale degree 5, an octave apart.");
+          else fb(false,"Follow the contrary motion: the lower note descends by half step, and the upper note ascends by half step.");
         });
       } }
   },
   objectives:[
-    "MINUET & TRIO: a triple-meter dance movement in a large A–B–A design; each main section is commonly binary",
-    "SCHERZO: the minuet's faster, more energetic successor",
-    "MARCH: duple or quadruple meter, often with a contrasting trio",
-    "CONCERTO (intro): soloist(s) in dialogue or contrast with an ensemble, commonly three movements, cadenza",
-    "Place these forms inside multi-movement works",
-    "Recognize each by meter, tempo and plan"
+    "Build the characteristic augmented sixth from ♭6 up to ♯4",
+    "Resolve ♭6 and ♯4 outward by half step to scale degree 5",
+    "Build It⁺⁶: ♭6, 1, and ♯4",
+    "Build Fr⁺⁶: ♭6, 1, 2, and ♯4",
+    "Build Ger⁺⁶: ♭6, 1, ♭3, and ♯4",
+    "Identify augmented-sixth chords as chromatic predominants leading to V"
   ],
   steps:[
-    { say:"<b>Minuet and Trio:</b> A minuet is a triple-meter dance associated especially with the Baroque and Classical periods. In a minuet-and-trio movement, the minuet is followed by a contrasting trio and then returns, producing a large A–B–A design. The minuet and trio are each commonly written in rounded binary or another binary design. The return of the minuet is often marked \u{201C}Minuet da capo\u{201D} and may be performed without repeating its internal sections. \u{1F447} <b>What is the trio in a minuet-and-trio movement?</b>",
-      try:{ type:"mc", choices:["The contrasting middle section","The final chord","A three-note motive"], answer:0,
-        success:"✓ Correct. The trio is the contrasting middle section of the larger A–B–A design. Its name reflects historical associations with reduced three-part scoring, although later trios are not limited to three instruments.",
-        fail:"Identify the contrasting section between the two statements of the minuet.",
-        hint:"Minuet–trio–minuet corresponds to A–B–A." } },
-    { say:"<b>Scherzo and Trio:</b> The scherzo developed as an alternative to the minuet in many multi-movement works. It commonly uses fast triple meter and a large scherzo–trio–scherzo design. The Italian word \u{201C}scherzo\u{201D} means \u{201C}joke,\u{201D} but musical scherzos may be playful, energetic, dramatic, or even ominous. Beethoven helped establish the scherzo as a frequent replacement for the minuet in symphonies and other large instrumental works. \u{1F447} <b>Compared with a Classical minuet, a scherzo commonly has…</b>",
-      try:{ type:"mc", choices:["A faster tempo and more energetic rhythmic character","A requirement to abandon triple meter","No possibility of a trio section"], answer:0,
-        success:"✓ Correct. A scherzo often retains the large ternary plan while using a faster tempo and more active rhythmic character.",
-        fail:"Compare the tempo, articulation, and rhythmic character.",
-        hint:"A scherzo is commonly faster and more energetic than a minuet." } },
-    { say:"<b>March:</b> A march is an instrumental or vocal genre characterized by a regular pulse and rhythms associated with coordinated movement. Marches commonly use duple or quadruple meter. Many traditional military and concert marches include a contrasting trio, often in a related key such as the subdominant, but not every march uses this form. \u{1F447} <b>Which meter type is especially common in marches?</b>",
-      try:{ type:"mc", choices:["Duple or quadruple meter","Triple meter only","Free rhythm only"], answer:0,
-        success:"✓ Correct. Marches frequently organize their pulse in groups of two or four. Some traditional marches also include a contrasting trio.",
-        fail:"Listen for regularly grouped duple pulses.",
-        hint:"Common march meters include 2/4, cut time, and 4/4." } },
-    { say:"<b>Concerto—Introduction:</b> A concerto is an instrumental genre featuring one or more soloists in dialogue or contrast with an ensemble. Classical concertos commonly use three movements in a fast–slow–fast arrangement. First movements often adapt sonata form to concerto procedures, sometimes including orchestral and solo expositions. A cadenza is a virtuosic solo passage, traditionally improvised but often written out in later repertoire. In many Classical first movements, it occurs near the end, when the orchestra pauses before the final cadence. \u{1F447} <b>What is a cadenza?</b>",
-      try:{ type:"mc", choices:["A virtuosic passage that highlights the soloist","The orchestra's loudest chord","A type of melodic ornament"], answer:0,
-        success:"✓ Correct. A cadenza highlights the soloist and was historically often improvised, although many cadenzas are written out.",
-        fail:"Identify the passage that gives the soloist extended prominence.",
-        hint:"It often occurs near a major cadence in a concerto movement." } },
-    { say:"<b>A Common Four-Movement Cycle:</b> Many Classical symphonies, string quartets, and other large instrumental works use a four-movement plan. This is a common model rather than a universal requirement. \u{1F447} <b>In a conventional four-movement Classical cycle, where does the minuet or scherzo commonly appear?</b>",
+    { say:"<b>The Characteristic Interval:</b> An augmented sixth is formed from scale degree ♭6 up to scale degree ♯4. In A minor, F up to D♯ forms an augmented sixth, one half step larger than a major sixth. These scale-degree labels use the major scale built on the tonic as the reference. Therefore, in A minor, F is labeled ♭6 and D♯ is labeled ♯4. In minor, ♭6 is normally diatonic, while ♯4 is chromatic. In major, both pitches are chromatically altered. \u{1F447} <b>Which scale degrees form the characteristic augmented sixth?</b>",
+      try:{ type:"mc", choices:["♭6 below and ♯4 above","1 below and 5 above","2 below and 7 above"], answer:0,
+        success:"✓ Correct. Scale degree ♭6 forms the lower note, and ♯4 forms the upper note.",
+        fail:"Identify F and D♯ in relation to the A-major scale degrees.",
+        hint:"♭6 is below scale degree 5; ♯4 is above scale degree 4." } },
+    { say:"<b>The Characteristic Resolution:</b> The two notes of the augmented-sixth interval normally resolve outward by half step. Scale degree ♭6 descends to 5, while ♯4 ascends to 5 in a higher octave. This contrary motion produces an octave on the dominant scale degree. Augmented-sixth chords normally have predominant function and approach V, either directly or through a cadential 6/4. \u{1F447} <b>How does the characteristic augmented-sixth interval normally resolve?</b><br><b>Key: A minor.</b> In A minor, ♭6 and ♯4 expand outward by half step to two occurrences of scale degree 5, an octave apart.",
+      show:{ type:"staff", spec:{clef:"treble",tempo:66,time:"4/4",notes:[
+        {p:"F4",d:"h",label:"\u{266D}6"},{p:"D#5",d:"h",chord:true,label:"\u{266F}4"},
+        {p:"E4",d:"h",label:"5"},{p:"E5",d:"h",chord:true,label:"5"},{bar:"final"}],width:380} },
+      try:{ type:"mc", choices:["Outward to scale degree 5 in two voices, an octave apart","Inward to a unison on scale degree 1","To a third on scale degree 2"], answer:0,
+        success:"✓ Correct. Both tendency tones approach scale degree 5 by contrary half-step motion.",
+        fail:"Identify the scale degree reached by both voices.",
+        hint:"♭6 ↓ 5 and ♯4 ↑ 5." } },
+    { say:"<b>Italian Augmented Sixth—It⁺⁶:</b> The Italian augmented-sixth chord, It⁺⁶, contains three pitch classes: ♭6, 1, and ♯4. In A minor, it is spelled F–A–D♯. In four-part writing, the tonic pitch A is normally doubled. \u{1F447} <b>Which scale degrees form the Italian augmented-sixth chord?</b>",
+      try:{ type:"mc", choices:["♭6, 1, and ♯4","♭6 and ♯4 only","♭6, 1, 2, and ♯4"], answer:0,
+        success:"✓ Correct. It⁺⁶ contains the augmented-sixth frame, ♭6 and ♯4, plus the tonic scale degree.",
+        fail:"Identify the three different pitch classes in F–A–D♯.",
+        hint:"♭6–1–♯4." } },
+    { say:"<b>Use it — It⁺⁶ resolving to V:</b> On the grand staff, ♭6 (F) sits in the bass and ♯4 (D♯) on top, with the tonic A between them. Play it and listen as the outer voices expand <i>outward</i> to E — the root of V. \u{1F447} <b>How do the two outer voices move into V?</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L103_res(c,fb,{
+        heading:"It⁺⁶ → V  (A minor)",
+        staff:{clef:"grand",tempo:60,time:"4/4",notes:[
+          {p:"F3",d:"w",clef:"bass",label:"It⁺⁶"},{p:"A4",d:"w",chord:true},{p:"D#5",d:"w",chord:true},{bar:"single"},
+          {p:"E3",d:"w",clef:"bass",label:"V"},{p:"G#4",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:420},
+        kb:{start:52,octaves:2,labels:true},
+        playLabel:"▶ Hear It⁺⁶ → V",
+        choices:["♭6 (F) falls to E and ♯4 (D♯) rises to E — outward to an octave on 5","Both voices rise together to the tonic","Both voices fall to a unison"], answer:0,
+        ok:"✓ Correct. F descends by half step and D♯ ascends by half step; the augmented sixth expands to an octave on E, the root of V. (The inner A steps down to the leading tone G♯.)",
+        no:"Follow the outer voices: the bottom note falls a half step, the top note rises a half step — both toward E." }) } },
+    { say:"<b>French Augmented Sixth—Fr⁺⁶:</b> The French augmented-sixth chord, Fr⁺⁶, contains ♭6, 1, 2, and ♯4. In A minor, it is spelled F–A–B–D♯. These four pitches belong to the same whole-tone collection, although the chord functions here as a chromatic predominant rather than as a whole-tone sonority. \u{1F447} <b>Which scale degree distinguishes Fr⁺⁶ from It⁺⁶?</b>",
+      try:{ type:"mc", choices:["Scale degree 2","Scale degree ♭3","Scale degree 7"], answer:0,
+        success:"✓ Correct. Adding scale degree 2, B, to F–A–D♯ produces Fr⁺⁶.",
+        fail:"Complete the scale-degree pattern ♭6–1–2–♯4.",
+        hint:"Scale degree 2 in A minor is B." } },
+    { say:"<b>Use it — Fr⁺⁶ resolving to V:</b> Fr⁺⁶ adds scale degree 2 (B) to the frame. Play it into V and notice that B is already a chord tone of V, so it stays put. \u{1F447} <b>Which pitch is the common tone held into V?</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L103_res(c,fb,{
+        heading:"Fr⁺⁶ → V  (A minor)",
+        staff:{clef:"grand",tempo:60,time:"4/4",notes:[
+          {p:"F3",d:"w",clef:"bass",label:"Fr⁺⁶"},{p:"A4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D#5",d:"w",chord:true},{bar:"single"},
+          {p:"E3",d:"w",clef:"bass",label:"V"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:420},
+        kb:{start:52,octaves:2,labels:true},
+        playLabel:"▶ Hear Fr⁺⁶ → V",
+        choices:["B (scale degree 2) — it is the 5th of V and holds as a common tone","F (♭6) holds as a common tone","D♯ (♯4) holds as a common tone"], answer:0,
+        ok:"✓ Correct. B is the fifth of the V chord (E–G♯–B), so it is held. Meanwhile F falls to E and D♯ rises to E, exactly as in It⁺⁶.",
+        no:"F and D♯ are the tendency tones that move outward to E. Look for the note that belongs to both Fr⁺⁶ and the V chord." }) } },
+    { say:"<b>German Augmented Sixth—Ger⁺⁶:</b> The German augmented-sixth chord, Ger⁺⁶, contains ♭6, 1, ♭3, and ♯4. In A minor, it is spelled F–A–C–D♯. If D♯ is enharmonically respelled as E♭, the pitch collection becomes F–A–C–E♭, the spelling of F7. The two chords have the same sounding pitches but different spellings and harmonic functions. A direct Ger⁺⁶–V resolution may create parallel perfect fifths in common-practice four-part writing. For this reason, Ger⁺⁶ often moves through a cadential i<span style='display:inline-block;font-size:.62em;line-height:1;text-align:center;vertical-align:-.12em'>6<br>4</span> before V. Other voice-leading solutions are also possible. \u{1F447} <b>When its ♯4 is enharmonically respelled, Ger⁺⁶ has the same sounding pitch collection as…</b>",
       show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14px;min-width:300px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Mvt</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Tempo</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Common form</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">1</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">fast</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">sonata form</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">2</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">slow</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">several forms</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">3</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">dance</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">minuet &amp; trio or scherzo &amp; trio</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">4</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">fast</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">rondo, sonata, or sonata-rondo</td></tr></table>
-        <p style="font-size:13px;margin:8px auto 0;max-width:460px;text-align:center">Sonatas may contain two, three, or four movements, while Classical concertos commonly contain three and usually omit the separate dance movement.</p>
-        <p style="font-size:13px;margin:8px auto 2px;max-width:460px"><b>Remember:</b></p>
-        <ul style="font-size:13px;margin:0 auto;max-width:460px;padding-left:20px;text-align:left">
-          <li>Minuet/scherzo and trio: commonly large ternary movement types</li>
-          <li>Traditional march: regular pulse; may include a trio</li>
-          <li>Concerto: soloist or soloists with ensemble</li>
-          <li>Multi-movement cycle: an ordered collection of contrasting movements</li></ul>` },
-      try:{ type:"mc", choices:["In the third movement","Always in the first movement","Always as the finale"], answer:0,
-        success:"✓ Correct. In the conventional four-movement model, the minuet or scherzo commonly appears as the third movement.",
-        fail:"Recall the conventional placement after the slow movement.",
-        hint:"Opening movement → slow movement → minuet or scherzo → finale." } },
-    { say:"<b>Recognizing Instrumental Forms and Genres:</b> Consider several types of evidence — meter and rhythmic profile, tempo and character, sectional organization, instrumentation and performing forces, and historical and stylistic context. Triple meter alone does not prove that a movement is a minuet or scherzo, and duple meter alone does not prove that it is a march. A concerto is identified by the structural relationship between soloist and ensemble, not simply by the presence of a solo passage. \u{1F447} <b>A fast triple-meter movement uses a scherzo–trio–scherzo design. What is it?</b>",
-      try:{ type:"mc", choices:["Scherzo and trio","Minuet and trio","March"], answer:0,
-        success:"✓ Correct. The fast tempo, triple meter, and scherzo–trio–scherzo design identify it as a scherzo and trio.",
-        fail:"Combine the tempo, meter, character, and formal plan.",
-        hint:"This movement type frequently replaced the minuet in nineteenth-century works." } },
-    { say:"<b>Review:</b> \u{1F447} <b>What is the large-scale design of a conventional minuet-and-trio movement?</b>",
-      try:{ type:"mc", choices:["A–B–A","A–B","A–B–A–C–A"], answer:0,
-        success:"✓ Correct. The minuet functions as A, the trio as B, and the return of the minuet as A.",
-        fail:"Map minuet–trio–minuet onto formal letters.",
-        hint:"Opening section → contrast → return." } }
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Chord</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Notes in A minor</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Added scale degree</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#2F6DA8">Italian +6</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">F-A-D♯</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">—</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#A9821F">French +6</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">F-A-B-D♯</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">degree 2</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#C05A21">German +6</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">F-A-C-D♯</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">degree \u{266D}3</td></tr></table>` },
+      try:{ type:"mc", choices:["A dominant-seventh-quality chord","A major scale","A pedal point"], answer:0,
+        success:"✓ Correct. F–A–C–D♯ and F–A–C–E♭ are enharmonically equivalent in twelve-tone equal temperament, but their spellings indicate different interval structures and harmonic functions.",
+        fail:"Respell D♯ enharmonically as E♭ and identify F–A–C–E♭.",
+        hint:"F7 is a dominant-seventh-quality chord." } },
+    { say:"<b>Use it — Ger⁺⁶ through the cadential 6/4 to V:</b> A direct Ger⁺⁶–V risks parallel perfect fifths, so Ger⁺⁶ typically moves first to a cadential i<span style='display:inline-block;font-size:.62em;line-height:1;text-align:center;vertical-align:-.12em'>6<br>4</span> (over the dominant bass E), then to V. Play all three chords and hear the smooth detour. \u{1F447} <b>Why pass through i<span style='display:inline-block;font-size:.62em;line-height:1;text-align:center;vertical-align:-.12em'>6<br>4</span> instead of going straight to V?</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L103_res(c,fb,{
+        heading:"Ger⁺⁶ → i<span style='display:inline-block;font-size:.62em;line-height:1;text-align:center;vertical-align:-.12em'>6<br>4</span> → V  (A minor)",
+        staff:{clef:"grand",tempo:60,time:"4/4",notes:[
+          {p:"F3",d:"w",clef:"bass",label:"Ger⁺⁶"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"D#5",d:"w",chord:true},{bar:"single"},
+          {p:"E3",d:"w",clef:"bass",label:"i\u{2076}\u{2084}"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"single"},
+          {p:"E3",d:"w",clef:"bass",label:"V"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:520},
+        kb:{start:52,octaves:2,labels:true},
+        playLabel:"▶ Hear Ger⁺⁶ → i<span style='display:inline-block;font-size:.62em;line-height:1;text-align:center;vertical-align:-.12em'>6<br>4</span> → V",
+        choices:["To avoid parallel perfect fifths that a direct Ger⁺⁶–V would create","Because Ger⁺⁶ is unable to resolve to V","To modulate to a new key"], answer:0,
+        ok:"✓ Correct. The bass moves ♭6→5 at the very start (F→E), and the cadential 6/4 lets the upper voices step down cleanly (A→G♯, C→B) into V, sidestepping the parallel fifths of a direct resolution.",
+        no:"Ger⁺⁶ resolves to V perfectly well — the issue is the perfect fifths it can create in a DIRECT resolution. The 6/4 smooths the voice leading." }) } },
+    { say:"<b>Function and Identification:</b> Italian, French, and German augmented-sixth chords normally serve chromatic predominant function. Identify them by locating the correctly spelled augmented-sixth interval from ♭6 up to ♯4 and confirming its expected outward resolution to scale degree 5. The Neapolitan and augmented-sixth chords are both important chromatic predominant harmonies, but they use different scale degrees and voice-leading patterns. \u{1F447} <b>What function do the Neapolitan and augmented-sixth chords commonly share?</b>",
+      try:{ type:"mc", choices:["Predominant function","Tonic function","Identical pitch content"], answer:0,
+        success:"✓ Correct. Both chord types commonly prepare the dominant, although they do so through different pitch structures and voice leading.",
+        fail:"Identify the function that normally follows a predominant chord.",
+        hint:"Predominant → dominant." } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which augmented-sixth chord adds scale degree 2 to the It⁺⁶ pitch collection?</b>",
+      try:{ type:"mc", choices:["French augmented sixth","Italian augmented sixth","German augmented sixth"], answer:0,
+        success:"✓ Correct. Fr⁺⁶ contains ♭6, 1, 2, and ♯4.",
+        fail:"Compare the additional chord member in each augmented-sixth type.",
+        hint:"In A minor, Fr⁺⁶ includes B." } }
   ],
   examples:[
-    { caption:"A minuet in 3/4 with a pickup — an elegant courtly dance phrase in G major (note the F♯).",
-      staff:{clef:"treble",time:"3/4",tempo:120,notes:[
-        {p:"G4",d:"8"},{p:"D5",d:"8"},{bar:"single"},
-        {p:"B4",d:"q"},{p:"C5",d:"q"},{p:"D5",d:"q"},{bar:"single"},
-        {p:"A4",d:"q"},{p:"G4",d:"h"},{bar:"single"},
-        {p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"8"},{p:"G4",d:"8"},{bar:"single"},
-        {p:"A4",d:"h"},{p:"G4",d:"8"},{p:"D5",d:"8"},{bar:"single"},
-        {p:"B4",d:"q"},{p:"C5",d:"q"},{p:"D5",d:"q"},{bar:"single"},
-        {p:"A4",d:"q"},{p:"G4",d:"h"},{bar:"final"}],
-        beams:[[0,1],[12,13],[16,17]],width:900},
-      kb:{start:62,octaves:1.1667,labels:true} },
-    { caption:"A march phrase: duple meter, dotted tread, strong downbeats — left, right, left, right.",
-      staff:{clef:"treble",time:"2/4",tempo:112,notes:[
-        {p:"C4",d:"q.",artic:"accent"},{p:"C4",d:"8"},{bar:"single"},
-        {p:"E4",d:"q",artic:"accent"},{p:"G4",d:"q"},{bar:"single"},
-        {p:"F4",d:"q.",artic:"accent"},{p:"D4",d:"8"},{bar:"single"},
-        {p:"C4",d:"h"},{bar:"final"}],width:560},
-      kb:{start:60,octaves:1,labels:true} }
+    { caption:"Key: A minor — F and D♯ in It⁺⁶ expand outward to E4 and E5; V then resolves to i.",
+      staff:{clef:"treble",tempo:69,time:"4/4",notes:[
+        {p:"F4",d:"w",label:"It⁺⁶"},{p:"A4",d:"w",chord:true},{p:"D#5",d:"w",chord:true},{bar:"single"},
+        {p:"E4",d:"w",label:"V"},{p:"G#4",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"single"},
+        {p:"A4",d:"w",label:"i"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:560},
+      kb:{start:65,octaves:0.9167,labels:true} },
+    { caption:"Augmented-Sixth Pitch Collections in A Minor — Italian uses the three-note frame, French adds scale degree 2, German adds ♭3; all three contain the same ♭6–♯4 interval.",
+      staff:{clef:"treble",tempo:66,time:"4/4",notes:[
+        {p:"F4",d:"w",label:"It⁺⁶"},{p:"A4",d:"w",chord:true},{p:"D#5",d:"w",chord:true},{bar:"single"},
+        {p:"F4",d:"w",label:"Fr⁺⁶"},{p:"A4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D#5",d:"w",chord:true},{bar:"single"},
+        {p:"F4",d:"w",label:"Ger⁺⁶"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"D#5",d:"w",chord:true},{bar:"final"}],width:600},
+      kb:{start:65,octaves:0.9167,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Instrumental-Form Identification",
-      intro:"Identify movement forms and genres from meter, structure, and instrumentation.",
-      miaIntro:"Use several musical clues, not meter alone.",
+    { type:"gen-race", title:"Game 1 · Augmented-Sixth Identification (45s)",
+      intro:"Identify chord members, spellings, functions, and resolutions.",
+      miaIntro:"♭6 descends; ♯4 ascends.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Minuet & trio","3/4 dance in big ABA"],
-        ["Trio","the contrasting middle section"],
-        ["Scherzo","the fast, playful minuet successor"],
-        ["March","duple tread with a trio"],
-        ["Concerto","soloist(s) & ensemble in dialogue, 3 movements"],
-        ["Cadenza","the soloist's brilliant solo passage"],
-        ["Movement 3 of a symphony","minuet or scherzo"],
-        ["Concerto movement plan","fast - slow - fast"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Instrumental forms identified!":null },
-    { type:"order-tap", title:"Game 2 · Assemble a Four-Movement Cycle",
-      intro:"Arrange the movements of a common four-movement Classical cycle.",
-      miaIntro:"Opening movement → slow movement → minuet/scherzo → finale.",
-      spec:{sequence:["Mvt 1 — fast, sonata form","Mvt 2 — slow, songful","Mvt 3 — minuet or scherzo","Mvt 4 — fast finale"],
-        title:"The four-movement plan"},
-      result:(stars)=>stars>=2?"You assembled the conventional four-movement plan.":null },
-    { type:"order-tap", title:"Game 3 · Build Minuet and Trio",
-      intro:"Arrange the large sections of a minuet-and-trio movement.",
-      miaIntro:"Minuet → trio → minuet da capo.",
-      spec:{sequence:["Minuet (A)","Trio (B) — contrasting","Minuet again (A)"],
-        title:"Big ABA"},
-      result:(stars)=>stars>=2?"You assembled the large ternary design.":null },
-    { type:"term-race", title:"Game 4 · Identify the Form or Genre",
-      intro:"Use structural, metric, and instrumental clues to identify each example.",
-      miaIntro:"Meter, tempo, formal plan, and performing forces.",
+        ["The +6 interval","\u{266D}6 up to \u{266F}4"],
+        ["Resolution","outward to an octave on 5"],
+        ["Italian +6","\u{266D}6, 1, \u{266F}4 (three notes)"],
+        ["French +6","adds degree 2"],
+        ["German +6","adds \u{266D}3"],
+        ["Ger+6 sounds like","a dominant 7th (enharmonic)"],
+        ["Function","chromatic predominant to V"],
+        ["In A minor the frame is","F up to D\u{266F}"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Augmented-sixth chords identified!":null },
+    { type:"key-climb", title:"Game 2 · Resolve the Augmented Sixth",
+      intro:"Play F below D♯, then resolve outward to two E pitches an octave apart: F descends to the lower E, and D♯ ascends to the upper E.",
+      miaIntro:"Resolve both tendency tones outward by half step.",
+      spec:{seq:[53,63,52,64],
+        names:["F (♭6)","D♯ (♯4)","E (♭6 falls to 5)","E (♯4 rises to 5)"],
+        start:52, octaves:1, title:"The outward resolution"},
+      result:(score)=>score!==null?"You resolved the augmented-sixth interval correctly.":null },
+    { type:"symbol-hunt", title:"Game 3 · Identify the Chord Type",
+      intro:"Examine each augmented-sixth chord in A minor and identify it as Italian, French, or German.",
+      miaIntro:"Compare the chord member added to the ♭6–1–♯4 framework.",
+      spec:{rounds:6, pool:[
+        {label:"Italian (F-A-D♯)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"D#5",d:"w",chord:true}],width:150}},
+        {label:"French (F-A-B-D♯)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D#5",d:"w",chord:true}],width:150}},
+        {label:"German (F-A-C-D♯)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"D#5",d:"w",chord:true}],width:150}},
+        {label:"Plain iv6 (F-A-D)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"Chord types identified!":null },
+    { type:"term-race", title:"Game 4 · Augmented-Sixth Mechanics",
+      intro:"Identify the characteristic interval, function, and resolution.",
+      miaIntro:"Follow ♭6 and ♯4 toward scale degree 5.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Stately, 3/4, with trio","minuet"],
-        ["Fast joke, 3/4, with trio","scherzo"],
-        ["Duple tread, trio section","march"],
-        ["Soloist + orchestra","concerto"],
-        ["Soloist alone near the end","cadenza"],
-        ["Three movements fast-slow-fast","concerto plan"],
-        ["Each minuet section internally","a small binary"],
-        ["The big shape of minuet & trio","ABA"]]},
-      result:(score)=>score>=6?"You identified the forms and genres correctly.":null }
+        ["\u{266D}6 moves","down a half step to 5"],
+        ["\u{266F}4 moves","up a half step to 5"],
+        ["Landing interval","an octave"],
+        ["Landing note","the dominant's root"],
+        ["Ger+6 usually passes through","the cadential 6/4"],
+        ["Fr+6's shimmer","four whole-tone notes"],
+        ["The +6 vs M6","a half step wider"],
+        ["Neapolitan & +6 share","the predominant job"]]},
+      result:(score)=>score>=6?"Augmented-sixth voice leading identified!":null }
   ],
-  practiceIntro:"Complete 20 practice questions on minuet and trio, scherzo and trio, marches, concertos, and multi-movement cycles.",
+  practiceIntro:"Complete 20 practice questions on augmented-sixth spellings, chord types, functions, and resolutions.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Minuet","stately 3/4"],["Scherzo","fast joke"],["Trio","the middle"],["March","duple tread"],["Cadenza","solo spotlight"]], reverse:true}, count:6 },
-    { gen:"rhythm-count", params:{}, count:2 },
-    { type:"mc", q:"Which meter is traditionally associated with the minuet?", choices:["Triple meter, commonly 3/4","Duple meter only","Free meter"], answer:0, explain:"The triple-time dance." },
-    { type:"mc", q:"What is the overall design of a conventional minuet-and-trio movement?", choices:["A–B–A","A–B","A–B–A–C–A"], answer:0, explain:"Dance — trio — dance." },
-    { type:"mc", q:"Compared with a Classical minuet, a scherzo is commonly…", choices:["Faster and more rhythmically energetic","Always slower","Required to use duple meter"], answer:0, explain:"The joke movement." },
-    { type:"mc", q:"A concerto normally features…", choices:["One or more soloists with an ensemble","Unaccompanied voices only","Two conductors"], answer:0, explain:"The star and the ensemble." },
-    { type:"truefalse", q:"A traditional Classical cadenza gives extended prominence to the soloist while the orchestra pauses.", answer:true, explain:"Later concertos may treat cadenzas differently." },
-    { type:"truefalse", q:"Many traditional military and concert marches include a contrasting trio section.", answer:true, explain:"Contrast, often subdominant." },
-    { type:"truefalse", q:"A Classical concerto commonly uses three movements in a fast–slow–fast arrangement.", answer:true, explain:"This is a common convention rather than a universal rule." },
-    { gen:"term-match", params:{subject:"term", pool:[["Mvt 1","sonata form"],["Mvt 2","slow, ABA/variations"],["Mvt 3","minuet/scherzo"],["Mvt 4","rondo or sonata finale"]], reverse:true}, count:3 },
+    { gen:"term-match", params:{subject:"term", pool:[["It⁺⁶","3 notes"],["Fr⁺⁶","+ degree 2"],["Ger⁺⁶","+ \u{266D}3"],["Resolution","octave on 5"],["Function","PD to V"]], reverse:true}, count:6 },
+    { gen:"interval-quality", params:{ask:"quality"}, count:2 },
+    { type:"mc", q:"The augmented 6th interval runs from…", choices:["♭6 up to ♯4","1 to 5","2 to 6"], answer:0, explain:"F to D♯ in A minor." },
+    { type:"mc", q:"Both notes of the +6 resolve…", choices:["outward to an octave on 5","inward to a unison","up together"], answer:0, explain:"♭6 falls, ♯4 rises." },
+    { type:"mc", q:"The Italian sixth has how many different notes?", choices:["3","4","5"], answer:0, explain:"♭6, 1, ♯4." },
+    { type:"mc", q:"The German sixth adds…", choices:["♭3","degree 2","degree 6"], answer:0, explain:"F-A-C-D♯." },
+    { type:"truefalse", q:"The French sixth adds scale degree 2.", answer:true, explain:"F-A-B-D♯." },
+    { type:"truefalse", q:"A German augmented-sixth chord is enharmonically equivalent to a dominant-seventh-quality pitch collection.", answer:true, explain:"Its spelling and harmonic function remain different until it is enharmonically reinterpreted." },
+    { type:"truefalse", q:"Augmented-sixth chords normally provide predominant motion toward V.", answer:true, explain:"They serve predominant function and normally lead to the dominant." },
+    { gen:"term-match", params:{subject:"term", pool:[["F-A-D\u{266F}","Italian"],["F-A-B-D\u{266F}","French"],["F-A-C-D\u{266F}","German"],["E + E octave","the landing"]], reverse:true}, count:3 },
     { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
   ],
   vocabulary:[
-    {term:"Minuet and Trio", def:"A triple-meter dance movement in a large A–B–A design."},
-    {term:"Scherzo and Trio", def:"A faster, more energetic successor to the minuet."},
-    {term:"March", def:"Duple-based music with a strong, regular beat; may include a trio."},
-    {term:"Concerto", def:"Soloist(s) and ensemble in dialogue, commonly in three movements."}
+    {term:"Characteristic Interval", def:"♭6 and ♯4 expand outward to scale degree 5."},
+    {term:"Italian +6", def:"♭6–1–♯4"},
+    {term:"French +6", def:"♭6–1–2–♯4"},
+    {term:"German +6", def:"♭6–1–♭3–♯4"}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Minuet & trio</b> = big ABA in 3/4; sections commonly binary.",
-    "✔ <b>Scherzo</b> = the same plan, fast and energetic.",
-    "✔ <b>March</b> = duple or quadruple tread, often with a trio.",
-    "✔ <b>Concerto</b> = soloist(s) in dialogue with an ensemble, commonly fast-slow-fast, with <b>cadenza</b>.",
-    "✔ Symphony map: sonata · slow · dance · finale."
+    "✔ The characteristic interval is <b>♭6–♯4</b>, expanding outward to an octave on scale degree 5.",
+    "✔ <b>It⁺⁶</b> contains ♭6, 1, and ♯4.",
+    "✔ <b>Fr⁺⁶</b> adds scale degree 2.",
+    "✔ <b>Ger⁺⁶</b> adds ♭3 and can be enharmonically respelled as a dominant seventh chord, although its spelling and function are different.",
+    "✔ All three chords are <b>chromatic predominants</b> leading toward V.",
+    "✔ The Neapolitan and augmented-sixth chords are important members of the chromatic-predominant family."
   ],
   tips:[
-    "The trio is your landmark: hear the texture shift, and you are in the B of the big ABA.",
-    "Scherzo hunting: symphony third movements after Beethoven — count how fast the 'minuet' got.",
-    "In concertos, the orchestra's sudden silence announces the cadenza.",
-    "Unit 25 complete! Next unit: chromatic harmony — leading-tone chords, Neapolitan, augmented sixths."
+    "Spell any +6 fast: find 5, put half steps on both sides (♭6 below-target, ♯4 above-target… both aiming at 5).",
+    "Hear Ger⁶ vs V7: identical sound, opposite futures — one opens outward, one falls a 5th.",
+    "The Fr⁶'s four notes all belong to one whole-tone scale — L82 hiding inside L106.",
+    "Next lesson: chords borrowed straight from the parallel key — modal mixture."
   ],
-  rewards:{ badge:"Grand Designer", icon:"\u{1F3BB}" },
+  rewards:{ badge:"Pincer Operator", icon:"\u{2194}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Use meter, character, formal plan, and performing forces to identify each form or genre.",
+  miaQuizIntro:"Quiz: ♭6 descends to 5, ♯4 ascends to 5, and the two voices arrive an octave apart.",
   quiz:[
-    { type:"mc", q:"A conventional minuet-and-trio movement is organized as…", choices:["Minuet–trio–minuet, an overall A–B–A design","A–B only","Rondo form"], answer:0, explain:"Ternary at movement scale.", hint:"L74 grown up." },
-    { type:"mc", q:"Which description is commonly associated with a Classical minuet?", choices:["Triple meter and dance character","Duple meter and march character","Free rhythm without meter"], answer:0, explain:"The courtly dance.", hint:"Three elegant beats." },
-    { type:"mc", q:"Which statement best describes the trio section?", choices:["It provides contrast before the return of the opening minuet or scherzo","It must repeat the opening section exactly","It must be a percussion solo"], answer:0, explain:"The B of the big ABA.", hint:"Historically, some trios used reduced scoring, but later trio sections are not limited to fewer performers." },
-    { type:"mc", q:"What does the Italian word \u{201C}scherzo\u{201D} mean?", choices:["Joke","Song","Slow"], answer:0, explain:"Despite the name, a scherzo may be playful, dramatic, or ominous.", hint:"Italian humor." },
-    { type:"mc", q:"Which meter type is especially common in marches?", choices:["Duple or quadruple","Triple only","Unmetered only"], answer:0, explain:"Left-right.", hint:"Two feet." },
-    { type:"mc", q:"A concerto normally features…", choices:["One or more soloists in relation to an ensemble","Unaccompanied choir","Two pianos only"], answer:0, explain:"Soloist and ensemble in dialogue.", hint:"The dialogue." },
-    { type:"mc", q:"Which movement plan is common in Classical concertos?", choices:["Fast–slow–fast","Three slow movements","Exactly one movement in every concerto"], answer:0, explain:"Three movements.", hint:"Outer speed." },
-    { type:"mc", q:"Where does a cadenza commonly occur in a Classical concerto first movement?", choices:["Near the end, before the final cadential close","Only at the very beginning","In the trio section"], answer:0, explain:"The orchestra traditionally pauses while the soloist performs a passage that may have been improvised historically.", hint:"The spotlight." },
-    { type:"truefalse", q:"The minuet and trio are each commonly organized in binary or rounded-binary form.", answer:true, explain:"Binary inside ternary.", hint:"Forms nest." },
-    { type:"truefalse", q:"A scherzo-and-trio movement commonly retains a large A–B–A design related to minuet and trio.", answer:true, explain:"It kept the plan, changed the speed.", hint:"Same structure." },
-    { type:"mc", q:"In a conventional four-movement Classical cycle, the minuet or scherzo commonly appears as movement…", choices:["3","1","4"], answer:0, explain:"Minuet/scherzo slot.", hint:"After the slow movement." },
-    { type:"mc", q:"A movement is fast, rhythmically energetic, in triple meter, and follows scherzo–trio–scherzo form. What is it?", choices:["Scherzo and trio","March","Concerto"], answer:0, explain:"The joke in three.", hint:"Not stately." }
+    { type:"mc", q:"The augmented 6th interval spans…", choices:["♭6 up to ♯4","1 up to 6","5 up to 3"], answer:0, explain:"The chromatic pincers.", hint:"F to D♯." },
+    { type:"mc", q:"Its resolution:", choices:["outward to an octave on the dominant","inward to a 3rd","a fall to the tonic"], answer:0, explain:"Both voices to 5.", hint:"E and E." },
+    { type:"mc", q:"The Italian sixth in A minor:", choices:["F-A-D♯","F-A-B-D♯","F-A-C-D♯"], answer:0, explain:"Three notes.", hint:"The lean one." },
+    { type:"mc", q:"The French sixth adds…", choices:["scale degree 2","♭3","the leading tone"], answer:0, explain:"F-A-B-D♯.", hint:"Whole-tone tang." },
+    { type:"mc", q:"The German sixth adds…", choices:["♭3","degree 2","degree 4"], answer:0, explain:"F-A-C-D♯.", hint:"The fullest." },
+    { type:"mc", q:"When enharmonically respelled, Ger⁺⁶ has the same sounding pitch collection as which chord quality?", choices:["Dominant seventh","Major triad","Diminished triad"], answer:0, explain:"F-A-C-D♯ ≈ F-A-C-E♭.", hint:"Respell D♯." },
+    { type:"mc", q:"Identify the chord in A minor.",
+      staff:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D#5",d:"w",chord:true}],width:160},
+      choices:["Fr⁺⁶","It⁺⁶","Ger⁺⁶"], answer:0, explain:"The chord contains F–A–B–D♯, or scale degrees ♭6–1–2–♯4.", hint:"Count and find the extra." },
+    { type:"mc", q:"Augmented-sixth chords normally serve which function?", choices:["Chromatic predominant","Tonic substitute","Cadence"], answer:0, explain:"PD, from the chromatic side.", hint:"Before the dominant." },
+    { type:"truefalse", q:"In the characteristic resolution, ♭6 moves down to 5 and ♯4 moves up to 5 in a higher octave.", answer:true, explain:"Outward pincers.", hint:"Opposite motion." },
+    { type:"truefalse", q:"Ger⁺⁶ frequently moves through a cadential 6/4 before V in common-practice four-part writing.", answer:true, explain:"This voice leading helps avoid parallel perfect fifths that may result from a direct resolution.", hint:"The detour." },
+    { type:"mc", q:"In C major or C minor, which pitches form the characteristic augmented-sixth interval?", choices:["A♭ up to F♯","A♮ up to F♮","G up to E"], answer:0, explain:"A♭ is ♭6 and F♯ is ♯4; both approach G, scale degree 5.", hint:"Both sides of 5." },
+    { type:"mc", q:"Which statement correctly relates the Neapolitan and augmented-sixth chords?", choices:["Both are important chromatic predominant harmonies that commonly prepare V","They contain the same pitches","They both function as tonic"], answer:0, explain:"They share predominant function but use different scale degrees and voice-leading patterns.", hint:"Same job, different color." }
   ],
-  miaPerfect:"Perfect score! You accurately distinguished instrumental movement forms and multi-movement genres.",
-  miaPass:"You passed and completed unit 25. Next, you will study leading-tone chords.",
+  miaPerfect:"Perfect score! You accurately constructed and resolved Italian, French, and German augmented-sixth chords.",
+  miaPass:"You passed! Next, you will study borrowed chords and modal mixture.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Dance — contrasting middle — dance again: minuet & trio, ternary form at movement scale.",
-      play:()=>{let t=0;[[60,64,67],[65,69,72],[67,71,74],[60,64,67]].forEach(row=>{row.forEach(m=>MFAudio.tone(m,.5,t,.26));t+=.55;});} },
-    learn:{ label:"larger forms",
-      explain:"Minuet & trio (big ABA, 3/4), scherzo (fast, energetic), march (duple/quadruple, often + trio), concerto (soloist(s), commonly 3 mvts, cadenza); symphony map 1-4.",
-      hint:"Meter, tempo, cast.",
-      play:()=>{let t=0;[[60,64,67],[62,65,69],[60,64,67]].forEach(row=>{row.forEach(m=>MFAudio.tone(m,.5,t,.26));t+=.55;});} },
+      explain:"F and D♯ — an augmented 6th — expanded outward to an octave on E: the dominant. The +6 chords' engine.",
+      play:()=>{MFAudio.tone(53,.9,.05,.34);MFAudio.tone(63,.9,.05,.34);MFAudio.tone(52,1.1,1.0,.34);MFAudio.tone(64,1.1,1.0,.34);} },
+    learn:{ label:"augmented sixths",
+      explain:"♭6+♯4 expand outward to the octave on 5. It=3 notes, Fr adds 2, Ger adds ♭3 (≈V7 enharmonically, via cadential 6/4). All PD→V. Hear each type resolve to V right in Learn by Doing.",
+      hint:"Pincers on the dominant.",
+      play:()=>{[53,57,63].forEach(m=>MFAudio.tone(m,.9,.05,.3));[52,56,64].forEach(m=>MFAudio.tone(m,1.0,1.0,.3));} },
     example:{ label:"the examples",
-      explain:"Example 1 is a minuet in 3/4 with a pickup; example 2 treads a dotted march in 2/4." },
+      explain:"Example 1 resolves the Italian sixth through V to i; example 2 lines up all three types on one frame." },
     game:{ label:"the games",
-      explain:"Sprint the forms, assemble a symphony, stage the minuet & trio, then identify forms from clues.",
-      hint:"Three questions: meter, tempo, cast." },
+      explain:"Sprint the types, open the pincers by hand, name each chord on cards, then race the mechanics.",
+      hint:"Extra note names the nation." },
     quiz:{ label:"this question",
-      explain:"Meter narrows it (3 vs 2), character decides (stately/joke/tread), and a soloist against orchestra means concerto.",
-      play:()=>{let t=0;[[60,64,67],[65,69,72]].forEach(row=>{row.forEach(m=>MFAudio.tone(m,.5,t,.26));t+=.55;});} }
+      explain:"Find the ♭6+♯4 pair aiming at 5; count the notes (3=It); name the extra (2=Fr, ♭3=Ger); resolve outward to V.",
+      play:()=>{[53,63].forEach(m=>MFAudio.tone(m,.9,.05,.34));} }
   }
 };

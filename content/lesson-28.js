@@ -1,4 +1,4 @@
-/* Lesson 28 — The Flat Scales: F and B♭ Major (AEMT Book 2, Unit 7)
+/* Lesson 28 (4.3) — The Flat Scales: F and B♭ Major (AEMT Book 2, Unit 7)
    Built from drafts/UNIT 7 – Lesson 28.md; AEMT p.45 verified by render.
    QA note honored: B♭ and E♭ exist to PRESERVE the W–W–H–W–W–W–H pattern;
    staff completion verified at the keyboard.

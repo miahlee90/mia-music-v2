@@ -1,4 +1,4 @@
-/* Lesson 4 — The Grand Staff and Ledger Lines (the middle notes) (AEMT Book 1, Unit 1)
+/* Lesson 4 (1.4) — The Grand Staff and Ledger Lines (the middle notes) (AEMT Book 1, Unit 1)
    v2 — rebuilt from the instructor's design document (drafts/UNIT 1 – Lesson 4.md)
    NOTE: edit by FULL-FILE REWRITE only. */
 LESSON_CONTENT[4]={

@@ -1,344 +1,292 @@
-/* Lesson 61 — Minor Chord Progressions (AEMT Book 3, Unit 15)
-   Built from drafts/UNIT 15 – Lesson 61.md; AEMT3 p.97 verified by render.
-   Core: i, iv, V(7) contain all the notes of the harmonic minor scale →
-   they accompany minor melodies; V7 often replaces V; smooth version:
-   iv → iv⁶₄ (5th drops an octave), V → V⁶, V7 → V⁶₅; common tones connect
-   neighbors. Smooth pattern: i → iv⁶₄ → i → V⁶₅ → i, bass A-A-A-G♯-A.
-   Root-finding reminders: triads — root on top of the 4th; sevenths — on top of the 2nd.
+/* Lesson 61 (8.4, formerly L62) — Modes Related to the Major Scale: Ionian, Mixolydian, Lydian
+   (AEMT Book 3, Unit 15) — from drafts/UNIT 15 – Lesson 62.md; AEMT3 p.98.
+   Core: a MODE is an 8-note scale in alphabetical order; it can begin on any
+   degree of a major scale using the parent key signature; seven modes with
+   Greek names (C: Ionian, D: Dorian, E: Phrygian, F: Lydian, G: Mixolydian,
+   A: Aeolian, B: Locrian). Three relate to MAJOR: Ionian = major;
+   Mixolydian = major with the 7th LOWERED; Lydian = major with the 4th RAISED.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* common-tone finder in A minor */
-function MF_L61_common(container,fb){
+/* spot-the-changed-note: compare a mode with the plain major scale */
+function MF_L61_spot(container,fb){
+  const MAJOR=["C4","D4","E4","F4","G4","A4","B4","C5"];
   const ROUNDS=[
-    {a:{name:"i (A-C-E)", ps:["A3","C4","E4"]}, b:{name:"iv (D-F-A)", ps:["D4","F4","A4"]}, shared:"A",
-      expl:"A is i's root and iv's 5th — hold it while the other voices step."},
-    {a:{name:"i (A-C-E)", ps:["A3","C4","E4"]}, b:{name:"V (E-G♯-B)", ps:["E4","G#4","B4"]}, shared:"E",
-      expl:"E is i's 5th and V's root — the hinge of every minor cadence."},
-    {a:{name:"i (A-C-E)", ps:["A3","C4","E4"]}, b:{name:"V7 (E-G♯-B-D)", ps:["E4","G#4","B4","D5"]}, shared:"E",
-      expl:"V7 keeps the same hinge — plus D, the 7th that leans toward C."}];
+    {name:"C Mixolydian", ps:["C4","D4","E4","F4","G4","A4","Bb4","C5"], idx:6,
+      expl:"Degree 7 dropped: B→B♭. Mixolydian = a major scale with the 7th LOWERED a half step."},
+    {name:"C Lydian", ps:["C4","D4","E4","F#4","G4","A4","B4","C5"], idx:3,
+      expl:"Degree 4 lifted: F→F♯. Lydian = a major scale with the 4th RAISED a half step."}];
   let r=0;
-  container.innerHTML=`<div class="big-q l61c-q" style="text-align:center"></div>
-    <div class="l61c-staff"></div>
-    <div style="text-align:center"><button class="play l61c-hear">▶ Hear both chords</button></div>`;
-  const q=container.querySelector(".l61c-q"), holder=container.querySelector(".l61c-staff"), hear=container.querySelector(".l61c-hear");
+  container.innerHTML=`<div class="big-q l62s-q" style="text-align:center"></div>
+    <div class="l62s-staff"></div>
+    <div style="text-align:center"><button class="play l62s-hear">▶ Hear it</button></div>`;
+  const q=container.querySelector(".l62s-q"), holder=container.querySelector(".l62s-staff"), hear=container.querySelector(".l62s-hear");
   function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Great! You found every common tone."; holder.innerHTML=""; hear.style.display="none"; return; }
+    if(r>=ROUNDS.length){ q.textContent="Great! You found the changed notes."; holder.innerHTML=""; hear.style.display="none"; return; }
     const R=ROUNDS[r];
-    q.innerHTML=`${R.a.name} then ${R.b.name}: tap the note <b>shared by both chords</b>.`;
-    const notes=[...R.a.ps.map((p,ix)=>ix===0?{p,d:"w",label:R.a.name.split(" ")[0]}:{p,d:"w",chord:true}),
-                 ...R.b.ps.map((p,ix)=>ix===0?{p,d:"w",label:R.b.name.split(" ")[0]}:{p,d:"w",chord:true})];
-    const bStart=R.a.ps.length;
-    Staff.render(holder,{clef:"treble",notes,width:420,clickNotes:true,
+    q.innerHTML=`Compare this mode with the major scale. This is <b>${R.name}</b> — <b>tap the changed note</b>.`;
+    Staff.render(holder,{clef:"treble",notes:R.ps.map((p,i)=>({p,d:"q",label:String(i+1)})),width:520,clickNotes:true,
       onNote:(i,p)=>{
         MFAudio.tone(MFAudio.midi(p),.5,0,.4);
-        if(i<bStart){ fb(false,"Tap inside the SECOND chord."); return; }
-        if(p[0]===ROUNDS[r].shared){ MFAudio.yay(); fb(true,`✓ ${ROUNDS[r].shared} is the common tone. ${ROUNDS[r].expl}`);
+        if(i===R.idx){ MFAudio.yay(); fb(true,`✓ ${R.expl}`);
           r++; setTimeout(ask,1500); }
-        else fb(false,`${p[0].replace("#","♯")} appears only in the second chord. Compare the spellings letter by letter.`);
+        else fb(false,`Degree ${i+1} matches C major (${MAJOR[i].replace(/\d/,"")}). Look for the accidental!`);
       }});
   }
-  hear.onclick=()=>{
-    const R=ROUNDS[r]; if(!R) return;
-    R.a.ps.forEach(p=>MFAudio.tone(MFAudio.midi(p),.9,0,.32));
-    R.b.ps.forEach(p=>MFAudio.tone(MFAudio.midi(p),1.1,1.0,.32));
-  };
+  hear.onclick=()=>{ const R=ROUNDS[r]; if(!R) return;
+    R.ps.forEach((p,i)=>MFAudio.tone(MFAudio.midi(p),.42,i*.3,.4)); };
   ask();
 }
 
-/* smooth-or-choppy compare in A minor */
-function MF_L61_smooth(container,fb){
-  let hA=false,hB=false;
-  const CHOPPY=[[45,60,64,69],[50,62,65,69],[45,60,64,69],[52,64,68,71,74],[45,60,64,69]];
-  const SMOOTH=[[45,60,64,69],[45,62,65,69],[45,60,64,69],[44,64,68,71,74],[45,60,64,69]];
-  function playProg(rows){ rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.05,.27))); }
-  container.innerHTML=`<div class="big-q" style="text-align:center">Listen to both examples. Which bass line sounds smoother?</div>
-    <div style="text-align:center">
-      <button class="play l61-a">▶ Version A (all root position)</button>
-      <button class="play l61-b">▶ Version B (with inversions)</button></div>
-    <div class="choices l61-ch" style="display:none"><button>Version B — the bass stays near the tonic</button><button>Version A — big leaps flow better</button></div>`;
-  const ch=container.querySelector(".l61-ch");
-  container.querySelector(".l61-a").onclick=()=>{ playProg(CHOPPY); hA=true; if(hB) setTimeout(()=>ch.style.display="",5600); };
-  container.querySelector(".l61-b").onclick=()=>{ playProg(SMOOTH); hB=true; if(hA) setTimeout(()=>ch.style.display="",5600); };
-  [...ch.children].forEach((b,i)=>b.onclick=()=>{
-    if(i===0) fb(true,"✓ Version B used iv⁶₄ and V⁶₅: the bass sang A-A-A-G♯-A — barely moving, with the leading tone as its only step. Same chords as version A, completely different flow.");
-    else fb(false,"Follow only the LOWEST voice: A→D→A→E→A versus A→A→A→G♯→A. Which is smoother?");
-  });
-}
-
-/* build-a-smooth-minor-progression */
+/* keyboard builder: play C Mixolydian and C Lydian */
 function MF_L61_build(container,fb){
-  const SLOTS=[
-    {q:"Slot 2 — the iv chord. Which position keeps the bass ON A (the common tone with i)?",
-      choices:["iv⁶₄ (A-D-F)","iv root position (D-F-A)"], right:0,
-      expl:"Drop the iv chord's 5th (A) an octave — 2nd inversion, bass unchanged."},
-    {q:"Slot 4 — the V7 chord. Which position lets the bass slide a half step to the leading tone?",
-      choices:["V⁶₅ (G♯-B-D-E)","V7 root position (E-G♯-B-D)"], right:0,
-      expl:"1st inversion puts G♯ — the leading tone — in the bass: A to G♯ to A, the tightest walk in music."}];
-  let s=0;
-  container.innerHTML=`<div class="big-q l61b-q" style="text-align:center"></div>
-    <div class="l61b-map" style="text-align:center;font-weight:800;font-size:15px;letter-spacing:1px;margin:8px 0"></div>
-    <div class="choices l61b-ch"></div>
-    <div style="text-align:center"><button class="play l61b-play" style="display:none">▶ Play YOUR smooth minor progression</button></div>`;
-  const q=container.querySelector(".l61b-q"), map=container.querySelector(".l61b-map"), ch=container.querySelector(".l61b-ch"), pl=container.querySelector(".l61b-play");
-  const picked=[];
-  function drawMap(){ map.textContent="i → "+(picked[0]||"?")+" → i → "+(picked[1]||"?")+" → i"; }
+  const ROUNDS=[
+    {name:"C Mixolydian", pcs:[0,2,4,5,7,9,10,0], hintNote:"B♭ (the lowered 7th)",
+      names:["C","D","E","F","G","A","B♭ — the lowered 7th!","C"]},
+    {name:"C Lydian", pcs:[0,2,4,6,7,9,11,0], hintNote:"F♯ (the raised 4th)",
+      names:["C","D","E","F♯ — the raised 4th!","G","A","B","C"]}];
+  let r=0,k=0,last=null;
+  container.innerHTML=`<div class="big-q l62b-q" style="text-align:center"></div><div class="l62b-kb"></div>`;
+  const q=container.querySelector(".l62b-q"), kh=container.querySelector(".l62b-kb");
   function ask(){
-    drawMap();
-    if(s>=SLOTS.length){ q.textContent="Great! Listen to your progression."; ch.innerHTML=""; pl.style.display="inline-block"; return; }
-    q.innerHTML=SLOTS[s].q; ch.innerHTML="";
-    SLOTS[s].choices.forEach((c,i)=>{
-      const b=document.createElement("button"); b.textContent=c;
-      b.onclick=()=>{
-        if(i===SLOTS[s].right){ MFAudio.yay(); picked.push(c.split(" ")[0]); fb(true,"✓ "+SLOTS[s].expl); s++; setTimeout(ask,1300); }
-        else { MFAudio.tone(40,.2); fb(false,"That version makes the bass LEAP. Keep it on or next to A."); }
-      };
-      ch.appendChild(b);
-    });
+    if(r>=ROUNDS.length){ q.textContent="Excellent! You played both modes."; return; }
+    k=0; last=null;
+    q.innerHTML=`Play <b>${ROUNDS[r].name}</b>, bottom to top, starting on C. Watch for <b>${ROUNDS[r].hintNote}</b>.`;
   }
-  pl.onclick=()=>{
-    const rows=[[45,60,64,69],[45,62,65,69],[45,60,64,69],[44,64,68,71,74],[45,60,64,69]];
-    rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.05,.27)));
-    setTimeout(()=>fb(true,"✓ i → iv⁶₄ → i → V⁶₅ → i — bass line A-A-A-G♯-A: smooth voice leading."),5400);
-  };
+  Keyboard.create(kh,{start:60,octaves:2,labels:true,
+    onKey:m=>{
+      const R=ROUNDS[r]; if(!R) return;
+      const want=R.pcs[k];
+      if(m%12===want && (last===null || m>last)){
+        last=m; k++;
+        if(k>=8){ MFAudio.yay();
+          fb(true,`✓ ${R.name} complete — ${r===0?"the 7th is lowered (B♭).":"the 4th is raised (F♯)."}`);
+          r++; setTimeout(ask,1400); }
+        else q.innerHTML=`Now play <b>${R.names[k]}</b>.`;
+      } else { MFAudio.tone(40,.2);
+        fb(false, R.pcs[k]===10? "Degree 7 is LOWERED here — the black key below B." : R.pcs[k]===6? "Degree 4 is RAISED here — the black key above F." : "Follow the C major letters — only ONE degree changes."); }
+    }});
   ask();
 }
 
-LESSON_CONTENT[61]={stackFigures:true,
-  welcome:"Minor chord progressions — with smooth voice leading. \u{1F32B}\u{FE0F}",
+LESSON_CONTENT[61]={
+  welcome:"Modes: the same notes as a major scale, starting on different degrees. \u{1F3DB}\u{FE0F}",
   hook:{
-    say:"<b>Both examples use the same chord progression.</b> Listen carefully. <b>Which one has the smoother bass line?</b>",
+    say:"<b>Modes use the same notes as a major scale, but they begin on different scale degrees.</b> Listen to plain C major, then to C Mixolydian. <b>Can you hear the difference?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Version A</button>
-          <button class="play hk-b">▶ Version B</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Version B — inversions keep the bass close to the tonic</button><button>Version B changed to a major key</button><button>Version B skipped the V7 chord</button></div>`;
-        const A=[[45,60,64,69],[50,62,65,69],[52,64,68,71],[45,60,64,69]];
-        const B=[[45,60,64,69],[45,62,65,69],[44,64,68,71],[45,60,64,69]];
+          <button class="play hk-a">▶ Scale 1 (plain)</button>
+          <button class="play hk-b">▶ Scale 2 (C Mixolydian)</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Scale 2 lowered its 7th note</button><button>Scale 2 raised its 1st note</button><button>They sound identical</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        const play=rows=>rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.27)));
-        container.querySelector(".hk-a").onclick=()=>{ play(A); hA=true; if(hB) setTimeout(()=>ch.style.display="",4300); };
-        container.querySelector(".hk-b").onclick=()=>{ play(B); hB=true; if(hA) setTimeout(()=>ch.style.display="",4300); };
+        container.querySelector(".hk-a").onclick=()=>{ [60,62,64,65,67,69,71,72].forEach((m,i)=>MFAudio.tone(m,.42,i*.3,.4)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2900); };
+        container.querySelector(".hk-b").onclick=()=>{ [60,62,64,65,67,69,70,72].forEach((m,i)=>MFAudio.tone(m,.42,i*.3,.4)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2900); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Version B used inversions for iv and V, so the bass moved A-A-G♯-A instead of leaping A-D-E-A — a smoother bass line and better voice leading.");
-          else fb(false,"Both versions used the same chords. Listen again and follow only the LOWEST voice.");
+          if(i===0) fb(true,"✓ B became B♭ — and C major became C MIXOLYDIAN. Today: what modes are, and the three modes related to the major scale.");
+          else fb(false,"Both scales started the same way — listen to the note just before the top.");
         });
       } }
   },
   objectives:[
-    "Accompany minor melodies with i, iv and V(7) — they hold the whole scale",
-    "Swap V7 in place of V, exactly as in major",
-    "Smooth the progression: iv → iv⁶₄ and V → V⁶, V7 → V⁶₅",
-    "Track the bass line: A - A - A - G♯ - A",
-    "Keep common tones between neighboring chords",
-    "Recall the root-finder tricks: top of the 4th (triads), top of the 2nd (sevenths)"
+    "Define a mode: 8 notes, alphabetical order, on any degree of a parent major scale",
+    "Name all seven modes and their home degrees in C",
+    "Ionian = the major scale itself",
+    "Mixolydian = major with the 7th LOWERED a half step",
+    "Lydian = major with the 4th RAISED a half step",
+    "Recognize and build the three major-related modes"
   ],
   steps:[
-    { say:"<b>Primary Chords in Minor:</b> The <b>i, iv, and V</b> chords contain all the notes of the <b>harmonic minor scale</b>. These three chords can accompany many simple melodies. <b>V7</b> is also commonly used instead of <b>V</b>. \u{1F447} <b>Which notes do i, iv, and V contain in A minor?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"iv"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"V"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:440} },
-      try:{ type:"mc", choices:["All seven: A-C-E + D-F-A + E-G♯-B","Only the white keys","Only five notes"], answer:0,
-        success:"✓ A, B, C, D, E, F, G♯ — the complete harmonic minor. Any melody note has a chord waiting.",
-        fail:"List them: i gives A,C,E; iv adds D,F; V adds B and G♯…",
-        hint:"Count the distinct letters." } },
-    { say:"<b>Why Use Inversions?</b> If every chord stays in <b>root position</b>, the bass makes large leaps. Using inversions creates a <b>smoother bass line</b>. \u{1F447} <b>Which example has the smoother bass line?</b>",
+    { say:"<b>What Is a Mode?</b> A <b>mode</b> is a scale that begins on a different degree of a major scale while using the same key signature. A major scale has <b>seven modes</b>. \u{1F447} <b>A mode beginning on D and using only the white keys has which key signature?</b>",
+      try:{ type:"mc", choices:["No sharps or flats — C major's signature","Two sharps","One flat"], answer:0,
+        success:"✓ The parent (C major) lends its signature to every child mode. Same notes, seven different homes.",
+        fail:"The parent scale is C major — what's ITS signature?",
+        hint:"Modes borrow the PARENT's signature." } },
+    { say:"<b>The Seven Modes:</b> C = Ionian · D = Dorian · E = Phrygian · F = Lydian · G = Mixolydian · A = Aeolian · B = Locrian. <b>Aeolian is the natural minor scale.</b> Today we'll focus on <b>Ionian, Mixolydian, and Lydian</b> — the other modes will be introduced later. \u{1F447} <b>Which mode is the natural minor scale?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:340px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 12px">Mode</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 12px">Starts On</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 12px">Difference</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">Ionian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">1</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">= major scale</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;color:#889">Dorian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;color:#889">2</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;color:#889">(later)</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;color:#889">Phrygian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;color:#889">3</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;color:#889">(later)</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">Lydian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">4</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800">♯4</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">Mixolydian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">5</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800">♭7</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">Aeolian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">6</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">= natural minor</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;color:#889">Locrian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;color:#889">7</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;color:#889">(later)</td></tr></table>` },
+      try:{ type:"mc", choices:["Aeolian (starting on A)","Locrian (starting on B)","Dorian (starting on D)"], answer:0,
+        success:"✓ A to A on white keys = A natural minor = the AEOLIAN mode. And C to C is IONIAN — the major scale. You've been playing modes since Lesson 26!",
+        fail:"Which white-key scale did Lesson 56 call the relative minor?",
+        hint:"A to A…" } },
+    { say:"<b>Ionian Mode:</b> Ionian is simply the <b>major scale</b>. \u{1F447} <b>How is Ionian different from the major scale?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
+        {p:"C4",d:"q",label:"1"},{p:"D4",d:"q",label:"2"},{p:"E4",d:"q",label:"3"},{p:"F4",d:"q",label:"4"},
+        {p:"G4",d:"q",label:"5"},{p:"A4",d:"q",label:"6"},{p:"B4",d:"q",label:"7"},{p:"C5",d:"q",label:"8"}],width:520} },
+      try:{ type:"mc", choices:["Nothing — they're the same scale","One sharp","The order of notes"], answer:0,
+        success:"✓ Ionian is simply the major scale's ancient name. One mode down, free of charge!",
+        fail:"Read the definition again — 'a major scale'…",
+        hint:"It's a rename, not a remodel." } },
+    { say:"<b>Mixolydian Mode:</b> Mixolydian is a <b>major scale with a lowered 7th</b>. \u{1F447} <b>Which note changes in Mixolydian? Find it below:</b>",
       try:{ type:"custom",
-        hint:"Track only the lowest voice.",
-        mount:(container,fb)=>MF_L61_smooth(container,fb) } },
-    { say:"<b>Creating a Smooth Progression:</b> Using inversions keeps the bass close to the tonic: <b>iv → iv⁶₄ · V → V⁶ · V7 → V⁶₅</b>. \u{1F447} <b>Why does iv⁶₄ help create a smoother bass line?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[
-        {p:"D4",d:"w",label:"iv"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"A3",d:"w",label:"iv⁶₄"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"V7"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"G#3",d:"w",label:"V⁶₅"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:580} },
-      try:{ type:"mc", choices:["Its 5th is the tonic (A), so the bass can stay in place","It makes the chord louder","It removes the minor quality"], answer:0,
-        success:"✓ iv's 5th = A = the common tone with i. Drop it to the bass and i → iv⁶₄ happens without the floor shifting an inch.",
-        fail:"What NOTE is the 5th of D-F-A? And what key are we in?",
-        hint:"The dropped note becomes the bass — you want it to be the tonic." } },
-    { say:"<b>Common Tones:</b> Find the notes shared by neighboring chords. \u{1F447}",
+        hint:"Compare each degree with plain C major: C D E F G A B C.",
+        mount:(container,fb)=>MF_L61_spot(container,fb) } },
+    { say:"<b>Lydian Mode:</b> Lydian is a <b>major scale with a raised 4th</b>. Many listeners describe Lydian as bright or open because of its raised 4th. \u{1F447} <b>Which note changes in Lydian?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
+        {p:"C4",d:"q",label:"1"},{p:"D4",d:"q",label:"2"},{p:"E4",d:"q",label:"3"},{p:"F#4",d:"q",label:"♯4"},
+        {p:"G4",d:"q",label:"5"},{p:"A4",d:"q",label:"6"},{p:"B4",d:"q",label:"7"},{p:"C5",d:"q",label:"8"}],width:520} },
+      try:{ type:"mc", choices:["The 4th is raised (F→F♯)","The 7th is lowered","The 2nd is raised"], answer:0,
+        success:"✓ The 4th is raised a half step: F becomes F♯.",
+        fail:"Compare with plain C major — which degree moved?",
+        hint:"Lydian = ♯4." } },
+    { say:"Play each mode. \u{1F447}",
       try:{ type:"custom",
-        hint:"Compare spellings letter by letter.",
-        mount:(container,fb)=>MF_L61_common(container,fb) } },
-    { say:"<b>A Smooth Minor Progression:</b> i → iv⁶₄ → i → V⁶ (or V⁶₅) → i. The bass moves <b>A → A → A → G♯ → A</b>. Each pair of neighboring chords shares at least one common tone. <b>Remember: smooth voice leading keeps common tones in the same voice and moves the other notes by the shortest distance.</b> \u{1F447} <b>What happens in the bass during V⁶₅?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"A3",d:"w",label:"iv⁶₄"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"G#3",d:"w",label:"V⁶₅"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{bar:"final"}],width:620} },
-      try:{ type:"mc", choices:["It slides a half step down to the leading tone, then home","It leaps a 5th","It stays on A"], answer:0,
-        success:"✓ A → G♯ → A: the leading tone in the BASS — the single most magnetic bass move a minor key owns.",
-        fail:"G♯ is not A… but it's very, very close.",
-        hint:"Half step down, half step back." } },
-    { say:"Arrange the chords to create the smoothest bass line. \u{1F447}",
-      try:{ type:"custom",
-        hint:"Keep the bass on A or a half step away.",
+        hint:"Mixolydian lowers the 7th; Lydian raises the 4th.",
         mount:(container,fb)=>MF_L61_build(container,fb) } },
-    { say:"<b>Finding the Root:</b> In close position, a triad's root is the <b>upper note of the 4th</b>; a V7 chord's root is the <b>upper note of the 2nd</b>. \u{1F447} <b>In G♯–B–D–E, where is the root?</b>",
-      try:{ type:"mc", choices:["E — the top of the 2nd (D-E)","G♯ — the bass is always the root","B — the middle"], answer:0,
-        success:"✓ D→E is the 2nd; its upper note E is the root — this is E7 (V7 of A minor) in 1st inversion, our V⁶₅.",
-        fail:"Find two neighbors a 2nd apart inside G♯-B-D-E…",
-        hint:"Lesson 53's crunch-pair trick." } }
+    { say:"<b>Review:</b> G Mixolydian is a G major scale with… \u{1F447} <b>Which note changes?</b>",
+      try:{ type:"mc", choices:["F♯ lowered to F♮","B lowered to B♭","C raised to C♯"], answer:0,
+        success:"✓ Lower the 7th: G major's F♯ becomes F natural. The same change works from any keynote.",
+        fail:"What is the 7th degree of G major, and what does Mixolydian do to 7ths?",
+        hint:"G A B C D E F♯ G — lower the 7th." } }
   ],
   examples:[
-    { caption:"The CHOPPY version: i-iv-i-V7-i in root position. Honest, but hear the bass leap around: A, D, A, E, A.",
-      staff:{clef:"treble",tempo:70,notes:[
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"iv"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"V7"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{bar:"final"}],width:620},
-      kb:{start:57,octaves:1.5833,labels:true} },
-    { caption:"The SMOOTH version: i-iv⁶₄-i-V⁶₅-i. The bass moves A-A-A-G♯-A while the common tones stay in place. The same chords — a much smoother bass line.",
-      staff:{clef:"treble",tempo:70,notes:[
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"A3",d:"w",label:"iv⁶₄"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"G#3",d:"w",label:"V⁶₅"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
-        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{bar:"final"}],width:620},
-      kb:{start:53,octaves:1,labels:true} }
+    { caption:"The three major-related modes on C, back to back: Ionian (plain), Mixolydian (♭7), Lydian (♯4).",
+      staff:{clef:"treble",tempo:120,notes:[
+        {p:"C4",d:"q",label:"Ionian"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{bar:"double"},
+        {p:"C4",d:"q",label:"Mixolydian"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"Bb4",d:"q"},{bar:"double"},
+        {p:"C4",d:"q",label:"Lydian"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{bar:"final"}],width:720},
+      kb:{start:60,octaves:0.9167,labels:true} },
+    { caption:"The white-key family: the same seven notes starting on C (Ionian), then on G (Mixolydian), then on F (Lydian) — one reliable way of finding every mode.",
+      staff:{clef:"treble",tempo:120,notes:[
+        {p:"C4",d:"q",label:"C→C: Ionian"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"},{bar:"double"},
+        {p:"G4",d:"q",label:"G→G: Mixolydian"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"},{p:"D5",d:"q"},{p:"E5",d:"q"},{p:"F5",d:"q"},{p:"G5",d:"q"},{bar:"double"},
+        {p:"F4",d:"q",label:"F→F: Lydian"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"},{p:"D5",d:"q"},{p:"E5",d:"q"},{p:"F5",d:"q"},{bar:"final"}],width:680},
+      kb:{start:60,octaves:1.9167,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Minor Toolkit Sprint (45s)",
-      intro:"Inversions and figures — the tools that power smooth minor progressions!",
-      miaIntro:"Everything from Units 13-15! \u{1F9F0}",
-      spec:{gen:"inversion-id", params:{subject:"both", ask:"both"}, seconds:45},
-      result:(score)=>score>=8?score+" — toolkit razor-sharp!":null },
-    { type:"key-climb", title:"Game 2 · Smooth Minor Climb",
-      intro:"Play the smooth progression chord by chord: i, iv⁶₄, V⁶₅, i!",
-      miaIntro:"Feel the A→G♯→A magnet! \u{1FA9C}",
-      spec:{seq:[57,60,64, 57,62,65, 56,59,62,64, 57,60,64],
-        names:["A (i: bass)","C","E","A (iv⁶₄: same bass!)","D","F","G♯ (V⁶₅: leading tone!)","B","D","E","A (home)","C","E"],
-        start:56, octaves:0.75, title:"i → iv⁶₄ → V⁶₅ → i in A minor"},
-      result:(score)=>score!==null?"You played the smooth progression!":null },
-    { type:"symbol-hunt", title:"Game 3 · Minor Progression Spotter",
-      intro:"The four chords of the smooth minor progression — click what's called!",
-      miaIntro:"Know your minor cast! \u{1F440}",
+    { type:"gen-race", title:"Game 1 · Major-Mode Sprint (45s)",
+      intro:"Scales flash by — name the mode, or match the definition!",
+      miaIntro:"♭7 or ♯4 — that's the whole question! \u{26A1}",
+      spec:{gen:"mode-id", params:{set:"major", ask:"both"}, seconds:45},
+      result:(score)=>score>=8?score+" modes named — Greek fluency rising!":null },
+    { type:"key-climb", title:"Game 2 · Mixolydian & Lydian Climb",
+      intro:"Play C Mixolydian, then C Lydian — sixteen keys!",
+      miaIntro:"B♭ down, F♯ up! \u{1FA9C}",
+      spec:{seq:[60,62,64,65,67,69,70,72, 60,62,64,66,67,69,71,72],
+        names:["C","D","E","F","G","A","B♭ (the lowered 7th!)","C","C again","D","E","F♯ (the raised 4th!)","G","A","B","C"],
+        start:60, octaves:1, title:"C Mixolydian, then C Lydian"},
+      result:(score)=>score!==null?"Both modes played perfectly!":null },
+    { type:"symbol-hunt", title:"Game 3 · Mode Spotter",
+      intro:"Three modes on C — click the one each round names!",
+      miaIntro:"Check degree 4, check degree 7! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"i (A-C-E)", spec:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:150}},
-        {label:"iv⁶₄ (A-D-F)", spec:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}},
-        {label:"V⁶₅ (G♯-B-D-E)", spec:{clef:"treble",notes:[{p:"G#3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:150}},
-        {label:"V⁶ (G♯-B-E)", spec:{clef:"treble",notes:[{p:"G#3",d:"w"},{p:"B3",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"Cast memorized — minor-key director!":null },
-    { type:"term-race", title:"Game 4 · Minor-Progression Race",
-      intro:"Inversions, the bass line and common tones — at speed!",
-      miaIntro:"A-A-A-G♯-A forever! \u{1F3C1}",
-      spec:{rounds:8, reverse:true, pool:[
-        ["Smooth minor formula","i → iv⁶₄ → i → V⁶₅ → i"],
-        ["The smooth bass line","A - A - A - G♯ - A"],
-        ["iv⁶₄","iv with its 5th (the tonic!) in the bass"],
-        ["V⁶₅ in minor","V7 with the leading tone in the bass"],
-        ["Common tone of i and iv","A"],
-        ["Common tone of i and V","E"],
-        ["Root of a flipped triad","top of the 4th"],
-        ["Root of a flipped V7","top of the 2nd"]]},
-      result:(score)=>score>=6?"Smooth voice leading is second nature!":null }
+        {label:"Ionian (plain major)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"}],width:250}},
+        {label:"Mixolydian (♭7)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"Bb4",d:"q"},{p:"C5",d:"q"}],width:250}},
+        {label:"Lydian (♯4)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"}],width:250}}]},
+      result:(score)=>score>=5?"No changed note escapes you!":null },
+    { type:"order-tap", title:"Game 4 · The Seven-Mode Ladder",
+      intro:"Tap the seven Greek names in white-key order, C through B!",
+      miaIntro:"I Don't Particularly Like Modes A Lot — or make your own mnemonic! \u{1F3DB}\u{FE0F}",
+      spec:{sequence:["Ionian (C)","Dorian (D)","Phrygian (E)","Lydian (F)","Mixolydian (G)","Aeolian (A)","Locrian (B)"],
+        title:"The modes in scale-degree order"},
+      result:(stars)=>stars>=2?"The whole Greek family, in order!":null }
   ],
-  practiceIntro:"20 practice questions — inversions, common tones and the bass line. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — mode names, definitions and changed notes. Answer right and the next appears automatically!",
   practice:[
-    { gen:"inversion-id", params:{subject:"both", ask:"both"}, count:5 },
-    { gen:"term-match", params:{subject:"term", pool:[["i iv V in minor","they hold the whole harmonic minor scale"],["iv⁶₄","bass stays on the tonic"],["V⁶₅","leading tone in the bass"],["Common tone","the note two chords share"],["Smooth bass in A minor","A-A-A-G♯-A"]], reverse:true}, count:4 },
-    { type:"mc", q:"Why can i, iv, and V accompany many minor melodies?", choices:["They contain all the notes of the harmonic minor scale","They are the loudest chords","They avoid the leading tone"], answer:0,
-      explain:"Every scale note lives in one of the three." },
-    { type:"mc", q:"Why is iv often changed to iv⁶₄?", choices:["So the bass can stay on the tonic (A)","To make the chord louder","To change the key"], answer:0,
-      explain:"The 5th of iv is the tonic — in 2nd inversion it becomes the bass." },
-    { type:"mc", q:"Why is V7 often changed to V⁶₅?", choices:["So the leading tone (G♯) is in the bass, a half step from the tonic","To remove the 7th","To make the chord quieter"], answer:0,
-      explain:"E-G♯-B-D → G♯-B-D-E: the leading tone takes the bass." },
-    { type:"mc", q:"What is the smooth bass line for this progression? (i → iv⁶₄ → i → V⁶₅ → i)", choices:["A-A-A-G♯-A","A-D-A-E-A","A-C-E-G♯-A"], answer:0,
-      explain:"Two common-tone basses and one half-step move." },
-    { type:"mc", q:"The common tone between i and V in A minor is…", choices:["E","A","G♯"], answer:0,
-      explain:"i's 5th = V's root." },
-    { type:"truefalse", q:"V7 is often used in place of V in minor progressions.", answer:true,
-      explain:"Same swap as in major keys." },
-    { type:"truefalse", q:"All-root-position minor progressions sound smoother than inverted ones.", answer:false,
-      explain:"Root-only = leaping bass = choppy." },
-    { type:"truefalse", q:"In close position, a flipped triad's root is the upper note of the 4th.", answer:true,
-      explain:"Rearrange into 3rds — the root is the top note of the 4th." },
-    { type:"truefalse", q:"In close position, a flipped V7's root is the upper note of the 2nd.", answer:true,
-      explain:"Find the crunch pair, take its top." },
-    { type:"mc", q:"In D minor, the smooth bass line of i → iv⁶₄ → i → V⁶₅ → i would be…", choices:["D-D-D-C♯-D","D-G-D-A-D","D-F-A-C♯-D"], answer:0,
-      explain:"Same shape, new tonic: the leading tone is C♯." }
+    { gen:"mode-id", params:{set:"major", ask:"both"}, count:7 },
+    { gen:"term-match", params:{subject:"term", pool:[["Mode","8 notes, alphabetical, any degree of the parent scale"],["Ionian","the major scale"],["Mixolydian","major with lowered 7th"],["Lydian","major with raised 4th"],["Aeolian","the natural minor scale"]], reverse:true}, count:5 },
+    { type:"mc", q:"A mode can begin on…", choices:["any scale degree of a major scale","only the tonic","only C"], answer:0,
+      explain:"Seven degrees → seven modes." },
+    { type:"mc", q:"How many modes are there?", choices:["7","3","12"], answer:0,
+      explain:"One per scale degree, each with a Greek name." },
+    { type:"mc", q:"The mode built on the 5th degree (G in C major) is…", choices:["Mixolydian","Lydian","Dorian"], answer:0,
+      explain:"G→G on white keys = Mixolydian." },
+    { type:"mc", q:"The mode built on the 4th degree (F in C major) is…", choices:["Lydian","Phrygian","Ionian"], answer:0,
+      explain:"F→F on white keys = Lydian." },
+    { type:"mc", q:"Which note is lowered in C Mixolydian?", choices:["B♭","F♯","E♭"], answer:0,
+      explain:"Major with its 7th lowered." },
+    { type:"mc", q:"Which note is raised in C Lydian?", choices:["F♯","B♭","G♯"], answer:0,
+      explain:"Major with its 4th raised." },
+    { type:"truefalse", q:"Ionian is another name for the major scale.", answer:true,
+      explain:"Identical, note for note." },
+    { type:"truefalse", q:"A mode uses the key signature of its parent major scale.", answer:true,
+      explain:"White keys for all of C major's children." },
+    { type:"truefalse", q:"Mixolydian raises the 7th of the major scale.", answer:false,
+      explain:"It LOWERS the 7th — the opposite." },
+    { type:"truefalse", q:"G Mixolydian uses F natural instead of F♯.", answer:true,
+      explain:"Lower G major's 7th: F♯→F." }
   ],
-  miaQuizIntro:"Quiz! Common tones stay in place; the leading tone moves by half step.",
+  miaQuizIntro:"Quiz! Three modes, two changes: ♭7 for Mixolydian, ♯4 for Lydian.",
   quiz:[
-    { type:"mc", q:"The i, iv and V triads can accompany most simple minor melodies because…", choices:["they contain all the notes of the harmonic minor scale","minor melodies use only three notes","they never need inversions"], answer:0,
-      explain:"Seven letters, three chords, full coverage.", hint:"Same argument as Lesson 55, minor edition." },
-    { type:"mc", q:"Which inversion is commonly used for the iv chord?", choices:["2nd inversion (iv⁶₄)","3rd inversion","open position"], answer:0,
-      explain:"Its 5th — the tonic A — drops to the bass.", hint:"Which inversion parks the tonic in the bass?" },
-    { type:"mc", q:"Which inversion is commonly used for the V or V7 chord?", choices:["1st inversion (V⁶ or V⁶₅)","2nd inversion","root position"], answer:0,
-      explain:"The 3rd (the leading tone!) takes the bass.", hint:"G♯ under everything." },
-    { type:"mc", q:"Why is G♯ important in the V⁶₅ chord?", choices:["it's the leading tone — a half step below the tonic","it's the loudest note","it's the chord's root"], answer:0,
-      explain:"The bass itself leans into A.", hint:"What's a half step above G♯?" },
-    { type:"truefalse", q:"There is a common tone between each pair of neighboring chords in the smooth progression.", answer:true,
-      explain:"Each pair of neighboring chords shares a note.", hint:"The common tones you found earlier." },
-    { type:"truefalse", q:"The common tone between i and iv in A minor is E.", answer:false,
-      explain:"It's A (i's root, iv's 5th). E connects i and V.", hint:"Spell both chords." },
-    { type:"mc", q:"Identify this chord in A minor.",
-      staff:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:200},
-      choices:["iv⁶₄ — D minor with A in the bass","iv in root position","i with a wrong note"], answer:0,
-      explain:"D-F-A in 2nd inversion — the tonic (A) is the bass.", hint:"Rearrange into thirds: D-F-A." },
-    { type:"mc", q:"Identify this chord in A minor.",
-      staff:{clef:"treble",notes:[{p:"G#3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:200},
-      choices:["V⁶₅ — E7 with G♯ in the bass","V7 in root position","vii°"], answer:0,
-      explain:"Four notes, 2nd on top (D-E) → root E → E7, 1st inversion.", hint:"Crunch pair D-E; root on top." },
-    { type:"mc", q:"Which bass line shows smooth voice leading?", choices:["A - A - A - G♯ - A","A - D - A - E - A","A - B - C - D - E"], answer:0,
-      explain:"Hold, hold, hold, lean, resolve.", hint:"Almost nothing moves." },
-    { type:"mc", q:"How is the minor progression similar to the major progression?", choices:["It uses the same inversions (iv⁶₄ and V⁶₅) for the same reason — a smooth bass","It requires completely different inversions","It cannot use V7"], answer:0,
-      explain:"iv⁶₄ ↔ IV⁶₄, V⁶₅ ↔ V⁶₅ — one grammar, two moods.", hint:"Compare the two formulas side by side." },
-    { type:"mc", q:"A student writes every chord in root position. How can the progression be made smoother?", choices:["Use iv⁶₄ and V⁶₅ to create smoother bass movement","Play it faster","Remove the V7"], answer:0,
-      explain:"The whole lesson in one sentence.", hint:"Two flips, one glide." },
-    { type:"mc", q:"In E minor, the V⁶₅ chord's bass note would be…", choices:["D♯ (the leading tone of E minor)","B","D"], answer:0,
-      explain:"V7 = B-D♯-F♯-A; 1st inversion puts D♯ in the bass.", hint:"Half step below the tonic E." },
+    { type:"mc", q:"What is a mode?", choices:["a scale of eight notes in alphabetical order","a type of chord","a rhythm pattern","a tempo marking"], answer:0,
+      explain:"The standard definition.", hint:"Eight notes, A-B-C order." },
+    { type:"mc", q:"A mode can begin on…", choices:["any scale degree of a major scale","only the 1st degree","only the 5th degree"], answer:0,
+      explain:"Seven starting points, seven modes.", hint:"That's why there are seven." },
+    { type:"mc", q:"In the key of C, the mode beginning on G is…", choices:["Mixolydian","Lydian","Aeolian","Dorian"], answer:0,
+      explain:"C-D-E-F-G: the 5th degree hosts Mixolydian.", hint:"The rock-and-roll mode." },
+    { type:"mc", q:"Ionian mode is…", choices:["a major scale","a natural minor scale","major with a lowered 7th"], answer:0,
+      explain:"The major scale's Greek name.", hint:"The free one." },
+    { type:"mc", q:"How is Mixolydian different from the major scale?", choices:["Its 7th is lowered a half step","Its 4th is raised a half step","Its 3rd is lowered"], answer:0,
+      explain:"♭7 — the relaxed leading tone.", hint:"The hook's bend." },
+    { type:"mc", q:"How is Lydian different from the major scale?", choices:["Its 4th is raised a half step","Its 7th is lowered a half step","Its 2nd is lowered"], answer:0,
+      explain:"♯4 — the floating bend.", hint:"The flying-scene mode." },
+    { type:"truefalse", q:"There are seven modes altogether, each with a Greek name.", answer:true,
+      explain:"One per degree of the parent scale.", hint:"Count the white keys C to B." },
+    { type:"truefalse", q:"The Aeolian mode (starting on A) is the natural minor scale.", answer:true,
+      explain:"Lesson 56's relative minor, under its Greek name.", hint:"A to A, white keys." },
+    { type:"mc", q:"Name this mode (built on C).",
+      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"Bb4",d:"q"},{p:"C5",d:"q"}],width:400},
+      choices:["C Mixolydian","C Ionian","C Lydian"], answer:0,
+      explain:"The B♭ = lowered 7th = Mixolydian.", hint:"Find the accidental, name the degree." },
+    { type:"mc", q:"Name this mode (built on C).",
+      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"}],width:400},
+      choices:["C Lydian","C Mixolydian","C Ionian"], answer:0,
+      explain:"The F♯ = raised 4th = Lydian.", hint:"Which degree wears the sharp?" },
+    { type:"mc", q:"Why does F Lydian sound different from F major?", choices:["Its 4th degree is raised (B instead of B♭)","F is a sharp key","It borrows notes from F major"], answer:0,
+      explain:"F to B = an augmented 4th — no accidental needed on white keys.", hint:"Measure F up to B." },
+    { type:"mc", q:"To build G Lydian, which note changes?", choices:["Raise C to C♯","Lower F♯ to F","Add a B♭"], answer:0,
+      explain:"Same recipe, any keynote: ♯4.", hint:"G major first, then bend degree 4 up." },
     /* generated */
-    { gen:"inversion-id", params:{subject:"both", ask:"both"}, count:4 },
-    { gen:"term-match", params:{subject:"term", pool:[["iv⁶₄","tonic in the bass"],["V⁶₅","leading tone in the bass"],["Common tone","the joint's anchor"],["A-A-A-G♯-A","the smooth minor bass"]], reverse:true}, count:2 },
-    { gen:"triad-quality", params:{}, count:2 }
+    { gen:"mode-id", params:{set:"major", ask:"both"}, count:5 },
+    { gen:"term-match", params:{subject:"term", pool:[["Ionian","= major"],["Mixolydian","♭7"],["Lydian","♯4"],["Parent scale","lends its key signature to the mode"]], reverse:true}, count:2 }
   ],
   vocabulary:[
-    {term:"Minor Chord Progression", def:"i, iv and V(7) in motion — three chords that hold the entire harmonic minor scale."},
-    {term:"iv⁶₄", def:"The iv chord in 2nd inversion — its 5th (the TONIC note) in the bass.",
-      staff:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:130}},
-    {term:"V⁶₅ (minor key)", def:"V7 in 1st inversion — the LEADING TONE in the bass, a half step under home.",
-      staff:{clef:"treble",notes:[{p:"G#3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:130}},
-    {term:"The Smooth Bass", def:"A - A - A - G♯ - A: two anchors and one half-step lean — the sound of good minor voice leading."}
+    {term:"Mode", def:"A scale of eight notes in alphabetical order, beginning on any degree of a parent major scale (using its signature). Seven exist, all with Greek names."},
+    {term:"Ionian", sym:"W–W–H–W–W–W–H", def:"The mode on degree 1 — identical to the major scale."},
+    {term:"Mixolydian", sym:"W–W–H–W–W–H–W", def:"The mode on degree 5 — a major scale with its 7th LOWERED a half step."},
+    {term:"Lydian", sym:"W–W–W–H–W–W–H", def:"The mode on degree 4 — a major scale with its 4th RAISED a half step."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>i, iv, V(7)</b> hold every note of the harmonic minor scale → they accompany minor melodies.",
-    "✔ Smoothing recipe: <b>iv → iv⁶₄</b> (5th = tonic drops to the bass), <b>V → V⁶, V7 → V⁶₅</b> (leading tone takes the bass).",
-    "✔ The formula: <b>i → iv⁶₄ → i → V⁶₅ → i</b>, bass <b>A-A-A-G♯-A</b>.",
-    "✔ A <b>common tone</b> connects every pair of chords (A between i/iv, E between i/V).",
-    "✔ Root-finders still work: triads — <b>top of the 4th</b>; sevenths — <b>top of the 2nd</b>."
+    "✔ A <b>mode</b> = 8 notes in alphabetical order, starting on <b>any degree</b> of a parent major scale (same signature).",
+    "✔ Seven modes, Greek names: <b>Ionian, Dorian, Phrygian, Lydian, Mixolydian, Aeolian, Locrian</b> (C through B).",
+    "✔ <b>Ionian = the major scale</b>; <b>Aeolian = the natural minor</b> — two old friends.",
+    "✔ <b>Mixolydian = major with ♭7</b> (relaxed, rock-friendly).",
+    "✔ <b>Lydian = major with ♯4</b> (floating, cinematic)."
   ],
   tips:[
-    "Transpose the glide: in E minor the bass is E-E-E-D♯-E; in D minor, D-D-D-C♯-D. One shape, every minor key.",
-    "That A→G♯→A bass is the DNA of countless laments, tangos and film scores — once you hear it, you'll hear it everywhere.",
-    "Checklist: (1) common tones stay, (2) the bass moves a half step at most, (3) everything else takes the nearest path.",
-    "Next lesson we leave major/minor entirely: eight-note scales with GREEK names — the modes!"
+    "Fast recall: Lydian = ♯4 (raised); Mixolydian = ♭7 (lowered).",
+    "Hum the plain scale, then change the one note — modes are easier to HEAR than to memorize.",
+    "White-key trick: any mode's flavor = play its home-to-home octave on white keys (G to G on white keys = Mixolydian).",
+    "Lesson 63 finishes the family: the four modes that grow from the natural minor scale."
   ],
-  rewards:{ badge:"Minor Glide Pilot", icon:"\u{1F32B}\u{FE0F}" },
+  rewards:{ badge:"Mode Traveler", icon:"\u{1F3DB}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! Your minor progressions breathe like a cellist's bow. \u{1F32B}\u{FE0F}\u{1F389}",
-  miaPass:"Passed! The A-G♯-A magnet is in your hands now. Greek scales next…",
+  miaPerfect:"PERFECT! Ionian, Mixolydian, Lydian — the major family salutes you! \u{1F3DB}\u{FE0F}\u{1F389}",
+  miaPass:"Passed! Two bends learned: ♭7 and ♯4. Four minor-family modes to go…",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Both versions were i-iv-V7-i in A minor. Version B flipped iv and V7 so the bass walked A-A-G♯-A instead of leaping A-D-E-A.",
-      play:()=>{const B=[[45,60,64,69],[45,62,65,69],[44,64,68,71],[45,60,64,69]];B.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.27)));} },
-    learn:{ label:"minor progressions",
-      explain:"i-iv-V(7) cover the harmonic minor scale. Smooth them: iv⁶₄ keeps the tonic bass; V⁶₅ puts the leading tone under everything. Bass: A-A-A-G♯-A.",
-      hint:"Common tones stay; the leading tone moves by half step.",
-      play:()=>{[[45,60,64,69],[45,62,65,69],[45,60,64,69],[44,64,68,71,74],[45,60,64,69]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.25)));} },
+      explain:"Scale 2 lowered its 7th (B→B♭): C Mixolydian — a major scale with one relaxed note.",
+      play:()=>{[60,62,64,65,67,69,70,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.28,.4));} },
+    learn:{ label:"the modes",
+      explain:"Mode = 8 alphabetical notes on any degree of the parent major scale. Ionian = major; Mixolydian = ♭7; Lydian = ♯4.",
+      hint:"Find the accidental, name the degree, know the mode.",
+      play:()=>{[60,62,64,66,67,69,71,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.28,.4));} },
     example:{ label:"the examples",
-      explain:"Example 1 is the leaping root-position version; example 2 is the smooth rewrite with the stepwise bass." },
+      explain:"Example 1 bends C three ways (plain, ♭7, ♯4); example 2 shows the white-key origins — C→C, G→G, F→F." },
     game:{ label:"the games",
-      explain:"Sprint the toolkit, play the smooth climb, spot the minor cast, then race the facts.",
-      hint:"G♯ under a chord = V⁶₅ nearby." },
+      explain:"Sprint the modes, play both modes, spot them on cards, then tap the seven Greek names in order.",
+      hint:"Degree 4 and degree 7 are the only suspects today." },
     quiz:{ label:"this question",
-      explain:"Same grammar as major: common tones stay put, inversions shorten the bass's journey — plus one minor-only star, the leading tone in the bass.",
-      play:()=>{[[45,60,64,69],[44,64,68,71,74],[45,60,64,69]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.27)));} }
+      explain:"Three modes, one method: compare with the plain major scale and locate the single bent degree.",
+      play:()=>{[60,62,64,66,67,69,71,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.28,.4));} }
   }
 };

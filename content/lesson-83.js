@@ -1,242 +1,298 @@
-/* Lesson 83 — Interval Inversions & Compound Intervals (Book 4, Unit 20 — SELF-AUTHORED)
-   Core: INVERT an interval = move the bottom note up an octave. Rule of 9:
-   the numbers sum to 9 (2nd↔7th, 3rd↔6th, 4th↔5th). Quality flips:
-   M↔m, A↔d, P↔P. COMPOUND intervals exceed the octave (9th = 2nd + octave);
-   reduce by subtracting 7. NOTE: edit by FULL-FILE REWRITE only. */
+/* Lesson 83 (11.8, formerly L70) — 12-Bar Blues Chord Progression (AEMT Book 3, Unit 17)
+   Built from drafts/UNIT 17 – Lesson 70.md; AEMT3 p.110 verified by render.
+   Core: the BLUES has roots in America's south — West African rhythms +
+   gospel singing + European harmonies; found in jazz, rock and pop.
+   A BLUES CHORD PROGRESSION is usually 12 measures ("bars"); the traditional
+   form: I (4 bars) · IV (2) · I (2) · V or V7 (1) · IV (1) · I (2).
+   NOTE: edit by FULL-FILE REWRITE only. */
+
+/* build the 12-bar blues, bar by bar */
+function MF_L83_build(container,fb){
+  const FORM=["I","I","I","I","IV","IV","I","I","V7","IV","I","I"];
+  const HINTS=["Four bars of I to start…","…still I…","…still I…","…one more!","Bar 5: the FIRST change — up to…","…two bars of it.","Back to I for two…","…second one.","Bar 9: V or V7!","Bar 10: step down through…","Back to I…","…and done!"];
+  const CH={I:[48,64,67,72], IV:[53,65,69,72], V7:[43,67,71,77]};
+  let k=0; const picked=[];
+  container.innerHTML=`<div class="big-q l70b-q" style="text-align:center"></div>
+    <div class="l70b-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:420px;margin:10px auto"></div>
+    <div class="choices chips l70b-ch"><button>I</button><button>IV</button><button>V7</button></div>
+    <div style="text-align:center"><button class="play l70b-play" style="display:none">▶ Play YOUR 12-bar blues</button></div>`;
+  const q=container.querySelector(".l70b-q"), grid=container.querySelector(".l70b-grid"), ch=container.querySelector(".l70b-ch"), pl=container.querySelector(".l70b-play");
+  function drawGrid(){
+    grid.innerHTML="";
+    FORM.forEach((f,i)=>{
+      const cell=document.createElement("div");
+      cell.style.cssText="border:2px solid "+(i<picked.length?"#3a9b57":"#cdd5e1")+";border-radius:8px;padding:8px 2px;text-align:center;font-weight:800;background:"+(i===picked.length?"#fff7df":"#fff");
+      cell.textContent=(i+1)+": "+(i<picked.length?picked[i]:"?");
+      grid.appendChild(cell);
+    });
+  }
+  function ask(){
+    drawGrid();
+    if(k>=FORM.length){ q.textContent="Excellent! Your 12-bar blues is complete. Listen to your progression!"; ch.style.display="none"; pl.style.display="inline-block"; return; }
+    q.innerHTML=`Bar ${k+1} of 12 — <i>${HINTS[k]}</i>`;
+  }
+  [...ch.children].forEach(b=>b.onclick=()=>{
+    if(k>=FORM.length) return;
+    if(b.textContent===FORM[k]){
+      CH[b.textContent].forEach(m=>MFAudio.tone(m,.7,.05,.26));
+      picked.push(b.textContent); k++;
+      fb(true,`✓ Great! Bar ${k}: ${picked[k-1]}. ${k===12?"Pattern complete!":"Keep building the progression."}`);
+      ask();
+    } else { MFAudio.tone(40,.2); fb(false,`Which chord belongs in bar ${k+1}? The pattern: I×4, IV×2, I×2, V7×1, IV×1, I×2.`); }
+  });
+  pl.onclick=()=>{
+    picked.forEach((f,i)=>CH[f].forEach(m=>MFAudio.tone(m,.75,i*.8,.26)));
+    setTimeout(()=>fb(true,"✓ Twelve bars of blues — one of the most common progressions in popular music, built by you."),9800);
+  };
+  ask();
+}
+
+/* the 12-bar blues as it is REALLY played: a boogie-woogie shuffle —
+   walking bass (1-3-5-6-b7-6-5-3, swung eighths) under backbeat chord stabs */
+function MF_L83_shuffle(host){
+  const FORM=["I","I","I","I","IV","IV","I","I","V","IV","I","I"];
+  const COL={I:["#e3f0fb","#8fbce0"],IV:["#f8e0e0","#dc9a9a"],V:["#dcecd6","#94c384"]};
+  const ROOT={I:36,IV:41,V:43};                                 /* boogie bass root: C2, F2, G2 */
+  const WALK=[0,4,7,9,10,9,7,4];                                /* 1-3-5-6-b7-6-5-3 */
+  const COMP={I:[64,67,70,74],IV:[65,69,72,75],V:[67,71,74,77]}; /* dominant comp voicings */
+  const BPM=132, beat=60/BPM, BAR=beat*4, sw=beat*2/3;           /* swung eighths */
+  host.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;max-width:360px;margin:0 auto">${
+    FORM.map((s,i)=>`<span data-b="${i}" style="background:${COL[s][0]};border:1.5px solid ${COL[s][1]};border-radius:6px;padding:12px 0;text-align:center;font-weight:800;font-size:17px;color:#243244;transition:transform .12s,box-shadow .12s">${s}<sup style="font-size:.62em">7</sup></span>`).join("")
+  }</div>
+  <div style="text-align:center;margin-top:14px"><button class="play" id="l70shuffleBtn">\u{25B6} Play the blues shuffle</button></div>`;
+  const cells=[...host.querySelectorAll("[data-b]")], btn=host.querySelector("#l70shuffleBtn");
+  btn.onclick=()=>{
+    btn.disabled=true;
+    FORM.forEach((sym,i)=>{
+      const t0=i*BAR;
+      WALK.forEach((off,e)=>{ const t=t0+(e>>1)*beat+((e&1)?sw:0); MFAudio.tone(ROOT[sym]+off, beat*0.44, t, .32); });
+      [beat, beat*3].forEach(ht=>COMP[sym].forEach(m=>MFAudio.tone(m, beat*0.5, t0+ht, .18)));
+      setTimeout(()=>{ cells.forEach(x=>{x.style.boxShadow="";x.style.transform="";}); const c=cells[i]; if(c){ c.style.boxShadow="0 0 0 3px rgba(79,124,255,.55)"; c.style.transform="translateY(-2px)"; } }, i*BAR*1000);
+    });
+    setTimeout(()=>{ cells.forEach(x=>{x.style.boxShadow="";x.style.transform="";}); btn.disabled=false; }, FORM.length*BAR*1000+200);
+  };
+}
 
 LESSON_CONTENT[83]={
-  welcome:"Invert intervals and identify intervals larger than an octave.",
+  welcome:"The 12-bar blues: one pattern, thousands of songs. \u{1F3B7}",
   hook:{
-    say:"C up to E forms a third. Move the lower C up one octave, placing it above E. The resulting interval, E up to C, is an inversion of the original interval. \u{1F447} <b>Listen to both intervals. What is the second interval?</b>",
+    say:"<b>Many blues, rock, and jazz songs use the same chord pattern.</b> Listen to these twelve bars. <b>Can you recognize the 12-bar blues?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ C up to E — a third</button>
-          <button class="play hk-b">▶ E up to C — the inversion</button></div>
-          <div class="choices hk-ch" style="display:none"><button>A sixth</button><button>A third</button><button>A second</button></div>`;
+          <button class="play hk-a">▶ Play the 12 bars</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Yes — it's the famous BLUES progression</button><button>No — it's a classical symphony pattern</button><button>No — it sounds brand new</button></div>`;
+        const CH={I:[48,64,67,70],IV:[53,69,72,75],V7:[43,67,71,77]}; /* dominant 7ths on every chord — THE blues sound */
+        const BASS={I:36,IV:41,V7:43};
+        const PROG=["I","I","I","I","IV","IV","I","I","V7","IV","I","I"], BAR=0.85;
         const ch=container.querySelector(".hk-ch");
-        let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ MFAudio.tone(60,.6,0,.42); MFAudio.tone(64,.6,.7,.42); MFAudio.tone(60,.8,1.5,.3); MFAudio.tone(64,.8,1.5,.3); hA=true; if(hB) setTimeout(()=>ch.style.display="",2400); };
-        container.querySelector(".hk-b").onclick=()=>{ MFAudio.tone(64,.6,0,.42); MFAudio.tone(72,.6,.7,.42); MFAudio.tone(64,.8,1.5,.3); MFAudio.tone(72,.8,1.5,.3); hB=true; if(hA) setTimeout(()=>ch.style.display="",2400); };
+        container.querySelector(".hk-a").onclick=()=>{
+          PROG.forEach((sym,i)=>{
+            const t=i*BAR;
+            CH[sym].forEach(m=>MFAudio.tone(m,BAR*.9,t,.24)); /* ONE held chord per bar → exactly 12 bars, 12 chords */
+            MFAudio.tone(BASS[sym],BAR*.9,t,.30);
+          });
+          setTimeout(()=>ch.style.display="", PROG.length*BAR*1000+400);
+        };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. E up to C is a sixth. A third and its inversion, a sixth, have interval numbers that add to 9.");
-          else fb(false,"Count the letter names inclusively from E through C: E–F–G–A–B–C.");
+          if(i===0) fb(true,"✓ The 12-BAR BLUES — born in America's south from West African rhythms, gospel singing and European harmonies, and used in jazz, rock and pop. Today you learn its pattern!");
+          else fb(false,"Think of old rock'n'roll, boogie-woogie piano, jazz jams… this chord pattern is everywhere.");
         });
       } }
   },
   objectives:[
-    "Invert an interval: move the bottom note up an octave",
-    "Apply the RULE OF 9: the two numbers sum to nine",
-    "Flip qualities: major↔minor, augmented↔diminished, perfect stays perfect",
-    "Define compound intervals: larger than an octave",
-    "Reduce a compound to its simple interval (subtract 7)",
-    "Name 9ths, 10ths, 11ths, 12ths and 13ths"
+    "Know where the blues began: the southern United States — West African rhythms + gospel + European harmonies",
+    "Know where it lives now: jazz, rock and pop",
+    "Define the form: 12 measures ('bars')",
+    "Know the traditional pattern: I×4 · IV×2 · I×2 · V(7)×1 · IV×1 · I×2",
+    "Build a 12-bar blues in C (and transfer to other keys)",
+    "Use only I, IV and V(7)"
   ],
   steps:[
-    { say:"<b>Interval Inversion:</b> To invert an interval, <b>move the lower note up one octave</b> or move the upper note down one octave. The two notes exchange positions. For example, C–E, a third, becomes E–C, a sixth. \u{1F447} <b>Which action inverts a simple interval?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:90,notes:[
-        {p:"C4",d:"w",label:"3rd"},{p:"E4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"6th"},{p:"C5",d:"w",chord:true},{bar:"final"}],width:380} },
-      try:{ type:"mc", choices:["Move the lower note up one octave","Move both notes up one octave","Add an accidental to the upper note"], answer:0,
-        success:"✓ Correct. Moving the lower note up an octave places it above the original upper note and inverts the interval.",
-        fail:"Keep the same pitch classes, but exchange their vertical positions.",
-        hint:"Transfer one note by an octave so that the lower note becomes the upper note." } },
-    { say:"<b>The Rule of 9:</b> The numbers of a simple interval and its inversion <b>add to 9</b>: second ↔ seventh, third ↔ sixth, fourth ↔ fifth, and unison ↔ octave. \u{1F447} <b>A fourth inverts to a…</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Interval</th><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">unison</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">2nd</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">3rd</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">4th</td></tr>
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Inversion</th><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">octave</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">7th</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">6th</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">5th</td></tr>
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Sum</th><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;color:#A9821F;font-weight:800">9</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;color:#A9821F;font-weight:800">9</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;color:#A9821F;font-weight:800">9</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;color:#A9821F;font-weight:800">9</td></tr></table>` },
-      try:{ type:"mc", choices:["fifth","sixth","fourth"], answer:0,
-        success:"✓ Correct. A fourth inverts to a fifth because 4 + 5 = 9.",
-        fail:"Subtract the original interval number from 9.",
-        hint:"9 − 4 = 5." } },
-    { say:"<b>Interval Quality Under Inversion:</b> Major intervals invert to minor intervals, and minor intervals invert to major intervals. Augmented intervals invert to diminished intervals, and diminished intervals invert to augmented intervals. <b>Perfect intervals remain perfect.</b> Therefore, a major third inverts to a minor sixth, and a perfect fifth inverts to a perfect fourth. \u{1F447} <b>A major second inverts to…</b>",
-      try:{ type:"mc", choices:["a minor seventh","a major seventh","a perfect seventh"], answer:0,
-        success:"✓ Correct. The interval number changes from 2 to 7, and the quality changes from major to minor. Therefore, M2 inverts to m7.",
-        fail:"Apply both the interval-number rule and the quality-inversion rule.",
-        hint:"2 ↔ 7 and major ↔ minor." } },
-    { say:"<b>Perfect Intervals Under Inversion:</b> Perfect unisons, fourths, fifths, and octaves invert to other perfect intervals. A perfect fourth inverts to a perfect fifth, and a perfect unison inverts to a perfect octave. Unlike major and minor qualities, <b>the perfect quality does not change under inversion</b>. \u{1F447} <b>A perfect fifth inverts to…</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:90,notes:[
-        {p:"C4",d:"w",label:"P5"},{p:"G4",d:"w",chord:true},
-        {p:"G4",d:"w",label:"P4"},{p:"C5",d:"w",chord:true},{bar:"final"}],width:380} },
-      try:{ type:"mc", choices:["a perfect fourth","a diminished fifth","an augmented fourth"], answer:0,
-        success:"✓ Correct. A perfect fifth inverts to a perfect fourth: 5 + 4 = 9, and the perfect quality remains unchanged.",
-        fail:"Which interval quality remains perfect under inversion?",
-        hint:"Perfect ↔ perfect." } },
-    { say:"<b>Compound Intervals:</b> Compound intervals are <b>larger than an octave</b>. To find the simple interval, <b>subtract 7</b> from the interval number. \u{1F447} <b>A tenth reduces to which simple interval?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:90,notes:[
-        {p:"C4",d:"w",label:"9th"},{p:"D5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"10th"},{p:"E5",d:"w",chord:true},{bar:"final"}],width:380} },
-      try:{ type:"mc", choices:["A third","A second","A fifth"], answer:0,
-        success:"✓ Correct. A tenth is a third plus one octave: 10 − 7 = 3.",
-        fail:"Subtract 7 from the compound interval number.",
-        hint:"10 − 7 = 3." } },
-    { say:"<b>Common Compound Intervals:</b> Each compound interval is a simple interval plus an octave — just <b>subtract 7</b>. \u{1F447} <b>An eleventh is the compound equivalent of a…</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:15px;min-width:220px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 20px">Compound</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 20px">Simple</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center;font-weight:800">9th</td><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center">2nd</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center;font-weight:800">10th</td><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center">3rd</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center;font-weight:800">11th</td><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center">4th</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center;font-weight:800">12th</td><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center">5th</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center;font-weight:800">13th</td><td style="border:1.5px solid #cdd5e1;padding:4px 20px;text-align:center">6th</td></tr></table>` },
-      try:{ type:"mc", choices:["fourth","fifth","second"], answer:0,
-        success:"✓ Correct. An eleventh is a fourth plus an octave: 11 − 7 = 4.",
-        fail:"Subtract 7 from the compound interval number.",
-        hint:"11 − 7 = 4." } },
-    { say:"<b>Review:</b> \u{1F447} <b>A minor third inverts to…</b>",
-      try:{ type:"mc", choices:["a major sixth","a minor sixth","an augmented sixth"], answer:0,
-        success:"✓ Correct. A third inverts to a sixth, and minor quality inverts to major quality. Therefore, m3 inverts to M6.",
-        fail:"Apply both the number and quality rules.",
-        hint:"3 ↔ 6 and minor ↔ major." } }
+    { say:"<b>The Blues:</b> Blues music began in the southern United States. It combines <b>West African rhythms, gospel singing, and European harmony</b>. Today, blues influences jazz, rock, and pop music. \u{1F447} <b>Blues music combines which musical traditions?</b>",
+      try:{ type:"mc", choices:["West African rhythms + gospel singing + European harmonies","A single European composer","Electronic dance music"], answer:0,
+        success:"✓ Three traditions met in the American south and built a musical language the whole world now speaks.",
+        fail:"Three traditions combined…",
+        hint:"Rhythms + singing + harmonies." } },
+    { say:"<b>The 12-Bar Blues:</b> A traditional blues progression lasts <b>12 measures (bars)</b>. It mainly uses three chords: <b>I, IV, and V (or V7)</b>. \u{1F447} <b>How many measures are in a standard blues progression?</b>",
+      try:{ type:"mc", choices:["12 bars","8 bars","16 bars"], answer:0,
+        success:"✓ Twelve — hence the name. And those twelve bars loop, verse after verse.",
+        fail:"The lesson's title has the number…",
+        hint:"It's in the name." } },
+    { say:"<b>Bars 1–4:</b> The progression begins with <b>four measures of the I chord</b>. \u{1F447} <b>Which chord is played in bars 1–4 of a C blues?</b>",
+      try:{ type:"mc", choices:["C (the I chord)","F (the IV chord)","G7 (the V7)"], answer:0,
+        success:"✓ Four bars of I. (Singers use these bars for the first line of the verse.)",
+        fail:"The progression begins on the tonic…",
+        hint:"The I chord opens the form." } },
+    { say:"<b>Bars 5–8:</b> Bars 5–6 use the <b>IV chord</b>. Bars 7–8 return to the <b>I chord</b>. \u{1F447} <b>When does the first chord change occur?</b>",
+      show:{ type:"html", html:`<div style="text-align:center">
+        <div style="font-weight:800;margin-bottom:8px;color:var(--ink,#333)">12-bar blues</div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;max-width:340px;margin:0 auto">${
+          [["I","b"],["I","b"],["I","b"],["I","b"],["IV","r"],["IV","r"],["I","b"],["I","b"],["V","g"],["IV","r"],["I","b"],["I","b"]]
+          .map(([n,c])=>{const col={b:["#e3f0fb","#8fbce0"],r:["#f8e0e0","#dc9a9a"],g:["#dcecd6","#94c384"]}[c];
+            return `<span style="background:${col[0]};border:1.5px solid ${col[1]};border-radius:6px;padding:11px 0;font-weight:800;font-size:18px;color:#243244">${n}<sup style="font-size:.62em">7</sup></span>`;}).join("")
+        }</div></div>` },
+      try:{ type:"mc", choices:["Bar 5 — up to IV","Bar 2","Bar 9"], answer:0,
+        success:"✓ Bar 5 — after four bars of I, the progression moves to IV.",
+        fail:"Count the four bars of I first…",
+        hint:"After the long opening." } },
+    { say:"<b>Bars 9–12:</b> Bar 9 uses <b>V (or V7)</b>. Bar 10 moves to <b>IV</b>. Bars 11–12 return to <b>I</b>. <b>Remember: the chord pattern stays the same. Only the key changes.</b> \u{1F447} <b>Which chord comes after V?</b>",
+      try:{ type:"mc", choices:["IV","I","V"], answer:0,
+        success:"✓ IV — unlike a classical cadence (V→I), the blues steps V DOWN to IV before landing home. That's the blues sound!",
+        fail:"Bar 9 is V; bar 10 steps DOWN to…",
+        hint:"V, then IV, then I." } },
+    { say:"Build a complete 12-bar blues progression in C major. \u{1F447}",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:13px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">Bar</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">1</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">2</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">3</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">4</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">5</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">6</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">7</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">8</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">9</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">10</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">11</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">12</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 7px;font-weight:800">Chord</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">IV</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">IV</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">V7</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">IV</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td></tr></table>` },
+      try:{ type:"custom",
+        hint:"I×4 · IV×2 · I×2 · V7×1 · IV×1 · I×2.",
+        mount:(container,fb)=>MF_L83_build(container,fb) } },
+    { say:"<b>Try Another Key:</b> Use the same pattern in G major. \u{1F447} <b>Which three chords are used?</b>",
+      try:{ type:"mc", choices:["G, C and D7","G, A and B7","C, F and G7"], answer:0,
+        success:"✓ I=G, IV=C, V7=D7. The chord pattern stays the same — only the key changes.",
+        fail:"Find I, IV and V of G major…",
+        hint:"Count up 4 and 5 from G." } }
   ],
   examples:[
-    { caption:"Inversion pairs played back to back: M3→m6, then P5→P4. Same letter names, flipped stacking — numbers always summing to nine.",
-      staff:{clef:"treble",tempo:80,notes:[
-        {p:"C4",d:"w",label:"M3"},{p:"E4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"m6"},{p:"C5",d:"w",chord:true},{bar:"single"},
-        {p:"D4",d:"w",label:"P5"},{p:"A4",d:"w",chord:true},
-        {p:"A4",d:"w",label:"P4"},{p:"D5",d:"w",chord:true},{bar:"final"}],width:560},
-      kb:{start:60,octaves:1.3333,labels:true} },
-    { caption:"Compound intervals from C: a 9th (D), a 10th (E) and a 13th (A) — each a simple interval pushed past the octave.",
-      staff:{clef:"treble",tempo:80,notes:[
-        {p:"C4",d:"w",label:"9th"},{p:"D5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"10th"},{p:"E5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"13th"},{p:"A5",d:"w",chord:true},{bar:"final"}],width:520},
-      kb:{start:60,octaves:2,labels:true} }
+    { caption:"Now hear it the way it is really played — a boogie-woogie <b>shuffle</b>: a walking bass in the left hand under chord stabs on the backbeat, all over the same 12-bar I-IV-V form. Watch each bar light up as it plays.",
+      mount:(host)=>MF_L83_shuffle(host) }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Rule-of-9 Sprint (45s)",
-      intro:"Identify inversion pairs and interval-quality changes before time runs out.",
-      miaIntro:"The interval numbers of an inversion pair add to 9.",
+    { type:"gen-race", title:"Game 1 · Blues Pattern Sprint (45s)",
+      intro:"Bars, origins, chords — race everything 12-bar!",
+      miaIntro:"I, IV, V7 — twelve seats! \u{26A1}",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["2nd inverts to","7th"],
-        ["3rd inverts to","6th"],
-        ["4th inverts to","5th"],
-        ["Major inverts to","minor"],
-        ["Augmented inverts to","diminished"],
-        ["Perfect inverts to","perfect"],
-        ["The inversion rule","numbers sum to 9"],
-        ["To invert","move the bottom note up an octave"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Rule-of-9 challenge completed!":null },
-    { type:"symbol-hunt", title:"Game 2 · Find the Inversion",
-      intro:"Select the correct inversion of each interval.",
-      miaIntro:"Exchange the upper and lower notes.",
+        ["The blues' roots","America's south"],
+        ["Its three ingredients","West African rhythms + gospel + European harmonies"],
+        ["Where it lives today","jazz, rock and pop"],
+        ["Length of a blues progression","12 measures (bars)"],
+        ["Bars 1-4","the I chord"],
+        ["Bars 5-6","the IV chord"],
+        ["Bar 9","V or V7"],
+        ["Bar 10","IV — after the V"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — pattern memorized!":null },
+    { type:"key-climb", title:"Game 2 · Blues Bass Walk",
+      intro:"Play the ROOT of each of the 12 bars — the bass player's night at work!",
+      miaIntro:"C-C-C-C, F-F, C-C, G-F, C-C! \u{1FA9C}",
+      spec:{seq:[48,48,48,48, 53,53, 48,48, 55,53, 48,48],
+        names:["C (bar 1)","C (2)","C (3)","C (4)","F (5 — first change!)","F (6)","C (7)","C (8)","G (9 — the V bar!)","F (10 — step down)","C (11)","C (12 — done!)"],
+        start:48, octaves:0.9167, title:"The 12-bar bass roots, in order"},
+      result:(score)=>score!==null?"Twelve bars walked — hired for the gig!":null },
+    { type:"symbol-hunt", title:"Game 3 · Blues Chord Spotter",
+      intro:"The three chords of a C blues — click the bar's chord when called!",
+      miaIntro:"Just three chords to know! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"m6 (inverts M3)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"C5",d:"w",chord:true}],width:140}},
-        {label:"P4 (inverts P5)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"C5",d:"w",chord:true}],width:140}},
-        {label:"m7 (inverts M2)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"C5",d:"w",chord:true}],width:140}},
-        {label:"M6 (inverts m3)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"C#5",d:"w",chord:true}],width:140}}]},
-      result:(score)=>score>=5?"You identified the interval inversions correctly.":null },
-    { type:"order-tap", title:"Game 3 · Compound Ladder",
-      intro:"Arrange the compound intervals from smallest to largest.",
-      miaIntro:"Begin with the interval closest to the octave.",
-      spec:{sequence:["9th (= 2nd)","10th (= 3rd)","11th (= 4th)","12th (= 5th)","13th (= 6th)"],
-        title:"The compound interval ladder"},
-      result:(stars)=>stars>=2?"You arranged the compound intervals correctly.":null },
-    { type:"term-race", title:"Game 4 · Reduce the Compound",
-      intro:"Reduce each compound interval to its simple equivalent before time runs out.",
-      miaIntro:"Subtract 7, repeating when necessary.",
-      spec:{rounds:8, reverse:true, pool:[
-        ["9th","a compound 2nd"],
-        ["10th","a compound 3rd"],
-        ["11th","a compound 4th"],
-        ["12th","a compound 5th"],
-        ["13th","a compound 6th"],
-        ["Compound interval","larger than an octave"],
-        ["Reduction rule","subtract 7"],
-        ["Subtract 7","reduces any compound interval"]]},
-      result:(score)=>score>=6?"You reduced the compound intervals correctly.":null }
+        {label:"I (C-E-G) — bars 1-4, 7-8, 11-12", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"IV (F-A-C) — bars 5-6 and 10", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
+        {label:"V7 (G-B-D-F) — bar 9", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:150}},
+        {label:"V (G-B-D) — bar 9's other option", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"Three chords, twelve bars, zero doubts!":null },
+    { type:"order-tap", title:"Game 4 · Assemble the Pattern",
+      intro:"Tap the six segments of the 12-bar blues in order!",
+      miaIntro:"Six segments, in order! \u{1F3C1}",
+      spec:{sequence:["I — four bars","IV — two bars","I — two bars","V(7) — one bar","IV — one bar","I — two bars"],
+        title:"The traditional 12-bar blues, segment by segment"},
+      result:(stars)=>stars>=2?"The 12-bar pattern is yours!":null }
   ],
-  practiceIntro:"Complete 20 practice questions on interval inversions, qualities, and compound intervals. The next question will appear after each correct answer.",
+  practiceIntro:"20 practice questions — the map, the history and the transfers. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["2nd↔","7th"],["3rd↔","6th"],["4th↔","5th"],["M↔","m"],["P↔","P"],["Sum","9"]], reverse:true}, count:6 },
-    { gen:"interval-quality", params:{ask:"quality"}, count:3 },
-    { type:"mc", q:"Which action inverts a simple interval?", choices:["Move the lower note up one octave","Remove one of the notes","Change the clef"], answer:0,
-      explain:"The lower note moves above the original upper note." },
-    { type:"mc", q:"A sixth inverts to a…", choices:["third","fourth","sixth"], answer:0,
-      explain:"6 + 3 = 9." },
-    { type:"mc", q:"A major interval inverts to which quality?", choices:["Minor","Major","Perfect"], answer:0,
-      explain:"Major and minor qualities exchange under inversion." },
-    { type:"mc", q:"A perfect 4th inverts to a…", choices:["Perfect fifth","Augmented fifth","Diminished fifth"], answer:0,
-      explain:"Perfect stays perfect; 4+5=9." },
-    { type:"truefalse", q:"The numbers of a simple interval and its inversion add to 9.", answer:true,
-      explain:"The rule of 9." },
-    { type:"truefalse", q:"A compound interval is larger than an octave.", answer:true,
-      explain:"LARGER than an octave." },
-    { type:"truefalse", q:"A ninth reduces to a second.", answer:true,
-      explain:"9 − 7 = 2." },
-    { gen:"term-match", params:{subject:"term", pool:[["9th","compound 2nd"],["10th","compound 3rd"],["11th","compound 4th"],["13th","compound 6th"]], reverse:true}, count:3 },
-    { gen:"interval-quality", params:{ask:"quality"}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["12 bars","the blues' usual length"],["Bars 1-4","I"],["Bars 5-6","IV"],["Bars 7-8","I again"],["Bar 9","V or V7"],["Bar 10","IV"],["Bars 11-12","I — home"]], reverse:true}, count:6 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
+    { type:"mc", q:"Where did blues music begin?", choices:["The southern United States","Northern Europe","Ancient Greece"], answer:0,
+      explain:"Where three musical traditions met." },
+    { type:"mc", q:"Which musical traditions influenced the blues?", choices:["West African rhythms, gospel singing, European harmonies","Asian scales and electronic beats","Opera and plainchant"], answer:0,
+      explain:"Three traditions, one style." },
+    { type:"mc", q:"The blues can often be found in…", choices:["jazz, rock and pop","only opera","only folk dances"], answer:0,
+      explain:"It crossed into nearly every popular style." },
+    { type:"mc", q:"A blues chord progression is usually…", choices:["12 measures long","4 measures long","32 measures long"], answer:0,
+      explain:"Twelve bars — the name says it." },
+    { type:"mc", q:"How many bars of I open the traditional blues?", choices:["4","2","1"], answer:0,
+      explain:"The long settle-in." },
+    { type:"mc", q:"Which chord is played in bar 9?", choices:["V or V7","IV","I"], answer:0,
+      explain:"One bar of the dominant." },
+    { type:"truefalse", q:"The traditional blues uses only the I, IV and V(7) chords.", answer:true,
+      explain:"Three chords, endless songs." },
+    { type:"truefalse", q:"Bar 10 uses the IV chord after bar 9's V (or V7).", answer:true,
+      explain:"V → IV → I — a signature blues move." },
+    { type:"truefalse", q:"There are many variations of the blues progression.", answer:true,
+      explain:"Ours is the traditional version." },
+    { type:"truefalse", q:"A 12-bar blues in F uses F, B♭ and C7.", answer:true,
+      explain:"I=F, IV=B♭, V7=C7." }
+  ],
+  miaQuizIntro:"Quiz! Twelve bars, six segments, three chords.",
+  quiz:[
+    { type:"mc", q:"Where did blues music begin?", choices:["The southern United States","Vienna","The Baroque courts"], answer:0,
+      explain:"The southern United States.", hint:"Its birthplace." },
+    { type:"mc", q:"Which musical traditions helped create the blues?", choices:["West African rhythms, gospel singing, European harmonies","Baroque figures, waltzes, marches","Plainchant, opera, ragtime"], answer:0,
+      explain:"Three traditions combined.", hint:"Rhythm + voice + harmony." },
+    { type:"mc", q:"A blues chord progression is usually how long?", choices:["12 measures","8 measures","24 measures"], answer:0,
+      explain:"Hence '12-bar blues.'", hint:"The title." },
+    { type:"mc", q:"The traditional blues opens with…", choices:["four bars of the I chord","four bars of V7","two bars of IV"], answer:0,
+      explain:"Four bars of the tonic.", hint:"The longest segment." },
+    { type:"mc", q:"Bars 5 and 6 carry…", choices:["the IV chord","the V chord","the ii chord"], answer:0,
+      explain:"The first change, two bars of it.", hint:"Up a 4th from I." },
+    { type:"mc", q:"Which chord is played in bar 9?", choices:["V or V7","IV","vi"], answer:0,
+      explain:"One bar of the dominant.", hint:"The V chord's moment." },
+    { type:"mc", q:"Immediately after the V(7) bar comes…", choices:["one bar of IV","two bars of V","the final chord immediately"], answer:0,
+      explain:"V → IV → I: the blues' signature order.", hint:"The step-down." },
+    { type:"truefalse", q:"The last two bars of the traditional 12-bar blues are the I chord.", answer:true,
+      explain:"I closes the form — ready to repeat.", hint:"Bars 11-12." },
+    { type:"mc", q:"Complete the 12-bar blues pattern: I×4, IV×2, I×2, ___, ___, I×2.", choices:["V(7)×1, IV×1","IV×1, V×1","V×2, nothing"], answer:0,
+      explain:"Bars 9 and 10 in order.", hint:"V, then IV." },
+    { type:"mc", q:"A 12-bar blues in G uses…", choices:["G, C and D7","G, B and D","C, F and G7"], answer:0,
+      explain:"I=G, IV=C, V7=D7.", hint:"Translate the numerals." },
+    { type:"mc", q:"A 12-bar blues in B♭ uses…", choices:["B♭, E♭ and F7","B♭, C and D7","F, B♭ and C7"], answer:0,
+      explain:"I=B♭, IV=E♭, V7=F7.", hint:"Count up 4 and 5 from B♭." },
+    { type:"mc", q:"Why is the 12-bar blues progression important?", choices:["It is one of the most common progressions in blues, jazz, rock, and pop","It was the first progression ever written","It uses chords no other style has"], answer:0,
+      explain:"Learn one pattern, play a thousand songs.", hint:"Think of how many genres use it." },
+    /* generated */
+    { gen:"term-match", params:{subject:"term", pool:[["I×4","the opening"],["IV×2, I×2","the middle"],["V7, IV","bars 9 and 10"],["I×2","the close"]], reverse:true}, count:3 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
+    { gen:"inversion-id", params:{subject:"v7", ask:"position"}, count:1 }
   ],
   vocabulary:[
-    {term:"Interval Inversion", def:"Flipping an interval by moving the bottom note up an octave. Numbers sum to 9."},
-    {term:"Rule of 9", def:"2nd↔7th · 3rd↔6th · 4th↔5th · unison↔octave — every pair adds to nine."},
-    {term:"Quality Flip", def:"Major↔minor, augmented↔diminished; perfect inverts to perfect."},
-    {term:"Compound Interval", def:"An interval larger than an octave: 9th, 10th, 11th, 12th, 13th. Subtract 7 to find its simple form."}
+    {term:"The Blues", def:"Music born in America's south from West African rhythms, gospel singing and European harmonies — alive today in jazz, rock and pop."},
+    {term:"Bar", def:"Another word for measure — the blues is counted in bars."},
+    {term:"12-Bar Blues Progression", def:`The traditional form — each box is one bar:<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;max-width:152px;margin:8px auto 0">${[["I","b"],["I","b"],["I","b"],["I","b"],["IV","r"],["IV","r"],["I","b"],["I","b"],["V7","g"],["IV","r"],["I","b"],["I","b"]].map(([n,c])=>{const col={b:["#e3f0fb","#8fbce0"],r:["#f8e0e0","#dc9a9a"],g:["#dcecd6","#94c384"]}[c];return `<span style="background:${col[0]};border:1.5px solid ${col[1]};border-radius:4px;padding:4px 0;text-align:center;font-weight:800;font-size:12px;color:#243244">${n}</span>`;}).join("")}</div>`},
+    {term:"The V→IV Descent", def:"Bars 9-10: the dominant steps DOWN through IV before landing home — a signature blues move.",
+      staff:{clef:"treble",notes:[{p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true},{p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:280}}
   ],
   mistakes:[],
   summary:[
-    "✔ Invert = <b>bottom note up an octave</b>.",
-    "✔ <b>Rule of 9</b>: 2↔7, 3↔6, 4↔5, 1↔8.",
-    "✔ Qualities flip: <b>M↔m, A↔d, P↔P</b>.",
-    "✔ <b>Compound</b> = past the octave; <b>subtract 7</b> to reduce (9th→2nd, 13th→6th).",
-    "✔ Two formulas do it all: <b>rule of 9</b> for inversions, <b>subtract 7</b> for compounds."
+    "✔ The blues: <b>America's south</b> — West African rhythms + gospel singing + European harmonies → <b>jazz, rock, pop</b>.",
+    "✔ Usually <b>12 measures ('bars')</b> long, with many variations.",
+    "✔ The traditional map: <b>I×4 · IV×2 · I×2 · V(7)×1 · IV×1 · I×2</b>.",
+    "✔ Only <b>three chords</b> — I, IV, V(7) — carry the whole form.",
+    "✔ Translate the numerals and the blues plays in <b>every key</b>."
   ],
   tips:[
-    "Fast check: M3 up from C is E; m6 up from E is C. If you return to your starting letter, the inversion is right.",
-    "The tritone is its own inversion: A4↔d5 — both six half steps.",
-    "Compound quality never changes: a major 10th is just a major 3rd, breathing higher.",
-    "Next lesson: moving whole melodies to new keys — transposition."
+    "Count bars in groups of four: 'I-I-I-I / IV-IV-I-I / V-IV-I-I.' Twelve becomes easy.",
+    "Play the bass-root walk (Game 2) every day this week — your hands will memorize the form before your head does.",
+    "Listen test: put on early rock'n'roll tonight and count to twelve. You'll catch the pattern within one song.",
+    "Next lesson: the blues' other secret — a special SCALE with three 'blue notes'."
   ],
-  rewards:{ badge:"Interval Flipper", icon:"\u{1F503}" },
+  rewards:{ badge:"12-Bar Architect", icon:"\u{1F3B7}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Apply the rule of 9, invert interval qualities, and reduce compound intervals.",
-  quiz:[
-    { type:"mc", q:"Which action inverts a simple interval?", choices:["Move the lower note up one octave","Move both notes up one octave","Repeat the same interval"], answer:0,
-      explain:"Bottom becomes top.", hint:"Octave transfer." },
-    { type:"mc", q:"The interval numbers of a simple interval and its inversion add to…", choices:["9","8","10"], answer:0,
-      explain:"The rule of 9.", hint:"3+6, 4+5…" },
-    { type:"mc", q:"A 2nd inverts to a…", choices:["7th","6th","5th"], answer:0,
-      explain:"A second inverts to a seventh because 2 + 7 = 9.", hint:"Subtract from 9." },
-    { type:"mc", q:"A major 3rd inverts to a…", choices:["minor 6th","major 6th","minor 3rd"], answer:0,
-      explain:"A major third inverts to a minor sixth: 3 ↔ 6 and major ↔ minor.", hint:"Both parts flip." },
-    { type:"mc", q:"An augmented fourth inverts to a…", choices:["diminished fifth","augmented fifth","perfect fifth"], answer:0,
-      explain:"Augmented quality inverts to diminished quality, and a fourth inverts to a fifth. An augmented fourth and diminished fifth span the same number of half steps in twelve-tone equal temperament but use different spellings.", hint:"A↔d." },
-    { type:"mc", q:"Which interval quality remains unchanged under inversion?", choices:["Perfect","Major","Augmented"], answer:0,
-      explain:"P4↔P5, P1↔P8.", hint:"Perfect intervals invert to other perfect intervals." },
-    { type:"mc", q:"A compound interval is…", choices:["larger than an octave","smaller than a 2nd","always dissonant"], answer:0,
-      explain:"Common compound intervals include ninths, tenths, elevenths, and larger intervals.", hint:"Past the octave." },
-    { type:"mc", q:"A thirteenth reduces to a…", choices:["sixth","fifth","seventh"], answer:0,
-      explain:"13 − 7 = 6.", hint:"Subtract 7." },
-    { type:"mc", q:"Identify the interval.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"D5",d:"w",chord:true}],width:160},
-      choices:["A ninth—a compound second","A second","An octave"], answer:0,
-      explain:"C up to the D above the octave forms a ninth. Its simple equivalent is a second.", hint:"Count past 8." },
-    { type:"truefalse", q:"A minor seventh inverts to a major second.", answer:true,
-      explain:"7→2, m→M.", hint:"Run the flips." },
-    { type:"truefalse", q:"A compound interval retains the quality of its simple equivalent.", answer:true,
-      explain:"For example, a major tenth reduces to a major third. Adding or removing an octave does not change the interval quality.", hint:"Only the octave is added." },
-    { type:"mc", q:"In extended-chord symbols such as C9, C11, and C13, what do the numbers represent?", choices:["Chord extensions measured conceptually above the root","Measure numbers","Piano fingerings"], answer:0,
-      explain:"The numbers identify theoretical chord extensions above the root. Actual voicings may place these notes in different octaves or omit certain chord members.", hint:"The interval ladder." }
-  ],
-  miaPerfect:"Perfect score! You accurately inverted simple intervals and reduced compound intervals.",
-  miaPass:"You passed and completed unit 20. Next, you will study transposition.",
+  miaPerfect:"PERFECT! Twelve bars, zero mistakes — the bandstand awaits. \u{1F3B7}\u{1F389}",
+  miaPass:"Passed! The 12-bar pattern is yours. Next: the blues SCALE…",
   mia:{
     hook:{ label:"the welcome",
-      explain:"C–E (a 3rd) flipped into E–C (a 6th): inversion. The numbers 3 and 6 sum to nine — they always will.",
-      play:()=>{MFAudio.tone(60,.5,0,.4);MFAudio.tone(64,.5,.55,.4);MFAudio.tone(64,.5,1.3,.4);MFAudio.tone(72,.5,1.85,.4);} },
-    learn:{ label:"inversions & compounds",
-      explain:"Invert = bottom up an octave; numbers sum to 9; M↔m, A↔d, P↔P. Compound = past the octave; subtract 7 (9th→2nd … 13th→6th).",
-      hint:"9 for flips, 7 for compounds.",
-      play:()=>{MFAudio.tone(60,.5,0,.4);MFAudio.tone(74,.5,.6,.4);} },
-    example:{ label:"the examples",
-      explain:"Example 1 plays inversion pairs (M3→m6, P5→P4); example 2 stretches simple intervals into 9ths, 10ths and 13ths." },
+      explain:"That was the traditional 12-bar blues: I×4, IV×2, I×2, V7, IV, I×2 — the most reused progression in popular music.",
+      play:()=>{const F=[[48,64,67,70],[53,69,72,75],[48,64,67,70],[43,67,71,77],[53,69,72,75],[48,64,67,70]];F.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.7,i*.75,.26)));} },
+    learn:{ label:"the 12-bar blues",
+      explain:"Born in America's south (African rhythms + gospel + European harmony). 12 bars: I×4, IV×2, I×2, V(7), IV, I×2 — three chords total.",
+      hint:"4-2-2-1-1-2.",
+      play:()=>{[48,64,67,72].forEach(m=>MFAudio.tone(m,.8,0,.26));[53,65,69,72].forEach(m=>MFAudio.tone(m,.8,.9,.26));[43,67,71,77].forEach(m=>MFAudio.tone(m,.8,1.8,.26));} },
+    example:{ label:"the shuffle",
+      explain:"This is the real thing — a boogie-woogie shuffle: a walking bass under backbeat chord stabs, all over the same 12-bar I-IV-V form.",
+      play:()=>{const b=document.getElementById("l70shuffleBtn"); if(b)b.click();} },
     game:{ label:"the games",
-      explain:"Sprint the rule of 9, find inversions on cards, climb the compound ladder, then reduce compounds at speed.",
-      hint:"Sum 9 · subtract 7." },
+      explain:"Sprint the pattern, walk the bass, spot the three chords, then assemble the segments in order.",
+      hint:"Segments: 4-2-2-1-1-2." },
     quiz:{ label:"this question",
-      explain:"Three moves solve everything: numbers sum to 9, qualities flip (P stays), compounds reduce by subtracting 7.",
-      play:()=>{MFAudio.tone(60,.5,0,.4);MFAudio.tone(64,.5,.5,.4);MFAudio.tone(72,.6,1.1,.4);} }
+      explain:"Everything hangs on the pattern — I×4, IV×2, I×2, V(7), IV, I×2 — plus the three traditions that created the blues.",
+      play:()=>{[43,67,71,77].forEach(m=>MFAudio.tone(m,.8,0,.27));[53,65,69,72].forEach(m=>MFAudio.tone(m,.8,.85,.27));[48,64,67,72].forEach(m=>MFAudio.tone(m,1,1.7,.27));} }
   }
 };

@@ -1,285 +1,254 @@
-/* Lesson 66 — Passing and Neighboring Tones (AEMT Book 3, Unit 16)
-   Built from drafts/UNIT 16 – Lesson 66.md; AEMT3 p.104 verified by render.
-   Core: NON-HARMONIC TONES = melody notes not in the harmony chord.
-   PASSING TONE: steps between two DIFFERENT chord tones. NEIGHBORING TONE:
-   leaves and returns to the SAME chord tone — UPPER (above) or LOWER (below).
-   Both usually fall on WEAK beats, and should NOT influence chord choice.
-   NOTE: edit by FULL-FILE REWRITE only. */
+/* Lesson 66 (8.9, formerly L82) — Whole-Tone & Chromatic Scales (Book 4, Unit 20 — SELF-AUTHORED)
+   Core: WHOLE-TONE = six pitch classes, all whole steps, two distinct
+   collections; CHROMATIC = all twelve half steps; both have EQUAL-INTERVAL
+   symmetry — one repeating interval, so only a weak internal tonic
+   hierarchy. NOTE: edit by FULL-FILE REWRITE only. */
 
-/* tone detective: tap the non-harmonic tone, then classify it */
-function MF_L66_detect(container,fb){
+/* ear lab: three short examples (A=major, B=whole-tone, C=chromatic) — which is which? */
+function MF_L66_compare(container,fb){
+  const VER={ A:[60,62,64,65,67,69,71,72], B:[60,62,64,66,68,70,72], C:[60,61,62,63,64,65,66,67] };
   const ROUNDS=[
-    {chord:"C (C-E-G)", ps:["C4","D4","E4"], nh:1, kind:0,
-      expl:"C and E are chord tones; D bridges two DIFFERENT ones — a PASSING tone."},
-    {chord:"C (C-E-G)", ps:["E4","F4","E4"], nh:1, kind:1,
-      expl:"The melody leaves E and returns to the SAME E from above — an UPPER NEIGHBORING tone."},
-    {chord:"C (C-E-G)", ps:["G4","F#4","G4"], nh:1, kind:2,
-      expl:"Leaves G, dips below, returns to the same G — a LOWER NEIGHBORING tone."},
-    {chord:"F (F-A-C)", ps:["F4","G4","A4"], nh:1, kind:0,
-      expl:"F up to A with G between: two different chord tones bridged — PASSING."}];
-  const KINDS=["Passing tone","Upper neighbor","Lower neighbor"];
-  let r=0, found=false;
-  container.innerHTML=`<div class="big-q l66d-q" style="text-align:center"></div>
-    <div class="l66d-staff"></div>
-    <div class="choices chips l66d-ch" style="display:none"><button>Passing tone</button><button>Upper neighbor</button><button>Lower neighbor</button></div>`;
-  const q=container.querySelector(".l66d-q"), holder=container.querySelector(".l66d-staff"), ch=container.querySelector(".l66d-ch");
-  function ask(){
-    if(r>=ROUNDS.length){ q.textContent=`Excellent! You identified them all.`; holder.innerHTML=""; ch.style.display="none"; return; }
-    const R=ROUNDS[r]; found=false; ch.style.display="none";
-    q.innerHTML=`The harmony is <b>${R.chord}</b>. Tap the melody note that does <b>NOT</b> belong to that chord.`;
-    Staff.render(holder,{clef:"treble",notes:R.ps.map((p,i)=>({p,d:"q"})),width:300,clickNotes:true,
-      onNote:(i,p)=>{
-        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
-        if(found) return;
-        const R2=ROUNDS[r];
-        if(i===R2.nh){ found=true;
-          q.innerHTML=`Great! You found the non-harmonic tone: ${p.replace(/\d/,"").replace("#","♯")}. Is it a passing tone or a neighboring tone?`;
-          ch.style.display=""; }
-        else fb(false,`${p[0]} belongs to ${R2.chord} — it is a chord tone. Look for the note outside the chord.`);
-      }});
-  }
-  [...ch.children].forEach((b,i)=>b.onclick=()=>{
-    const R=ROUNDS[r]; if(!R||!found) return;
-    if(i===R.kind){
-      R.ps.forEach((p,ix)=>MFAudio.tone(MFAudio.midi(p),.45,.05+ix*.4,.4));
-      fb(true,`✓ ${R.expl}`);
-      r++; setTimeout(ask,1500); }
-    else { MFAudio.tone(40,.2); fb(false,"Does the melody land on a DIFFERENT chord tone (passing) or the SAME one (neighbor)? Above or below?"); }
-  });
+    {q:"Which one is the <b>Whole-tone</b> scale (all whole steps)?", ans:"B", expl:"B moved by equal whole steps — the whole-tone scale."},
+    {q:"Which one is the <b>Chromatic</b> scale (all half steps)?", ans:"C", expl:"C moved by half steps the whole way — the chromatic scale."},
+    {q:"Which one is the <b>Major</b> scale (a mix, with a clear home)?", ans:"A", expl:"A mixed whole and half steps and pulled home — the major scale."}];
+  let r=0;
+  container.innerHTML=`<div class="big-q l82c-q" style="text-align:center"></div>
+    <div style="text-align:center">
+      <button class="play" data-v="A">▶ Example A</button>
+      <button class="play" data-v="B">▶ Example B</button>
+      <button class="play" data-v="C">▶ Example C</button></div>
+    <div class="choices chips l82c-ch"><button>A</button><button>B</button><button>C</button></div>`;
+  const q=container.querySelector(".l82c-q"), ch=container.querySelector(".l82c-ch");
+  container.querySelectorAll("[data-v]").forEach(btn=>btn.onclick=()=>VER[btn.dataset.v].forEach((m,i)=>MFAudio.tone(m,.34,i*.3,.42)));
+  function ask(){ if(r>=ROUNDS.length){ q.textContent="✓ You can hear all three scales apart."; ch.style.display="none"; return; }
+    q.innerHTML=`${ROUNDS[r].q}<br><span style="font-weight:400;font-size:13px">Play A, B and C and compare their step sizes.</span>`; }
+  [...ch.children].forEach(b=>b.onclick=()=>{ const R=ROUNDS[r]; if(!R) return;
+    if(b.textContent===R.ans){ fb(true,"✓ "+R.expl); r++; setTimeout(ask,1200); }
+    else { MFAudio.tone(40,.2); fb(false,"Listen to the step sizes: all whole (whole-tone), all half (chromatic), or a mixture (major)?"); } });
   ask();
 }
 
 LESSON_CONTENT[66]={
-  welcome:"Non-harmonic tones: melody notes outside the chord. \u{1F98B}",
+  welcome:"Whole-tone and chromatic scales are built from equal intervals.",
   hook:{
-    say:"<b>Two melodies use the same C major chord.</b> One melody adds an extra note between the chord tones. Listen to both. <b>Are those extra notes wrong?</b>",
+    say:"Listen to the scale. \u{1F447} <b>What is unusual about the interval between each pair of adjacent notes?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Melody A: C … E … G</button>
-          <button class="play hk-b">▶ Melody B: C-D-E … G</button></div>
-          <div class="choices hk-ch" style="display:none"><button>No — the extra note connects two chord tones smoothly</button><button>Yes — D is not in the C chord</button></div>`;
+          <button class="play hk-a">▶ Play the scale</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Every step is the same size — a whole step</button><button>The steps gradually become faster</button><button>It follows the major-scale pattern</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ [60,64,67].forEach((m,i)=>MFAudio.tone(m,.55,i*.55,.42)); [48,52,55].forEach(m=>MFAudio.tone(m,1.8,0,.18)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2200); };
-        container.querySelector(".hk-b").onclick=()=>{ [60,62,64,67].forEach((m,i)=>MFAudio.tone(m,.5,i*.45,.42)); [48,52,55].forEach(m=>MFAudio.tone(m,2.0,0,.18)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2200); };
+        container.querySelector(".hk-a").onclick=()=>{ [60,62,64,66,68,70,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.34,.42)); setTimeout(()=>ch.style.display="",7*340+300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ The D is a NON-HARMONIC TONE — a PASSING tone, stepping between two chord tones. Not wrong: most melodies include them. Today: passing and neighboring tones!");
-          else fb(false,"It is outside the chord — but did it SOUND wrong? Composers use these notes on purpose…");
+          if(i===0) fb(true,"✓ Correct. The whole-tone scale contains six different pitch classes, with a whole step between each adjacent pair. Its equal-interval pattern does not produce the half-step relationships found in major and minor scales.");
+          else fb(false,"The tempo remains steady. Listen again to the pitch distance between each pair of adjacent notes.");
         });
       } }
   },
   objectives:[
-    "Define non-harmonic tones: melody notes outside the harmony chord",
-    "Passing tone: steps between two DIFFERENT chord tones",
-    "Neighboring tone: leaves and returns to the SAME chord tone",
-    "Tell upper neighbors (above) from lower neighbors (below)",
-    "Know they usually land on WEAK beats",
-    "Choose chords from the chord tones, not the non-harmonic tones"
+    "Build the whole-tone scale: six pitch classes, all whole steps",
+    "Know there are two distinct whole-tone pitch collections",
+    "Review the chromatic scale: all twelve half steps",
+    "Define equal-interval symmetry: one repeating interval, weak internal tonic hierarchy",
+    "Hear major vs whole-tone vs chromatic",
+    "Explore musical applications of whole-tone and chromatic scales"
   ],
   steps:[
-    { say:"<b>Non-Harmonic Tones:</b> A <b>non-harmonic tone</b> is a melody note that does <b>not</b> belong to the current chord. Non-harmonic tones add variety and smooth melodic movement. \u{1F447} <b>What is a non-harmonic tone?</b>",
-      try:{ type:"mc", choices:["A melody note outside the current chord","A wrong note","A note played too softly"], answer:0,
-        success:"✓ A melody note outside the current chord. Today: passing and neighboring tones.",
-        fail:"The D over a C chord in the hook was one…",
-        hint:"Non-harmonic = not in the harmony." } },
-    { say:"<b>Passing Tone:</b> A <b>passing tone</b> connects <b>two different chord tones</b> by step. C→D→E over a C chord: D is the passing tone. \u{1F447} <b>What surrounds a passing tone?</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"4/4",tempo:90,notes:[
-        {p:"C4",d:"q",label:"chord tone"},{p:"D4",d:"q",label:"P"},{p:"E4",d:"q",label:"chord tone"},{p:"G4",d:"q"},{bar:"final"}],width:400} },
-      try:{ type:"mc", choices:["Two DIFFERENT chord tones","The same chord tone twice","Two rests"], answer:0,
-        success:"✓ Two DIFFERENT chord tones — the passing tone steps between them.",
-        fail:"Where did the melody start and land — same place or new place?",
-        hint:"PASSING = moving through to a new chord tone." } },
-    { say:"<b>Neighboring Tone:</b> A neighboring tone leaves a chord tone and returns to the <b>same chord tone</b>. Upper neighbor = above · lower neighbor = below. <b>Remember: passing tone = different → different · neighboring tone = same → different → same.</b> \u{1F447} <b>E→F→E over a C chord: what is the F?</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"6/4",tempo:90,notes:[
-        {p:"E4",d:"q",label:"chord tone"},{p:"F4",d:"q",label:"U"},{p:"E4",d:"q",label:"same"},
-        {p:"G4",d:"q",label:"chord tone"},{p:"F#4",d:"q",label:"L"},{p:"G4",d:"q",label:"same"},{bar:"final"}],width:720} },
-      try:{ type:"mc", choices:["An upper neighboring tone","A passing tone","A chord tone"], answer:0,
-        success:"✓ An UPPER neighboring tone — it leaves E and returns to the same E from above. (G→F♯→G shows the LOWER neighbor.)",
-        fail:"Did the melody land on a NEW chord tone, or the SAME one?",
-        hint:"A neighboring tone RETURNS to the same chord tone." } },
-    { say:"<b>Where Do They Usually Appear?</b> Passing and neighboring tones usually occur on <b>weak beats</b>. Chord tones usually appear on <b>strong beats</b>. \u{1F447} <b>Why are passing and neighboring tones usually placed on weak beats?</b>",
-      try:{ type:"mc", choices:["Strong beats belong to chord tones; the decorations fit between them","Weak beats are quieter","It's a printing convention"], answer:0,
-        success:"✓ Chord tones hold the strong beats; passing and neighboring tones decorate the weak beats.",
-        fail:"Where does the ear check the harmony most — strong or weak beats?",
-        hint:"Chord tones on strong beats; decorations on weak beats." } },
-    { say:"<b>Choosing Chords:</b> When harmonizing a melody, choose chords based on the <b>chord tones</b>, not the non-harmonic tones. \u{1F447} <b>Melody C-D-E-F-G over one measure, harmony = C chord. Which notes should you use to choose the chord?</b>",
-      try:{ type:"mc", choices:["C, E, G — the chord tones; D and F are passing tones","All five notes equally","Only D and F"], answer:0,
-        success:"✓ C, E, G spell the C chord; D and F are passing tones and do not affect the chord choice.",
-        fail:"Which of the five notes are IN C-E-G?",
-        hint:"Choose the chord from the chord tones." } },
-    { say:"Identify each non-harmonic tone. \u{1F447}",
+    { say:"<b>The Whole-Tone Scale:</b> A whole-tone scale contains six different pitch classes within an octave. Every adjacent pitch is separated by a whole step. One whole-tone collection is C–D–E–F♯–G♯–A♯, followed by the return to C at the octave. \u{1F447} <b>How many different pitch classes does a whole-tone scale contain?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
+        {p:"C4",d:"q",label:"W"},{p:"D4",d:"q",label:"W"},{p:"E4",d:"q",label:"W"},
+        {p:"F#4",d:"q",label:"W"},{p:"G#4",d:"q",label:"W"},{p:"A#4",d:"q",label:"W"},{p:"C5",d:"q"},{bar:"final"}],width:520} },
+      try:{ type:"mc", choices:["Six","Seven","Twelve"], answer:0,
+        success:"✓ Correct. Six whole steps fill an octave: 6 × 2 half steps = 12 half steps.",
+        fail:"Count the different pitches before the opening pitch class returns at the octave.",
+        hint:"Divide the octave's 12 half steps by 2." } },
+    { say:"<b>Two Distinct Collections:</b> There are only <b>two</b> different whole-tone collections. One of them is <b>C–D–E–F♯–G♯–A♯</b> (the other simply uses the six remaining notes). You don't need to memorize every note — just remember there are only two. \u{1F447} <b>How many distinct whole-tone collections are there?</b>",
+      try:{ type:"mc", choices:["Two","Twelve","Seven"], answer:0,
+        success:"✓ Correct. Every whole-tone scale is one of just two collections — no need to memorize both.",
+        fail:"The heading gives the number.",
+        hint:"Only two." } },
+    { say:"<b>The Chromatic Scale — Review:</b> The chromatic scale contains all twelve pitch classes within the octave and moves entirely by half steps. On the piano, it uses every key within the octave. Its enharmonic spelling depends on melodic direction, tonal context, and notational clarity. \u{1F447} <b>What is the interval pattern of the chromatic scale?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:140,notes:[
+        {p:"C4",d:"8"},{p:"C#4",d:"8"},{p:"D4",d:"8"},{p:"D#4",d:"8"},{p:"E4",d:"8"},{p:"F4",d:"8"},
+        {p:"F#4",d:"8"},{p:"G4",d:"8"},{p:"G#4",d:"8"},{p:"A4",d:"8"},{p:"A#4",d:"8"},{p:"B4",d:"8"},{p:"C5",d:"8"},{bar:"final"}],width:620} },
+      try:{ type:"mc", choices:["A continuous series of half steps","A continuous series of whole steps","A repeating whole–whole–half pattern"], answer:0,
+        success:"✓ Correct. The chromatic scale moves by half step and includes all twelve pitch classes.",
+        fail:"On the piano, each adjacent key is included.",
+        hint:"It uses the smallest interval in the twelve-tone system." } },
+    { say:"<b>Equal-Interval Symmetry:</b> Whole-tone and chromatic scales <b>repeat the same interval</b> throughout the octave. Because every note has a similar role, neither scale naturally creates a strong feeling of <b>“home”</b> the way a major or minor scale does. \u{1F447} <b>Why does an equal-interval scale give a weaker sense of “home” than a major scale?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14px;min-width:300px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Scale</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Pattern</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Notes</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Feeling of “home”</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#2F6DA8">Major</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">W W H W W W H</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">7</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">strong</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#C05A21">Whole-tone</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">W W W W W W</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">6</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">weak</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#C05A21">Chromatic</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">H ×12</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">12</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">weak</td></tr></table>` },
+      try:{ type:"mc", choices:["Every note has a similar role, so none stands out as “home”","Its notes must be played quietly","It contains too few pitches"], answer:0,
+        success:"✓ Correct. A major scale's uneven steps make some notes feel more important; equal steps make every note feel the same.",
+        fail:"Compare the repeated interval with the uneven whole/half-step pattern of a major scale.",
+        hint:"Same interval everywhere → every note feels alike." } },
+    { say:"<b>Ear Training — Compare the Three:</b> Play the three short examples and tell them apart by their step size. \u{1F447}",
       try:{ type:"custom",
-        hint:"Different frame = passing; same frame = neighbor (upper/lower by direction).",
-        mount:(container,fb)=>MF_L66_detect(container,fb) } },
-    { say:"<b>Review:</b> Classify each non-harmonic tone. The harmony is C throughout. \u{1F447} <b>In C-B-C-D-E, what is the B?</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"4/4",tempo:90,notes:[
-        {p:"C4",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{bar:"single"},{p:"E4",d:"w"},{bar:"final"}],width:420} },
-      try:{ type:"mc", choices:["A lower neighboring tone (and the D is a passing tone)","A passing tone (and the D is a neighbor)","Both are chord tones"], answer:0,
-        success:"✓ C→B→C = same tone, from below → LOWER neighbor. Then C→D→E = different tones → PASSING. One phrase, both types!",
-        fail:"Frame check: C…C (same) then C…E (different).",
-        hint:"Watch where each three-note group starts and lands." } }
+        hint:"All whole steps = whole-tone; all half steps = chromatic; a mixture = major.",
+        mount:(container,fb)=>MF_L66_compare(container,fb) } },
+    { say:"<b>Musical Applications:</b><br>• <b>Whole-tone:</b> a floating, dreamy, or ambiguous sound.<br>• <b>Chromatic:</b> creates tension and smoothly connects notes. \u{1F447} <b>Which scale is built entirely from whole steps and avoids the half-step pulls of major and minor?</b>",
+      try:{ type:"mc", choices:["The whole-tone scale","The chromatic scale","The major scale"], answer:0,
+        success:"✓ Correct. The whole-tone scale repeats one whole step throughout the octave.",
+        fail:"The chromatic scale moves by half steps, and the major scale mixes whole and half steps…",
+        hint:"Identify the equal-interval scale with six pitch classes." } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which scale contains all twelve pitch classes?</b>",
+      try:{ type:"mc", choices:["The chromatic scale","The whole-tone scale","A pentatonic scale"], answer:0,
+        success:"✓ Correct. The chromatic scale contains all twelve pitch classes. A whole-tone scale contains six, and a pentatonic scale contains five.",
+        fail:"Count the different pitch classes before the octave repeats.",
+        hint:"This scale includes every pitch class in the twelve-tone system." } }
   ],
   examples:[
-    { caption:"A melody over I-IV-V7-I where every arrow-note is a passing tone, connecting chord tones on weak beats.",
-      staff:{clef:"treble",time:"4/4",tempo:100,notes:[
-        {p:"C4",d:"q",label:"I"},{p:"D4",d:"q",label:"P"},{p:"E4",d:"q"},{p:"G4",d:"q"},{bar:"single"},
-        {p:"F4",d:"q",label:"IV"},{p:"G4",d:"q",label:"P"},{p:"A4",d:"q"},{p:"C5",d:"q"},{bar:"single"},
-        {p:"B4",d:"q",label:"V7"},{p:"A4",d:"q",label:"P"},{p:"G4",d:"q"},{p:"B4",d:"q"},{bar:"single"},
-        {p:"C5",d:"w",label:"I"},{bar:"final"}],width:680},
+    { caption:"A whole-tone phrase: six equal steps up, then back down — no single pitch receives strong structural emphasis.",
+      staff:{clef:"treble",tempo:100,notes:[
+        {p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},
+        {p:"G#4",d:"q"},{p:"A#4",d:"q"},{p:"C5",d:"h"},{bar:"single"},
+        {p:"A#4",d:"q"},{p:"F#4",d:"q"},{p:"D4",d:"q"},{p:"C4",d:"h"},{bar:"final"}],width:620},
       kb:{start:60,octaves:1,labels:true} },
-    { caption:"Neighbors at work: the melody keeps returning home — E-F-E (upper), G-F♯-G (lower) — while the C harmony holds still underneath.",
-      staff:{clef:"treble",time:"3/4",tempo:100,notes:[
-        {p:"E4",d:"q",label:"C chord"},{p:"F4",d:"q",label:"U"},{p:"E4",d:"q"},{bar:"single"},
-        {p:"G4",d:"q"},{p:"F#4",d:"q",label:"L"},{p:"G4",d:"q"},{bar:"single"},
-        {p:"C5",d:"h."},{bar:"final"}],width:560},
-      kb:{start:60,octaves:1,labels:true} }
+    { caption:"A chromatic climb: consecutive half steps rising to a release, spelled here with sharps — every key on the way.",
+      staff:{clef:"treble",tempo:120,notes:[
+        {p:"G4",d:"8"},{p:"G#4",d:"8"},{p:"A4",d:"8"},{p:"A#4",d:"8"},
+        {p:"B4",d:"8"},{p:"C5",d:"8"},{p:"C#5",d:"8"},{p:"D5",d:"8"},
+        {p:"E5",d:"h",label:"release!"},{bar:"final"}],
+        beams:[[0,3],[4,7]],width:560},
+      kb:{start:65,octaves:0.9167,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Term Sprint (45s)",
-      intro:"Passing, upper neighbor, lower neighbor — race the definitions!",
-      miaIntro:"Passing or neighboring? \u{26A1}",
+    { type:"gen-race", title:"Game 1 · Equal-Interval Sprint (45s)",
+      intro:"Identify interval patterns and pitch-class counts before time runs out.",
+      miaIntro:"Compare the repeated whole-step and half-step patterns.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Non-harmonic tone","a melody note outside the harmony chord"],
-        ["Passing tone","steps between two DIFFERENT chord tones"],
-        ["Neighboring tone","leaves and returns to the SAME chord tone"],
-        ["Upper neighbor","the visit from above"],
-        ["Lower neighbor","the visit from below"],
-        ["Their usual beat","weak"],
-        ["Their role in chord choice","none — ignore them"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — terms mastered!":null },
-    { type:"key-climb", title:"Game 2 · Decorated Melody Climb",
-      intro:"Play a melody with its non-harmonic tones: C-D-E (passing), E-F-E (neighbor)!",
-      miaIntro:"Chord tones and decorations! \u{1FA9C}",
-      spec:{seq:[60,62,64, 64,65,64, 62,60],
-        names:["C (chord tone)","D (passing!)","E (chord tone)","E again","F (upper neighbor!)","E (home)","D (passing down)","C (home)"],
-        start:60, octaves:0.4167, title:"A melody with passing and neighboring tones"},
-      result:(score)=>score!==null?"Non-harmonic tones under your fingers!":null },
-    { type:"symbol-hunt", title:"Game 3 · P, U or L?",
-      intro:"Three-note figures on cards — click the one each round names! (Harmony: C chord.)",
-      miaIntro:"Check the frame first! \u{1F440}",
+        ["Whole-tone scale","six pitch classes, all whole steps"],
+        ["Chromatic scale","all twelve half steps"],
+        ["Equal-interval scale","one repeating interval"],
+        ["Whole-tone pitch collections","two"],
+        ["Tonic hierarchy in equal-interval scales","weak"],
+        ["Interval between adjacent whole-tone notes","whole step"],
+        ["Interval between adjacent chromatic notes","half step"],
+        ["Major scale (for contrast)","unequal whole- and half-step pattern"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Equal-interval patterns identified!":null },
+    { type:"key-climb", title:"Game 2 · Climb the Whole-Tone Scale",
+      intro:"Play the C whole-tone scale ascending through six whole steps to the octave.",
+      miaIntro:"Maintain one whole step between each pair of adjacent notes.",
+      spec:{seq:[60,62,64,66,68,70,72],
+        names:["C","D","E","F♯","G♯","A♯","C (octave)"],
+        start:60, octaves:1, title:"The C whole-tone scale"},
+      result:(score)=>score!==null?"You performed all six whole steps correctly.":null },
+    { type:"symbol-hunt", title:"Game 3 · Which Scale Is It?",
+      intro:"Examine each notated scale and select its correct name.",
+      miaIntro:"Examine the interval between each pair of adjacent notes.",
       spec:{rounds:6, pool:[
-        {label:"Passing tone (C-D-E)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"}],width:170}},
-        {label:"Upper neighbor (E-F-E)", spec:{clef:"treble",notes:[{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"E4",d:"q"}],width:170}},
-        {label:"Lower neighbor (G-F♯-G)", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"F#4",d:"q"},{p:"G4",d:"q"}],width:170}},
-        {label:"All chord tones (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"}],width:170}}]},
-      result:(score)=>score>=5?"Frames read at a glance!":null },
-    { type:"term-race", title:"Game 4 · Non-Harmonic Fact Race",
-      intro:"Everything about non-harmonic tones!",
-      miaIntro:"Facts, fast! \u{1F3C1}",
+        {label:"Whole-tone (6 notes)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A#4",d:"q"}],width:210}},
+        {label:"Chromatic (half steps)", spec:{clef:"treble",notes:[{p:"C4",d:"8"},{p:"C#4",d:"8"},{p:"D4",d:"8"},{p:"D#4",d:"8"},{p:"E4",d:"8"},{p:"F4",d:"8"}],width:210}},
+        {label:"Major (W-W-H mix)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"}],width:190}},
+        {label:"Pentatonic (gapped)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"}],width:190}}]},
+      result:(score)=>score>=5?"You identified the scales correctly.":null },
+    { type:"term-race", title:"Game 4 · Count and Compare",
+      intro:"Compare the pitch-class counts and interval patterns of the scales studied so far.",
+      miaIntro:"Pentatonic 5, whole-tone 6, diatonic 7, chromatic 12.",
       spec:{rounds:8, reverse:true, pool:[
-        ["C-D-E over a C chord","D is a passing tone"],
-        ["E-F-E over a C chord","F is an upper neighbor"],
-        ["G-F♯-G over a C chord","F♯ is a lower neighbor"],
-        ["Passing tone's journey","one chord tone THROUGH to another"],
-        ["Neighbor's journey","out and back to the same tone"],
-        ["Weak beats","where non-harmonic tones usually live"],
-        ["Chord choice","ignores non-harmonic tones"],
-        ["Non-harmonic tones","decorations, not mistakes"]]},
-      result:(score)=>score>=6?"Non-harmonic facts mastered!":null }
+        ["Pentatonic","5 notes"],
+        ["Whole-tone","6 notes"],
+        ["Major / minor","7 notes"],
+        ["Chromatic","12 notes"],
+        ["All whole steps","whole-tone"],
+        ["All half steps","chromatic"],
+        ["No half steps, 5 notes","pentatonic"],
+        ["W-W-H-W-W-W-H","major"]]},
+      result:(score)=>score>=6?"You compared the scale collections correctly.":null }
   ],
-  practiceIntro:"20 practice questions — passing tones, neighboring tones, and the weak-beat rule. Answer right and the next appears automatically!",
+  practiceIntro:"Complete 20 practice questions on whole-tone scales, chromatic scales, and equal-interval patterns. The next question will appear after each correct answer.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Non-harmonic tone","outside the chord"],["Passing tone","bridges two different chord tones"],["Upper neighbor","above, then back"],["Lower neighbor","below, then back"],["Weak beat","where non-harmonic tones usually occur"]], reverse:true}, count:6 },
-    { gen:"triad-id", params:{}, count:2 },
-    { type:"mc", q:"Tones not part of the harmony chord are called…", choices:["non-harmonic tones","rest tones","grace notes"], answer:0,
-      explain:"The umbrella term." },
-    { type:"mc", q:"A passing tone connects…", choices:["two DIFFERENT chord tones","the same chord tone twice","two rests"], answer:0,
-      explain:"It travels through to a new destination." },
-    { type:"mc", q:"A neighboring tone…", choices:["leaves and returns to the SAME chord tone","connects two different chord tones","is always the tonic"], answer:0,
-      explain:"Same → different → same." },
-    { type:"mc", q:"An upper neighboring tone sits ____ the chord tone.", choices:["above","below","exactly on"], answer:0,
-      explain:"Upper = above; lower = below." },
-    { type:"mc", q:"In C-D-E over a C chord, the D is a…", choices:["passing tone","upper neighbor","chord tone"], answer:0,
-      explain:"C and E differ → passing." },
-    { type:"mc", q:"In G-A-G over a C chord, the A is a…", choices:["upper neighboring tone","passing tone","lower neighbor"], answer:0,
-      explain:"Same G frame, visitor from above." },
-    { type:"truefalse", q:"Passing and neighboring tones usually occur on a strong beat.", answer:false,
-      explain:"WEAK beats — chord tones take the strong beats." },
-    { type:"truefalse", q:"Non-harmonic tones should not influence which chord you choose.", answer:true,
-      explain:"Harmonize the chord tones only." },
-    { type:"truefalse", q:"A non-harmonic tone is a half or whole step from its chord tones.", answer:true,
-      explain:"Steps, not leaps — that's what keeps them smooth." },
-    { type:"truefalse", q:"Most melodies include non-harmonic tones.", answer:true,
-      explain:"Most melodies use them for variety and smooth movement." }
-  ],
-  miaQuizIntro:"Quiz! Frame first: different tones = passing, same tone = neighbor.",
-  quiz:[
-    { type:"mc", q:"Non-harmonic tones are…", choices:["melody tones not part of the harmony chord","chord tones played loudly","notes in the bass clef"], answer:0,
-      explain:"Melody notes outside the chord.", hint:"NON-harmonic." },
-    { type:"mc", q:"A passing tone…", choices:["connects two different chord tones by step","returns to the same chord tone","is always the tonic"], answer:0,
-      explain:"Different → different, by step.", hint:"It passes THROUGH." },
-    { type:"mc", q:"A neighboring tone…", choices:["leaves and returns to the same chord tone","connects two different chord tones","only occurs in minor keys"], answer:0,
-      explain:"Same → different → same.", hint:"It returns to the same tone." },
-    { type:"mc", q:"An UPPER neighboring tone is ____ the chord tone; a LOWER one is ____.", choices:["above; below","below; above","before; after"], answer:0,
-      explain:"Named by direction of the visit.", hint:"The names say it." },
-    { type:"truefalse", q:"Passing and neighboring tones usually occur on a weak beat.", answer:true,
-      explain:"Chord tones take the strong beats.", hint:"Where do the chord tones sit?" },
-    { type:"mc", q:"Should non-harmonic tones determine your chord choice?", choices:["No — choose chords from the chord tones","Yes — every note matters equally","Only on strong beats"], answer:0,
-      explain:"Choose the chord from the chord tones.", hint:"Which notes spell the chord?" },
-    { type:"mc", q:"The harmony is C (C-E-G). Identify the middle note.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"}],width:260},
-      choices:["Passing tone","Upper neighbor","Chord tone"], answer:0,
-      explain:"C→E via D: different frame → passing.", hint:"Start and landing differ?" },
-    { type:"mc", q:"The harmony is C (C-E-G). Identify the middle note.",
-      staff:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"F#4",d:"q"},{p:"G4",d:"q"}],width:260},
-      choices:["Lower neighboring tone","Passing tone","Upper neighboring tone"], answer:0,
-      explain:"Same G frame, dip below → lower neighbor.", hint:"Same landing = neighbor; which side?" },
-    { type:"mc", q:"The harmony is F (F-A-C). In F-G-A, the G is…", choices:["a passing tone","an upper neighbor","a chord tone of F"], answer:0,
-      explain:"F and A are chord tones; G bridges them.", hint:"Spell F major first." },
-    { type:"mc", q:"A melody over a C chord runs E-F-E-D-C. Classify F and D.", choices:["F = upper neighbor, D = passing tone","F = passing, D = neighbor","both are chord tones"], answer:0,
-      explain:"E-F-E returns to the same tone; E-D-C steps to a new one.", hint:"Same landing = neighbor; new landing = passing." },
-    { type:"mc", q:"Why do passing and neighboring tones usually sound smooth?", choices:["They move by step between chord tones and usually occur on weak beats","They're played silently","They're actually in the chord"], answer:0,
-      explain:"Stepwise motion on weak beats.", hint:"The two rules combined." },
-    { type:"mc", q:"Which melody notes should be used to choose the harmony? (Melody: C-D-E-F-G)", choices:["C, E, G — the chord tones","All five notes equally","Only D and F"], answer:0,
-      explain:"D and F are non-harmonic; C, E, G spell C major.", hint:"Use the chord tones." },
-    /* generated */
-    { gen:"term-match", params:{subject:"term", pool:[["Passing","different frame"],["Neighbor","same frame"],["Upper","from above"],["Lower","from below"]], reverse:true}, count:3 },
-    { gen:"triad-id", params:{}, count:2 },
-    { gen:"degree-name", params:{ask:"name"}, count:1 }
+    { gen:"term-match", params:{subject:"term", pool:[["Whole-tone","all whole steps"],["Chromatic","all half steps"],["Equal-interval","one repeating interval"],["Six pitch classes","whole-tone"],["Twelve pitch classes","chromatic"]], reverse:true}, count:6 },
+    { gen:"step-type", params:{}, count:2 },
+    { type:"mc", q:"How many different pitch classes does a whole-tone scale contain?", choices:["6","7","12"], answer:0,
+      explain:"Six whole steps fill the octave." },
+    { type:"mc", q:"How many distinct whole-tone pitch collections exist in twelve-tone equal temperament?", choices:["2","12","6"], answer:0,
+      explain:"The C collection and the C♯ collection." },
+    { type:"mc", q:"The chromatic scale moves entirely by…", choices:["half steps","whole steps","thirds"], answer:0,
+      explain:"All twelve keys in a row." },
+    { type:"mc", q:"Compared with a major scale, an equal-interval scale provides less internal support for…", choices:["a strong tonic hierarchy","identifiable pitches","a steady rhythm"], answer:0,
+      explain:"Repeating the same interval gives each pitch a similar structural position, although musical context can still establish a tonal center." },
+    { type:"truefalse", q:"A whole-tone scale contains no half steps between adjacent scale tones.", answer:true,
+      explain:"W-W-W-W-W-W." },
+    { type:"truefalse", q:"The spelling of a chromatic scale may depend on its direction and tonal or harmonic context.", answer:true,
+      explain:"Ascending-sharp and descending-flat spellings are useful introductory conventions, but context determines the most appropriate notation." },
+    { type:"truefalse", q:"The major scale repeats one identical interval throughout the octave.", answer:false,
+      explain:"The major scale contains an unequal pattern of whole and half steps rather than one continuously repeated interval." },
+    { gen:"term-match", params:{subject:"term", pool:[["All whole steps","whole-tone"],["All half steps","chromatic"],["Strong tonic hierarchy","major"],["Two distinct collections","whole-tone"]], reverse:true}, count:3 },
+    { gen:"enharmonic", params:{}, count:2 }
   ],
   vocabulary:[
-    {term:"Non-Harmonic Tone", def:"A melody tone that is not part of the chord used for the harmony."},
-    {term:"Passing Tone", def:"A non-harmonic tone stepping between two DIFFERENT chord tones.",
-      staff:{clef:"treble",notes:[{p:"C5",d:"q"},{p:"D5",d:"q"},{p:"E5",d:"q"}],width:380}},
-    {term:"Neighboring Tone", def:"A non-harmonic tone that leaves and returns to the SAME chord tone — upper (above) or lower (below).",
-      staff:{clef:"treble",notes:[{p:"C5",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"}],width:380}},
-    {term:"The Weak-Beat Rule", def:"Passing and neighboring tones usually occur on weak beats — and never influence chord choice."}
+    {term:"Whole-Tone Scale", def:"Six pitch classes per octave, every step a whole step. Two distinct collections exist."},
+    {term:"Chromatic Scale", def:"All twelve pitch classes, moving by half steps. Its enharmonic spelling depends on direction, tonal context, and notational clarity."},
+    {term:"Equal-Interval (Symmetrical) Scale", def:"A scale built from one repeating interval, giving each pitch a similar structural position."},
+    {term:"Tonal Center", def:"The note that sounds like “home.” Equal-interval scales weaken this feeling because every step is the same."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Non-harmonic tones</b> = melody notes outside the harmony chord — decorations, not errors.",
-    "✔ <b>Passing tone</b>: steps between two <b>DIFFERENT</b> chord tones (C-D-E).",
-    "✔ <b>Neighboring tone</b>: out and back to the <b>SAME</b> chord tone — <b>upper</b> above, <b>lower</b> below.",
-    "✔ Both usually live on <b>weak beats</b>.",
-    "✔ They <b>never influence chord choice</b> — harmonize the chord tones only."
+    "✔ <b>Whole-tone</b>: 6 pitch classes, all whole steps; <b>two</b> distinct collections exist.",
+    "✔ <b>Chromatic</b>: all <b>12</b> pitch classes; spelling depends on direction and context.",
+    "✔ Both have <b>equal-interval symmetry</b> — one repeating interval, so only a <b>weak internal tonic hierarchy</b>.",
+    "✔ Major's uneven pattern distinguishes scale degrees; equal intervals do not — though context can still create a tonal center.",
+    "✔ Applications: whole-tone = ambiguous, floating harmonic color; chromatic = connecting pitches and intensifying motion."
   ],
   tips:[
-    "Analysis routine: bracket each 3-note group, compare first and last notes. Same = neighbor; different = passing.",
-    "Sing 'London Bridge' — it is full of passing and neighboring tones.",
-    "Turn a plain chord-tone melody into a real tune by adding passing tones on the weak beats.",
-    "Next lesson you COMPOSE: your own melody over a progression, decorations included."
+    "Whole-tone at the keyboard: C-D-E, then F♯-G♯-A♯ — three whites, three blacks.",
+    "Play any note against a whole-tone scale — resolutions are weak. That is part of its color.",
+    "Chromatic passages are about the DESTINATION: hear where the slide finally lands.",
+    "Next lesson: flip intervals upside down — inversions and compounds."
   ],
-  rewards:{ badge:"Tone Gardener", icon:"\u{1F98B}" },
+  rewards:{ badge:"Symmetry Explorer", icon:"\u{1F32B}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! Passing, upper, lower — every non-harmonic tone named on sight. \u{1F98B}\u{1F389}",
-  miaPass:"Passed! You know the non-harmonic tones. Time to compose your own melody…",
+  miaQuizIntro:"Quiz: Identify equal-interval patterns and compare their pitch collections.",
+  quiz:[
+    { type:"mc", q:"The whole-tone scale is built entirely from…", choices:["whole steps","half steps","minor thirds"], answer:0,
+      explain:"W six times fills the octave.", hint:"The name says it." },
+    { type:"mc", q:"How many different pitch classes are in a whole-tone scale?", choices:["6","7","5"], answer:0,
+      explain:"12 half steps ÷ 2 = 6 whole steps.", hint:"Divide the octave." },
+    { type:"mc", q:"How many distinct whole-tone pitch collections exist in twelve-tone equal temperament?", choices:["Two","Seven","Twelve"], answer:0,
+      explain:"The two collections can be represented by scales beginning on C and C♯. Other starting notes reorder one of these collections.", hint:"Very few." },
+    { type:"mc", q:"The chromatic scale contains…", choices:["all twelve pitch classes","only the white-key pitch classes","six pitch classes"], answer:0,
+      explain:"Every half step in the octave.", hint:"Complete set." },
+    { type:"mc", q:"What gives the whole-tone and chromatic scales their equal-interval symmetry?", choices:["Each scale repeats one interval throughout the octave","Loud and soft notes alternate","Each scale contains an odd number of notes"], answer:0,
+      explain:"Whole-tone (all whole steps) and chromatic (all half steps).", hint:"The step pattern." },
+    { type:"mc", q:"Why do equal-interval scales provide less internal support for a tonic hierarchy than major scales?", choices:["Their repeated interval patterns give each pitch a similar structural position","They must be performed quickly","They do not reach the octave"], answer:0,
+      explain:"Major scales contain unequal interval patterns that distinguish scale degrees. Equal-interval scales lack those internal distinctions.", hint:"Compare identical steps with the major scale's unequal step pattern." },
+    { type:"mc", q:"Identify the scale.",
+      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A#4",d:"q"},{p:"C5",d:"q"}],width:340},
+      choices:["Whole-tone scale","Major scale","Chromatic scale"], answer:0,
+      explain:"The scale contains six different pitch classes separated by whole steps, followed by the octave repetition.", hint:"Measure the steps." },
+    { type:"truefalse", q:"The direction of a chromatic line is the only factor that determines its enharmonic spelling.", answer:false,
+      explain:"Direction may influence spelling, but tonal context, harmony, and voice leading must also be considered.", hint:"Consider tonal context, harmony, and voice leading as well." },
+    { type:"truefalse", q:"The whole-tone scale contains a leading tone a half step below its starting pitch.", answer:false,
+      explain:"A whole-tone collection contains no pitch a half step below another member, so it does not contain a diatonic leading tone to the starting pitch.", hint:"What makes a leading tone?" },
+    { type:"mc", q:"Which scale would best demonstrate a continuous series of equal whole steps?", choices:["The whole-tone scale","The major scale","The minor pentatonic scale"], answer:0,
+      explain:"The whole-tone scale repeats a whole step throughout the octave.", hint:"Identify the scale built from one repeated interval." },
+    { type:"mc", q:"Which device creates a continuous ascending line by half steps?", choices:["A chromatic ascent","A whole-tone ascent","A major arpeggio"], answer:0,
+      explain:"A chromatic ascent moves through consecutive half steps. Whether it creates tension depends on its musical context.", hint:"The smallest interval in the twelve-tone system." },
+    { type:"mc", q:"Which sequence orders these scales by number of pitch classes, from fewest to most?", choices:["pentatonic (5) → whole-tone (6) → major (7) → chromatic (12)","major (7) → chromatic (12) → pentatonic (5) → whole-tone (6)","all four scales contain seven pitch classes"], answer:0,
+      explain:"5, 6, 7, 12.", hint:"Count each." }
+  ],
+  miaPerfect:"Perfect score! You accurately identified whole-tone, chromatic, and major-scale interval patterns.",
+  miaPass:"You passed! Next, you will study interval inversions and compound intervals.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Melody B added D between C and E — a PASSING tone: outside the C chord, but a smooth, legal bridge between two chord tones.",
-      play:()=>{[60,62,64,67].forEach((m,i)=>MFAudio.tone(m,.5,i*.45,.42));[48,52,55].forEach(m=>MFAudio.tone(m,2.0,0,.18));} },
-    learn:{ label:"passing & neighboring tones",
-      explain:"Non-harmonic tones decorate: passing = between two different chord tones; neighbor = out-and-back to the same tone (upper/lower). Weak beats; never affect chord choice.",
-      hint:"Frame check: same or different landing?",
-      play:()=>{[64,65,64].forEach((m,i)=>MFAudio.tone(m,.45,i*.4,.42));} },
+      explain:"Every step was a whole step — the whole-tone scale: six pitch classes, perfectly even, with no half steps between adjacent notes.",
+      play:()=>{[60,62,64,66,68,70,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.34,.42));} },
+    learn:{ label:"whole-tone & chromatic",
+      explain:"Whole-tone: 6 pitch classes, all whole steps, two collections. Chromatic: 12 half steps. Both repeat one interval, so they give only weak internal support for a tonic.",
+      hint:"Equal steps give each pitch a similar position.",
+      play:()=>{[60,61,62,63,64,65,66].forEach((m,i)=>MFAudio.tone(m,.3,i*.24,.38));} },
     example:{ label:"the examples",
-      explain:"Example 1 threads passing tones through I-IV-V7-I; example 2 shows both neighbors over a still C chord." },
+      explain:"Example 1 uses the whole-tone scale; example 2 climbs chromatically into a release." },
     game:{ label:"the games",
-      explain:"Sprint the terms, play a decorated melody, classify P/U/L cards, then race the facts.",
-      hint:"Passing passes; neighbors come home." },
+      explain:"Sprint the facts, climb the whole-tone scale, sort scales on cards, then race the note counts.",
+      hint:"5-6-7-12." },
     quiz:{ label:"this question",
-      explain:"One method: identify the chord, find the non-harmonic tone, check where it lands (same tone = neighbor, different = passing), then the direction.",
-      play:()=>{[60,62,64].forEach((m,i)=>MFAudio.tone(m,.45,i*.4,.42));} }
+      explain:"Check the step sizes: all whole steps = whole-tone (6 pitch classes), all half steps = chromatic (12), mixed = major.",
+      play:()=>{[60,62,64,66,68,70,72].forEach((m,i)=>MFAudio.tone(m,.36,i*.3,.4));} }
   }
 };

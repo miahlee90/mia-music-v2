@@ -1,112 +1,121 @@
-/* Lesson 16 — Eighth Rests (AEMT Book 1, Unit 4)
-   Built from drafts/UNIT 4 – Lessons 15 & 16.md (combined draft — pages stay separate, DD-12).
-   QA note honored: "eighth rest = ½ beat of silence, keep counting" + repeated
-   visual comparison of the eighth rest with the flagged eighth note.
+/* Lesson 16 (2.7, formerly L12) — Dotted Half Note (AEMT Book 1, Unit 3)
+   Built from drafts/UNIT 3 – Lesson 12.md.
+   QA note honored: "a dot adds HALF the original value, not one fixed beat" —
+   the 2 + 1 = 3 equation repeats across steps, games, practice and quiz.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* note-or-rest sorter (unique L16 prefix) */
-function MF_L16_noteRest(container,fb,rounds){
-  const POOL=[
-    {item:{p:"G4",d:"8"},rest:false},{item:{rest:"8"},rest:true},
-    {item:{p:"C5",d:"8"},rest:false},{item:{rest:"q"},rest:true},
-    {item:{rest:"8"},rest:true},{item:{p:"E4",d:"8"},rest:false}];
-  const seq=[...POOL].sort(()=>Math.random()-.5).slice(0,rounds);
-  let i=0;
-  container.innerHTML=`<div class="big-q nr-q" style="text-align:center"></div><div class="nr-staff"></div>
-    <div class="choices nr-ch"><button>\u{1F3B5} Eighth NOTE — play it</button><button>\u{1F910} A REST — silence!</button></div>`;
-  const q=container.querySelector(".nr-q"), st=container.querySelector(".nr-staff"), ch=container.querySelector(".nr-ch");
-  function ask(){
-    Staff.render(st,{clef:"treble",notes:[seq[i].item],width:240});
-    q.textContent=`Symbol ${i+1} of ${seq.length}: sound or silence?`;
-  }
-  [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-    const cur=seq[i], saidRest=bi===1, ok=saidRest===cur.rest;
-    if(ok){ if(cur.rest) MFAudio.click(0,.35); else MFAudio.tone(MFAudio.midi(cur.item.p),.25);
-      i++;
-      if(i>=seq.length){ ch.style.display="none"; q.textContent="Sound and silence sorted!";
-        fb(true,"✓ The eighth NOTE has a notehead on the staff; the eighth REST is the little “7” floating alone. Never confuse them again!"); }
-      else { fb(true,`✓ ${cur.rest?"Silence — a rest!":"Sound — a note with a real notehead."} Next…`); ask(); } }
-    else fb(false,"Look for a NOTEHEAD sitting on a line or space. No notehead = no sound = a REST.");
-  });
-  ask();
-}
-
 LESSON_CONTENT[16]={
-  welcome:"Even the fast notes need to breathe. \u{1F910}",
+  welcome:"Today a tiny dot does a BIG job. \u{1F50D}",
   hook:{
-    say:"Remember the silent twins? Every note has one — and today the <b>eighth note</b> meets its twin. Press play: the running notes suddenly hiccup with a tiny <b>half-beat silence</b>. Hear it?",
+    say:"Have you ever noticed a little dot next to a note? That tiny dot has a big job! Press play — same half note, first plain, then <b>with a dot</b>. What changed?",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ Running… with hiccups</button></div>
-          <div class="choices hk-ch" style="display:none"><button>A tiny HALF-BEAT silence appeared</button><button>The notes slowed down</button><button>Nothing changed</button></div>`;
+        container.innerHTML=`<div class="hk-staff"></div>
+          <div style="text-align:center"><button class="play hk-play">▶ Plain… then dotted</button></div>
+          <div class="choices hk-ch" style="display:none"><button>It got LOUDER</button><button>It got LONGER</button><button>It got higher</button></div>`;
+        Staff.render(container.querySelector(".hk-staff"),{clef:"treble",notes:[{p:"G4",d:"h",label:"half note"},{p:"G4",d:"h",dot:true,label:"dotted half note"}],width:340});
         const ch=container.querySelector(".hk-ch");
         container.querySelector(".hk-play").onclick=()=>{
-          const spb=60/84;
-          for(let k=0;k<4;k++) MFAudio.click(k*spb,.45,k===0);
-          [0,0.5,1,1.5].forEach((b,i)=>MFAudio.tone(67,spb*.4,b*spb));
-          [2,3,3.5].forEach((b,i)=>MFAudio.tone(67,spb*.4,b*spb)); /* gap at 2.5 */
-          setTimeout(()=>{ ch.style.display=""; },4*spb*1000+400);
+          const spb=60/80;
+          for(let k=0;k<2;k++) MFAudio.click(k*spb,.4,k===0);
+          MFAudio.tone(67,2*spb*.95,0);
+          for(let k=0;k<3;k++) MFAudio.click((3+k)*spb,.4,k===0);
+          MFAudio.tone(67,3*spb*.95,3*spb);
+          setTimeout(()=>{ ch.style.display=""; },6*spb*1000+400);
         };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ A little gap, exactly half a beat long — that's an EIGHTH REST: the eighth note's silent twin!");
-          else fb(false,"The beat never slowed — listen for the tiny hole in the running notes.");
+          if(i===1) fb(true,"✓ LONGER — two beats became THREE. That's the dot's whole job: it stretches the note!");
+          else fb(false,"Same pitch, same volume — listen to how LONG each one rings.");
         });
       } }
   },
   objectives:[
-    "Identify eighth rests",
-    "Recognize that an eighth rest lasts ½ beat of silence",
-    "Tell the eighth rest apart from the eighth note",
-    "Count eighth rests using “and” counting",
-    "Keep counting through half-beat silences",
-    "Build measures using notes AND eighth rests"
+    "Explain what a dot does to a note",
+    "Calculate the value of a dotted half note",
+    "Count a dotted half note correctly",
+    "Recognize dotted half notes in 3/4 time",
+    "Compare a dotted half note with three quarter notes",
+    "Perform rhythms containing dotted half notes"
   ],
   steps:[
-    { say:"The <b>eighth rest</b> looks like a little <b>7 with a dot</b> — and it means <b>½ beat of silence</b>. Exactly as long as an eighth note, minus the sound. \u{1F447} <b>How long does the eighth rest last?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"B4",d:"8",label:"eighth note"},{rest:"8",label:"eighth rest"}],width:400} },
+    { say:"The rule: <b>a dot adds HALF of the note's original value</b>. Half note = 2 beats. Half of 2 = 1. So: <b>2 + 1 = 3 beats</b>. A <b>Dotted Half Note</b> lasts <b>3 beats</b>. \u{1F447} <b>What does a dot add to a note?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"B4",d:"h",label:"2 beats"},{p:"B4",d:"h",dot:true,label:"2 + 1 = 3 beats"}],width:340} },
       try:{ type:"mc",
-        choices:["½ beat","1 beat","2 beats"], answer:0,
-        success:"✓ Half a beat of pure silence — the eighth note's twin.",
-        fail:"Twins are the same length — how long is an eighth NOTE?",
-        hint:"Same as its twin." } },
-    { say:"Note or rest? The eighth NOTE has a <b>notehead</b> on a line or space; the eighth REST floats alone like a tiny 7. \u{1F447} <b>Sort them:</b>",
+        choices:["Half of the note's own value","Always exactly 1 beat","It doubles the note"], answer:0,
+        success:"✓ The dot adds HALF of whatever the note is worth — for a half note that's 1 more beat: 2 + 1 = 3.",
+        fail:"Careful — the dot is proportional, not fixed. It adds HALF of the note's own value.",
+        hint:"2 + 1 = 3. Where did the 1 come from?" } },
+    { say:"Add the dot yourself! \u{1F447} <b>Click the dot button to attach it — then listen to the note grow:</b>",
       try:{ type:"custom",
-        hint:"No notehead = no sound.",
-        mount:(container,fb)=>MF_L16_noteRest(container,fb,5) } },
-    { say:"Counting stays the same — <b>1-and-2-and</b> — but on a rest, the count goes <b>silent</b>. Say the number, skip the sound. \u{1F447} <b>Press play, follow the labels:</b>",
-      try:{ type:"custom",
-        hint:"Say every count out loud; the parentheses are your silent half-beats.",
+        hint:"Watch the count: 2 beats before the dot, 3 after.",
         mount:(container,fb)=>{
-          const spec={clef:"treble",time:"4/4",tempo:84,
-            notes:[{p:"C4",d:"8",label:"1"},{p:"D4",d:"8",label:"and"},{p:"E4",d:"8",label:"2"},{rest:"8",label:"(and)"},{p:"G4",d:"q",label:"3"},{rest:"q",label:"(4)"},{bar:"final"}],
-            beams:[[0,1]],width:460};
-          container.innerHTML=`<div class="c8-staff"></div><div style="text-align:center"><button class="play c8-play">▶ Play & count along</button></div>`;
-          const api=Staff.render(container.querySelector(".c8-staff"),spec);
-          container.querySelector(".c8-play").onclick=()=>{
-            const total=Staff.play(spec,api);
-            setTimeout(()=>fb(true,"✓ 1-and-2-(and)-3-(4) — the count ran straight through every silence, big and small!"),total*1000+300);
+          let dotted=false;
+          container.innerHTML=`<div class="ad-staff"></div>
+            <div style="text-align:center"><button class="play ad-dot">\u{2795} Add the dot</button>
+            <button class="play ad-play">▶ Play it</button></div>
+            <div class="big-q ad-q" style="text-align:center"></div>`;
+          const st=container.querySelector(".ad-staff"), q=container.querySelector(".ad-q");
+          function draw(){
+            Staff.render(st,{clef:"treble",notes:[{p:"G4",d:"h",dot:dotted,label:dotted?"2 + 1 = 3 beats":"2 beats"}],width:280});
+            q.textContent=dotted?"Dotted Half Note — 3 beats!":"Half Note — 2 beats";
+          }
+          container.querySelector(".ad-dot").onclick=function(){
+            if(dotted) return;
+            dotted=true; this.disabled=true; MFAudio.yay(); draw();
+            fb(true,"✓ Dot attached! The half note just grew from 2 beats to 3. Press ▶ to hear the difference.");
+          };
+          container.querySelector(".ad-play").onclick=()=>{
+            const spb=60/80, n=dotted?3:2;
+            for(let k=0;k<n;k++) MFAudio.click(k*spb,.4,k===0);
+            MFAudio.tone(67,n*spb*.95,0);
+          };
+          draw();
+        } } },
+    { say:"Count it: hold the dotted half note through <b>ONE-two-three</b>. \u{1F447} <b>Press play, count the clicks while it rings, then answer:</b>",
+      try:{ type:"custom",
+        hint:"Count only the clicks that sound WHILE the note is still ringing.",
+        mount:(container,fb)=>{
+          let played=false;
+          container.innerHTML=`<div class="bc-staff"></div>
+            <div style="text-align:center"><button class="play bc-play">▶ Play with the beat</button></div>
+            <div class="choices chips bc-ch"></div>`;
+          Staff.render(container.querySelector(".bc-staff"),{clef:"treble",time:"3/4",notes:[{p:"G4",d:"h",dot:true},{bar:"final"}],width:280});
+          const ch=container.querySelector(".bc-ch");
+          [2,3,4].forEach(n=>{
+            const b=document.createElement("button"); b.textContent=n;
+            b.onclick=()=>{
+              if(!played){ fb(false,"Play it first and count the clicks!"); return; }
+              if(n===3){ ch.style.display="none";
+                fb(true,"✓ THREE beats — the dotted half note fills an entire 3/4 measure with one single sound!"); }
+              else fb(false,"Count again: the note keeps ringing… how many clicks fit inside it?");
+            };
+            ch.appendChild(b);
+          });
+          container.querySelector(".bc-play").onclick=()=>{
+            const spb=60/80;
+            for(let k=0;k<3;k++) MFAudio.click(k*spb,.5,k===0);
+            MFAudio.tone(67,3*spb*.95,0);
+            played=true;
           };
         } } },
-    { say:"Family photo! Every rest matches its note: whole (4), half (2), quarter (1)… and now <b>eighth (½)</b>. \u{1F447} <b>Which rest is the SHORTEST?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[{rest:"w",label:"4"},{rest:"h",label:"2"},{rest:"q",label:"1"},{rest:"8",label:"½"}],width:420} },
+    { say:"Dotted half note vs three quarter notes — SAME total time, different slicing. \u{1F447} <b>Which lasts longer?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"B4",d:"h",dot:true,label:"1 sound, 3 beats"},{p:"B4",d:"q",label:"1"},{p:"B4",d:"q",label:"2"},{p:"B4",d:"q",label:"3"}],width:420} },
       try:{ type:"mc",
-        choices:["The eighth rest — ½ beat","The quarter rest — 1 beat","The whole rest — 4 beats"], answer:0,
-        success:"✓ The little 7 is the quickest silence in the family — just half a beat!",
-        fail:"Shortest = smallest number of beats.",
-        hint:"½ < 1 < 2 < 4." } },
-    { say:"Build with sound AND quick silence. Fill the 4/4 measure — <b>each measure needs at least one eighth rest</b>. \u{1F447} <b>Two different measures:</b>",
+        choices:["They last the SAME — 3 beats each","The dotted half lasts longer","The three quarters last longer"], answer:0,
+        success:"✓ Equal! One long sound or three short ones — both fill exactly 3 beats.",
+        fail:"Add them up: dot = 2+1 = 3; quarters = 1+1+1 = 3.",
+        hint:"Do the beat math on both sides." } },
+    { say:"Now build! A 3/4 measure holds 3 beats — and today you have a NEW brick. \u{1F447} <b>Fill the measure THREE different ways:</b>",
       try:{ type:"custom",
-        hint:"Eighth rest = ½ silent beat. It counts toward the total like any note!",
+        hint:"Dotted Half (3) alone · Half (2) + Quarter (1) · three Quarters.",
         mount:(container,fb)=>{
-          const BT=[{t:"8",label:"Eighth Note",beats:.5,item:{p:"B4",d:"8"}},
-                    {t:"E",label:"Eighth Rest",beats:.5,item:{rest:"8"},isRest:true},
-                    {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}},
-                    {t:"Q",label:"Quarter Rest",beats:1,item:{rest:"q"},isRest:true},
-                    {t:"h",label:"Half Note",beats:2,item:{p:"B4",d:"h"}}];
+          const BT=[{t:"D",label:"Dotted Half Note",beats:3,item:{p:"B4",d:"h",dot:true}},
+                    {t:"h",label:"Half Note",beats:2,item:{p:"B4",d:"h"}},
+                    {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}}];
           let cur=[],sum=0,found=[],doneItems=[];
-          container.innerHTML=`<div class="br-staff"></div><div class="big-q br-q" style="text-align:center"></div>
-            <div class="choices br-ch"></div>`;
-          const st=container.querySelector(".br-staff"), q=container.querySelector(".br-q"), ch=container.querySelector(".br-ch");
+          container.innerHTML=`<div class="b3-staff"></div><div class="big-q b3-q" style="text-align:center"></div>
+            <div class="choices b3-ch"></div>`;
+          const st=container.querySelector(".b3-staff"), q=container.querySelector(".b3-q"), ch=container.querySelector(".b3-ch");
           const BTNS_LOCAL=BT;
           BTNS_LOCAL.forEach(bt=>{ const b=document.createElement("button");
             b.style.cssText="border-radius:10px;padding:6px 10px;min-width:104px";
@@ -119,181 +128,179 @@ LESSON_CONTENT[16]={
           clr.onclick=()=>{ cur=[];sum=0;draw(); }; ch.appendChild(clr);
           function draw(){
             const items=[...doneItems,...cur.map(bt=>bt.item)];
-            if(found.length>=2&&items.length&&items[items.length-1].bar==="single") items[items.length-1]={bar:"final"};
-            for(let m=found.length;m<2;m++) items.push({bar: m===2-1? "final":"single"});
-            Staff.render(st,{clef:"treble",time:"4/4",notes:items,width:470});
-            q.textContent=`Beats: ${sum} of 4 · Measures built: ${found.length} of 2`;
+            if(found.length>=3&&items.length&&items[items.length-1].bar==="single") items[items.length-1]={bar:"final"};
+            for(let m=found.length;m<3;m++) items.push({bar: m===3-1? "final":"single"});
+            Staff.render(st,{clef:"treble",time:"3/4",notes:items,width:470});
+            q.textContent=`Beats: ${sum} of 3 · Ways found: ${found.length} of 3`;
           }
           function add(bt){
-            if(sum+bt.beats>4){ fb(false,`That would make ${sum+bt.beats} — too many!`); return; }
-            cur.push(bt); sum+=bt.beats;
-            if(bt.isRest) MFAudio.click(0,.3); else MFAudio.tone(71,Math.max(.2,bt.beats*.4));
-            draw();
-            if(sum===4){
-              if(!cur.some(x=>x.t==="E")){ fb(false,"Exactly 4 — but today's rule: include at least one EIGHTH rest (the little 7)!"); cur=[];sum=0; setTimeout(draw,1100); return; }
+            if(sum+bt.beats>3){ fb(false,`Too many — that would make ${sum+bt.beats}. The container holds exactly 3!`); return; }
+            cur.push(bt); sum+=bt.beats; MFAudio.tone(71,bt.beats*.4); draw();
+            if(sum===3){
               const key=cur.map(x=>x.t).sort().join("");
-              if(found.includes(key)){ fb(false,"Same recipe — clear and mix a new one!"); cur=[];sum=0; setTimeout(draw,900); return; }
+              if(found.includes(key)){ fb(false,"Already found that way — clear and discover another!"); cur=[];sum=0; setTimeout(draw,900); return; }
               found.push(key);
-              let t=0; cur.forEach(bt=>{ if(!bt.isRest) MFAudio.tone(71,Math.max(.2,bt.beats*.45),t); t+=bt.beats*.5; });
+              let t=0; cur.forEach(bt=>{ MFAudio.tone(71,bt.beats*.45,t); t+=bt.beats*.5; });
               doneItems.push(...cur.map(bt=>bt.item), {bar:"single"});
               cur=[]; sum=0; draw();
-              if(found.length>=2){ ch.style.display="none"; q.textContent="Two measures with quick silences!";
-                fb(true,"✓ Half-beat silences placed like a pro — sound and silence in perfect balance!"); }
-              else fb(true,"✓ Exactly 4, eighth rest included — it stays as measure 1. One more, different mix…");
+              if(found.length>=3){ ch.style.display="none"; q.textContent="All three ways found!";
+                fb(true,"✓ Dotted half · half+quarter · three quarters — every way to fill 3/4. The dotted half does it with ONE sound!"); }
+              else fb(true,`✓ Exactly 3 beats — it stays on the staff. ${3-found.length} more way${3-found.length>1?"s":""} to find…`);
             }
           }
           draw();
+        } } },
+    { say:"Read a 3/4 line that uses the dotted half. Count: <b>1-2-3 held</b>, then quarters. \u{1F447}",
+      try:{ type:"custom",
+        hint:"The dotted half rings through all three counts of its measure.",
+        mount:(container,fb)=>{
+          const spec={clef:"treble",time:"3/4",tempo:100,
+            notes:[{p:"C4",d:"q",label:"1"},{p:"E4",d:"q",label:"2"},{p:"G4",d:"q",label:"3"},{bar:"single"},{p:"E4",d:"h",dot:true,label:"1-2-3"},{bar:"final"}],width:420};
+          container.innerHTML=`<div class="rd-staff"></div><div style="text-align:center"><button class="play rd-play">▶ Play & count along</button></div>`;
+          const api=Staff.render(container.querySelector(".rd-staff"),spec);
+          container.querySelector(".rd-play").onclick=()=>{
+            const total=Staff.play(spec,api);
+            setTimeout(()=>fb(true,"✓ Quarters walking, then one dotted half SINGING through the whole measure — classic 3/4!"),total*1000+300);
+          };
         } } }
   ],
   examples:[
-    { caption:"Off-beat fun: rests ON the beat, notes on the “and” — count 1-and-2-and and whisper nothing on the silent halves.",
-      staff:{clef:"treble",tempo:84,time:"4/4",notes:[{rest:"8",label:"(1)"},{p:"G4",d:"8",label:"and"},{rest:"8",label:"(2)"},{p:"G4",d:"8",label:"and"},{p:"E4",d:"h",label:"3-4"},{bar:"final"}],width:440} },
-    { caption:"The full rest family with their beat counts — from the 4-beat hole to the ½-beat little 7.",
-      staff:{clef:"treble",notes:[{rest:"w",label:"4 beats"},{rest:"h",label:"2 beats"},{rest:"q",label:"1 beat"},{rest:"8",label:"½ beat"}],width:440} }
+    { caption:"The dotted half note fills a whole 3/4 measure: hold it through ONE-two-three.",
+      staff:{clef:"treble",tempo:100,time:"3/4",notes:[{p:"G4",d:"h",dot:true,label:"1-2-3"},{bar:"single"},{p:"E4",d:"q",label:"1"},{p:"F4",d:"q",label:"2"},{p:"G4",d:"q",label:"3"},{bar:"single"},{p:"C4",d:"h",dot:true,label:"1-2-3"},{bar:"final"}],width:460} },
+    { caption:"2 + 1 = 3: a half note plus a quarter note fills one measure — the dotted half note fills the next in a single sound.",
+      staff:{clef:"treble",tempo:100,time:"3/4",notes:[{p:"D4",d:"h",label:"1-2"},{p:"D4",d:"q",label:"3"},{bar:"single"},{p:"D4",d:"h",dot:true,label:"1-2-3"},{bar:"final"}],width:420} }
   ],
   games:[
-    { type:"value-race", title:"Game 1 · Rest Family Flash",
-      intro:"All FOUR rests now — hole, hat, squiggle, and the little 7. Name them fast!",
-      miaIntro:"The rest family grew — keep up! \u{26A1}",
-      spec:{rounds:10, ask:"name", kind:"rest", values:["w","h","q","8"]},
-      result:(score)=>score>=9?"Every silence named on sight!":null },
-    { type:"rhythm-tap", title:"Game 2 · Don't Tap the Half-Silence!",
-      intro:"The trickiest tap yet: eighth rests hide INSIDE the beat. Tap the notes, honor every half-beat of silence!",
-      miaIntro:"Half-beat silences — can your hands resist? \u{1F910}",
-      spec:{tempo:80, rounds:3, patterns:[["8","r8","8","r8","q","q","q"],["q","8","8","rq","q","q"],["8","8","q","r8","8","q","q"]]},
-      result:(score)=>score>=9?"Perfect restraint — the silences stayed silent!":null },
-    { type:"symbol-hunt", title:"Game 3 · Note or Rest?",
-      intro:"The eighth note and eighth rest love to confuse beginners. Click exactly what Mia names!",
-      miaIntro:"Twins with different jobs — spot the right one! \u{1F50D}",
-      spec:{rounds:6, pool:[
-        {label:"Eighth Rest", spec:{clef:"treble",notes:[{rest:"8"}]}},
-        {label:"Eighth Note", spec:{clef:"treble",notes:[{p:"B4",d:"8"}]}},
-        {label:"Quarter Rest", spec:{clef:"treble",notes:[{rest:"q"}]}},
-        {label:"Quarter Note", spec:{clef:"treble",notes:[{p:"B4",d:"q"}]}},
-        {label:"Half Rest", spec:{clef:"treble",notes:[{rest:"h"}]}}]},
-      result:(score)=>score>=5?"Notes and rests — never mixed up again!":null },
-    { type:"measure-build", title:"Game 4 · Sound & Quick Silence Builder",
-      intro:"Build 4-beat measures mixing notes, quarter rests, and eighth rests — three different creations!",
-      miaIntro:"Compose with the quickest silence in music! \u{1F3A8}",
-      spec:{beats:4, rounds:3, needRest:true, buttons:[
-        {t:"8",label:"Eighth Note",beats:.5,item:{p:"B4",d:"8"}},
-        {t:"E",label:"Eighth Rest",beats:.5,item:{rest:"8"},isRest:true},
-        {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}},
-        {t:"Q",label:"Quarter Rest",beats:1,item:{rest:"q"},isRest:true},
-        {t:"h",label:"Half Note",beats:2,item:{p:"B4",d:"h"}}]},
-      result:(stars)=>stars>=3?"Three balanced measures — silence placed with style!":null }
+    { type:"value-race", title:"Game 1 · Dot Flash",
+      intro:"Whole? Half? Dotted half? Quarter? The dot is tiny — spot it FAST! 10 rounds.",
+      miaIntro:"Game time — don't let that little dot sneak past you! \u{1F50D}",
+      spec:{rounds:10, ask:"name", values:["h","h.","q","w"]},
+      result:(score)=>score>=9?"No dot escapes your eyes now!":null },
+    { type:"rhythm-tap", title:"Game 2 · 3/4 Tap with Dots",
+      intro:"Tap 3/4 rhythms — including the loooong dotted half. Hold your tap-hand steady through 3 beats!",
+      miaIntro:"One tap can last three whole beats — hold it steady! \u{1F44F}",
+      spec:{tempo:100, rounds:3, beatsPerBar:3, patterns:[["h."],["q","q","q"],["h","q"],["q","h"]]},
+      result:(score)=>score>=5?"You FELT the 3-beat note — that's the hard part, done!":null },
+    { type:"measure-build", title:"Game 3 · Three Ways to Three",
+      intro:"Fill the 3/4 measure with exactly 3 beats — find <b>all three</b> combinations, dotted half included!",
+      miaIntro:"Builder challenge: three bricks, three ways, three beats! \u{1F3D7}\u{FE0F}",
+      spec:{beats:3, unique:true, rounds:3, buttons:[
+        {t:"D",label:"Dotted Half Note",beats:3,item:{p:"B4",d:"h",dot:true}},
+        {t:"h",label:"Half Note",beats:2,item:{p:"B4",d:"h"}},
+        {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}}]},
+      result:(stars)=>stars>=3?"All three ways, no overflow — 3/4 completely conquered!":null },
+    { type:"measure-judge", title:"Game 4 · 3/4 Inspector Returns",
+      intro:"Complete or incomplete? Now the measures hold 3 beats — and the dot changes the math!",
+      miaIntro:"Inspector — the dot makes the maths sneakier. Stay sharp! \u{1F50D}",
+      spec:{rounds:8, beats:3},
+      result:(score)=>score>=7?"The dot couldn't fool you — inspector level: expert!":null }
   ],
-  practiceIntro:"20 practice questions — the eighth rest, its ½ beat, and counting through quick silences. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — dot math, dotted half counting, and 3/4 measures. Answer right and the next appears automatically!",
   practice:[
-    { gen:"note-value", params:{kind:"rest", values:["w","h","q","8"], ask:"name"}, count:3 },
-    { gen:"note-value", params:{kind:"rest", values:["w","h","q","8"], ask:"beats"}, count:3 },
-    { gen:"note-value", params:{values:["8","q","h"], ask:"beats"}, count:2 },
-    { gen:"measure-complete", params:{beats:4, rests:true}, count:2 },
-    { type:"mc", q:"An eighth rest lasts…", choices:["½ beat of silence","1 beat of silence","½ beat of sound"], answer:0,
-      explain:"Half a beat, perfectly quiet." },
-    { type:"truefalse", q:"An eighth rest looks like a little 7 with a dot.", answer:true,
-      explain:"The quickest silence has the quirkiest shape." },
-    { type:"truefalse", q:"An eighth rest lasts as long as an eighth note.", answer:true,
-      explain:"Twins — same length, one silent." },
-    { type:"mc", q:"During an eighth rest you…", choices:["keep counting, play nothing","stop counting","play quietly"], answer:0,
-      explain:"The count never stops — not even for half a beat." },
-    { type:"truefalse", q:"You can tell a rest from a note because a rest has no notehead on a line or space.", answer:true,
-      explain:"No notehead = no pitch = silence." },
-    { type:"mc", q:"Eighth note + eighth rest together last…", choices:["1 beat","½ beat","2 beats"], answer:0,
-      explain:"½ + ½ = 1 full beat — half sound, half silence." },
-    { type:"truefalse", q:"Rests count toward filling a measure.", answer:true,
-      explain:"Beats are beats — sounding or silent." },
-    { type:"mc", q:"Which is the SHORTEST rest you know?", choices:["Eighth rest","Quarter rest","Half rest"], answer:0,
-      explain:"½ beat — the quickest breath in music." },
-    { type:"truefalse", q:"“1-and-2-(and)” means the second “and” is silent.", answer:true,
-      explain:"Parentheses = keep counting, skip the sound." },
-    { type:"mc", q:"Why do composers use eighth rests?", choices:["for crisp, quick silences inside the beat","to slow the music down","to save ink"], answer:0,
-      explain:"Tiny gaps make rhythms sparkle and dance." },
+    { gen:"note-value", params:{values:["h","h.","q","w"], ask:"beats"}, count:4 },
+    { gen:"note-value", params:{values:["h","h.","q"], ask:"name"}, count:3 },
+    { gen:"measure-complete", params:{beats:3}, count:3 },
+    { type:"mc", q:"A dot adds…", choices:["half of the note's original value","exactly one beat, always","a whole beat and a half"], answer:0,
+      explain:"Proportional, not fixed: half of whatever the note is worth." },
+    { type:"mc", q:"Dotted half note = ____ beats.", choices:["2","3","4"], answer:1,
+      explain:"2 + 1 = 3." },
+    { type:"truefalse", q:"A dot doubles the value of a note.", answer:false,
+      explain:"It adds HALF the value — 2 becomes 3, not 4." },
+    { type:"truefalse", q:"A dotted half note fills one complete measure of 3/4 time.", answer:true,
+      explain:"3 beats = the whole container, one single sound." },
+    { type:"mc", q:"A dotted half note equals…", choices:["three quarter notes","two quarter notes","a whole note"], answer:0,
+      explain:"3 beats = 1+1+1." },
+    { type:"mc", q:"Half note + dot: where does the extra beat come from?", choices:["half of the half note's 2 beats","the time signature","the next measure"], answer:0,
+      explain:"Half of 2 = 1. So 2 + 1 = 3." },
+    { type:"truefalse", q:"The dot sits just to the RIGHT of the notehead.", answer:true,
+      explain:"A small dot beside the head — easy to miss, big effect!" },
+    { type:"mc", q:"In which time signature does the dotted half note fill a whole measure?", choices:["3/4","2/4","4/4"], answer:0,
+      explain:"3 beats = one full 3/4 measure." },
+    { type:"truefalse", q:"Half note (2) + quarter note (1) lasts the same as a dotted half note.", answer:true,
+      explain:"Both total 3 beats — different slicing, same time." },
+    { type:"mc", q:"Count a dotted half note in 3/4 as…", choices:["ONE-two-three, held","ONE, then silence","ONE-two, stop"], answer:0,
+      explain:"One sound sustained through all three counts." },
     /* — from the unit review sheet — */
-    { type:"mc", q:"Fill in the correct number: ____ eighth rests = 1 quarter rest.", choices:["2","3","4"], answer:0, explain:"½ + ½ = 1 beat." },
-    { type:"mc", q:"In 4/4 time, ____ eighth rests = 1 whole rest.", choices:["8","4","6"], answer:0, explain:"8 × ½ = 4 beats." }
+    { type:"mc", q:"In 4/4 time, a dotted half note receives ____ beats.", choices:["3","4","2"], answer:0, explain:"2 + 1 = 3 beats — the same value in any time signature." }
   ],
-  miaQuizIntro:"Quiz time! Count through every silence — even the half-beat ones!",
+  miaQuizIntro:"Quiz time! Remember the golden equation: 2 + 1 = 3. Go!",
   quiz:[
-    { type:"mc", q:"How long does an eighth rest last?", choices:["¼ beat","½ beat","1 beat","2 beats"], answer:1,
-      explain:"Half a beat of silence.", hint:"Same as its twin note." },
-    { type:"truefalse", q:"An eighth rest lasts one-half beat.", answer:true,
-      explain:"½ beat — the eighth note's silent twin.", hint:"Twins match." },
-    { type:"mc", q:"The eighth rest is the silent twin of the…", choices:["quarter note","eighth note","half note"], answer:1,
-      explain:"Same ½-beat length, zero sound.", hint:"Match the name." },
-    { type:"mc", q:"Which symbol is the EIGHTH REST?",
-      staff:{clef:"treble",notes:[{rest:"q",label:"1"},{rest:"8",label:"2"},{p:"B4",d:"8",label:"3"},{rest:"h",label:"4"}],width:400},
-      choices:["1","2","3","4"], answer:1,
-      explain:"The little 7 with a dot. (1 = quarter rest, 3 = eighth NOTE, 4 = half rest.)",
-      hint:"Find the tiny seven." },
-    { type:"truefalse", q:"You stop counting during an eighth rest.", answer:false,
-      explain:"Never — the count runs straight through: 1-and-2-(and).", hint:"The golden rule of rests." },
-    { type:"mc", q:"Eighth note + eighth rest =", choices:["1 full beat","½ beat","1½ beats"], answer:0,
-      explain:"½ + ½ = 1.", hint:"Add the halves." },
-    { type:"mc", q:"Which rest matching is correct?",
-      choices:["Whole → 4 · Half → 2 · Quarter → 1 · Eighth → ½",
-               "Whole → 2 · Half → 1 · Quarter → ½ · Eighth → ¼",
-               "Whole → 8 · Half → 4 · Quarter → 2 · Eighth → 1"], answer:0,
-      explain:"Rests mirror their twin notes exactly.", hint:"The halving family again." },
-    { type:"truefalse", q:"A single eighth NOTE and an eighth REST look identical.", answer:false,
-      explain:"The note has a notehead on the staff; the rest is the floating 7.", hint:"Look for the notehead." },
-    { type:"mc", q:"How many eighth rests fill one beat of silence?", choices:["2","4","8"], answer:0,
-      explain:"½ + ½ = 1 beat.", hint:"Two halves." },
-    { type:"mc", q:"In “1-and-2-(and)”, the parentheses mean…", choices:["a silent half-beat","play louder","repeat"], answer:0,
-      explain:"Count it, don't play it.", hint:"Lesson 9's notation, now with half-beats." },
-    { type:"truefalse", q:"This measure is complete.",
-      staff:{clef:"treble",time:"4/4",notes:[{p:"B4",d:"q"},{rest:"8"},{p:"B4",d:"8"},{p:"B4",d:"h"},{bar:"final"}],width:380},
-      answer:true,
-      explain:"1 + ½ + ½ + 2 = 4 — rests count too!", hint:"Add every symbol." },
+    { type:"mc", q:"What does a dot do to a note?", choices:["Makes it louder","Adds one beat","Increases its value by half of its original duration","Makes it shorter"], answer:2,
+      explain:"The dot adds HALF the note's own value.", hint:"Proportional, not fixed." },
+    { type:"mc", q:"How many beats does a dotted half note receive?", choices:["2","3","4","5"], answer:1,
+      explain:"2 + 1 = 3 beats.", hint:"The golden equation." },
+    { type:"mc", q:"A half note is worth…", choices:["1 beat","2 beats","3 beats","4 beats"], answer:1,
+      explain:"Two beats — before any dot.", hint:"Review from Lesson 6." },
+    { type:"truefalse", q:"A dotted half note lasts three beats.", answer:true,
+      explain:"2 + 1 = 3.", hint:"Add the dot's bonus." },
+    { type:"truefalse", q:"A dot doubles the value of a note.", answer:false,
+      explain:"It adds HALF — a half note becomes 3 beats, not 4.", hint:"2 + 1, not 2 × 2." },
+    { type:"truefalse", q:"A dotted half note fills one complete measure of 3/4 time.", answer:true,
+      explain:"3 beats = the whole 3/4 container.", hint:"How many beats in 3/4?" },
+    { type:"mc", q:"Which note lasts 3 beats?",
+      staff:{clef:"treble",notes:[{p:"B4",d:"h",label:"1"},{p:"B4",d:"h",dot:true,label:"2"},{p:"B4",d:"q",label:"3"}],width:340},
+      choices:["1","2","3"], answer:1,
+      explain:"Number 2 has the dot — 2 + 1 = 3 beats.", hint:"Find the dot!" },
+    { type:"mc", q:"Which matching is correct?",
+      choices:["Quarter → 1 · Half → 2 · Dotted Half → 3","Quarter → 2 · Half → 3 · Dotted Half → 4","Quarter → 1 · Half → 3 · Dotted Half → 2"], answer:0,
+      explain:"1, 2, and 2+1=3.", hint:"The dot adds half." },
+    { type:"mc", q:"A dot adds ____ of the note's original value.", choices:["half","all","a quarter"], answer:0,
+      explain:"Half — always proportional.", hint:"The golden rule." },
+    { type:"mc", q:"A dotted half note equals ____ beats.", choices:["2","3","4"], answer:1,
+      explain:"Three.", hint:"2 + 1." },
+    { type:"mc", q:"Which fills one complete measure of 3/4?",
+      choices:["Dotted Half Note","Half Note","Quarter + Quarter"], answer:0,
+      explain:"3 beats exactly. (Half = 2; two quarters = 2 — both incomplete.)",
+      hint:"Which one totals 3?" },
     { type:"mc", q:"Which statement is correct?",
-      choices:["An eighth rest lasts one full beat","You keep counting through an eighth rest","An eighth rest makes the next note louder","Eighth rests appear only at the ends of pieces"], answer:1,
-      explain:"Count through EVERY silence — that's what keeps rhythm alive.",
-      hint:"The rule that never changes." },
+      choices:["A dotted half note lasts two beats","A dot always adds one beat","A dotted half note is equal in duration to three quarter notes","A dotted half note cannot be used in 3/4 time"], answer:2,
+      explain:"3 beats = three quarter notes. And 3/4 is its favorite home!",
+      hint:"Do the beat math." },
     /* generated */
-    { gen:"note-value", params:{kind:"rest", values:["w","h","q","8"], ask:"beats"}, count:3 },
-    { gen:"measure-complete", params:{beats:4, rests:true}, count:2 },
+    { gen:"note-value", params:{values:["h","h.","q"], ask:"beats"}, count:3 },
+    { gen:"measure-complete", params:{beats:3}, count:2 },
     { gen:"rhythm-count", params:{values:["h","q"],maxNotes:3}, count:2 },
     { gen:"note-name", params:{clef:"treble"}, count:1 }
   ],
   vocabulary:[
-    {def:"In time signatures with 4 as the bottom number, it receives ½ beat of silence.", term:"Eighth Rest", staff:{clef:"none",notes:[{rest:"8"}],width:140}},
-    {def:"In time signatures with 4 as the bottom number, it receives ½ beat.", term:"Eighth Note", staff:{clef:"none",notes:[{p:"B4",d:"8"}],width:140}},
-    {def:"Each note value has a matching rest of exactly the same length.", term:"Silent Twin Rule"}
+    {def:"A dot after a note increases the note's duration by half the original value.", term:"Dot", staff:{clef:"none",notes:[{p:"B4",d:"h",dot:true}],width:140}},
+    {def:"In 3/4 and 4/4 time signatures, it receives 3 beats (2 + 1).", term:"Dotted Half Note", staff:{clef:"none",notes:[{p:"B4",d:"h",dot:true}],width:140}},
+    {def:"The length of time a note is held.", term:"Duration"}
   ],
   mistakes:[],
   summary:[
-    "✔ Eighth rest = <b>½ beat of silence</b> — the little 7 with a dot.",
-    "✔ It's the <b>silent twin</b> of the eighth note.",
-    "✔ <b>Keep counting</b> through every rest: 1-and-2-(and).",
-    "✔ Rests <b>count toward the measure total</b> — ½ is ½.",
-    "✔ Rest family: whole 4 · half 2 · quarter 1 · eighth ½."
+    "✔ A <b>dot</b> adds <b>half of the note's original value</b> — never a fixed beat.",
+    "✔ Dotted Half Note = <b>2 + 1 = 3 beats</b>.",
+    "✔ It fills one complete <b>3/4 measure</b> with a single sound.",
+    "✔ Dotted half = <b>three quarter notes</b> in total time.",
+    "✔ Three ways to fill 3/4: <b>♩♩♩ · half+quarter · dotted half</b>."
   ],
   tips:[
-    "Practice “1-and-2-(and)” slowly — whisper the silent “and” until it feels natural.",
-    "Off-beat rhythms (rest ON the beat, note on “and”) are pop music's favorite trick!",
-    "No notehead on a line or space? Then it's silence — don't play it.",
-    "\u{1F3AF} Next lesson: the dot returns — this time on the QUARTER note. Long–short rhythm ahead!"
+    "Whenever you meet a dotted note, say the equation out loud: “2 plus 1 equals 3.”",
+    "The dot is proportional — later you'll dot a QUARTER note and get 1½ beats (Lesson 17!).",
+    "In 3/4 music, scan for dotted halves first — they mark the calmest measures.",
+    "\u{1F517} Next lesson: curved lines that GLUE notes together — ties and slurs!"
   ],
-  rewards:{ badge:"Eighth Rest Expert", icon:"\u{1F910}" },
+  rewards:{ badge:"Dot Detective", icon:"\u{1F50D}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT — you honored every half-beat of silence! The dotted quarter is next. \u{1F910}\u{1F389}",
-  miaPass:"You passed! The quickest rest in music is under control. Review below or retry for the clean sweep.",
+  miaPerfect:"PERFECT! 2 + 1 = 3, and you + this lesson = unstoppable. \u{1F50D}\u{1F389}",
+  miaPass:"You passed! The dot's secret is yours. Review below or retry for the perfect run.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"The eighth rest is a half-beat of silence tucked INSIDE the beat — quick gaps that make rhythms crisp.",
-      play:()=>{const s=.6;[0,.5,1,1.5,3,3.5].forEach(b=>MFAudio.tone(67,s*.4,b*s));} },
-    learn:{ label:"the eighth rest",
-      explain:"½ beat of silence, shaped like a little 7. Same length as an eighth note. Count straight through: 1-and-2-(and).",
-      hint:"No notehead = silence.",
-      play:()=>{const s=.6;MFAudio.tone(67,s*.4,0);MFAudio.click(.5*s,.3);MFAudio.tone(67,s*.4,s);} },
+      explain:"A dot after a note stretches it by half its own value. Half note (2) + dot (1) = 3 beats.",
+      play:()=>{const s=.7;MFAudio.tone(67,2*s*.95,0);MFAudio.tone(67,3*s*.95,2.6*s);} },
+    learn:{ label:"the dotted half note",
+      explain:"Dot = +half the original value. Half note 2 → dotted half 3. It fills a 3/4 measure alone, and equals three quarter notes.",
+      hint:"Say it: 2 + 1 = 3.",
+      play:()=>{const s=.6;MFAudio.tone(67,3*s*.95,0);[67,67,67].forEach((m,i)=>MFAudio.tone(m,s*.9,(3.5+i)*s));} },
     example:{ label:"the examples",
-      explain:"Example 1 puts the rests ON the beats — the notes sneak in on the “and”s. Count out loud to feel it." },
+      explain:"Hear the dotted half SING through all three counts while the quarters walk — same 3 beats, different characters." },
     game:{ label:"the games",
-      explain:"Name all four rests, resist tapping the half-silences, sort notes from rests, and compose with quick gaps.",
-      hint:"In the tap game: extra taps during rests count against you!" },
+      explain:"Spot dots at speed, tap 3-beat holds, build all three fillings of 3/4, and inspect sneaky dotted measures.",
+      hint:"Always do the beat math: the dot adds half." },
     quiz:{ label:"this question",
-      explain:"Eighth rest = ½ silent beat, twin of the eighth note, and the count NEVER stops.",
-      play:()=>{MFAudio.tone(71,.25,0);MFAudio.click(.35,.3);MFAudio.tone(71,.25,.7);} }
+      explain:"One rule runs this whole quiz: the dot adds half of the note's own value. 2 + 1 = 3.",
+      play:()=>{MFAudio.tone(67,1.8,0);} }
   }
 };

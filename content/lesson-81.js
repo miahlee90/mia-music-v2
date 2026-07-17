@@ -1,256 +1,304 @@
-/* Lesson 81 — Pentatonic Scales (Book 4, Unit 20 — SELF-AUTHORED)
-   Core: PENTATONIC = five-note "gapped" scale. Major pentatonic = major
-   scale minus 4 & 7. Minor pentatonic = natural minor minus 2 & 6.
-   Relatives share notes (C major pent = A minor pent). The black keys form
-   a pentatonic scale. Found in music worldwide.
+/* Lesson 81 (11.6, formerly L67) — Composing a Melody in a Major Key (AEMT Book 3, Unit 16 FINALE)
+   Built from drafts/UNIT 16 – Lesson 67.md; AEMT3 p.105 verified by render.
+   Core: COMPOSE = create a melody for a chord progression (the reverse of
+   harmonizing). Method: analyze the progression (numerals below, symbols
+   above) → melody from CHORD TONES + non-harmonic decorations. The first
+   and last melody note tends to be the ROOT of I; V(7) precedes the last
+   chord. The book labels melody notes R / 3 / 5 / 7 / P (chord member or
+   passing tone) — as in its Ghanaian folk-song model.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* guided black-key melody: follow the ▼ arrow to play Arirang (a pentatonic
-   folk song) using only the five black keys = G♭ major pentatonic */
-function MF_L81_arirang(container,fb){
-  /* Arirang on the black keys — solfège do re do re fa sol fa sol la sol la fa re do,
-     all sharps: do=C#4, re=D#4, fa=F#4, sol=G#4, la=A#4 (the five black keys) */
-  const MELODY=[61,63,61,63, 66,68,66,68, 70,68,70,66, 63,61];
-  let i=0;
-  container.innerHTML=`<div class="big-q l81a-q" style="text-align:center">Follow the red <b>▼</b> arrow and play <b>Arirang</b> on the black keys — a famous pentatonic folk song fits entirely on the five black keys. Press the key the arrow points to.</div>
-    <div class="l81a-prog" style="text-align:center;font-weight:800;margin:6px 0;color:var(--ink,#333)"></div>
-    <div class="l81a-kb"></div>
-    <div style="text-align:center;margin-top:10px"><button class="play l81a-demo">▶ Hear it first</button></div>`;
-  const prog=container.querySelector(".l81a-prog"), kh=container.querySelector(".l81a-kb");
-  const kb=Keyboard.create(kh,{start:60,octaves:2,labels:true,
-    onKey:m=>{
-      if(i>=MELODY.length) return;
-      if(m===MELODY[i]){ i++; update();
-        if(i>=MELODY.length){ MFAudio.yay(); fb(true,"✓ You played Arirang — every note came from the five black keys, the G♭ major pentatonic scale."); } }
-      else { MFAudio.tone(40,.15); fb(false,"Not that one — press the black key the ▼ arrow is pointing to."); }
-    }});
-  function update(){ prog.textContent = i<MELODY.length? `Next note: ${i+1} of ${MELODY.length}` : "✓ Arirang complete!";
-    kb.point(i<MELODY.length? MELODY[i] : null); }
-  container.querySelector(".l81a-demo").onclick=()=>kb.demo(MELODY,430);
-  update();
+/* compose-a-melody: pick a chord tone per measure, then hear your piece */
+function MF_L81_compose(container,fb){
+  const MEAS=[
+    {label:"I", sym:"C", tones:{C:60,E:64,G:67}, chord:[48,64,67], must:"C",
+      note:"Rule: a melody TENDS TO BEGIN on the root of I."},
+    {label:"IV", sym:"F", tones:{F:65,A:69,C:72}, chord:[53,65,69],
+      note:"Any tone of F-A-C sings here."},
+    {label:"I", sym:"C", tones:{C:72,E:76,G:67}, chord:[48,64,67],
+      note:"Back home — pick any C-chord tone."},
+    {label:"V7", sym:"G7", tones:{G:67,B:71,D:74,F:77}, chord:[43,67,71,77],
+      note:"The dominant before the close — B (the leading tone) loves this spot."},
+    {label:"I", sym:"C", tones:{C:72}, chord:[48,64,67], must:"C",
+      note:"Rule: end on the ROOT of the final I."}];
+  let k=0; const picked=[];
+  container.innerHTML=`<div class="big-q l67c-q" style="text-align:center"></div>
+    <div class="l67c-map" style="text-align:center;margin:10px 0;letter-spacing:normal"></div>
+    <div class="choices chips l67c-ch"></div>
+    <div style="text-align:center"><button class="play l67c-play" style="display:none">▶ Play YOUR composition</button></div>`;
+  const q=container.querySelector(".l67c-q"), map=container.querySelector(".l67c-map"), ch=container.querySelector(".l67c-ch"), pl=container.querySelector(".l67c-play");
+  function drawMap(){
+    map.innerHTML=MEAS.map((m,i)=>{
+      const done=i<picked.length, cur=(i===k && k<MEAS.length);
+      const note=done?picked[i].name:"?";
+      const bg=cur?"var(--accent,#4f7cff)":done?"#e6efff":"#f2f4f8";
+      const fg=cur?"#fff":done?"#1f4bd8":"#8a93a3";
+      const bd=cur?"var(--accent,#4f7cff)":done?"#bcd2ff":"#dde2ea";
+      return `<span style="display:inline-block;min-width:56px;margin:3px;padding:6px 6px;border-radius:10px;border:1.5px solid ${bd};background:${bg};color:${fg};text-align:center;vertical-align:top">
+        <span style="display:block;font-size:10.5px;font-weight:600;opacity:.85">m.${i+1}</span>
+        <span style="display:block;font-size:15px;font-weight:800;line-height:1.35">${m.sym}</span>
+        <span style="display:block;font-size:13px;font-weight:700">${note}</span></span>`;
+    }).join("");
+  }
+  function ask(){
+    drawMap();
+    if(k>=MEAS.length){ q.textContent="Excellent! Your melody is complete. Press play!"; ch.innerHTML=""; pl.style.display="inline-block"; return; }
+    const M=MEAS[k];
+    q.innerHTML=`Measure ${k+1} — chord: <b>${M.sym} (${M.label})</b>. ${M.must?`<b>Required: ${M.must}</b> — `:""}pick your melody note. <i>${M.note}</i>`;
+    ch.innerHTML="";
+    const opts=Object.keys(M.tones);
+    if(!M.must) opts.push(k===1?"B":"F#"); /* one non-chord-tone distractor */
+    opts.sort(()=>Math.random()-.5).forEach(name=>{
+      const b=document.createElement("button"); b.textContent=name;
+      b.onclick=()=>{
+        const M2=MEAS[k];
+        if(M2.must && name!==M2.must){ MFAudio.tone(40,.2); fb(false,`The ${k===0?"first":"last"} note tends to be the ROOT of the I chord — that's ${M2.must}.`); return; }
+        if(M2.tones[name]===undefined){ MFAudio.tone(40,.2); fb(false,`${name} is not a tone of ${M2.sym} — start with a chord tone. (Passing and neighboring tones come later!)`); return; }
+        MFAudio.tone(M2.tones[name],.7,.05,.42);
+        M2.chord.forEach(m=>MFAudio.tone(m,.8,.05,.2));
+        picked.push({name, midi:M2.tones[name]}); k++;
+        fb(true,`✓ Great! ${name} is a chord tone of ${M2.sym} — your melody fits the chords.`);
+        setTimeout(ask,1000);
+      };
+      ch.appendChild(b);
+    });
+  }
+  pl.onclick=()=>{
+    picked.forEach((p,i)=>{
+      MFAudio.tone(p.midi,.8,i*.85,.44);
+      MEAS[i].chord.forEach(m=>MFAudio.tone(m,.85,i*.85,.2));
+    });
+    setTimeout(()=>fb(true,"✓ Your composition begins on the root and closes V7 → I on the root. Try again — every choice makes a new melody!"),4700);
+  };
+  ask();
 }
 
 LESSON_CONTENT[81]={
-  welcome:"Pentatonic scales use five notes per octave.",
+  welcome:"Composing: writing a melody for a chord progression. \u{270D}\u{FE0F}",
   hook:{
-    say:"<b>This melody uses only five different pitches.</b> \u{1F447} <b>Listen carefully: how many different pitches do you hear?</b>",
+    say:"<b>Here is a simple chord progression:</b> I - IV - I - V7 - I. Listen to the chords alone, then with a melody composed on top. <b>How can you create a melody that fits these chords?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play the melody</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Five — a pentatonic scale</button><button>Seven — a diatonic scale</button><button>Twelve — the complete chromatic collection</button></div>`;
-        const MEL=[60,62,64,67,69,72,69,67,64,62,60];
+          <button class="play hk-a">▶ Chords alone</button>
+          <button class="play hk-b">▶ Chords + composed melody</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Build it from each chord's own tones</button><button>Use notes from a different key</button><button>Pick random notes</button></div>`;
+        const chords=[[48,64,67],[53,65,69],[48,64,67],[43,67,71,77],[48,64,67]];
+        const mel=[72,69,76,74,72];
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{ MEL.forEach((m,i)=>MFAudio.tone(m,.36,i*.3,.42)); setTimeout(()=>ch.style.display="",MEL.length*300+300); };
+        let hA=false,hB=false;
+        container.querySelector(".hk-a").onclick=()=>{ chords.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.25))); hA=true; if(hB) setTimeout(()=>ch.style.display="",4700); };
+        container.querySelector(".hk-b").onclick=()=>{ chords.forEach((row,i)=>{ row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2)); MFAudio.tone(mel[i],.8,i*.9,.44); }); hB=true; if(hA) setTimeout(()=>ch.style.display="",4700); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. The melody uses C, D, E, G, and A — the notes of the C major pentatonic scale. The prefix “penta-” means five.");
-          else fb(false,"Listen again and count the different pitches. This melody does not use F or B.");
+          if(i===0) fb(true,"✓ Each melody note was a CHORD TONE of its measure's chord — C from C major, A from F major, E from C, D from G7, back to C. Today you compose your own!");
+          else fb(false,"Listen again — every melody note agreed perfectly with its chord…");
         });
       } }
   },
   objectives:[
-    "Define the pentatonic scale",
-    "Build major pentatonic scales",
-    "Build minor pentatonic scales",
-    "Recognize relative pentatonic scales",
-    "Explore the black-key pentatonic on the piano"
+    "Define composing: creating a melody for a chord progression",
+    "Analyze first: numerals below the staff, symbols above",
+    "Build the melody from CHORD TONES",
+    "Add passing and neighboring tones",
+    "Begin and end on the root of I; V(7) precedes the last chord",
+    "Read the R / 3 / 5 / P melody labels"
   ],
   steps:[
-    { say:"<b>Pentatonic Scale:</b> A pentatonic scale contains <b>five different pitches</b>. The major and minor pentatonic scales are made by <b>removing two notes from a seven-note scale</b>. \u{1F447} <b>How many different pitches are in a pentatonic scale?</b>",
-      try:{ type:"mc", choices:["Five","Seven","Twelve"], answer:0,
-        success:"✓ Correct. A pentatonic scale contains five different pitch classes within an octave.",
-        fail:"The prefix “penta-” refers to the number five.",
-        hint:"A pentagon has five sides." } },
-    { say:"<b>Major Pentatonic Scale:</b><div style='max-width:300px;margin:8px auto;padding:8px 14px;border:2px solid #2F6DA8;border-radius:10px;background:#eef3fb;text-align:center;color:#2F6DA8'><b>Major Pentatonic</b><br><span style='color:#333;font-weight:600'>Remove scale degrees 4 and 7.</span></div>Start with a major scale and drop degrees 4 and 7. C major pentatonic is <b>C–D–E–G–A</b> (F and B are gone, so no half steps remain). \u{1F447} <b>Which two scale degrees disappear to form the major pentatonic?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 10px">Major scale</th><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800;color:#2F6DA8">C</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800;color:#2F6DA8">D</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800;color:#2F6DA8">E</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">F</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800;color:#2F6DA8">G</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800;color:#2F6DA8">A</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center">B</td></tr>
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 10px">Major pentatonic</th><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">C</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">D</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">E</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;color:#C05A21">—</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">G</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;font-weight:800">A</td><td style="border:1.5px solid #cdd5e1;padding:5px 10px;text-align:center;color:#C05A21">—</td></tr></table>` },
-      try:{ type:"mc", choices:["Scale degrees 4 and 7","Scale degrees 2 and 6","Scale degrees 1 and 5"], answer:0,
-        success:"✓ Correct. Omitting scale degrees 4 and 7 produces the major pentatonic pattern without half steps.",
-        fail:"Identify the scale degrees involved in the major scale’s two half steps.",
-        hint:"In C major, omit F and B." } },
-    { say:"<b>Minor Pentatonic Scale:</b><div style='max-width:300px;margin:8px auto;padding:8px 14px;border:2px solid #C05A21;border-radius:10px;background:#fbeee6;text-align:center;color:#C05A21'><b>Minor Pentatonic</b><br><span style='color:#333;font-weight:600'>Remove scale degrees 2 and 6.</span></div>Start with a natural minor scale and drop degrees 2 and 6. A minor pentatonic is <b>A–C–D–E–G</b> — widely used in blues, rock, and folk. \u{1F447} <b>Which notes form the A minor pentatonic scale?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
-        {p:"A3",d:"q",label:"1"},{p:"C4",d:"q",label:"3"},{p:"D4",d:"q",label:"4"},
-        {p:"E4",d:"q",label:"5"},{p:"G4",d:"q",label:"7"},{p:"A4",d:"q",label:"8"},{bar:"final"}],width:440} },
-      try:{ type:"mc", choices:["A, C, D, E, G","A, B, C, D, E","A, C, E only"], answer:0,
-        success:"✓ Correct. Begin with A natural minor and omit scale degree 2, B, and scale degree 6, F.",
-        fail:"Begin with A natural minor and omit its second and sixth scale degrees.",
-        hint:"Use scale degrees 1, 3, 4, 5, and 7." } },
-    { say:"<b>Relative Pentatonic Scales:</b> C major pentatonic and A minor pentatonic contain <b>the same five notes</b> — only the tonal center (home note) differs. Look at the two rows below: same notes, different starting point. \u{1F447} <b>Which minor pentatonic scale contains the same notes as G major pentatonic?</b>",
-      show:{ type:"html", html:`<div style="text-align:center;line-height:1.5">
-        <div style="font-weight:800;color:#2F6DA8">C Major Pentatonic</div>
-        <div style="font-family:monospace;font-size:18px;font-weight:800;letter-spacing:3px">C  D  E  G  A</div>
-        <div style="color:#667;font-size:13px;margin:4px 0">↓ &nbsp; the same five notes &nbsp; ↓</div>
-        <div style="font-weight:800;color:#C05A21">A Minor Pentatonic</div>
-        <div style="font-family:monospace;font-size:18px;font-weight:800;letter-spacing:3px">A  C  D  E  G</div></div>` },
-      try:{ type:"mc", choices:["E minor pentatonic","G minor pentatonic","C minor pentatonic"], answer:0,
-        success:"✓ Correct. G major pentatonic and E minor pentatonic share the pitch collection G–A–B–D–E but establish different tonal centers.",
-        fail:"Find the relative minor tonic of G major.",
-        hint:"Move down a minor third from G to E." } },
-    { say:"<b>The Black Keys — Play a Song:</b> The five black keys form a <b>pentatonic scale</b> (G♭ major pentatonic). Because <b>Arirang</b> is pentatonic, you can play the whole tune using <b>only the black keys</b>. \u{1F447} <b>Follow the arrow and play Arirang.</b>",
+    { say:"<b>Composing a Melody:</b> Instead of adding chords to a melody, you will write a melody that fits a chord progression. \u{1F447} <b>What does composing mean in this lesson?</b>",
+      try:{ type:"mc", choices:["Writing a melody to fit a given progression","Writing a progression to fit a melody","Copying an existing tune"], answer:0,
+        success:"✓ The chords come first this time; the tune is yours to invent.",
+        fail:"Which direction is the REVERSE of Lesson 64?",
+        hint:"Progression → melody." } },
+    { say:"<b>Analyze the Chords:</b> Before writing the melody, identify each chord using Roman numerals and chord symbols. This helps you choose notes that fit each harmony. \u{1F447} <b>Why should you analyze the progression first?</b>",
+      try:{ type:"mc", choices:["Each measure's chord tells you which melody notes will fit","It makes the page look professional","Analysis replaces composing"], answer:0,
+        success:"✓ Analysis shows which notes fit each measure's harmony.",
+        fail:"What did every melody note in the hook have in common with its chord?",
+        hint:"Chord tones = safe notes." } },
+    { say:"<b>Build the Melody:</b> Start with <b>chord tones</b>. Then add <b>passing and neighboring tones</b> to create smoother melodic movement. <b>Remember: good melodies begin with chord tones. Non-harmonic tones make the melody smoother and more interesting.</b> \u{1F447} <b>Which notes form the basic framework of the melody?</b>",
+      try:{ type:"mc", choices:["Chord tones","Passing tones","Rests"], answer:0,
+        success:"✓ Chord tones form the framework; non-harmonic tones make it smoother and more interesting.",
+        fail:"Which notes are guaranteed to fit each chord?",
+        hint:"Start with the notes inside the chord." } },
+    { say:"<b>Beginning and Ending:</b> Most melodies begin and end on the <b>root of the I chord</b>. A <b>V (or V7)</b> chord usually comes before the final I chord. \u{1F447} <b>Which note is the best choice to begin and end a melody in C major?</b>",
+      try:{ type:"mc", choices:["C","G","B"], answer:0,
+        success:"✓ C — the root of the I chord. And the second-to-last measure will usually carry G7.",
+        fail:"The root of I in C major is…",
+        hint:"The tonic itself." } },
+    { say:"<b>Reading the Labels:</b> R = root · 3 = third · 5 = fifth · 7 = seventh · P = passing tone. Decode this measure over a C chord: \u{1F447} <b>What is the correct label for the D?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:100,time:"3/4",notes:[
+        {p:"E4",d:"q",label:"3"},{p:"D4",d:"q",label:"?"},{p:"C4",d:"q",label:"R"},{bar:"single"},{p:"G4",d:"h.",label:"5"},{bar:"final"}],width:460} },
+      try:{ type:"mc", choices:["P — a passing tone between 3 and R","5 — the chord's fifth","R — a second root"], answer:0,
+        success:"✓ P — a passing tone. D is not in C-E-G; it connects the 3rd (E) to the root (C).",
+        fail:"Is D inside C-E-G?",
+        hint:"Chord member or bridge?" } },
+    { say:"Compose a five-measure melody using the chord progression <b>I - IV - I - V7 - I</b>. \u{1F447}",
+      show:{ type:"html", html:`<div style="max-width:340px;margin:0 auto;font-size:14.5px;line-height:1.9;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:12px 18px;text-align:center;font-weight:700">
+        Analyze Chords<br>↓<br>Choose Chord Tones<br>↓<br>Add Passing &amp; Neighboring Tones<br>↓<br>Check Beginning &amp; Ending<br>↓<br>Finished Melody</div>` },
       try:{ type:"custom",
-        hint:"Press the black key the red ▼ arrow points to. Tap “Hear it first” to listen, then follow along.",
-        mount:(container,fb)=>MF_L81_arirang(container,fb) } },
-    { say:"<b>Pentatonic Around the World:</b> Pentatonic scales are among the <b>most widely used scales in the world</b>. They appear in many musical traditions — <b>folk, blues, rock, popular music</b>, and music from many different cultures. \u{1F447} <b>Why do the major and minor pentatonic scales contain no half steps?</b>",
-      try:{ type:"mc", choices:["Their construction omits the scale degrees that form half steps in the related major or natural minor scale","They contain additional sharps","They must be performed slowly"], answer:0,
-        success:"✓ Correct. The major and minor pentatonic patterns omit the scale degrees that would create half steps.",
-        fail:"In the major pentatonic scale, what interval type disappears when scale degrees 4 and 7 are omitted?",
-        hint:"Compare the major scale with its major pentatonic form." } },
-    { say:"<b>Review:</b> \u{1F447} <b>Which spelling represents C major pentatonic?</b>",
-      try:{ type:"mc", choices:["C–D–E–G–A","C–D–E–F–G","C–E♭–F–G–B♭"], answer:0,
-        success:"✓ Correct. C major pentatonic contains scale degrees 1, 2, 3, 5, and 6 of C major.",
-        fail:"Omit scale degrees 4 and 7 of C major.",
-        hint:"Use C, D, E, G, and A." } }
+        hint:"Start with chord tones; the first and last notes are the root of I.",
+        mount:(container,fb)=>MF_L81_compose(container,fb) } },
+    { say:"<b>Try Another Key:</b> Apply the same process in G major (G - C - D7 - G). \u{1F447} <b>Which note is the best opening note?</b>",
+      try:{ type:"mc", choices:["G — the root of the I chord","C — the loudest note","F♯ — the leading tone"], answer:0,
+        success:"✓ Root of I, first and last — in any key. The process: analyze → chord tones → non-harmonic tones → check the beginning and ending.",
+        fail:"What's the I chord in G major, and what's its root?",
+        hint:"Same frame rule, new key." } }
   ],
   examples:[
-    { caption:"A major-pentatonic melody: C–D–E–G–A only. With no 4th or 7th, the melody contains no half steps — a familiar folk-song sound.",
-      staff:{clef:"treble",tempo:96,notes:[
-        {p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},
-        {p:"A4",d:"h"},{p:"G4",d:"q"},{p:"E4",d:"q"},
-        {p:"D4",d:"q"},{p:"C4",d:"h",label:"home"},{bar:"final"}],width:600},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"The same five notes, tonic moved to A: the minor pentatonic — widely used in blues, rock and many other styles.",
-      staff:{clef:"treble",tempo:96,notes:[
-        {p:"A3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},
-        {p:"G4",d:"h"},{p:"E4",d:"q"},{p:"D4",d:"q"},
-        {p:"C4",d:"q"},{p:"A3",d:"h",label:"home"},{bar:"final"}],width:600},
-      kb:{start:57,octaves:1.1667,labels:true} }
+    { caption:"A composed melody with labels: every note is R, 3, 5 — or P for a passing tone.",
+      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
+        {p:"C5",d:"q",label:"R"},{p:"E5",d:"q",label:"3"},{p:"G5",d:"q",label:"5"},{p:"E5",d:"q",label:"3"},{bar:"single"},
+        {p:"A4",d:"q",label:"3/IV"},{p:"B4",d:"q",label:"P"},{p:"C5",d:"h",label:"5/IV"},{bar:"single"},
+        {p:"E5",d:"q",label:"3/I"},{p:"D5",d:"q",label:"5/V7"},{p:"B4",d:"q",label:"3/V7"},{p:"D5",d:"q",label:"5"},{bar:"single"},
+        {p:"C5",d:"w",label:"R — home!"},{bar:"final"}],width:780},
+      kb:{start:69,octaves:1.1667,labels:true} },
+    { caption:"The same melody twice: chord tones only, then with passing tones added on the weak beats.",
+      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
+        {p:"C4",d:"h",label:"chord tones"},{p:"E4",d:"h"},{bar:"single"},{p:"G4",d:"h"},{p:"C5",d:"h"},{bar:"double"},
+        {p:"C4",d:"q",label:"+ P tones"},{p:"D4",d:"q",label:"P"},{p:"E4",d:"q"},{p:"F4",d:"q",label:"P"},{bar:"single"},{p:"G4",d:"q"},{p:"A4",d:"q",label:"P"},{p:"B4",d:"q",label:"P"},{p:"C5",d:"q"},{bar:"final"}],width:780},
+      kb:{start:60,octaves:1,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Pentatonic Sprint (45s)",
-      intro:"Identify pentatonic spellings, omitted scale degrees, and relative pairs before time runs out.",
-      miaIntro:"Check the five scale degrees carefully.",
+    { type:"gen-race", title:"Game 1 · Composer's Checklist Sprint (45s)",
+      intro:"Analyze, chord tones, non-harmonic tones, beginning and ending — race the method!",
+      miaIntro:"The four-step checklist! \u{26A1}",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Pentatonic","five pitch classes per octave"],
-        ["Major pentatonic","major scale minus 4 and 7"],
-        ["Minor pentatonic","natural minor minus 2 and 6"],
-        ["C major pentatonic","C-D-E-G-A"],
-        ["A minor pentatonic","A-C-D-E-G"],
-        ["The black keys","a built-in pentatonic"],
-        ["Relative pentatonics","same notes, different tonic"],
-        ["Half steps in major and minor pentatonic","none remain"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Pentatonic-scale challenge completed!":null },
-    { type:"key-climb", title:"Game 2 · Climb the Two Pentatonics",
-      intro:"Play the C major pentatonic scale ascending, followed by the A minor pentatonic scale.",
-      miaIntro:"The scales share the same pitch collection but have different tonics.",
-      spec:{seq:[60,62,64,67,69,72, 57,60,62,64,67,69],
-        names:["C","D","E","G","A","C (top)","A (new home)","C","D","E","G","A (top)"],
-        start:57, octaves:1.25, title:"Major pentatonic, then its relative minor"},
-      result:(score)=>score!==null?"You performed both pentatonic scales correctly.":null },
-    { type:"symbol-hunt", title:"Game 3 · Spot the Pentatonic",
-      intro:"Examine each scale and select the requested pentatonic scale.",
-      miaIntro:"Count the pitch classes and examine the interval pattern.",
+        ["To compose","create a melody for a chord progression"],
+        ["Step 1","analyze: numerals below, symbols above"],
+        ["The framework","chord tones"],
+        ["To add interest","passing and neighboring tones"],
+        ["First & last melody note","the root of the I chord"],
+        ["Before the last chord","V or V7"],
+        ["R / 3 / 5 labels","which chord member the note is"],
+        ["P label","a passing tone"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — checklist locked in!":null },
+    { type:"key-climb", title:"Game 2 · Play the Model Melody",
+      intro:"Perform the example's first phrase: R-3-5-3 on C, then 3-P-5 on F!",
+      miaIntro:"Composer, meet performer! \u{1FA9C}",
+      spec:{seq:[72,76,79,76, 69,71,72],
+        names:["C (R)","E (3)","G (5)","E (3)","A (3rd of F)","B (P — passing!)","C (5th of F)"],
+        start:65, octaves:1.5, title:"The model melody, phrase one"},
+      result:(score)=>score!==null?"Composed AND performed!":null },
+    { type:"symbol-hunt", title:"Game 3 · Safe-Note Spotter",
+      intro:"A chord is called — click the melody fragment that fits ENTIRELY inside it!",
+      miaIntro:"Chord tones only! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"C major pentatonic", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"}],width:190}},
-        {label:"A minor pentatonic", spec:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"}],width:190}},
-        {label:"Full C major scale", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"}],width:230}},
-        {label:"C minor blues scale", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"Eb4",d:"q"},{p:"F4",d:"q"},{p:"Gb4",d:"q"},{p:"G4",d:"q"},{p:"Bb4",d:"q"}],width:210}}]},
-      result:(score)=>score>=5?"You identified the pentatonic scales correctly.":null },
-    { type:"term-race", title:"Game 4 · Build a Pentatonic Scale",
-      intro:"Select the scale degrees needed to construct each pentatonic scale.",
-      miaIntro:"Major omits 4 and 7; minor omits 2 and 6.",
-      spec:{rounds:8, reverse:true, pool:[
-        ["Major pentatonic removes","degrees 4 and 7"],
-        ["Minor pentatonic removes","degrees 2 and 6"],
-        ["G major pentatonic","G-A-B-D-E"],
-        ["E minor pentatonic","E-G-A-B-D"],
-        ["Gapped scale","a scale with omitted notes"],
-        ["Half steps in major/minor pentatonic","none"],
-        ["Widely used in blues and rock","the minor pentatonic"],
-        ["Folk melodies worldwide","often pentatonic"]]},
-      result:(score)=>score>=6?"You constructed the pentatonic scales correctly.":null }
+        {label:"Fits the C chord (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"E4",d:"q"}],width:170}},
+        {label:"Fits the F chord (F-A-C)", spec:{clef:"treble",notes:[{p:"F4",d:"q"},{p:"A4",d:"q"},{p:"C5",d:"q"},{p:"A4",d:"q"}],width:170}},
+        {label:"Fits the G7 chord (G-B-D-F)", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"B4",d:"q"},{p:"D5",d:"q"},{p:"F5",d:"q"}],width:170}},
+        {label:"Fits NO single chord (scale run)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"}],width:170}}]},
+      result:(score)=>score>=5?"Safe notes spotted instantly!":null },
+    { type:"term-race", title:"Game 4 · UNIT 16 GRAND FINALE Race",
+      intro:"The victory lap — harmonizing, textures, non-harmonic tones and composing!",
+      miaIntro:"Everything from Unit 16 — GO! \u{1F3C6}",
+      spec:{rounds:10, reverse:true, pool:[
+        ["To harmonize","add chords to a melody"],
+        ["To compose","add a melody to chords"],
+        ["Degrees 1,3,5","the I chord's row"],
+        ["Degrees 1,4,6","the IV chord's row"],
+        ["Block chord","tones together"],
+        ["Arpeggio","tones one at a time, in order"],
+        ["Passing tone","connects two different chord tones"],
+        ["Neighboring tone","returns to the same chord tone"],
+        ["First & last note","root of I"],
+        ["The pre-final chord","V or V7"]]},
+      result:(score)=>score>=8?"UNIT 16 CHAMPION!":null }
   ],
-  practiceIntro:"Complete 20 practice questions on pentatonic spellings, omitted scale degrees, and relative pairs. The next question will appear after each correct answer.",
+  practiceIntro:"20 practice questions — the method, the labels and the frame rules. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Pentatonic","five notes"],["Major pent","− 4 & 7"],["Minor pent","− 2 & 6"],["Gapped scale","omitted notes"],["Black keys","pentatonic"]], reverse:true}, count:6 },
-    { gen:"rel-key", params:{ask:"both"}, count:2 },
-    { type:"mc", q:"C major pentatonic is spelled…", choices:["C-D-E-G-A","C-D-E-F-G","C-E-G-B-D"], answer:0,
-      explain:"C major pentatonic contains scale degrees 1, 2, 3, 5, and 6 of C major." },
-    { type:"mc", q:"A minor pentatonic is spelled…", choices:["A-C-D-E-G","A-B-C-D-E","A-C-E-G-B"], answer:0,
-      explain:"A minor pentatonic contains scale degrees 1, 3, 4, 5, and 7 of A natural minor." },
-    { type:"mc", q:"Which two degrees does the MAJOR pentatonic omit?", choices:["4 and 7","2 and 6","1 and 8"], answer:0,
-      explain:"The major pentatonic scale omits scale degrees 4 and 7." },
-    { type:"mc", q:"Which two degrees does the MINOR pentatonic omit?", choices:["2 and 6","4 and 7","3 and 5"], answer:0,
-      explain:"The minor pentatonic scale omits scale degrees 2 and 6." },
-    { type:"truefalse", q:"The major and minor pentatonic scales taught in this lesson contain no half steps.", answer:true,
-      explain:"Their interval patterns consist of whole steps and minor thirds. Other pentatonic scales may contain half steps." },
-    { type:"truefalse", q:"C major pentatonic and A minor pentatonic share the same five notes.", answer:true,
-      explain:"They share the same pitch collection but establish different tonics." },
-    { type:"truefalse", q:"The five black-key pitch classes can form G♭ major pentatonic or E♭ minor pentatonic.", answer:true,
-      explain:"The same five pitch classes form different relative pentatonic scales depending on the tonal center." },
-    { gen:"term-match", params:{subject:"term", pool:[["C-D-E-G-A","C major pentatonic"],["A-C-D-E-G","A minor pentatonic"],["G-A-B-D-E","G major pentatonic"],["Relative pair","same notes, new tonic"]], reverse:true}, count:3 },
-    { gen:"degree-name", params:{ask:"name"}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["Compose","melody for a progression"],["Analyze first","numerals below, symbols above"],["Framework","chord tones"],["To add interest","passing & neighboring tones"],["R","the root as a melody note"],["P","a passing tone"]], reverse:true}, count:6 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
+    { type:"mc", q:"What does composing mean in this lesson?", choices:["Creating a melody for a chord progression","Playing by ear","Writing a drum part"], answer:0,
+      explain:"The reverse of harmonizing." },
+    { type:"mc", q:"What should you do before writing the melody?", choices:["Analyze the progression: numerals below, symbols above","Choose a tempo","Erase the chords"], answer:0,
+      explain:"Know the palette first." },
+    { type:"mc", q:"The melody's first and last note tends to be…", choices:["the root of the I chord","the leading tone","degree 5"], answer:0,
+      explain:"Home at both ends." },
+    { type:"mc", q:"The chord that usually precedes the final chord is…", choices:["V or V7","IV","ii"], answer:0,
+      explain:"The cadence rule, one more time." },
+    { type:"mc", q:"Which notes are the basic melody notes over an F chord?", choices:["F, A and C","Any white key","Only F"], answer:0,
+      explain:"Chord tones = guaranteed fits." },
+    { type:"mc", q:"The label 'P' under a melody note means…", choices:["passing tone","perfect","piano"], answer:0,
+      explain:"The one non-chord label in the model." },
+    { type:"truefalse", q:"A composed melody may include non-harmonic tones.", answer:true,
+      explain:"They make the melody more interesting." },
+    { type:"truefalse", q:"Every note of a composed melody must be a chord tone.", answer:false,
+      explain:"Chord tones form the framework; non-harmonic tones are added." },
+    { type:"truefalse", q:"The numbers between the staffs (R, 3, 5) name each melody note's chord member.", answer:true,
+      explain:"The analysis labels: R, 3, 5, 7, P." },
+    { type:"truefalse", q:"Composing and harmonizing are opposite processes.", answer:true,
+      explain:"Melody→chords vs chords→melody." }
+  ],
+  miaQuizIntro:"The Unit 16 finale quiz! Analyze → chord tones → non-harmonic tones → beginning and ending.",
+  quiz:[
+    { type:"mc", q:"What is the first step in composing a melody?", choices:["Analyze the chord progression","Write the melody immediately","Choose a tempo"], answer:0,
+      explain:"Analysis shows which notes fit each harmony.", hint:"Chords first, tune second." },
+    { type:"mc", q:"The first analysis step is writing…", choices:["Roman numerals under the chords and symbols above the staff","the melody immediately","the time signature"], answer:0,
+      explain:"Analysis shows which notes fit each harmony.", hint:"Numerals below, symbols above." },
+    { type:"mc", q:"What should most melody notes come from?", choices:["The tones of each measure's chord","The chromatic scale","The drum pattern"], answer:0,
+      explain:"Chord tones form the framework.", hint:"The hook's discovery." },
+    { type:"mc", q:"Which notes can make a melody more interesting?", choices:["Passing and neighboring tones","More rests","Louder dynamics"], answer:0,
+      explain:"Non-harmonic tones add smoothness and interest.", hint:"Lesson 66's tones." },
+    { type:"truefalse", q:"The first and last note of a melody tends to be the root of the I chord.", answer:true,
+      explain:"Begin and end on the root of I.", hint:"The tonic." },
+    { type:"truefalse", q:"A V or V7 chord usually precedes the last chord.", answer:true,
+      explain:"The cadence sets up the landing.", hint:"Third time this unit!" },
+    { type:"mc", q:"Over a G7 measure, which is NOT a chord tone?", choices:["A","G","B","F"], answer:0,
+      explain:"G7 = G-B-D-F; A is not a chord tone.", hint:"Spell G7." },
+    { type:"mc", q:"What do the labels R, 3, 5, and P represent?", choices:["The melody note's role in the current chord","Finger numbers","Measure numbers"], answer:0,
+      explain:"Root, third, fifth — or passing tone.", hint:"Chord member or passing." },
+    { type:"mc", q:"A melody measure over C major reads E-D-C. The best labels are…", choices:["3 - P - R","R - 3 - 5","5 - 3 - R"], answer:0,
+      explain:"E is the 3rd, C the root; D connects them.", hint:"Which note is non-harmonic?" },
+    { type:"mc", q:"You're composing in F major. Your final two measures should likely carry…", choices:["C7 then F, melody ending on F","B♭ then G, ending on A","F then C7, ending on C"], answer:0,
+      explain:"V7→I with the root on top — frame complete.", hint:"V7 of F is C7." },
+    { type:"mc", q:"Two students compose over the same progression and produce different melodies. Who's right?", choices:["Both — the chord tones offer many valid paths","Only the one using roots","Neither — progressions allow one melody"], answer:0,
+      explain:"Composition is choice; the rules just keep the choices musical.", hint:"Your builder made a unique tune too." },
+    { type:"mc", q:"What is the correct order for composing a melody?", choices:["Analyze → build with chord tones → add non-harmonic tones → check the beginning and ending","Add non-harmonic tones first, then analyze","Write the ending first, then analyze"], answer:0,
+      explain:"These four steps summarize the whole lesson.", hint:"What did you do in the builder?" },
+    /* generated */
+    { gen:"term-match", params:{subject:"term", pool:[["Compose","chords → melody"],["Harmonize","melody → chords"],["Framework","chord tones"],["P","passing tone"]], reverse:true}, count:3 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
+    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:1 }
   ],
   vocabulary:[
-    {term:"Pentatonic Scale", def:"A scale of five different pitch classes per octave (penta = five)."},
-    {term:"Gapped Scale", def:"A term sometimes used for scales with omitted notes — major and minor pentatonic scales omit two degrees of a seven-note scale."},
-    {term:"Major Pentatonic", def:"Major scale minus degrees 4 and 7. C: C-D-E-G-A."},
-    {term:"Minor Pentatonic", def:"Natural minor minus degrees 2 and 6. A: A-C-D-E-G."}
+    {term:"Compose", def:"To create (write) a melody for a previously written chord progression — harmonizing in reverse."},
+    {term:"Melody Framework", def:"The chord tones a composed melody is built from — each measure's chord provides the notes that fit."},
+    {term:"R / 3 / 5 / P Labels", def:"The analysis labels: which chord member each melody note is — or P for a passing tone."},
+    {term:"The Frame Rule", def:"Begin and end on the root of I; let V(7) set up the final chord."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Pentatonic</b> = five-note scale.",
-    "✔ <b>Major pentatonic:</b> remove 4 and 7.",
-    "✔ <b>Minor pentatonic:</b> remove 2 and 6.",
-    "✔ Relative major and minor pentatonic scales <b>share the same notes</b>.",
-    "✔ Pentatonic scales are among the <b>most widely used scales in the world</b>."
+    "✔ <b>Composing</b> = writing a melody over a given progression — the reverse of harmonizing.",
+    "✔ Method: <b>analyze</b> (numerals below, symbols above) → <b>outline from chord tones</b> → <b>decorate</b> with passing/neighboring tones.",
+    "✔ Frame: <b>first and last note = root of I</b>; <b>V(7) precedes the final chord</b>.",
+    "✔ The labels <b>R / 3 / 5 / P</b> name each melody note's job.",
+    "✔ Many melodies fit one progression — <b>your choices make yours</b>. UNIT 16 COMPLETE! \u{1F389}"
   ],
   tips:[
-    "Improvising with the major or minor pentatonic? A clear tonal center, rhythm and phrasing still matter.",
-    "Blues soloing: minor pentatonic + the ♭5 from Lesson 71 = the commonly taught minor blues scale.",
-    "Sing a spiritual or a lullaby and check the notes — many use only five.",
-    "Next lesson: whole-tone and chromatic scales — scales that do not point to a tonic by structure alone."
+    "Composer's warm-up: take ANY progression you know and hum only roots. Then upgrade some roots to 3rds and 5ths. Then add one passing tone. Congratulations — you compose.",
+    "The 3rd of each chord is the juiciest melody note — it carries the chord's whole personality.",
+    "Label your own melodies R/3/5/P and see whether the P's land on weak beats.",
+    "Unit 17 takes composing into MINOR keys — and then somewhere unexpected: the blues."
   ],
-  rewards:{ badge:"Pentatonic Voyager", icon:"\u{2B50}" },
+  rewards:{ badge:"Composer's Quill — Unit 16 Champion", icon:"\u{270D}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Identify five-note scales, omitted scale degrees, and relative pentatonic pairs.",
-  quiz:[
-    { type:"mc", q:"How many different pitch classes does a pentatonic scale contain within an octave?", choices:["5","7","6"], answer:0,
-      explain:"Penta = five.", hint:"The name says it." },
-    { type:"mc", q:"Why are major and minor pentatonic scales sometimes described as gapped scales?", choices:["They omit two scale degrees from the related seven-note scale","They omit entire octaves","They add chromatic notes"], answer:0,
-      explain:"They can be constructed by omitting two scale degrees from a major or natural minor scale.", hint:"Gaps = missing notes." },
-    { type:"mc", q:"The major pentatonic removes…", choices:["scale degrees 4 and 7","scale degrees 2 and 6","scale degrees 1 and 5"], answer:0,
-      explain:"C major → C–D–E–G–A.", hint:"F and B leave C major." },
-    { type:"mc", q:"The minor pentatonic removes…", choices:["scale degrees 2 and 6","scale degrees 4 and 7","scale degrees 3 and 7"], answer:0,
-      explain:"A minor → A–C–D–E–G.", hint:"B and F leave A minor." },
-    { type:"mc", q:"G major pentatonic is spelled…", choices:["G–A–B–D–E","G–A–B–C–D","G–B–D–F–A"], answer:0,
-      explain:"G major minus C (4) and F♯ (7).", hint:"Five notes, no 4 or 7." },
-    { type:"mc", q:"Which pentatonic shares its notes with C major pentatonic?", choices:["A minor pentatonic","C minor pentatonic","G major pentatonic"], answer:0,
-      explain:"The relative pentatonic pair: C–D–E–G–A = A–C–D–E–G.", hint:"Down a minor 3rd." },
-    { type:"mc", q:"Identify the scale.",
-      staff:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"}],width:300},
-      choices:["A minor pentatonic","A natural minor","A major pentatonic"], answer:0,
-      explain:"The scale contains the five pitch classes A–C–D–E–G, the notes of A minor pentatonic.", hint:"Compare the pitches with scale degrees 1, 3, 4, 5, and 7 of A natural minor." },
-    { type:"truefalse", q:"The major and minor pentatonic scales taught in this lesson contain half steps.", answer:false,
-      explain:"These two pentatonic patterns contain whole steps and minor thirds but no half steps. Other pentatonic scales may include half steps.", hint:"Examine the interval pattern." },
-    { type:"truefalse", q:"The five black-key pitch classes can form G♭ major pentatonic or E♭ minor pentatonic.", answer:true,
-      explain:"G♭ major / E♭ minor pentatonic.", hint:"Try it at the piano." },
-    { type:"mc", q:"Adding a chromatic pitch between scale degrees 4 and 5 of the minor pentatonic scale produces which commonly taught scale?", choices:["the minor blues scale","the major scale","the Dorian mode"], answer:0,
-      explain:"In A, adding E♭ to A–C–D–E–G produces the commonly taught minor blues scale: A–C–D–E♭–E–G.", hint:"Add the chromatic pitch between D and E." },
-    { type:"mc", q:"In which statement is the use of pentatonic scales described most accurately?", choices:["Many types of pentatonic scales appear in musical traditions throughout the world","Pentatonic scales occur only in European music","Pentatonic scales occur only in modern popular music"], answer:0,
-      explain:"Five-note scales occur in many cultures, although their interval patterns and musical functions vary.", hint:"Pentatonic scales are not limited to one culture or historical period." },
-    { type:"mc", q:"Why are the black keys useful for practicing major and minor pentatonic improvisation?", choices:["They form a five-note collection that can be heard as G♭ major pentatonic or E♭ minor pentatonic","Black keys are quieter than white keys","Black keys use a different tuning system"], answer:0,
-      explain:"The five black-key pitch classes form a major/minor pentatonic relative pair. Effective improvisation still requires rhythm, phrasing, and a clear tonal center.", hint:"Identify the five-note pitch collection." }
-  ],
-  miaPerfect:"Perfect score! You accurately constructed and identified major and minor pentatonic scales.",
-  miaPass:"You passed! Next, you will compare whole-tone and chromatic scales.",
+  miaPerfect:"PERFECT! Analyze, chord tones, non-harmonic tones, beginning and ending — Unit 16 complete! \u{270D}\u{FE0F}\u{1F3C6}\u{1F389}",
+  miaPass:"Passed — and Unit 16 is COMPLETE! You can harmonize, play textures, and compose. \u{1F389}",
   mia:{
     hook:{ label:"the welcome",
-      explain:"The melody used only C, D, E, G, A — the major pentatonic. Removing degrees 4 and 7 removes every half step.",
-      play:()=>{[60,62,64,67,69,72,69,67,64,62,60].forEach((m,i)=>MFAudio.tone(m,.36,i*.3,.42));} },
-    learn:{ label:"pentatonic scales",
-      explain:"Five pitch classes per octave. Major pent = major − 4 & 7; minor pent = minor − 2 & 6; relatives share notes; black keys form a pentatonic; found in many traditions.",
-      hint:"Subtract two, keep five.",
-      play:()=>{[60,62,64,67,69,72].forEach((m,i)=>MFAudio.tone(m,.36,i*.3,.42));} },
+      explain:"The melody's notes came from inside each measure's chord: C, A, E, D, C over C-F-C-G7-C. Chord tones are the composer's palette.",
+      play:()=>{const chords=[[48,64,67],[53,65,69],[48,64,67],[43,67,71,77],[48,64,67]],mel=[72,69,76,74,72];chords.forEach((row,i)=>{row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2));MFAudio.tone(mel[i],.8,i*.9,.44);});} },
+    learn:{ label:"composing",
+      explain:"Analyze the progression, build a framework from chord tones, decorate with passing/neighboring tones, frame it: root of I at both ends, V(7) before the close.",
+      hint:"Analyze → chord tones → non-harmonic tones → beginning and ending.",
+      play:()=>{[72,76,79,76].forEach((m,i)=>MFAudio.tone(m,.5,i*.45,.42));} },
     example:{ label:"the examples",
-      explain:"Example 1 sings the major pentatonic; example 2 moves the same notes to the A tonic — the minor pentatonic." },
+      explain:"Example 1 is a fully labeled composed melody (R/3/5/P); example 2 shows the same framework before and after decoration." },
     game:{ label:"the games",
-      explain:"Sprint the facts, climb both pentatonics, spot pentatonic scales on cards, then build pentatonics at speed.",
-      hint:"Major −4&7 · minor −2&6." },
+      explain:"Sprint the checklist, perform the model, spot safe notes, then run the Unit 16 victory lap.",
+      hint:"Chord tones first — always." },
     quiz:{ label:"this question",
-      explain:"Two formulas answer everything: major pentatonic = major − 4 & 7; minor pentatonic = natural minor − 2 & 6. Relatives share all five notes.",
-      play:()=>{[57,60,62,64,67,69].forEach((m,i)=>MFAudio.tone(m,.36,i*.3,.42));} }
+      explain:"Every question is one of the four steps: analyze, framework, decorate, frame. Identify which step, and the answer follows.",
+      play:()=>{[67,71,74,77].forEach(m=>MFAudio.tone(m,.8,0,.3));[60,64,67,72].forEach(m=>MFAudio.tone(m,1,.9,.32));} }
   }
 };

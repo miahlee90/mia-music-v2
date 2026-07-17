@@ -1,4 +1,4 @@
-/* Lesson 2 — Treble Clef and Staff (AEMT Book 1, Unit 1)
+/* Lesson 2 (1.2) — Treble Clef and Staff (AEMT Book 1, Unit 1)
    v2 — rebuilt from the instructor's design document (drafts/UNIT 1 – Lesson 2.md)
    NOTE: edit by FULL-FILE REWRITE only. */
 

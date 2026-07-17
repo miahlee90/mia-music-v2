@@ -1,347 +1,280 @@
-/* Lesson 51 — Triads: 1st Inversion (AEMT Book 3, Unit 13) — BOOK 3 OPENER
-   Built from drafts/UNIT 13 – Lesson 51.md; AEMT3 p.83 verified by render.
-   Core: moving the ROOT up an octave = 1st INVERSION (3rd is ALWAYS the bottom);
-   letters never change → the chord keeps its name; close vs open position.
-   QA emphasis: bass note decides the INVERSION, the stacked-3rds root names the CHORD.
+/* Lesson 51 (7.3, formerly L48) — Primary and Major Triads (AEMT Book 2, Unit 12)
+   Built from drafts/UNIT 12 – Lesson 48.md; AEMT p.75 verified by render.
+   Core: primary triads = built on degrees 1, 4, 5 → Roman numerals I, IV, V;
+   in C major: C (C-E-G), F (F-A-C), G (G-B-D); they contain every scale tone.
+   Major triad recipe: root + MAJOR 3rd + PERFECT 5th (or M3 + m3 stacked).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* flip lab: tap the root, watch it jump an octave */
-function MF_L51_flip(container,fb){
+/* primary picker: press the keyboard root of each requested primary triad, hear it ring */
+function MF_L51_primary(container,fb){
   const ROUNDS=[
-    {name:"C major", root:["C4","E4","G4"], inv:["E4","G4","C5"]},
-    {name:"F major", root:["F4","A4","C5"], inv:["A4","C5","F5"]}];
-  let r=0;
-  container.innerHTML=`<div class="big-q l51-q" style="text-align:center"></div>
-    <div class="l51-staff"></div>
-    <div style="text-align:center"><button class="play l51-again" style="display:none">▶ Next chord</button></div>`;
-  const q=container.querySelector(".l51-q"), holder=container.querySelector(".l51-staff"), nxt=container.querySelector(".l51-again");
-  function draw(ps,label,clickable){
-    Staff.render(holder,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w",label}:{p,d:"w",chord:true}),
-      width:240, clickNotes:clickable,
-      onNote: clickable? (i)=>{
-        if(i===0){
-          const R=ROUNDS[r];
-          draw(R.inv, "1st inversion", false);
-          R.inv.forEach(p=>MFAudio.tone(MFAudio.midi(p),1.0,.1,.32));
-          fb(true,`✓ The root flew to the TOP: ${R.root.map(p=>p[0]).join("-")} became ${R.inv.map(p=>p[0]).join("-")}. Now the 3rd is the bottom note — 1st inversion!`);
-          r++;
-          if(r<ROUNDS.length){ nxt.style.display="inline-block"; }
-          else q.textContent="Great! The notes stayed the same — only their order changed.";
-        } else { MFAudio.tone(40,.2); fb(false,"That's not the ROOT — in root position the root is the LOWEST note."); }
-      } : undefined});
-  }
+    {ask:"I",root:"C",m:[60,64,67]},
+    {ask:"IV",root:"F",m:[65,69,72]},
+    {ask:"V",root:"G",m:[67,71,74]},
+    {ask:"V",root:"G",m:[67,71,74],switch:true},
+    {ask:"I",root:"C",m:[60,64,67],switch:true}];
+  let i=0,kb=null;
+  container.innerHTML=`<div class="big-q l48-q" style="text-align:center"></div><div class="l48-kb"></div>
+    <p style="text-align:center;font-size:13.5px;color:var(--primary);font-weight:700;margin:6px 0 0">Key of C major: I sits on degree 1, IV on degree 4, V on degree 5.</p>`;
+  const q=container.querySelector(".l48-q"), kbHolder=container.querySelector(".l48-kb");
   function ask(){
-    const R=ROUNDS[r]; nxt.style.display="none";
-    q.innerHTML=`${R.name}: <b>${R.root.map(p=>p[0]).join("-")}</b>, root position. Tap the <b>ROOT</b> (the bottom note) to send it up an octave.`;
-    draw(R.root,"root position",true);
-  }
-  nxt.onclick=()=>ask();
-  ask();
-}
-
-/* bass-note detective: tap the lowest note, then name the position */
-function MF_L51_detect(container,fb){
-  const ROUNDS=[
-    {ps:["E4","G4","C5"], name:"C major", pos:1},
-    {ps:["F4","A4","C5"], name:"F major", pos:0},
-    {ps:["B4","D5","G5"], name:"G major", pos:1},
-    {ps:["G4","B4","D5"], name:"G major", pos:0}];
-  let r=0, found=false, score=0;
-  container.innerHTML=`<div class="big-q l51d-q" style="text-align:center"></div>
-    <div class="l51d-staff"></div>
-    <div class="choices chips l51d-ch" style="display:none"><button>Root position</button><button>1st inversion</button></div>`;
-  const q=container.querySelector(".l51d-q"), holder=container.querySelector(".l51d-staff"), ch=container.querySelector(".l51d-ch");
-  function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Great job! You identified every inversion."; holder.innerHTML=""; ch.style.display="none"; return; }
-    const R=ROUNDS[r]; found=false; ch.style.display="none";
-    q.innerHTML=`Chord ${r+1} of ${ROUNDS.length}: first, tap the <b>LOWEST note</b>.`;
-    Staff.render(holder,{clef:"treble",notes:R.ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:220,clickNotes:true,
-      onNote:(i,p)=>{
-        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
-        if(found) return;
-        if(i===0){ found=true; q.innerHTML=`The bass is <b>${R.ps[0][0]}</b>. So… what position is this ${R.name} triad in?`; ch.style.display=""; }
-        else fb(false,"Higher notes don't decide anything — find the note at the BOTTOM of the stack.");
+    q.innerHTML=`Chord ${i+1} of ${ROUNDS.length}: in C major, press the ROOT of the <b>${ROUNDS[i].ask}</b> chord.`;
+    kbHolder.innerHTML="";
+    kb=Keyboard.create(kbHolder,{start:60,octaves:2,labels:true,
+      onKey:m=>{
+        const c=ROUNDS[i];
+        /* either octave of the root is correct - the triad rings in that octave */
+        if((m-c.m[0])%12===0 && m+(c.m[2]-c.m[0])<=84){
+          const off=m-c.m[0];
+          kb.mark(c.m.map(x=>x+off)); c.m.forEach(x=>MFAudio.tone(x+off,.9,.1,.4)); i++;
+          if(i>=ROUNDS.length){ q.textContent="I, IV, V — under your fingers!";
+            fb(true,`✓ ${c.ask} = the ${c.root} triad. The three primary chords of C major: C (I), F (IV), G (V) — you just played the backbone of a thousand songs.`); }
+          else { fb(true,`✓ ${c.ask} = ${c.root} (${c.root} triad). Next…`); setTimeout(ask,1500); } }
+        else { MFAudio.tone(40,.2); fb(false,`Count scale degrees from C: ${c.ask==="I"?"degree 1":"degree "+(c.ask==="IV"?"4":"5")}.`); }
       }});
   }
-  [...ch.children].forEach((b,i)=>b.onclick=()=>{
-    const R=ROUNDS[r];
-    if(i===R.pos){ score++; MFAudio.yay();
-      fb(true, R.pos===1? `✓ Bass ${R.ps[0][0]} is the 3rd of ${R.name} → 1st inversion.` : `✓ Bass ${R.ps[0][0]} IS the root of ${R.name} → root position.`);
-      r++; setTimeout(ask,1200); }
-    else { MFAudio.tone(40,.2); fb(false,`Spell ${R.name} in 3rds first — is ${R.ps[0][0]} its root or its 3rd?`); }
-  });
   ask();
 }
 
-/* keyboard builder: press 3rd–5th–root upward (octave-agnostic start) */
-function MF_L51_build(container,fb){
+/* major-triad X-ray: M3 + m3 stack checker */
+function MF_L51_xray(container,fb){
   const ROUNDS=[
-    {name:"C major", pcs:[4,7,0], letters:["E (the 3rd)","G (the 5th)","C (the root — on top!)"]},
-    {name:"F major", pcs:[9,0,5], letters:["A (the 3rd)","C (the 5th)","F (the root — on top!)"]},
-    {name:"G major", pcs:[11,2,7], letters:["B (the 3rd)","D (the 5th)","G (the root — on top!)"]}];
-  let r=0,k=0,last=null,kb=null,got=[];
-  container.innerHTML=`<div class="big-q l51b-q" style="text-align:center"></div>
-    <div class="l51b-staff"></div><div class="l51b-kb"></div>`;
-  const q=container.querySelector(".l51b-q"), sh=container.querySelector(".l51b-staff"), kh=container.querySelector(".l51b-kb");
-  function drawStaff(){
-    if(!got.length){ sh.innerHTML=""; return; }
-    const NAMES={0:"C",2:"D",4:"E",5:"F",7:"G",9:"A",11:"B"};
-    const ps=got.map(m=>NAMES[m%12]+(Math.floor(m/12)-1));
-    Staff.render(sh,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:190});
-  }
+    {q:"The lower 3rd of a MAJOR triad — root up to 3rd — is a…",opts:["Major 3rd (4 half steps)","minor 3rd (3 half steps)","Perfect 4th"],a:0,exp:"Major on the bottom."},
+    {q:"The upper 3rd — 3rd up to 5th — is a…",opts:["minor 3rd (3 half steps)","Major 3rd (4 half steps)","Major 2nd"],a:0,exp:"Minor on top."},
+    {q:"Root all the way to the 5th spans a…",opts:["Perfect 5th (7 half steps)","Major 5th","diminished 5th"],a:0,exp:"4 + 3 = 7 half steps = P5."},
+    {q:"So the full major-triad recipe is…",opts:["root + Major 3rd + Perfect 5th","root + minor 3rd + Perfect 5th","root + Major 3rd + Major 5th"],a:0,exp:"M3 above the root, P5 above the root."}];
+  let i=0;
+  container.innerHTML=`<div class="big-q l48-xq" style="text-align:center"></div><div class="choices chips l48-xch"></div>`;
+  const q=container.querySelector(".l48-xq"), ch=container.querySelector(".l48-xch");
   function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Excellent! You built all three 1st inversion triads."; return; }
-    k=0; last=null; got=[]; drawStaff();
-    q.innerHTML=`Build <b>${ROUNDS[r].name} in 1st inversion</b>, bottom to top. Start anywhere: press <b>${ROUNDS[r].letters[0]}</b>.`;
+    const cur=ROUNDS[i];
+    q.innerHTML=`Check ${i+1} of ${ROUNDS.length}: ${cur.q}`;
+    ch.innerHTML="";
+    cur.opts.map((o,oi)=>({o,oi})).sort(()=>Math.random()-.5).forEach(({o,oi})=>{
+      const b=document.createElement("button"); b.textContent=o;
+      b.onclick=()=>{
+        const c=ROUNDS[i];
+        if(oi===c.a){ i++; MFAudio.yay();
+          if(i>=ROUNDS.length){ ch.style.display="none"; q.textContent="Check complete — the major triad has no secrets!";
+            fb(true,`✓ ${c.exp} Both recipes agree: (M3 + m3 stacked) = (root + M3 + P5).`); }
+          else { fb(true,`✓ ${c.exp}`); setTimeout(ask,1100); } }
+        else { MFAudio.tone(40,.2); fb(false,"Count half steps: C→E is 4, E→G is 3, C→G is 7."); }
+      };
+      ch.appendChild(b); });
   }
-  kb=Keyboard.create(kh,{start:60,octaves:2,labels:true,
-    onKey:m=>{
-      const R=ROUNDS[r]; if(!R) return;
-      const want=R.pcs[k];
-      if(m%12===want && (last===null || m>last)){
-        last=m; got.push(m); k++; drawStaff();
-        if(k>=3){ got.forEach(x=>MFAudio.tone(x,1.0,.1,.32));
-          fb(true,`✓ ${R.name}, 1st inversion — the 3rd sits in the bass and the root rides on top.`);
-          r++; setTimeout(ask,1400); }
-        else q.innerHTML=`Now play <b>${R.letters[k]}</b> above the note you just played.`;
-      } else if(m%12===want){ MFAudio.tone(40,.2); fb(false,"Right letter, wrong direction — stack UPWARD from the bass."); }
-      else { MFAudio.tone(40,.2); fb(false,k===0? `The 3rd of ${R.name} goes in the bass. Spell the triad in 3rds first.` : "Check the spelling — 3rd, then 5th, then the root on top."); }
-    }});
   ask();
 }
 
-LESSON_CONTENT[51]={stackFigures:true,
-  welcome:"Welcome back! Today's magic trick: turning a chord upside down. \u{1F503}",
+LESSON_CONTENT[51]={
+  welcome:"Three chords rule every key: I, IV, and V — the primary triads. \u{1F451}",
   hook:{
-    say:"<b>Both of these are C major chords.</b> They use the same three notes, but in a different order. <b>Which one is in root position?</b>",
+    say:"Thousands of songs use just THREE chords. Listen to this classic progression. <b>How many different chords did you hear?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Chord A</button>
-          <button class="play hk-b">▶ Chord B</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Chord A — the root (C) is the lowest note</button><button>Chord B — E is the lowest note, so it is in root position</button></div>`;
+        container.innerHTML=`<div style="text-align:center"><button class="play hk-a">▶ The three-chord magic</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Three chords</button><button>One chord repeated</button><button>Seven chords</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ [60,64,67].forEach(m=>MFAudio.tone(m,1.1,0,.33)); hA=true; if(hB) setTimeout(()=>ch.style.display="",1400); };
-        container.querySelector(".hk-b").onclick=()=>{ [64,67,72].forEach(m=>MFAudio.tone(m,1.1,0,.33)); hB=true; if(hA) setTimeout(()=>ch.style.display="",1400); };
+        container.querySelector(".hk-a").onclick=()=>{
+          const CH=[[60,64,67],[65,69,72],[67,71,74],[60,64,67]];
+          CH.forEach((c,k)=>c.forEach(m=>MFAudio.tone(m,.7,k*.8,.35)));
+          setTimeout(()=>ch.style.display="",3600);
+        };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Chord A is in root position — C, the root, is the lowest note. Chord B is the same chord with E, the 3rd, as the lowest note. That arrangement is called an INVERSION — today's lesson!");
-          else fb(false,"Careful — E is the 3rd of C major, not the root. Play both again and listen for the lowest note.");
+          if(i===0) fb(true,"✓ C… F… G… C — three different triads (and home again). They're the PRIMARY TRIADS: I, IV, V — built on scale degrees 1, 4, and 5. Folk, rock, country, hymns: this trio runs them all.");
+          else fb(false,"Listen again — the harmony moves to a new place twice before coming home.");
         });
       } }
   },
   objectives:[
-    "Define inversion: rearranging chord tones so a new note is in the bass",
-    "Recognize 1st inversion: the 3rd is ALWAYS the bottom note",
-    "Flip a root-position triad by moving its root up an octave",
-    "Name the chord from its letters — the bass only names the POSITION",
-    "Tell close position from open position",
-    "Build 1st-inversion triads on the staff and keyboard"
+    "Identify the primary triads: degrees 1, 4, 5",
+    "Use Roman numerals I, IV, V",
+    "Name the primary triads of C major: C, F, G",
+    "Explain why they're MAJOR triads (root + M3 + P5)",
+    "Stack a major triad as M3 + m3",
+    "Know that I, IV, V contain every scale tone"
   ],
   steps:[
-    { say:"<b>Quick Review:</b> In <b>root position</b>, the notes are arranged <b>root–3rd–5th</b>, with the <b>root as the lowest note</b>. \u{1F447} <b>Which chord tone is the lowest note in root position?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[
-        {p:"C4",d:"w",label:"C major: C-E-G (root position)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:260} },
-      try:{ type:"mc", choices:["The root","The 3rd","The 5th"], answer:0,
-        success:"✓ Root on the bottom = root position. Triad knowledge confirmed!",
-        fail:"Root position literally puts its name-note at the base.",
-        hint:"The position is named after its bass note's job." } },
-    { say:"Move the <b>root</b> up one octave. The <b>3rd</b> becomes the lowest note, creating <b>1st INVERSION</b>. \u{1F447} <b>Try it — tap the root:</b>",
+    { say:"The most important triads of any key grow on scale degrees <b>1, 4, and 5</b> — the <b>PRIMARY TRIADS</b> (or primary chords), labeled with <b>ROMAN NUMERALS: I, IV, V</b>. \u{1F447} <b>The primary triads are built on which degrees?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",x:140,label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"F4",d:"w",x:310,label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",x:480,label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:580} },
+      try:{ type:"mc", choices:["1, 4, and 5","1, 2, and 3","1, 3, and 5"], answer:0,
+        success:"✓ Degrees 1, 4, 5 → chords I, IV, V. (1-3-5 spells one triad's INSIDES; 1-4-5 locates three different triads!)",
+        fail:"Careful — 1-3-5 is a triad's spelling, not the primary LOCATIONS.",
+        hint:"The Roman numerals say it: I, IV, V." } },
+    { say:"In the key of <b>C major</b>: the <b>I</b> chord is the <b>C triad</b> (C-E-G), the <b>IV</b> chord is the <b>F triad</b> (F-A-C), and the <b>V</b> chord is the <b>G triad</b> (G-B-D). \u{1F447} <b>In C major, the IV chord is…?</b>",
+      try:{ type:"mc", choices:["The F triad (F-A-C)","The G triad (G-B-D)","The D triad (D-F-A)"], answer:0,
+        success:"✓ Degree 4 of C major is F → IV = F-A-C.",
+        fail:"Count up from C: C(1) D(2) E(3) …(4).",
+        hint:"C-D-E-F: the 4th letter." } },
+    { say:"Find them on the keyboard. \u{1F447} <b>Press each primary chord's root and hear the triad ring:</b>",
       try:{ type:"custom",
-        hint:"The root is the BOTTOM note of the root-position stack.",
-        mount:(container,fb)=>MF_L51_flip(container,fb) } },
-    { say:"A Common Mistake: <b>E–G–C is still a C major chord, even though E is the lowest note.</b> \u{1F447} <b>Is this statement correct?</b>",
-      try:{ type:"mc", choices:["Yes. The root names the chord. The bass note shows the inversion.","No — the bass note names the chord, so it's an E chord","Only in open position"], answer:0,
-        success:"✓ Correct! The notes still spell C-E-G, so the chord is C major — in 1st inversion. The root names the chord; the bass note shows the inversion.",
-        fail:"Rearrange E-G-C into thirds: C-E-G. Whose chord is that?",
-        hint:"Rearrange the letters into thirds — the bottom of that stack is the root." } },
-    { say:"1st Inversion Rule: <b>The 3rd of the chord is the lowest note.</b> Here are <b>C, F, and G major triads</b> in <b>1st inversion</b>. \u{1F447} <b>Which chord tone is the lowest note in every 1st inversion triad?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[
-        {p:"E4",d:"w",label:"C: E-G-C"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"A4",d:"w",label:"F: A-C-F"},{p:"C5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"B4",d:"w",label:"G: B-D-G"},{p:"D5",d:"w",chord:true},{p:"G5",d:"w",chord:true}],width:480} },
-      try:{ type:"mc", choices:["The 3rd","The root","The 5th"], answer:0,
-        success:"✓ The 3rd is the lowest note in every 1st inversion triad. (The root moved to the TOP.)",
-        fail:"Look at the lowest note of each chord — is it the root, the 3rd, or the 5th?",
-        hint:"Root position: root-3rd-5th. Remove the root from the bottom — what's left down there?" } },
-    { say:"<b>Close vs. Open Position:</b> In <b>close position</b>, all chord tones fit within one octave. In <b>open position</b>, the chord tones are spread wider than one octave. Both root position and inversions can be either close or open. \u{1F447} <b>What does open position mean?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[
-        {p:"C4",d:"w",label:"close (root pos.)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"open (root pos.)"},{p:"G4",d:"w",chord:true},{p:"E5",d:"w",chord:true},
-        {p:"E4",d:"w",label:"close (1st inv.)"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"E4",d:"w",label:"open (1st inv.)"},{p:"C5",d:"w",chord:true},{p:"G5",d:"w",chord:true}],width:560} },
-      try:{ type:"mc", choices:["Chord tones spread wider than an octave","The root is on the bottom","The chord has four notes"], answer:0,
-        success:"✓ Same tones, more air between them. The INVERSION never changes with spacing — only the bass note matters.",
-        fail:"Open/close is about SPACING, not about which note is in the bass.",
-        hint:"Measure from the bottom note to the top note: inside one octave, or beyond it?" } },
-    { say:"<b>Identify the inversion.</b> Find the <b>lowest note</b> first, then name the chord position. \u{1F447}",
+        hint:"I = C, IV = F, V = G — degrees 1, 4, 5.",
+        mount:(container,fb)=>MF_L51_primary(container,fb) } },
+    { say:"Why do these three sound so bright? They are <b>MAJOR TRIADS</b>: each is a <b>root + MAJOR 3rd + PERFECT 5th</b> — your Unit 9 intervals at work! \u{1F447} <b>Check the major triad, one 3rd at a time:</b>",
       try:{ type:"custom",
-        hint:"Tap the bottom note, then ask: is it the root or the 3rd of the chord's spelling?",
-        mount:(container,fb)=>MF_L51_detect(container,fb) } },
-    { say:"Build these three chords in <b>1st inversion</b>. \u{1F447}",
-      try:{ type:"custom",
-        hint:"3rd on the bottom, 5th in the middle, root on top — stack upward.",
-        mount:(container,fb)=>MF_L51_build(container,fb) } },
-    { say:"<b>Final Check</b> \u{1F447} <b>Which of these is F major in 1st inversion?</b>",
-      try:{ type:"mc", choices:["A-C-F","F-A-C","C-F-A"], answer:0,
-        success:"✓ A (the 3rd) in the bass, root F on top. You're officially inverting!",
-        fail:"F major spells F-A-C. Put its 3rd — A — on the bottom.",
-        hint:"1st inversion = 3rd in the bass." } }
+        hint:"C→E = 4 half steps; E→G = 3; C→G = 7.",
+        mount:(container,fb)=>MF_L51_xray(container,fb) } },
+    { say:"The second recipe: a major triad is also a <b>minor 3rd stacked on TOP of a Major 3rd</b>. M3 as the lower 3rd, m3 as the upper 3rd — 4 + 3 = 7 half steps, a perfect 5th from root to top. \u{1F447} <b>Which stack builds a MAJOR triad?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:60,notes:[
+        {p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],
+        brackets:[{from:0,to:1,label:"M3 below"},{from:1,to:2,label:"m3 on top"}],width:240},
+        kb:{start:60,octaves:1,labels:true,marks:[60,64,67]} },
+      try:{ type:"mc", choices:["Major 3rd on the bottom, minor 3rd on top","Minor 3rd on the bottom, Major 3rd on top","Two Major 3rds"], answer:0,
+        success:"✓ M3 + m3, in that order. (Flip the two 3rds and you get a MINOR triad — a story for Lesson 58!)",
+        fail:"Which 3rd was 4 half steps? Lower or upper?",
+        hint:"C→E (4), then E→G (3)." } },
+    { say:"One more remarkable fact: <b>the three primary triads together contain EVERY tone of the major scale.</b> C-E-G + F-A-C + G-B-D = C, D, E, F, G, A, B — the whole scale! That's why three chords can harmonize practically any melody. \u{1F447} <b>Which scale tone is missing from I, IV, and V combined?</b>",
+      try:{ type:"mc", choices:["None — all seven tones are covered","D — no chord contains it","B — no chord contains it"], answer:0,
+        success:"✓ All seven! (D lives in V, B lives in V, A lives in IV…) One trio, complete coverage — the secret of three-chord songs.",
+        fail:"Check V (G-B-D) and IV (F-A-C) again…",
+        hint:"List the nine chord tones and cross off duplicates." } }
   ],
   examples:[
-    { caption:"The flip in slow motion: C major in root position, then in 1st inversion. Watch the keyboard — the same three letters light up, just re-stacked.",
-      staff:{clef:"treble",tempo:60,notes:[
-        {p:"C4",d:"w",label:"root position"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"1st inversion"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:420},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"WHY musicians flip chords: listen to the BASS. With G major in 1st inversion in the middle, the bass line walks C → B → C.",
-      staff:{clef:"treble",tempo:70,notes:[
-        {p:"C4",d:"w",label:"C"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"B3",d:"w",label:"G (1st inv.)"},{p:"D4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"C"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:460},
-      kb:{start:59,octaves:1,labels:true} }
+    { caption:"The primary triads of C major with their Roman numerals — I, IV, V, and home to I. The classic cadence of countless songs.",
+      staff:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:600},
+      kb:{start:60,octaves:1.3333,labels:true} },
+    { caption:"Anatomy of the major triad: Major 3rd below + minor 3rd above = a Perfect 5th from root to top.",
+      staff:{clef:"bass",tempo:60,notes:[
+        {p:"C3",d:"w"},{p:"E3",d:"w",chord:true},{p:"G3",d:"w",chord:true}],
+        brackets:[{from:0,to:1,label:"Major 3rd — 4 half steps"},{from:1,to:2,label:"minor 3rd — 3"}],width:340} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Position Sprint (45s)",
-      intro:"Root position or 1st inversion? Read the BASS note and answer at speed!",
-      miaIntro:"Bass note first — always! \u{1F50D}",
-      spec:{gen:"inversion-id", params:{subject:"triad", ask:"position"}, seconds:45},
-      result:(score)=>score>=8?score+" chords placed — inversion eyes unlocked!":null },
-    { type:"key-climb", title:"Game 2 · 1st-Inversion Ladder",
-      intro:"Climb C, F and G major — each one in 1st inversion, 3rd-5th-root!",
-      miaIntro:"Nine keys to the top! \u{1FA9C}",
-      spec:{seq:[64,67,72, 69,72,77, 71,74,79],
-        names:["E (3rd of C)","G (5th)","C (root on top)","A (3rd of F)","C (5th)","F (root on top)","B (3rd of G)","D (5th)","G (root on top)"],
-        start:60, octaves:2, title:"C → F → G major, all in 1st inversion"},
-      result:(score)=>score!==null?"Three 1st inversions under your fingers!":null },
-    { type:"symbol-hunt", title:"Game 3 · Position Spotter",
-      intro:"Four chord cards — click the one each round calls for!",
-      miaIntro:"Watch the bottom of every stack! \u{1F440}",
+    { type:"gen-race", title:"Game 1 · Roman Numeral Sprint (45s)",
+      intro:"Triads flash — name their Roman numerals in C major!",
+      miaIntro:"I, IV, V — read like a Roman! \u{1F3DB}",
+      spec:{gen:"triad-id", params:{ask:"numeral"}, seconds:45},
+      result:(score)=>score>=8?score+" numerals — senate-approved!":null },
+    { type:"key-climb", title:"Game 2 · Primary Path",
+      intro:"Walk the primary roots: C → F → G → C, in order, fast!",
+      miaIntro:"Degrees 1-4-5 and home! \u{1F3E0}",
+      spec:{seq:[60,65,67,72], names:["C (I)","F (IV)","G (V)","C (I)"], start:60, octaves:1,
+        title:"Press C → F → G → C: the primary chord roots"},
+      result:(score)=>score!==null?"The three-chord walk is yours!":null },
+    { type:"symbol-hunt", title:"Game 3 · Primary Hunt",
+      intro:"Three primaries and one impostor — click what the round asks!",
+      miaIntro:"Spot I, IV, V by sight! \u{1F50D}",
       spec:{rounds:6, pool:[
-        {label:"Root position (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"1st inversion (E-G-C)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
-        {label:"Root position (F-A-C)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
-        {label:"1st inversion (A-C-F)", spec:{clef:"treble",notes:[{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"No inversion sneaks past you!":null },
-    { type:"term-race", title:"Game 4 · Inversion Vocabulary Race",
-      intro:"All of today's words — match them fast!",
-      miaIntro:"Vocabulary victory lap! \u{1F3C1}",
+        {label:"I (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"IV (F-A-C)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
+        {label:"V (G-B-D)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
+        {label:"ii (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"Primary radar: flawless!":null },
+    { type:"term-race", title:"Game 4 · Primary Vocabulary Race",
+      intro:"Primary, Roman numerals, M3+P5 — race the chord words!",
+      miaIntro:"Crown the vocabulary! \u{1F451}",
       spec:{rounds:8, reverse:true, pool:[
-        ["Inversion","rearranging a chord so a new tone is the bass"],
-        ["Root position","the root is the lowest note"],
-        ["1st inversion","the 3rd is the lowest note"],
-        ["Close position","chord tones within one octave"],
-        ["Open position","chord tones spread wider than an octave"],
-        ["Bass note","the lowest note — it decides the position"],
-        ["E-G-C","C major in 1st inversion"],
-        ["The chord's name","comes from the ROOT, never the bass"]]},
-      result:(score)=>score>=6?"Word-perfect on inversions!":null }
+        ["Primary triads","the triads on scale degrees 1, 4, and 5"],
+        ["I chord in C major","the C triad (C-E-G)"],
+        ["IV chord in C major","the F triad (F-A-C)"],
+        ["V chord in C major","the G triad (G-B-D)"],
+        ["Major triad","root + Major 3rd + Perfect 5th"],
+        ["I + IV + V together","contain every tone of the major scale"]]},
+      result:(score)=>score>=7?"Primary vocabulary: crowned!":null }
   ],
-  practiceIntro:"20 practice questions — flips, bass notes, spellings and spacing. Answer right and the next appears automatically!",
+  practiceIntro:"19 practice questions — numerals, spellings, recipes and the every-tone fact. Answer right and the next appears automatically!",
   practice:[
-    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:6 },
-    { gen:"term-match", params:{subject:"term", pool:[["Inversion","a new chord tone in the bass"],["1st inversion","3rd on the bottom"],["Root position","root on the bottom"],["Close position","within one octave"],["Open position","wider than an octave"]], reverse:true}, count:4 },
-    { type:"mc", q:"To create a 1st inversion from root position, move the ____ up one octave.", choices:["root","3rd","5th"], answer:0,
-      explain:"C-E-G → E-G-C: the root goes to the top." },
-    { type:"mc", q:"E-G-C is which chord, in which position?", choices:["C major, 1st inversion","E major, root position","C major, root position"], answer:0,
-      explain:"Rearranged into thirds: C-E-G. C major — with its 3rd (E) in the bass." },
-    { type:"mc", q:"In 1st inversion, the root sits…", choices:["on top","in the bass","in the middle"], answer:0,
-      explain:"It moved up an octave — from the bottom to the top." },
-    { type:"mc", q:"G major (G-B-D) in 1st inversion is spelled…", choices:["B-D-G","D-G-B","G-D-B"], answer:0,
-      explain:"3rd (B) in the bass, then 5th, then root." },
-    { type:"mc", q:"A chord whose tones span MORE than an octave is in…", choices:["open position","close position","2nd inversion"], answer:0,
-      explain:"Spacing wider than an octave = open. Spacing never changes the inversion." },
-    { type:"mc", q:"Which note determines the inversion of a chord?", choices:["the lowest (bass) note","the highest note","the loudest note"], answer:0,
-      explain:"Bass = position. Root = name." },
-    { type:"truefalse", q:"Inverting a chord changes its name.", answer:false,
-      explain:"Same letters, same chord — only the arrangement changes." },
-    { type:"truefalse", q:"A 1st-inversion triad always has the 3rd in the bass.", answer:true,
-      explain:"That IS the definition of 1st inversion." },
-    { type:"truefalse", q:"Close position means all chord tones fit within one octave.", answer:true,
-      explain:"Within an octave = close voicing; wider = open voicing." },
-    { type:"truefalse", q:"An open-position chord can still be in 1st inversion.", answer:true,
-      explain:"Spacing and inversion are independent — check the bass note." }
+    { gen:"triad-id", params:{ask:"numeral"}, count:5 },
+    { gen:"triad-id", params:{}, count:3 },
+    { gen:"term-match", params:{subject:"term", pool:[["Primary triads","built on degrees 1, 4, and 5"],["I in C major","C-E-G"],["IV in C major","F-A-C"],["V in C major","G-B-D"],["Major triad","root + M3 + P5"]], reverse:true}, count:3 },
+    { type:"mc", q:"The primary triads are identified by the Roman numerals…", choices:["I, IV, V","i, ii, iii","I, III, V"], answer:0,
+      explain:"Degrees 1, 4, 5." },
+    { type:"mc", q:"In C major, the V chord is spelled…", choices:["G-B-D","G-A-B","F-A-C"], answer:0,
+      explain:"Triad on degree 5: G-B-D." },
+    { type:"mc", q:"A major triad consists of a root, a…", choices:["Major 3rd and a Perfect 5th","minor 3rd and a Perfect 5th","Major 3rd and a Major 5th"], answer:0,
+      explain:"M3 + P5 — the Unit 9 intervals!" },
+    { type:"mc", q:"Stacked as two 3rds, a major triad is…", choices:["M3 on the bottom, m3 on top","m3 on the bottom, M3 on top","two M3s"], answer:0,
+      explain:"4 + 3 half steps." },
+    { type:"truefalse", q:"The three primary triads contain every tone of the major scale.", answer:true,
+      explain:"C-E-G + F-A-C + G-B-D = all seven letters." },
+    { type:"truefalse", q:"The primary triads are built on scale degrees 1, 3, and 5.", answer:false,
+      explain:"1, 4, and 5 — don't confuse locations with spelling!" },
+    { type:"mc", q:"Why are the primary triads called MAJOR triads?", choices:["Each has a root, Major 3rd, and Perfect 5th","They are the loudest","They only use white keys"], answer:0,
+      explain:"The quality comes from the intervals." },
+    { type:"mc", q:"Which primary chord contains the note B (in C major)?", choices:["V (G-B-D)","I (C-E-G)","IV (F-A-C)"], answer:0,
+      explain:"B is the 3rd of the G triad." }
   ],
-  miaQuizIntro:"Quiz time! Read every chord from the BOTTOM up — bass first, name second.",
+  miaQuizIntro:"Crowns on: I, IV, V — rule the final quiz!",
   quiz:[
-    { type:"mc", q:"What is an inversion?", choices:["Rearranging chord tones so a different note is in the bass","Adding another note to a chord","Playing the chord louder","Changing the key"], answer:0,
-      explain:"Same notes, new bass — the chord's identity survives.", hint:"In-VERT = turn over." },
-    { type:"mc", q:"Which chord tone is the LOWEST note of a 1st-inversion triad?", choices:["The 3rd","The root","The 5th","The 7th"], answer:0,
-      explain:"3rd in the bass = 1st inversion, always.", hint:"The root left the bottom — who moved in?" },
-    { type:"mc", q:"Which of these is the 1st inversion of C major?", choices:["E-G-C","C-E-G","G-C-E","C-G-E"], answer:0,
-      explain:"Root C moved to the top; 3rd E takes the bass.", hint:"3rd on the bottom." },
-    { type:"truefalse", q:"Changing the inversion changes the name of the chord.", answer:false,
-      explain:"The letters stay C-E-G, so the chord stays C major.", hint:"Family photo: same family, new arrangement." },
-    { type:"truefalse", q:"A 1st-inversion triad always has the 3rd in the bass.", answer:true,
-      explain:"That's the rule to carry into every later lesson.", hint:"It's the definition itself." },
-    { type:"mc", q:"In CLOSE position, the notes of a chord are spaced…", choices:["within one octave","wider than an octave","exactly two octaves apart"], answer:0,
-      explain:"Close = packed inside an octave; open = spread beyond it.", hint:"\u{201C}Close\u{201D} as in close together." },
-    { type:"mc", q:"Moving the ROOT of a root-position triad up one octave creates…", choices:["the 1st inversion","the 2nd inversion","an entirely new chord"], answer:0,
-      explain:"One flip = 1st inversion. (The next flip comes in Lesson 52!)", hint:"Count the flips." },
-    { type:"mc", q:"Name this chord and its position.",
-      staff:{clef:"treble",notes:[{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:200},
-      choices:["F major, 1st inversion","A minor, root position","F major, root position"], answer:0,
-      explain:"Rearrange into thirds: F-A-C. The bass A is the 3rd → 1st inversion.", hint:"Rearrange the letters into thirds first." },
-    { type:"mc", q:"Name this chord and its position.",
-      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:200},
-      choices:["G major, root position","G major, 1st inversion","D major, 2nd inversion"], answer:0,
-      explain:"Bass G IS the root: G-B-D, root position.", hint:"Is the bass the root or the 3rd?" },
-    { type:"mc", q:"A student says, \u{201C}E–G–C must be an E chord — E is on the bottom.\u{201D} Why is the student incorrect?", choices:["The bass names the POSITION, not the chord — it's C major in 1st inversion","Nothing — the student is right","E-G-C is actually G major"], answer:0,
-      explain:"Rearranged into thirds it spells C-E-G. Bass note = position; root = name.", hint:"Rearrange the notes into thirds before naming the chord." },
-    { type:"mc", q:"Which statement is correct?", choices:["A 1st-inversion triad has the 3rd as its lowest note","Inversions change the identity of a chord","Open position means the root is always on the bottom","Close position means the chord has four notes"], answer:0,
-      explain:"The other three all confuse spacing, naming or position rules.", hint:"One of these is today's core rule, word for word." },
-    { type:"mc", q:"Why do musicians use 1st inversion chords?", choices:["It makes the bass line move more smoothly","It makes the chord louder","It adds a 4th note to the triad"], answer:0,
-      explain:"C → B → C in the bass instead of C → G → C leaps: smoother, more connected harmony.", hint:"Listen to what the BASS did in the second example." },
+    { type:"mc", q:"The primary triads of a key are built on scale degrees…", choices:["1, 4, and 5","1, 2, and 3","1, 3, and 5","5, 6, and 7"], answer:0,
+      explain:"The 1-4-5 backbone.", hint:"Roman numerals I, IV, V." },
+    { type:"mc", q:"In C major, the I chord is…", choices:["C-E-G","C-D-E","C-F-G","C-E-A"], answer:0,
+      explain:"The triad on degree 1.", hint:"Root C, every other letter." },
+    { type:"mc", q:"In C major, the IV chord is…", choices:["F-A-C","F-G-A","G-B-D","D-F-A"], answer:0,
+      explain:"The triad on degree 4 = F.", hint:"Count to the 4th letter." },
+    { type:"mc", q:"In C major, the V chord is…", choices:["G-B-D","G-A-B","F-A-C","A-C-E"], answer:0,
+      explain:"The triad on degree 5 = G.", hint:"The 5th letter up." },
+    { type:"truefalse", q:"Primary triads are major triads.", answer:true,
+      explain:"Root + M3 + P5 each time.", hint:"Why they sound bright." },
+    { type:"truefalse", q:"The I, IV, and V chords together contain every tone of the major scale.", answer:true,
+      explain:"All seven letters covered — the three-chord-song secret.", hint:"Cross off the nine chord tones." },
+    { type:"mc", q:"A major triad = root + …", choices:["Major 3rd + Perfect 5th","minor 3rd + Perfect 5th","Major 3rd + Major 5th","Perfect 3rd + Perfect 5th"], answer:0,
+      explain:"Two impossible interval names hide in the wrong answers!", hint:"Unit 9: no P3, no M5." },
+    { type:"mc", q:"As stacked 3rds, the major triad is…", choices:["Major 3rd below, minor 3rd above","minor 3rd below, Major 3rd above","two minor 3rds"], answer:0,
+      explain:"4 + 3 = a perfect 5th.", hint:"Large 3rd below, small 3rd above." },
+    { type:"mc", q:"Name this chord's Roman numeral (key of C).",
+      staff:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:200},
+      choices:["IV","I","V"], answer:0,
+      explain:"Root F = degree 4 → IV.", hint:"Bottom note, then count from C." },
+    { type:"mc", q:"Name this chord's Roman numeral (key of C).",
+      staff:{clef:"bass",notes:[{p:"G2",d:"w"},{p:"B2",d:"w",chord:true},{p:"D3",d:"w",chord:true}],width:200},
+      choices:["V","IV","I"], answer:0,
+      explain:"Root G = degree 5 → V.", hint:"Same rule in bass clef." },
+    { type:"mc", q:"Roman numerals in chord labels represent…", choices:["the scale degree of the chord's root","how loud to play","the number of notes"], answer:0,
+      explain:"I = degree 1's chord, IV = degree 4's, V = degree 5's.", hint:"Numbers in disguise." },
+    { type:"mc", q:"Why can three-chord songs harmonize entire melodies?", choices:["I, IV, V contain every scale tone","Melodies avoid most notes","Chords change the melody's notes"], answer:0,
+      explain:"Every melody note has a primary chord home.", hint:"The remarkable fact." },
     /* generated */
-    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:4 },
-    { gen:"term-match", params:{subject:"term", pool:[["1st inversion","the 3rd is the lowest note"],["Root position","the root is the lowest note"],["Open position","tones spread wider than an octave"],["Close position","tones within one octave"]], reverse:true}, count:2 },
-    { gen:"triad-id", params:{ask:"root"}, count:2 }
+    { gen:"triad-id", params:{ask:"numeral"}, count:4 },
+    { gen:"triad-id", params:{}, count:2 },
+    { gen:"term-match", params:{subject:"term", pool:[["Primary triads","degrees 1, 4, and 5"],["Major triad","root + M3 + P5"],["IV in C major","F-A-C"],["V in C major","G-B-D"]], reverse:true}, count:2 }
   ],
   vocabulary:[
-    {term:"Inversion", def:"Rearranging the notes of a chord so that a tone other than the root is the lowest note. The chord keeps its name."},
-    {term:"Root Position", def:"The root is the lowest note.",
+    {term:"Primary Triads (Primary Chords)", def:"The most important triads of a key, built on scale degrees 1, 4, and 5 — identified by the Roman numerals I, IV, and V. Together they contain every tone of the major scale.",
       staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:130}},
-    {term:"1st Inversion", def:"The 3rd is the lowest note — made by moving the root up an octave.",
-      staff:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:130}},
-    {term:"Close Position", def:"All chord tones fit within one octave.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:130}},
-    {term:"Open Position", def:"Chord tones are spread wider than one octave.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"G4",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:130}}
+    {term:"Major Triad", def:"A triad made of a root, a Major 3rd, and a Perfect 5th — equivalently, a minor 3rd stacked on top of a Major 3rd."},
+    {term:"Roman Numerals (I, IV, V)", def:"Labels showing the scale degree a chord is built on — capital numerals for major chords."},
+    {term:"I, IV, V in C major", def:"C triad (C-E-G), F triad (F-A-C), G triad (G-B-D)."}
   ],
   mistakes:[],
   summary:[
-    "✔ An <b>inversion</b> rearranges a chord's tones so a new note is in the bass — <b>the name never changes</b>.",
-    "✔ <b>1st inversion = the 3rd is the bottom note</b> (the root moved up an octave: C-E-G → E-G-C).",
-    "✔ The <b>root names the chord</b>; the <b>bass names the position</b>.",
-    "✔ <b>Close position</b> fits inside one octave; <b>open position</b> spreads wider — either way, the bass still decides the inversion.",
-    "✔ 1st inversions make <b>smoother bass lines</b> — you heard C-B-C in the example."
+    "✔ <b>Primary triads</b> live on degrees <b>1, 4, 5</b> → Roman numerals <b>I, IV, V</b>.",
+    "✔ In C major: <b>I = C-E-G · IV = F-A-C · V = G-B-D</b>.",
+    "✔ Each is a <b>MAJOR triad</b>: root + Major 3rd + Perfect 5th (= M3 with m3 stacked on top).",
+    "✔ I + IV + V contain <b>every tone of the scale</b> — three chords can harmonize nearly anything.",
+    "✔ Location vs spelling: chords SIT on 1-4-5 but are each SPELLED 1-3-5 from their own root."
   ],
   tips:[
-    "Reading trick: a root-position triad stacks evenly (all lines or all spaces). A 1st inversion has a GAP above — the top two notes sit a 4th apart with the root on top.",
-    "At the piano, flip any triad you know: play C-E-G, then move just your thumb note up an octave. One finger moves; the whole sound changes.",
-    "In Lesson 52 the chord flips AGAIN — guess which note will be in the bass next!",
-    "Composers love 1st inversions for walking bass lines: I → V⁶ → I gives the bass do-ti-do."
+    "Grab a guitar-playing friend: C, F, G are literally their first three chords — now you know why.",
+    "Drill the three spellings until instant: C-E-G! F-A-C! G-B-D!",
+    "Hearing check: I feels like home, IV like a step away, V like it's leaning back toward home.",
+    "Next lesson names every scale degree — tonic, dominant, and friends — and L50 crowns V with a 7th."
   ],
-  rewards:{ badge:"Chord Flipper", icon:"\u{1F503}" },
+  rewards:{ badge:"Primary Ruler", icon:"\u{1F451}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A PERFECT score on your very first inversion lesson — what a way to start! \u{1F503}\u{1F389}",
-  miaPass:"Passed! The 3rd-in-the-bass rule is yours. Lesson 52 flips the chord one more time…",
+  miaPerfect:"A perfect score — I, IV, V salute their ruler! \u{1F451}\u{1F389}",
+  miaPass:"Passed! Keep the three spellings on your tongue: C-E-G, F-A-C, G-B-D.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Chord A was C-E-G (root position). Chord B rearranged the same notes as E-G-C — 1st inversion, with the 3rd as the lowest note.",
-      play:()=>{[60,64,67].forEach(m=>MFAudio.tone(m,.9,0,.33));[64,67,72].forEach(m=>MFAudio.tone(m,1.1,1.1,.33));} },
-    learn:{ label:"1st inversion",
-      explain:"Move the root up an octave and the 3rd becomes the bass: that's 1st inversion. Letters unchanged → name unchanged. Close = within an octave, open = wider.",
-      hint:"Bass note = position. Root = name.",
-      play:()=>{[64,67,72].forEach(m=>MFAudio.tone(m,1,.1,.33));} },
+      explain:"You heard C (I) → F (IV) → G (V) → C (I): the primary triads of C major — the three-chord engine of popular music.",
+      play:()=>{[[60,64,67],[65,69,72],[67,71,74],[60,64,67]].forEach((c,k)=>c.forEach(m=>MFAudio.tone(m,.6,k*.7,.35)));} },
+    learn:{ label:"primary & major triads",
+      explain:"Degrees 1, 4, 5 → I, IV, V. In C: C-E-G, F-A-C, G-B-D. Each is major (root + M3 + P5 = M3 + m3 stacked), and together they hold every scale tone.",
+      hint:"Location 1-4-5; spelling 1-3-5.",
+      play:()=>{[60,64,67].forEach(m=>MFAudio.tone(m,.8,0,.38));} },
     example:{ label:"the examples",
-      explain:"Example 1 flips C major in slow motion; example 2 shows the payoff — a bass line that walks C-B-C using a 1st-inversion G chord." },
+      explain:"Example 1 plays the I-IV-V-I progression with numerals; example 2 breaks the major triad into its lower and upper 3rds." },
     game:{ label:"the games",
-      explain:"Sprint positions, climb three 1st inversions, spot them on cards, then race the vocabulary.",
-      hint:"Always find the BASS note first." },
+      explain:"Sprint the numerals, walk the primary path, hunt I-IV-V by sight, then race the vocabulary.",
+      hint:"Root → degree → numeral, in that order." },
     quiz:{ label:"this question",
-      explain:"Every question reduces to two moves: rearrange the letters into thirds to NAME the chord, then look at the bass to name the POSITION.",
-      play:()=>{[60,64,67].forEach(m=>MFAudio.tone(m,.8,0,.33));[64,67,72].forEach(m=>MFAudio.tone(m,1,1,.33));} }
+      explain:"Anchor facts: primaries sit on 1-4-5; in C they're C/F/G; each is root+M3+P5; together = the whole scale.",
+      play:()=>{[65,69,72].forEach(m=>MFAudio.tone(m,.7,0,.38));} }
   }
 };

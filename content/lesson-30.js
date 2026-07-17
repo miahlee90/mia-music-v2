@@ -1,4 +1,4 @@
-/* Lesson 30 — Key Signatures: The Flat Keys (AEMT Book 2, Unit 7)
+/* Lesson 30 (4.5) — Key Signatures: The Flat Keys (AEMT Book 2, Unit 7)
    Built from drafts/UNIT 7 – Lesson 30.md; AEMT p.47 verified by render.
    Uses staff.js v7 keysig rendering (spec.keysig, .ksgroup).
    QA note honored: flat order = REVERSE of sharp order; repeated practice of the

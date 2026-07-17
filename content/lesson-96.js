@@ -1,245 +1,268 @@
-/* Lesson 96 — Nonharmonic Tones Expanded (Book 4, Unit 24 — SELF-AUTHORED)
-   L66's passing/neighbor tones = ONE review step. New: SUSPENSION (4-3, 7-6,
-   9-8: preparation-suspension-resolution), APPOGGIATURA (leap in, step out),
-   ESCAPE TONE (step in, leap out), ANTICIPATION (melodic — early arrival of
-   the NEXT chord's tone; distinct from L78's rhythmic anticipation),
-   PEDAL POINT (held bass under changing harmony), RETARDATION (upward
-   suspension). NOTE: edit by FULL-FILE REWRITE only. */
+/* Lesson 96 (14.7, formerly L75) — Rondo Form (AEMT Book 3, Unit 18)
+   Built from drafts/UNIT 18 – Lesson 75.md; AEMT3 p.117 verified by render.
+   Core: a RONDO consists of an A section ALTERNATING with other contrasting
+   sections (EPISODES); A is the RECURRING section. Most common types: ABABA,
+   ABACA, ABACABA. "La Raspa" is the book's rondo example (ABACA).
+   NOTE: edit by FULL-FILE REWRITE only. */
+
+/* rondo tracker: label five sections as they play — A B A C A */
+function MF_L96_track(container,fb){
+  const SEC={
+    A:{notes:[67,67,64,67,67,72], durs:[.3,.3,.3,.3,.3,.75]},
+    B:{notes:[69,71,72,71,69,64], durs:[.3,.3,.3,.3,.3,.75]},
+    C:{notes:[65,69,72,69,65,60], durs:[.3,.3,.3,.3,.3,.75]}};
+  const ORDER=["A","B","A","C","A"];
+  let k=0, played=false; const picked=[];
+  container.innerHTML=`<div class="big-q l75t-q" style="text-align:center">Five sections play one at a time. Track the form — A, B or C?</div>
+    <div class="l75t-map" style="text-align:center;font-weight:800;font-size:18px;letter-spacing:6px;margin:6px 0">· · · · ·</div>
+    <div style="text-align:center"><button class="play l75t-play">▶ Play section 1</button></div>
+    <div class="choices chips l75t-ch" style="display:none"><button>A</button><button>B</button><button>C</button></div>`;
+  const q=container.querySelector(".l75t-q"), map=container.querySelector(".l75t-map"), pl=container.querySelector(".l75t-play"), ch=container.querySelector(".l75t-ch");
+  function drawMap(){ map.textContent=[0,1,2,3,4].map(i=>i<picked.length?picked[i]:"?").join(" "); }
+  function play(name){ const S=SEC[name]; let t=0; S.notes.forEach((m,i)=>{ MFAudio.tone(m,S.durs[i]*.95,t,.42); t+=S.durs[i]; }); return t; }
+  pl.onclick=()=>{ if(k>=5) return; play(ORDER[k]); played=true; setTimeout(()=>ch.style.display="",2600); };
+  [...ch.children].forEach((b)=>b.onclick=()=>{
+    if(!played||k>=5) return;
+    if(b.textContent===ORDER[k]){ MFAudio.yay();
+      picked.push(b.textContent); drawMap(); k++; played=false; ch.style.display="none";
+      if(k<5){ fb(true, ORDER[k-1]==="A"? `✓ ${k===1?"The main theme — A.":"Great! A returned again."}` : `✓ Excellent! That's the ${ORDER[k-1]} section — new material.`);
+        pl.textContent=`▶ Play section ${k+1}`; }
+      else { pl.style.display="none";
+        fb(true,"✓ A · B · A · C · A — a RONDO! The A section alternated with two different contrasting sections and kept returning — the pattern of 'La Raspa.'");
+        q.textContent="ABACA — the rondo is complete. \u{1F3A1}"; }
+    } else { MFAudio.tone(40,.2); fb(false, "Listen for a NEW section — is it the main theme (A), the first contrast (B), or the newest one (C)?"); }
+  });
+  drawMap();
+}
 
 LESSON_CONTENT[96]={
-  welcome:"Nonchord tones are identified by how they enter, how they leave, where they sit in the harmony, and how they resolve.",
+  welcome:"The rondo: one main theme that keeps returning. \u{1F3A1}",
   hook:{
-    say:"<b>Listen to the upper note as the harmony changes beneath it.</b> The note is sustained into the new chord and then resolves downward by step. \u{1F447} <b>How does the dissonance resolve?</b>",
+    say:"<b>Listen carefully.</b> One melody keeps coming back between new musical ideas. \u{1F447} <b>How many times do you hear the main theme?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play the suspension</button></div>
-          <div class="choices hk-ch" style="display:none"><button>The sustained note moves down by step to a chord tone</button><button>The harmony changes again without resolution</button><button>The sustained note leaps up an octave</button></div>`;
+          <button class="play hk-a">▶ Play the whole piece</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Three times — with two new sections between</button><button>Once at the start only</button><button>Never — every section was new</button></div>`;
+        const A=[67,67,64,67,67,72], B=[69,71,72,71,69,64], C=[65,69,72,69,65,60];
         const ch=container.querySelector(".hk-ch");
         container.querySelector(".hk-a").onclick=()=>{
-          [53,57,60].forEach(m=>MFAudio.tone(m,1.0,.05,.25)); MFAudio.tone(72,1.0,.05,.4);   /* F chord, C on top */
-          [55,59,62].forEach(m=>MFAudio.tone(m,1.0,1.15,.25)); MFAudio.tone(72,.7,1.15,.4);  /* G chord, C held = 4-3 sus */
-          MFAudio.tone(71,1.1,1.9,.42);                                                      /* resolves to B */
-          setTimeout(()=>ch.style.display="",3300);
+          let t=0;
+          [A,B,A,C,A].forEach(S=>{ S.forEach(m=>{ MFAudio.tone(m,.28,t,.42); t+=.3; }); t+=.35; });
+          setTimeout(()=>ch.style.display="",t*1000+400);
         };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. C is prepared as a chord tone, sustained over the change to a G chord, and then resolved downward by step to B. This three-stage process creates a suspension.");
-          else fb(false,"Follow the upper note: it is prepared, sustained into the new harmony, and then resolved downward by step.");
+          if(i===0) fb(true,"✓ A…B…A…C…A — the main theme returned THREE times, alternating with contrasting sections. That design is the RONDO — today's lesson!");
+          else fb(false,"Listen again and count how often the FIRST tune returns…");
         });
       } }
   },
   objectives:[
-    "Review passing and neighboring tones",
-    "Identify common nonchord tones",
-    "Understand suspensions and retardations",
-    "Distinguish appoggiaturas from escape tones",
-    "Recognize anticipation and pedal point",
-    "Identify nonchord tones by approach and resolution"
+    "Define rondo: an A section ALTERNATING with contrasting sections",
+    "Know A's role: the RECURRING section",
+    "Name the common types: ABABA, ABACA, ABACABA",
+    "Track a rondo by ear, section by section",
+    "Compare all four forms: AB, ABA, rondo — and the phrase/motive roots",
+    "Understand why the returning A creates balance"
   ],
   steps:[
-    { say:"<b>Review — one system for every nonchord tone:</b> a nonchord tone does not belong to the chord sounding at that moment. You identify each one by <b>how it enters, how it leaves, where it sits in the meter, and how it resolves</b>. Quick reminder: a <b>passing tone</b> steps → steps (onward); a <b>neighbor tone</b> steps away → steps back. \u{1F447} <b>Which information is most useful for identifying a nonchord tone?</b>",
-      try:{ type:"mc", choices:["Its approach, departure, metric placement, and harmonic context","Only its dynamic level","Only its octave"], answer:0,
-        success:"✓ Correct. Approach and departure are important, but metric placement and harmonic context may also determine the classification.",
-        fail:"Examine how the note enters, how it leaves, and which harmonies surround it.",
-        hint:"Approach + departure + harmonic context." } },
-    { say:"<b>Suspension — three stages:</b> <b>preparation</b> (a chord tone in chord 1), <b>suspension</b> (the same pitch holds as chord 2 arrives, now dissonant), <b>resolution</b> (it steps <b>down</b> to a chord tone). Most suspensions resolve <b>downward by step</b>. Common figures — <b>4–3, 7–6, 9–8</b> — are measured above the <b>bass</b>. Example: <b>F</b>, the 7th of <b>G7</b>, is prepared, held as the <b>4th over C</b> in <b>Csus4</b>, then resolves down to <b>E</b>, the 3rd. \u{1F447} <b>In its standard form, how does a suspension resolve?</b>",
-      show:{ type:"staff", spec:{clef:"grand",tempo:66,notes:[
-        {p:"G2",d:"w",clef:"bass",label:"G7 — prep"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"C3",d:"w",clef:"bass",label:"Csus4 — sus 4"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"C3",d:"w",clef:"bass",label:"C — res 3"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:560} },
-      try:{ type:"mc", choices:["Downward by step to a chord tone","Upward by octave","By remaining unresolved"], answer:0,
-        success:"✓ Correct. A standard suspension resolves downward by step, as in 4-3, 7-6, or 9-8.",
-        fail:"Observe the direction and size of the resolution.",
-        hint:"A standard suspension resolves downward by step." } },
-    { say:"<b>Retardation:</b> unlike a suspension, a retardation resolves <b>upward by step</b>. The preparation and the held dissonance are the same — only the resolution direction differs. The most common example is <b>7–8</b>: scale degree 7 rising to 1 at a cadence. \u{1F447} <b>How does a retardation differ from a standard suspension?</b>",
-      try:{ type:"mc", choices:["It resolves upward by step","It never resolves","It has no preparation"], answer:0,
-        success:"✓ Correct. Both tones are prepared and sustained, but a retardation resolves upward rather than downward.",
-        fail:"The resolution is delayed and then moves upward by step.",
-        hint:"Prepared → sustained → resolved upward." } },
-    { say:"<b>Appoggiatura and Escape Tone — mirror images:</b> an <b>appoggiatura</b> leaps in and steps out, usually <b>accented</b> and expressive. An <b>escape tone</b> steps in and leaps out, usually <b>unaccented</b>. \u{1F447} <b>A prominent nonchord tone is approached by leap and resolved by step. What is it?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:300px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Tone</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Enters by</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Leaves by</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;color:#2F6DA8">Passing</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">step</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">step (onward)</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;color:#2F6DA8">Neighbor</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">step</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">step (back)</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;color:#C05A21">Appoggiatura</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">leap</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">step</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;color:#C05A21">Escape tone</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">step</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">leap</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;color:#A9821F">Suspension</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">held over</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">step down</td></tr></table>` },
-      try:{ type:"mc", choices:["An appoggiatura","An escape tone","A pedal point"], answer:0,
-        success:"✓ Correct. An appoggiatura is typically approached by leap and resolved by step.",
-        fail:"Compare both the approach and departure intervals.",
-        hint:"Leap in, step out." } },
-    { say:"<b>Anticipation:</b> the defining feature — <b>the note belongs to the FOLLOWING harmony</b>, arriving early. Against the current chord it is dissonant; it then stays (or repeats) when the anticipated chord arrives. \u{1F447} <b>An anticipation belongs to which harmony?</b>",
-      try:{ type:"mc", choices:["The following chord","Only the previous chord","No surrounding chord"], answer:0,
-        success:"✓ Correct. The pitch arrives before the chord to which it belongs and remains or repeats when that harmony begins.",
-        fail:"Identify which chord contains the anticipated pitch.",
-        hint:"A chord tone of the following harmony arrives early." } },
-    { say:"<b>Pedal Point:</b> a sustained or repeated pitch — <b>most commonly in the bass</b> — while the harmonies above it change. Tonic and dominant pedals are especially common; the pedal fits some chords and clashes with others. <b>Upper-voice pedals also occur</b> (an inverted pedal). \u{1F447} <b>In which voice does a pedal point most commonly occur?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:72,notes:[
-        {p:"C4",d:"w",label:"pedal C"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"(held)"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"D4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:560} },
-      try:{ type:"mc", choices:["The bass","Always the soprano","It cannot occur in a musical voice"], answer:0,
-        success:"✓ Correct. Pedal points most commonly occur in the bass, although an inverted pedal may occur in an upper voice.",
-        fail:"Listen for a sustained or repeated pitch beneath changing harmonies.",
-        hint:"Pedal points commonly occur in the lowest voice." } },
-    { say:"<b>Review:</b> \u{1F447} <b>A chord tone is prepared, sustained into a new harmony as a dissonance, and resolved downward by step. What is it?</b>",
-      try:{ type:"mc", choices:["A suspension","An appoggiatura","An escape tone"], answer:0,
-        success:"✓ Correct. Preparation, suspension, and downward stepwise resolution define a standard suspension.",
-        fail:"Identify the preparation, sustained dissonance, and resolution.",
-        hint:"A 4-3 suspension is one common example." } }
+    { say:"<b>What Is a Rondo?</b> A rondo has one main section (A) that keeps returning. New sections appear between each return. \u{1F447} <b>What makes a rondo different from other forms?</b>",
+      try:{ type:"mc", choices:["A keeps coming back between contrasting sections","It has exactly two sections","It never repeats anything"], answer:0,
+        success:"✓ The A section keeps returning between contrasting sections.",
+        fail:"Which section keeps returning?",
+        hint:"The recurring A." } },
+    { say:"The most common rondo types: <b>ABABA · ABACA · ABACABA</b>. Look closely at what alternates in each. <b>Remember: a rondo typically begins with A, returns to A between contrasting sections, and usually ends with A.</b> \u{1F447} <b>In ABACA, how many DIFFERENT contrasting sections appear?</b>",
+      show:{ type:"html", html:`<div style="max-width:420px;margin:0 auto;font-size:17px;line-height:2.2;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:12px 18px;text-align:center;font-weight:800;letter-spacing:3px">
+        A B A B A<br>A B A C A<br>A B A C A B A</div>` },
+      try:{ type:"mc", choices:["Two — B and C","One — only B","Four"], answer:0,
+        success:"✓ B and C appear once each; A appears THREE times. The longer ABACABA gives B a return too — seven sections, one recurring theme.",
+        fail:"Count the different letters that aren't A…",
+        hint:"B… and?" } },
+    { say:"<b>A typical rondo:</b> begins with A · returns to A between contrasting sections · usually ends with A. \u{1F447} <b>Which of these could NOT be a rondo?</b>",
+      try:{ type:"mc", choices:["ABCD — nothing ever returns","ABABA","ABACABA"], answer:0,
+        success:"✓ ABCD never brings A back — no recurrence, no rondo. The other two begin, return to, and end with A.",
+        fail:"Check each: does A recur between contrasts?",
+        hint:"The recurring section is mandatory." } },
+    { say:"Listen to the music. Track the form — A, B or C? \u{1F447}",
+      try:{ type:"custom",
+        hint:"A is the one you'll recognize; C is newer than B.",
+        mount:(container,fb)=>MF_L96_track(container,fb) } },
+    { say:"The example \u{201C}La Raspa\u{201D} follows the pattern <b>A → B → A → C → A</b>. \u{1F447} <b>In La Raspa, the C section stands out because…</b>",
+      try:{ type:"mc", choices:["It introduces a new contrasting episode before the return of A","It repeats the A section","It has no notes"], answer:0,
+        success:"✓ Each contrasting section differs from A AND from each other — melody, rhythm, harmony.",
+        fail:"C arrives AFTER B has already contrasted once…",
+        hint:"Newer than new." } },
+    { say:"<b>Why Does A Keep Returning?</b> Every return of A gives the listener something familiar. The new sections add variety. Together they create balance. \u{1F447} <b>Why does the A section keep returning?</b>",
+      try:{ type:"mc", choices:["So the listener always comes back to familiar music","To make the piece shorter","Because the other sections are mistakes"], answer:0,
+        success:"✓ Familiar returns + new sections = balance. That is the heart of the rondo.",
+        fail:"What does hearing A again give the listener?",
+        hint:"Something familiar." } },
+    { say:"<b>Compare the Forms:</b> AB → ABA → ABACA. \u{1F447} <b>Which form repeats A the MOST?</b>",
+      try:{ type:"mc", choices:["Rondo (ABACA)","Ternary (ABA)","Binary (AB)"], answer:0,
+        success:"✓ The rondo — A returns again and again. You now know all three forms: AB, ABA, and the rondo!",
+        fail:"Count the A's in each form…",
+        hint:"A-B-A-C-A." } },
+    { say:"<b>One More Pattern:</b> The recurring A can return many times, with a new contrasting episode each time. \u{1F447} <b>Which of these is also a common rondo pattern?</b>",
+      try:{ type:"mc", choices:["ABACADA","ABCDA","ABCA"], answer:0,
+        success:"✓ ABACADA — A keeps returning while new episodes (B, C, D) appear between them. The recurring A is what makes it a rondo.",
+        fail:"Which one keeps bringing A back between the new sections?",
+        hint:"A must return between each new episode." } }
   ],
   examples:[
-    { caption:"A 4-3 suspension at a cadence: the C prepares over F (IV), holds over G (V) as a dissonant 4th, then falls to B — the 3rd. Prepare, suspend, resolve.",
-      staff:{clef:"treble",tempo:63,notes:[
-        {p:"C5",d:"w",label:"prep"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"C5",d:"w",label:"sus 4"},{p:"G4",d:"w",chord:true},
-        {p:"B4",d:"w",label:"res 3"},{p:"G4",d:"w",chord:true},
-        {p:"C5",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:600},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"A tonic pedal: C holds in the bass while the harmony moves I – IV – V7 – I above it. The held C is consonant with I, clashes over IV and V7, then agrees again — one pitch tying the whole progression together.",
-      staff:{clef:"treble",tempo:69,notes:[
-        {p:"C4",d:"w",label:"I (pedal)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"IV"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"V7"},{p:"F4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:620},
-      kb:{start:60,octaves:1.3333,labels:true} }
+    { caption:"A miniature rondo, written out: A (the main theme), B (first contrasting episode), A, C (second contrasting episode), and A to close. Follow the letters as it plays!",
+      staff:{clef:"treble",tempo:120,notes:[
+        {p:"G4",d:"8",label:"A"},{p:"G4",d:"8"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"},{bar:"double"},
+        {p:"A4",d:"8",label:"B"},{p:"B4",d:"8"},{p:"C5",d:"q"},{p:"A4",d:"q"},{p:"E4",d:"q"},{bar:"double"},
+        {p:"G4",d:"8",label:"A"},{p:"G4",d:"8"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"},{bar:"double"},
+        {p:"F4",d:"8",label:"C"},{p:"A4",d:"8"},{p:"C5",d:"q"},{p:"A4",d:"q"},{p:"C4",d:"q"},{bar:"double"},
+        {p:"G4",d:"8",label:"A"},{p:"G4",d:"8"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"h"},{bar:"final"}],
+        beams:[[0,1],[6,7],[12,13],[18,19],[24,25]],width:940},
+      kb:{start:57,octaves:1.25,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Nonchord-Tone Identification (45s)",
-      intro:"Identify eight nonchord-tone types from their approach, departure, metric position, and harmonic context.",
-      miaIntro:"Approach, departure, placement, and harmony.",
+    { type:"gen-race", title:"Game 1 · Rondo Sprint (45s)",
+      intro:"Recurring sections, common types, form comparisons — race the rondo!",
+      miaIntro:"Round and round! \u{26A1}",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Suspension","hold over, resolve DOWN"],
-        ["Retardation","hold over, resolve UP"],
-        ["Appoggiatura","leap in, step out"],
-        ["Escape tone","step in, leap out"],
-        ["Anticipation (melodic)","next chord's note, early"],
-        ["Pedal point","held bass under changing chords"],
-        ["Passing tone","step through to a new chord tone"],
-        ["Neighbor tone","step out and back"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Nonchord tones classified!":null },
-    { type:"order-tap", title:"Game 2 · Build a Suspension",
-      intro:"Arrange the three stages of a suspension in the correct order.",
-      miaIntro:"Preparation → suspension → resolution.",
-      spec:{sequence:["Preparation — the note belongs to chord 1","Suspension — it holds as chord 2 clashes","Resolution — it steps down into chord 2"],
-        title:"The three-stage fall"},
-      result:(stars)=>stars>=2?"You arranged the stages correctly.":null },
-    { type:"symbol-hunt", title:"Game 3 · Identify Suspension Figures",
-      intro:"Identify each suspension from its intervals above the bass.",
-      miaIntro:"Compare the suspended interval with its resolution interval.",
+        ["Rondo","A alternating with contrasting sections"],
+        ["The A section's role","the recurring section"],
+        ["Common rondo types","ABABA, ABACA, ABACABA"],
+        ["ABACA's contrasts","B and C — one visit each"],
+        ["A typical rondo begins and ends with","the A section"],
+        ["'La Raspa'","a rondo example (ABACA)"],
+        ["AB form","two sections: A–B"],
+        ["ABA form","statement, contrast, restatement"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — rondo master!":null },
+    { type:"key-climb", title:"Game 2 · Play the Rondo Theme",
+      intro:"Play the main theme, a contrast, and the theme again — a mini-rondo under your fingers!",
+      miaIntro:"Climb it — make it musical! \u{1FA9C}",
+      spec:{seq:[67,67,64,67,72, 69,71,72,69, 67,67,64,67,72],
+        names:["G (A!)","G","E","G","C — theme done","A (B: contrast)","B","C","A — contrast done","G (A RETURNS!)","G","E","G","C — rondo!"],
+        start:64, octaves:0.6667, title:"A · B · A — a mini-rondo"},
+      result:(score)=>score!==null?"Mini-rondo performed — bravo!":null },
+    { type:"symbol-hunt", title:"Game 3 · Name That Form",
+      intro:"Form patterns on cards — click the one each round names!",
+      miaIntro:"Every form you know! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"4-3 suspension", spec:{clef:"treble",notes:[{p:"G3",d:"w"},{p:"C5",d:"w",chord:true},{p:"G3",d:"w"},{p:"B4",d:"w",chord:true}],width:180}},
-        {label:"7-6 suspension", spec:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"G4",d:"w",chord:true},{p:"A3",d:"w"},{p:"F4",d:"w",chord:true}],width:180}},
-        {label:"9-8 suspension", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"D5",d:"w",chord:true},{p:"C4",d:"w"},{p:"C5",d:"w",chord:true}],width:180}},
-        {label:"Retardation (7-8, rising)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"B4",d:"w",chord:true},{p:"C4",d:"w"},{p:"C5",d:"w",chord:true}],width:180}}]},
-      result:(score)=>score>=5?"You identified the suspension figures correctly.":null },
-    { type:"term-race", title:"Game 4 · Classify the Nonchord Tone",
-      intro:"Use the approach, departure, metric position, and harmonic context to identify each tone.",
-      miaIntro:"Do not rely on only one feature.",
-      spec:{rounds:8, reverse:true, pool:[
-        ["Leap in, step out","appoggiatura"],
-        ["Step in, leap out","escape tone"],
-        ["Held over, falls","suspension"],
-        ["Held over, rises","retardation"],
-        ["Arrives before its chord","anticipation"],
-        ["Bass that will not move","pedal point"],
-        ["Step-step onward","passing tone"],
-        ["Step-step back","neighbor tone"]]},
-      result:(score)=>score>=6?"You classified the nonchord tones correctly.":null }
+        {label:"Rondo (ABACA)", spec:{clef:"none",notes:[{letter:"A"},{letter:"B"},{letter:"A"},{letter:"C"},{letter:"A"}],width:220}},
+        {label:"Ternary (ABA)", spec:{clef:"none",notes:[{letter:"A"},{letter:"B"},{letter:"A"}],width:170}},
+        {label:"Binary (AB)", spec:{clef:"none",notes:[{letter:"A"},{letter:"B"}],width:140}},
+        {label:"Rondo (ABACABA)", spec:{clef:"none",notes:[{letter:"A"},{letter:"B"},{letter:"A"},{letter:"C"},{letter:"A"},{letter:"B"},{letter:"A"}],width:260}}]},
+      result:(score)=>score>=5?"All forms named on sight!":null },
+    { type:"term-race", title:"Game 4 · Big Ideas Review Race",
+      intro:"A quick review race across the big ideas — the staff, chords, scales, and forms. GO!",
+      miaIntro:"Review race — how many can you catch? \u{26A1}",
+      spec:{rounds:12, reverse:true, pool:[
+        ["The staff","5 lines, 4 spaces (Lesson 1!)"],
+        ["Treble & bass together","the grand staff"],
+        ["A whole note","4 beats in 4/4"],
+        ["Relative minor","the major scale's 6th degree"],
+        ["V7","the dominant seventh chord"],
+        ["1st inversion","the 3rd in the bass"],
+        ["Figured bass 6/4","2nd inversion"],
+        ["Harmonic minor","raised 7th, both directions"],
+        ["The blues scale","Root, ♭3, 4, ♭5, 5, ♭7"],
+        ["Motive","a short idea used repeatedly"],
+        ["Rondo","A keeps coming back between episodes"],
+        ["Ternary form","A B A — the opening returns"]]},
+      result:(score)=>score>=9?"Big ideas locked in — nicely done!":null }
   ],
-  practiceIntro:"Complete 20 practice questions on approach, departure, metric placement, harmonic context, and suspension figures.",
+  practiceIntro:"20 practice questions — rondo facts plus a review mix from across the course. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Suspension","falls by step"],["Retardation","rises by step"],["Appoggiatura","leap in"],["Escape tone","leap out"],["Pedal","held bass"],["Anticipation","early arrival"]], reverse:true}, count:6 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
-    { type:"mc", q:"What are the three stages of a suspension?", choices:["Preparation, suspension, and resolution","Attack, decay, and release","Verse, chorus, and bridge"], answer:0,
-      explain:"The note begins as a chord tone, becomes dissonant when the harmony changes, and resolves downward by step." },
-    { type:"mc", q:"Suspension figures such as 4-3 and 7-6 measure intervals above…", choices:["the bass","the soprano","the chord root in every inversion"], answer:0,
-      explain:"4-3, 7-6, 9-8 — all measured above the actual bass pitch." },
-    { type:"mc", q:"An appoggiatura is typically approached by…", choices:["Leap","Step","Preparation at the same pitch"], answer:0,
-      explain:"Typically leap in, step out." },
-    { type:"mc", q:"An escape tone is typically left by…", choices:["Leap","Step","Remaining at the same pitch"], answer:0,
-      explain:"Typically step in, leap out." },
-    { type:"truefalse", q:"A retardation resolves upward by step.", answer:true,
-      explain:"Usually 7 rising to 8." },
-    { type:"truefalse", q:"A pedal point most commonly occurs in the bass.", answer:true,
-      explain:"A sustained pitch in an upper voice may be called an inverted pedal." },
-    { type:"truefalse", q:"An anticipation belongs to the following chord but arrives before that chord begins.", answer:true,
-      explain:"It arrives early and remains or repeats when that harmony begins." },
-    { gen:"term-match", params:{subject:"term", pool:[["4-3","suspension figure"],["7-8 rising","retardation"],["Tonic or dominant","common pedal notes"],["Harmonic anticipation","can also feel rhythmically early"]], reverse:true}, count:3 },
-    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["Rondo","A alternates with contrasts"],["Recurring section","A"],["ABACA","a common rondo type"],["Binary","AB"],["Ternary","ABA"]], reverse:true}, count:5 },
+    { gen:"inversion-id", params:{subject:"both", ask:"both"}, count:2 },
+    { gen:"rel-key", params:{ask:"both"}, count:2 },
+    { gen:"mode-id", params:{set:"all", ask:"recipe"}, count:2 },
+    { type:"mc", q:"A rondo consists of an A section alternating with…", choices:["other contrasting sections","identical copies of A","silence"], answer:0,
+      explain:"Contrast between every return." },
+    { type:"mc", q:"In a rondo, the RECURRING section is…", choices:["A","B","C"], answer:0,
+      explain:"The section that keeps returning." },
+    { type:"mc", q:"Which is a common rondo type?", choices:["ABACA","ABCD","AABB"], answer:0,
+      explain:"Along with ABABA and ABACABA." },
+    { type:"mc", q:"Which song is a rondo example?", choices:["'La Raspa' (Mexican folk song)","Beethoven's 5th","'Go, Tell It On the Mountain'"], answer:0,
+      explain:"Its form: ABACA." },
+    { type:"mc", q:"A rondo typically begins and ends with…", choices:["the A section","the newest section","a drum solo"], answer:0,
+      explain:"A opens it and closes it." },
+    { type:"truefalse", q:"In ABACABA, the B section appears twice.", answer:true,
+      explain:"A×4, B×2, C×1 — count them!" },
+    { type:"truefalse", q:"ABCD is a valid rondo form.", answer:false,
+      explain:"Nothing recurs — no rondo." },
+    { type:"truefalse", q:"In ABACA, the A section appears three times.", answer:true,
+      explain:"A, then B, A, C, A." }
+  ],
+  miaQuizIntro:"Quiz! A begins it, A ends it, A keeps returning between the episodes.",
+  quiz:[
+    { type:"mc", q:"A RONDO is a form consisting of…", choices:["an A section alternating with contrasting sections","exactly two sections","one endless melody"], answer:0,
+      explain:"A recurring main theme with contrasting sections.", hint:"The recurring A." },
+    { type:"mc", q:"In rondo form, which section RECURS?", choices:["A","B","C"], answer:0,
+      explain:"A is the recurring section.", hint:"The hero of the form." },
+    { type:"mc", q:"The most common rondo types are…", choices:["ABABA, ABACA and ABACABA","AB and ABA only","AAA and BBB"], answer:0,
+      explain:"Three patterns of different lengths.", hint:"All start and end with A." },
+    { type:"mc", q:"'La Raspa' is in which form?", choices:["ABACA","ABABA","AB"], answer:0,
+      explain:"Two contrasts, three A's.", hint:"It has a C section." },
+    { type:"truefalse", q:"A rondo's contrasting sections must contrast with A and (in ABACA) with each other.", answer:true,
+      explain:"B and C differ from A and from each other.", hint:"Why C gets a new letter." },
+    { type:"truefalse", q:"A rondo may end on its B section.", answer:false,
+      explain:"The recurring A closes every common type.", hint:"Check the three patterns." },
+    { type:"mc", q:"You hear: theme, contrast 1, theme, contrast 2, theme. The form is…", choices:["Rondo (ABACA)","Ternary (ABA)","Binary (AB)"], answer:0,
+      explain:"Two DIFFERENT contrasts with returns = rondo.", hint:"Count the different contrasts." },
+    { type:"mc", q:"You hear: statement, contrast, restatement — three sections total. The form is…", choices:["Ternary (ABA)","Rondo","Binary"], answer:0,
+      explain:"One contrast only = ABA.", hint:"Lesson 74's shape." },
+    { type:"mc", q:"Which form does NOT make a full return of its opening section?", choices:["AB (binary)","ABA (ternary)","Rondo"], answer:0,
+      explain:"Binary (A–B) has no full return of the opening; ABA and rondo bring A back.", hint:"The one without a return of A." },
+    { type:"mc", q:"Order the forms by how many times A appears (ABACA vs ABA vs AB):", choices:["Rondo (3) > Ternary (2) > Binary (1)","Binary > Ternary > Rondo","All equal"], answer:0,
+      explain:"The rondo loves its theme most.", hint:"Count A's in each map." },
+    { type:"mc", q:"Forms are built from…", choices:["motives → phrases → sections","only key signatures","only dynamics"], answer:0,
+      explain:"Lesson 72's order underlies Lessons 73-75.", hint:"The smallest ideas first." },
+    { type:"mc", q:"Which statement best describes rondo form?", choices:["A recurring main theme alternates with contrasting sections","Two sections: A–B","One melody with no repeats"], answer:0,
+      explain:"That is the rondo.", hint:"A keeps returning." },
+    /* generated — a review mix from across the course */
+    { gen:"term-match", params:{subject:"term", pool:[["Rondo","the recurring-A form"],["ABACA","two episodes, three returns"],["Recurring section","A"],["Episode","a contrasting section between A returns"]], reverse:true}, count:2 },
+    { gen:"inversion-id", params:{subject:"both", ask:"both"}, count:2 },
+    { gen:"triad-quality", params:{}, count:2 },
+    { gen:"rel-key", params:{ask:"both"}, count:1 },
+    { gen:"mode-id", params:{set:"all", ask:"recipe"}, count:1 }
   ],
   vocabulary:[
-    {term:"Suspension", def:"prepare → suspend → resolve DOWN. Common figures: 4–3, 7–6, 9–8."},
-    {term:"Retardation", def:"prepare → suspend → resolve UP. Common figure: 7–8."},
-    {term:"Appoggiatura / Escape Tone", def:"Appoggiatura: leap in → step out. Escape tone: step in → leap out."},
-    {term:"Anticipation / Pedal Point", def:"Anticipation: the next chord tone arrives early. Pedal point: one pitch remains while the harmony changes."}
+    {term:"Rondo", def:"A form in which the A section ALTERNATES with contrasting sections — A is the recurring section."},
+    {term:"ABABA · ABACA · ABACABA", def:"The most common rondo types — each one typically begins, returns to, and ends with A."},
+    {term:"Recurring Section", def:"The A section — the main theme that returns between contrasting sections."},
+    {term:"Episode", def:"A contrasting section that appears between returns of the main theme (A)."},
+    {term:"The Form Family", def:"AB (binary, A–B) · ABA (ternary, A–B–A) · rondo (recurring A: A–B–A–C–A…)."}
   ],
   mistakes:[],
   summary:[
-    "✔ Nonchord tones are identified by <b>approach, departure, metric placement, and harmonic context</b>.",
-    "✔ <b>Suspension</b>: prepare → suspend → resolve down.",
-    "✔ <b>Retardation</b>: prepare → suspend → resolve up.",
-    "✔ <b>Appoggiatura</b>: leap in → step out.",
-    "✔ <b>Escape tone</b>: step in → leap out.",
-    "✔ <b>Anticipation</b>: the next chord arrives early.",
-    "✔ <b>Pedal point</b>: one pitch remains while the harmony changes."
+    "✔ A <b>RONDO</b> = the A section <b>alternating with contrasting sections</b>; A is the <b>recurring</b> one.",
+    "✔ Common types: <b>ABABA, ABACA, ABACABA</b> — each opening and closing on A.",
+    "✔ The family: <b>AB</b> (A–B) · <b>ABA</b> (A–B–A) · <b>rondo</b> (A–B–A–C–A…).",
+    "✔ Everything is built from <b>motives → phrases → sections</b> — Lesson 72's pyramid."
   ],
   tips:[
-    "Suspensions are expressive gold: the clash is the emotion, the resolution is the relief — do not rush them.",
-    "Hear a 4-3 everywhere: it is the classic 'sus4 resolving' from Lesson 93, now with its full name.",
-    "Pedal test: if the bass refuses to move while chords argue above, it is a pedal point.",
-    "Next lesson: writing for four voices — SATB voice leading."
+    "Listen for rondos in classical finales — composers loved ending big works with the friendliest form.",
+    "Review path: revisit any lesson here anytime — the games regenerate fresh questions forever.",
+    "Play REAL music now: hymnals, lead sheets, easy classics. You'll be shocked how much of the page simply… makes sense.",
+    "When you compose, borrow the rondo's trick: bring your best idea back often, and let fresh episodes shine between the returns. \u{2764}\u{FE0F} — Mia"
   ],
-  rewards:{ badge:"Tension Curator", icon:"\u{1F3AD}" },
+  rewards:{ badge:"Rondo Navigator", icon:"\u{1F3A1}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Use approach, departure, metric placement, preparation, and harmonic context to identify each nonchord tone.",
-  quiz:[
-    { type:"mc", q:"Which information helps classify a nonchord tone?", choices:["Its approach, departure, metric placement, and harmonic context","Only its dynamic level","Only its octave"], answer:0,
-      explain:"Approach and departure matter, but so do metric placement and harmonic context.", hint:"Consider several features." },
-    { type:"mc", q:"The suspension's stages, in order:", choices:["preparation → suspension → resolution","resolution → suspension → preparation","leap → step → hold"], answer:0,
-      explain:"Belong, clash, fall.", hint:"P-S-R." },
-    { type:"mc", q:"A 4-3 suspension resolves…", choices:["down by step to the chord's 3rd","up an octave","to the root"], answer:0,
-      explain:"It resolves downward by step from a fourth above the bass to a third above the bass.", hint:"Numbers name intervals above the bass." },
-    { type:"mc", q:"A retardation differs from a suspension by…", choices:["resolving upward by step","having no preparation","being in the bass"], answer:0,
-      explain:"A retardation is prepared and sustained like a suspension but resolves upward by step.", hint:"Direction." },
-    { type:"mc", q:"Leap in, step out describes…", choices:["the appoggiatura","the escape tone","the pedal point"], answer:0,
-      explain:"An appoggiatura is typically accented or prominent.", hint:"Landing softened by step." },
-    { type:"mc", q:"Step in, leap out describes…", choices:["the escape tone","the appoggiatura","the suspension"], answer:0,
-      explain:"An escape tone is typically unaccented and leaves by leap in the opposite direction.", hint:"Step in, leap out." },
-    { type:"mc", q:"A melodic anticipation is…", choices:["the next chord's tone arriving early","the previous chord's tone holding","a held bass"], answer:0,
-      explain:"The pitch arrives early and remains or repeats when the following chord begins.", hint:"Ahead of the change." },
-    { type:"mc", q:"A pedal point is…", choices:["a sustained pitch, usually in the bass, under changing harmonies","a fast melody","a type of cadence"], answer:0,
-      explain:"Usually tonic or dominant, and usually in the bass, though an inverted pedal may appear in an upper voice.", hint:"The unmoving voice." },
-    { type:"truefalse", q:"Suspension figures 4-3, 7-6 and 9-8 count intervals above the bass.", answer:true,
-      explain:"They count intervals above the actual bass pitch, like figured bass.", hint:"Lesson 54's habit." },
-    { type:"truefalse", q:"A harmonic anticipation can also create a rhythmic sense of early arrival.", answer:true,
-      explain:"An anticipation belongs to the following harmony but arrives early in time, so harmonic and rhythmic anticipation can overlap.", hint:"Timing and pitch connect." },
-    { type:"mc", q:"The soprano C is prepared, sustained over a G chord, and then resolves to B. What nonchord tone is created?", choices:["A 4-3 suspension","An escape tone","A pedal point"], answer:0,
-      explain:"C forms a fourth above the bass G and resolves downward by step to B, a third above the bass.", hint:"Held, then fell." },
-    { type:"mc", q:"Which pair has contrasting approach-and-departure patterns?", choices:["Appoggiatura and escape tone","Suspension and pedal point","Passing tone and anticipation"], answer:0,
-      explain:"An appoggiatura is typically approached by leap and resolved by step; an escape tone is typically approached by step and left by leap.", hint:"Contrasting, not identical." },
-    { type:"mc", q:"A note steps up from a chord tone and then steps back down to that same chord tone. What is it?", choices:["A neighbor tone","A passing tone","An anticipation"], answer:0,
-      explain:"A neighbor tone steps away and returns; a passing tone steps onward to a DIFFERENT chord tone.", hint:"Does it return, or continue onward?" }
-  ],
-  miaPerfect:"Perfect score! You accurately identified eight types of nonchord tones from their melodic and harmonic contexts.",
-  miaPass:"You passed! Next, you will study voice-leading principles for four-part harmony.",
+  miaPerfect:"PERFECT! Statement, episodes, and the theme always coming home — the rondo is completely yours. \u{1F3A1}\u{1F389}",
+  miaPass:"Passed! You can hear and name a rondo — one recurring theme with contrasting episodes between. \u{1F3A1}",
   mia:{
     hook:{ label:"the welcome",
-      explain:"The C held over the new chord, clashed, then stepped down — a suspension: prepare, suspend, resolve.",
-      play:()=>{[53,57,60].forEach(m=>MFAudio.tone(m,1.0,.05,.25));MFAudio.tone(72,1.0,.05,.4);[55,59,62].forEach(m=>MFAudio.tone(m,1.0,1.15,.25));MFAudio.tone(72,.7,1.15,.4);MFAudio.tone(71,1.1,1.9,.42);} },
-    learn:{ label:"non-chord tones expanded",
-      explain:"Approach, departure, metric placement and harmony name the tone: suspension (hold, fall), retardation (hold, rise), appoggiatura (leap in), escape (leap out), anticipation (early), pedal (usually bass holds).",
-      hint:"Weigh several features, not just two.",
-      play:()=>{MFAudio.tone(72,.8,.05,.4);MFAudio.tone(71,.9,.9,.42);} },
-    example:{ label:"the examples",
-      explain:"Example 1 is a full 4-3 suspension at a cadence; example 2 a tonic pedal holding under I, IV and V7." },
+      explain:"The main theme appeared THREE times (A), alternating with two different contrasts (B, then C): A-B-A-C-A — a rondo.",
+      play:()=>{const A=[67,67,64,67,72];let t=0;[A,[69,71,72,69],A].forEach(S=>{S.forEach(m=>{MFAudio.tone(m,.26,t,.42);t+=.28;});t+=.3;});} },
+    learn:{ label:"rondo form",
+      explain:"Rondo = A alternating with contrasting sections; A recurs. Types: ABABA, ABACA, ABACABA. Family: AB (A–B), ABA (A–B–A), rondo (recurring A).",
+      hint:"A begins it, A ends it, A keeps visiting.",
+      play:()=>{[67,67,64,67,72].forEach((m,i)=>MFAudio.tone(m,.28,i*.3,.42));} },
+    example:{ label:"the example",
+      explain:"A written-out ABACA miniature — follow A, B, A, C, A as it plays; the main theme keeps returning between the contrasting episodes." },
     game:{ label:"the games",
-      explain:"Sprint the eight tones, stage a suspension, read figures on cards, then race entries and exits.",
-      hint:"P-S-R for suspensions." },
+      explain:"Sprint the rondo facts, play the theme, name every form on sight, then race a review mix of the course's big ideas.",
+      hint:"Name the form by its pattern." },
     quiz:{ label:"this question",
-      explain:"Weigh how the note arrives (step/leap/held/early) and how it leaves (step on/back/down/up/leap), together with its metric placement and harmonic context.",
-      play:()=>{MFAudio.tone(74,.8,.05,.4);MFAudio.tone(72,.9,.9,.42);} }
+      explain:"Rondo questions reduce to one check: does A keep returning between contrasting episodes? The review-mix questions revisit big ideas from across the course.",
+      play:()=>{[60,64,67,72].forEach((m,i)=>MFAudio.tone(m,.5,i*.15,.4));} }
   }
 };

@@ -1,339 +1,285 @@
-/* Lesson 38 — Solfège and Transposition (AEMT Book 2, Unit 9)
-   Built from drafts/UNIT 9 – Lesson 38.md; AEMT p.59 verified by render.
-   Movable Do: syllables ride scale DEGREES, not fixed pitches.
-   Transposition: same intervals/syllables, new keynote (B&S Ch.3: interval method).
-   Uses quiz.js v5.4 solfege-id generator; melodies kept accidental-free (C↔G).
-   v2 reorg (2026-07-17): absorbed the practice drills from deleted old Lesson 84 —
-   the transpose-by-key (scale-degree) method step, the Scale-Degree Translator
-   race, and degree/interval drill items.
+/* Lesson 38 (6.1, formerly L39) — Sixteenth Notes (AEMT Book 2, Unit 10)
+   Built from drafts/UNIT 10 – Lesson 39.md; AEMT p.62 verified by render.
+   Core: 4 sixteenths = 1 beat; two flags / two beams; count "1 e & a";
+   combos with 8ths (the "1 (e)& a" and "1 e &(a)" figures).
+   Uses staff.js v7.6 d:"16" + double beams [[a,b,2]] + stubs.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* solfège climber: press the scale on the keyboard; each key gets its syllable badge.
-   Round 1 = C major (badges on white keys); round 2 = G major (F♯ included!). */
-function MF_L38_climb(container,fb){
-  const ROUNDS=[
-    {key:"C", seq:[60,62,64,65,67,69,71,72], names:["C","D","E","F","G","A","B","C"], start:60, octaves:1},
-    {key:"G", seq:[67,69,71,72,74,76,78,79], names:["G","A","B","C","D","E","F♯","G"], start:60, octaves:2}];
-  const SYL=["Do","Re","Mi","Fa","Sol","La","Ti","Do"];
-  const WHITES=[0,2,4,5,7,9,11];
-  let r=0,k=0,kb=null,pressed=[];
-  container.innerHTML=`<div class="big-q l38-q" style="text-align:center"></div>
-    <div class="l38-cnt" style="text-align:center;font-weight:800;font-size:1.1rem;min-height:26px;color:var(--correct)"></div>
-    <div class="l38-kb"></div>
-    <p style="text-align:center;font-size:13.5px;color:var(--primary);font-weight:700;margin:6px 0 0">Movable Do: the KEYNOTE is always Do — no matter which key you're in!</p>`;
-  const q=container.querySelector(".l38-q"), cnt=container.querySelector(".l38-cnt"), kbHolder=container.querySelector(".l38-kb");
-  function badge(m,txt,start){
-    const rel=m-start, oct=Math.floor(rel/12), wi=WHITES.indexOf(rel%12);
-    if(wi<0) return;
-    const keyEl=kb.el.children[oct*7+wi]; if(!keyEl) return;
-    keyEl.insertAdjacentHTML("beforeend",`<div style="position:absolute;top:6px;left:0;width:100%;text-align:center;font-weight:800;font-size:13px;color:var(--primary);pointer-events:none">${txt}</div>`);
+/* note family tree: split each value in two until sixteenths appear */
+function MF_L38_tree(container,fb){
+  const LEVELS=[
+    {d:"w",n:1,name:"1 whole note",beats:"4 beats"},
+    {d:"h",n:2,name:"2 half notes",beats:"2 beats each"},
+    {d:"q",n:4,name:"4 quarter notes",beats:"1 beat each"},
+    {d:"8",n:8,name:"8 eighth notes",beats:"½ beat each"},
+    {d:"16",n:16,name:"16 sixteenth notes",beats:"¼ beat each"}];
+  let lv=0;
+  container.innerHTML=`<div class="big-q l39-q" style="text-align:center"></div>
+    <div class="l39-staff"></div>
+    <div style="text-align:center"><button class="play l39-split">✂️ Split every note in half!</button></div>`;
+  const q=container.querySelector(".l39-q"), holder=container.querySelector(".l39-staff"), btn=container.querySelector(".l39-split");
+  function draw(doPlay){
+    const L=LEVELS[lv];
+    const notes=[]; for(let i=0;i<L.n;i++) notes.push({p:"B4",d:L.d});
+    const spec={clef:"treble",tempo:60,notes,width:Math.max(240,L.n*38+140)};
+    if(L.d==="8") spec.beams=[[0,1],[2,3],[4,5],[6,7]];
+    if(L.d==="16") spec.beams=[[0,3,2],[4,7,2],[8,11,2],[12,15,2]];
+    const api=Staff.render(holder,spec);
+    q.innerHTML=`<b>${L.name}</b> — ${L.beats}. ${lv<4?"Same total time, smaller pieces…":"THE SIXTEENTH NOTE: two beams, ¼ beat each!"}`;
+    if(doPlay) setTimeout(()=>Staff.play(spec,api),400); /* no sound on page load — only after a split click */
   }
-  function ask(){
-    const cur=ROUNDS[r]; k=0; pressed=[]; cnt.textContent="";
-    q.innerHTML=`Climb ${r+1} of ${ROUNDS.length}: sing the <b>${cur.key} major</b> scale in solfège — press each key, starting on <b>${cur.key} = Do</b>!`;
-    kbHolder.innerHTML="";
-    kb=Keyboard.create(kbHolder,{start:cur.start,octaves:cur.octaves,labels:true,point:cur.seq[0],
-      onKey:m=>{
-        const c=ROUNDS[r];
-        if(m===c.seq[k]){
-          pressed.push(m); kb.mark(pressed); kb.point(null); MFAudio.tone(m,.3); badge(m,SYL[k],c.start);
-          cnt.textContent=c.seq.slice(0,k+1).map((x,i2)=>`${c.names[i2]}=${SYL[i2]}`).join("  ");
-          k++;
-          if(k>=c.seq.length){ r++;
-            if(r>=ROUNDS.length){ q.textContent="Two keys, one set of syllables!";
-              fb(true,"✓ G major: G=Do A=Re B=Mi C=Fa D=Sol E=La F♯=Ti G=Do. The note names changed, the syllables never did — THAT is movable Do."); }
-            else { fb(true,"✓ C major in solfège — complete! Now watch what happens when Do MOVES to G…"); setTimeout(ask,1500); } } }
-        else { MFAudio.tone(40,.2);
-          fb(false, k===0? `Do first! In ${c.key} major, Do is ${c.key} — the key with the red arrow.` :
-            (c.key==="G"&&c.names[k]==="F♯")? "Careful — G major's 7th note (Ti) is the BLACK key F♯, not F!" :
-            `Next syllable is ${SYL[k]} — one scale step up from ${c.names[k-1]}.`); }
-      }});
-  }
-  ask();
+  btn.onclick=()=>{
+    if(lv>=4) return;
+    lv++;
+    draw(true);
+    if(lv>=4){ btn.style.display="none";
+      fb(true,"✓ w → 2 h → 4 q → 8 eighths → 16 SIXTEENTHS. Each split halves the value; sixteenths get a SECOND beam and are worth ¼ beat. Four of them fill one beat: 1-e-&-a!"); }
+  };
+  draw(false);
 }
 
-/* transposition machine: melody in C — rebuild it in G by picking each new note.
-   Same syllables, new letters; every interval preserved. */
-function MF_L38_machine(container,fb){
-  const MEL=[{c:"C",g:"G",syl:"Do"},{c:"D",g:"A",syl:"Re"},{c:"E",g:"B",syl:"Mi"},{c:"G",g:"D",syl:"Sol"}];
-  const OPTS=["G","A","B","C","D","E"];
-  const CP={C:"C4",D:"D4",E:"E4",G:"G4"}, GP={G:"G4",A:"A4",B:"B4",D:"D5"};
-  let i=0;
-  container.innerHTML=`<div class="big-q l38-mq" style="text-align:center"></div>
-    <div class="l38-mstaff"></div>
-    <div class="l38-msyl" style="text-align:center;font-weight:800;min-height:24px;color:var(--correct)"></div>
-    <div class="choices chips l38-mch"></div>`;
-  const q=container.querySelector(".l38-mq"), holder=container.querySelector(".l38-mstaff"),
-        syl=container.querySelector(".l38-msyl"), ch=container.querySelector(".l38-mch");
-  function draw(){
-    const done=MEL.slice(0,i).map(n=>({p:GP[n.g],d:"q",label:n.g}));
-    const spec={clef:"treble",tempo:100,notes:[
-      {p:"C4",d:"q",label:"C"},{p:"D4",d:"q",label:"D"},{p:"E4",d:"q",label:"E"},{p:"G4",d:"q",label:"G"},{bar:"double"},
-      ...done]};
-    spec.width=340+done.length*40;
-    Staff.render(holder,spec);
-    syl.textContent="syllables: Do Re Mi Sol → "+MEL.slice(0,i).map(n=>n.syl).join(" ");
-  }
-  function ask(){
-    draw();
-    q.innerHTML=`The melody C-D-E-G is in C major. Transpose it UP a Perfect 5th into <b>G major</b> — note ${i+1} of ${MEL.length}: what does <b>${MEL[i].c} (${MEL[i].syl})</b> become?`;
-    ch.innerHTML="";
-    OPTS.forEach(o=>{ const b=document.createElement("button"); b.textContent=o;
-      b.onclick=()=>{
-        const cur=MEL[i];
-        if(o===cur.g){ i++; MFAudio.tone(MFAudio.midi(GP[cur.g]),.35); draw();
-          if(i>=MEL.length){ ch.style.display="none"; q.textContent="Transposition complete!";
-            const spec={clef:"treble",tempo:110,notes:[
-              {p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{bar:"double"},{ksig:"G"},
-              {p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"D5",d:"q"},{bar:"final"}],width:520};
-            const api=Staff.render(holder,spec); setTimeout(()=>Staff.play(spec,api),400);
-            fb(true,"✓ C-D-E-G became G-A-B-D — every note up a Perfect 5th, every interval preserved, syllables still Do-Re-Mi-Sol. Press play and hear the same tune, higher!"); }
-          else { fb(true,`✓ ${cur.c} → ${o} (${cur.syl} stays ${cur.syl}). Next note…`); } }
-        else { MFAudio.tone(40,.2); fb(false,`Move ${cur.c} UP a Perfect 5th — count 5 letters: ${cur.c} as 1…`); }
-      };
-      ch.appendChild(b); });
-  }
+/* silent-syllable detective, sixteenth edition warm-up: WHICH sixteenth is loud? */
+function MF_L38_syll(container,fb){
+  const SYL=["1","e","&","a"];
+  const ROUNDS=[2,0,3,1]; /* index of the ACCENTED sixteenth */
+  let i=0,heard=false;
+  container.innerHTML=`<div class="big-q l39-sq" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play l39-sp">▶ Hear the beat</button></div>
+    <div class="choices chips l39-sch" style="display:none"><button>1</button><button>e</button><button>&</button><button>a</button></div>`;
+  const q=container.querySelector(".l39-sq"), ch=container.querySelector(".l39-sch");
+  function ask(){ heard=false; ch.style.display="none";
+    q.textContent=`Round ${i+1} of ${ROUNDS.length}: four even sixteenths — 1 e & a. ONE of them is accented. Which syllable?`; }
+  container.querySelector(".l39-sp").onclick=()=>{
+    const acc=ROUNDS[i];
+    for(let k=0;k<4;k++) MFAudio.tone(k===acc?77:72,.16,k*.22,k===acc?.75:.28);
+    heard=true; setTimeout(()=>ch.style.display="",1100);
+  };
+  [...ch.children].forEach((b,bi)=>b.onclick=()=>{
+    if(!heard) return;
+    if(bi===ROUNDS[i]){ i++; MFAudio.yay();
+      if(i>=ROUNDS.length){ ch.style.display="none"; container.querySelector(".l39-sp").style.display="none";
+        q.textContent="Subdivision ears unlocked!";
+        fb(true,"✓ Four for four! You can HEAR the four slots inside one beat: 1-e-&-a. That's what counting sixteenths gives you."); }
+      else { fb(true,`✓ The accent was on “${SYL[ROUNDS[i-1]]}”. Next beat…`); setTimeout(ask,900); } }
+    else { MFAudio.tone(40,.25); fb(false,"Count along while it plays: 1-e-&-a — where was the loud one?"); }
+  });
   ask();
 }
 
 LESSON_CONTENT[38]={
-  welcome:"Do-Re-Mi isn't just a movie song — it's how musicians name melody in ANY key. \u{1F3A4}",
+  welcome:"Eighth notes not fast enough for you? Let's split the beat into FOUR. \u{26A1}",
   hook:{
-    say:"The same tune, played twice — once low, once high. Press both. <b>Is it the same melody?</b>",
+    say:"Two runs at the same tempo. Press both. <b>Which one squeezes MORE notes into each beat?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Version 1</button>
-          <button class="play hk-b">▶ Version 2</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Same melody — just higher the second time</button><button>Two different melodies</button></div>`;
+          <button class="play hk-a">▶ Run A</button>
+          <button class="play hk-b">▶ Run B</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Run B — twice as many notes per beat</button><button>Run A — more notes per beat</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        const play=(base)=>{[0,2,4,7].forEach((s,ix)=>MFAudio.tone(base+s,.32,ix*.38));};
-        container.querySelector(".hk-a").onclick=()=>{ play(60); hA=true; if(hB) setTimeout(()=>ch.style.display="",1800); };
-        container.querySelector(".hk-b").onclick=()=>{ play(67); hB=true; if(hA) setTimeout(()=>ch.style.display="",1800); };
+        container.querySelector(".hk-a").onclick=()=>{ [0,1,2,3].forEach(k=>MFAudio.tone(72,.2,k*.44,.4)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2000); };
+        container.querySelector(".hk-b").onclick=()=>{ [0,1,2,3,4,5,6,7].forEach(k=>MFAudio.tone(74,.12,k*.22,.4)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2000); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Same melody, same intervals, same SHAPE — only the starting note moved from C to G. That move is called TRANSPOSITION, and the syllable system that survives it is called SOLFÈGE. Both are today's lesson.");
-          else fb(false,"Hum along with both — does the shape of the tune change?");
+          if(i===0) fb(true,"✓ Run A was eighth notes (2 per beat); Run B was SIXTEENTH notes — 4 per beat, each worth ¼ beat. Today: how to read, write, and count them.");
+          else fb(false,"Listen again — which run packs the notes tighter?");
         });
       } }
   },
   objectives:[
-    "Name the seven solfège syllables in order",
-    "Explain the movable-Do system",
-    "Sing/press any major scale in solfège",
-    "Define transposition",
-    "Transpose a melody up or down by an interval",
-    "Transpose by key: new key signature, same scale degrees",
-    "Explain what changes and what stays the same"
+    "Identify sixteenth notes by their two flags or two beams",
+    "State the value: ¼ beat — four per beat",
+    "Count sixteenths with 1-e-&-a",
+    "Write sixteenths with flags and with beams",
+    "Read combinations of eighths and sixteenths",
+    "Perform sixteenth rhythms steadily"
   ],
   steps:[
-    { say:"<b>SOLFÈGE</b> assigns a singable syllable to each note of the major scale: <b>Do, Re, Mi, Fa, Sol, La, Ti</b> — then Do again at the octave. Numbers 1-8, but voice-friendly. \u{1F447} <b>Which syllable is scale degree 5?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
-        {p:"C4",d:"q",label:"Do"},{p:"D4",d:"q",label:"Re"},{p:"E4",d:"q",label:"Mi"},{p:"F4",d:"q",label:"Fa"},{p:"G4",d:"q",label:"Sol"},{p:"A4",d:"q",label:"La"},{p:"B4",d:"q",label:"Ti"},{p:"C5",d:"q",label:"Do"}],width:520} },
-      try:{ type:"mc", choices:["Sol","Fa","La"], answer:0,
-        success:"✓ Do(1) Re(2) Mi(3) Fa(4) SOL(5). Sing the ladder until it's automatic!",
-        fail:"Count up: Do, Re, Mi, Fa…",
-        hint:"Do-Re-Mi-Fa-?" } },
-    { say:"The magic ingredient is <b>MOVABLE DO</b>: Do is always the tonic (keynote) of the current key. In C major, Do = C. In G major, Do = G. A note's letter name never changes — but the syllable it carries shifts with the key: the note G is Sol in C major and Do in G major. \u{1F447} <b>In F major, which note is Do?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:110,keysig:"F",notes:[
-        {p:"F4",d:"q",label:"Do"},{p:"G4",d:"q",label:"Re"},{p:"A4",d:"q",label:"Mi"},{p:"Bb4",d:"q",acc:"none",label:"Fa"},{p:"C5",d:"q",label:"Sol"},{p:"D5",d:"q",label:"La"},{p:"E5",d:"q",label:"Ti"},{p:"F5",d:"q",label:"Do"}],width:520} },
-      try:{ type:"mc", choices:["F — the keynote","C — always C","B♭ — the flat"], answer:0,
-        success:"✓ Do = the keynote, wherever you are. F major → F is Do (and B♭ is Fa).",
-        fail:"Movable Do follows the KEY, not the letter C.",
-        hint:"Which note is F major named after?" } },
-    { say:"Climb it yourself — two keys, same syllables. \u{1F447} <b>Press each scale in solfège, keynote first:</b>",
+    { say:"The note family so far: each value SPLITS IN TWO to make the next. Whole → half → quarter → eighth… and the splitting doesn't stop there. \u{1F447} <b>Split your way down to today's new note:</b>",
       try:{ type:"custom",
-        hint:"Round 2 is G major — remember its key signature: F♯! Ti will be a black key.",
-        mount:(container,fb)=>MF_L38_climb(container,fb) } },
-    { say:"Why do musicians bother? Because solfège names the <b>RELATIONSHIPS</b>, not the letters. 'Do-Mi-Sol' describes the same shape in every key — which is why singers can read a melody in any key at sight. \u{1F447} <b>What does each solfège syllable stand for?</b>",
-      try:{ type:"mc", choices:["A scale degree — a position in the current key","One fixed piano key","A rhythm value"], answer:0,
-        success:"✓ Syllables ride the scale DEGREES. Mi is always degree 3 — whatever note that happens to be today.",
-        fail:"If Do can move, syllables can't be glued to fixed keys…",
-        hint:"Degree, not letter." } },
-    { say:"Now the second big idea: <b>TRANSPOSITION</b> — rewriting a melody in a different key, keeping <b>every interval exactly the same</b>. The tune sounds higher or lower, but its shape is untouched. Why? To fit a singer's range, or an instrument's tuning. \u{1F447} <b>After transposing, what stays the SAME?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
-        {p:"C4",d:"q",label:"Do"},{p:"D4",d:"q",label:"Re"},{p:"E4",d:"q",label:"Mi"},{p:"G4",d:"q",label:"Sol"},{bar:"double"},{ksig:"G"},
-        {p:"G4",d:"q",label:"Do"},{p:"A4",d:"q",label:"Re"},{p:"B4",d:"q",label:"Mi"},{p:"D5",d:"q",label:"Sol"},{bar:"final"}],
-        brackets:[{from:0,to:3,label:"in C major"},{from:6,to:9,label:"in G major"}],width:600} },
-      try:{ type:"mc", choices:["The intervals and the melody's shape","The letter names","The starting pitch"], answer:0,
-        success:"✓ Intervals, shape, syllables — all preserved. Only the letters and the key signature change.",
-        fail:"The notes clearly changed (C-D-E-G → G-A-B-D)… so what survived?",
-        hint:"Hum both — what's identical?" } },
-    { say:"The standard method is <b>transposing by interval</b>: choose the interval of transposition, then move <b>every single note</b> by exactly that interval. Up a Perfect 5th: C→G, D→A, E→B, G→D. \u{1F447} <b>Run the machine — transpose the melody note by note:</b>",
+        hint:"Keep pressing the scissors — five levels from whole note to sixteenths.",
+        mount:(container,fb)=>MF_L38_tree(container,fb) } },
+    { say:"Anatomy check. A single sixteenth note = filled head + stem + <b>TWO flags</b>. Grouped sixteenths trade their flags for <b>TWO beams</b>. (One flag/beam = eighth; two = sixteenth.) \u{1F447} <b>How do you spot a sixteenth note instantly?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"D5",d:"16",x:140,label:"flags ×2"},{p:"C5",d:"16",x:300},{p:"B4",d:"16",x:360},{p:"C5",d:"16",x:420},{p:"D5",d:"16",x:480,label:"beams ×2"}],
+        beams:[[1,4,2]],width:560} },
+      try:{ type:"mc", choices:["Two flags or two beams","A hollow head","A dot after the head"], answer:0,
+        success:"✓ Two of everything: 2 flags alone, 2 beams in groups. One more than the eighth note — because it's one split further down.",
+        fail:"Compare with an eighth note — what doubled?",
+        hint:"Count the flags." } },
+    { say:"The math: in 4/4 (and 2/4, 3/4), a sixteenth note = <b>¼ of a beat</b>. So <b>2 sixteenths = 1 eighth</b>, and <b>4 sixteenths = 1 quarter = one full beat</b>. \u{1F447} <b>How many sixteenth notes fill ONE beat?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
+        {p:"B4",d:"q",label:"1 beat"},{bar:"single"},{p:"B4",d:"8",label:"= 2"},{p:"B4",d:"8"},{bar:"single"},
+        {p:"B4",d:"16",label:"= 4"},{p:"B4",d:"16"},{p:"B4",d:"16"},{p:"B4",d:"16"},{bar:"final"}],
+        beams:[[2,3],[5,8,2]],width:520} },
+      try:{ type:"mc", choices:["4","2","8"], answer:0,
+        success:"✓ Four sixteenths per beat — that's why the count needs four syllables.",
+        fail:"¼ + ¼ + ¼ + ¼ = 1.",
+        hint:"A quarter of a beat each…" } },
+    { say:"And here are those four syllables — the universal sixteenth count: <b>1 – e – & – a</b> (say: 'one-ee-and-uh'). Every beat gets its own four: '1 e & a, 2 e & a, 3 e & a, 4 e & a'. \u{1F447} <b>Which syllable is the THIRD sixteenth of a beat?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:60,time:"2/4",notes:[
+        {p:"B4",d:"16",label:"1"},{p:"B4",d:"16",label:"e"},{p:"B4",d:"16",label:"&"},{p:"B4",d:"16",label:"a"},
+        {p:"B4",d:"16",label:"2"},{p:"B4",d:"16",label:"e"},{p:"B4",d:"16",label:"&"},{p:"B4",d:"16",label:"a"},{bar:"final"}],
+        beams:[[0,3,2],[4,7,2]],width:520} },
+      try:{ type:"mc", choices:["&","e","a"], answer:0,
+        success:"✓ 1(first) e(second) &(third) a(fourth). The & is exactly halfway — right where the eighth-note '&' always was!",
+        fail:"Say it out loud: 1 - e - & - a.",
+        hint:"Third syllable of 'one-ee-AND-uh'." } },
+    { say:"Train the ear — four even sixteenths, one accented. \u{1F447} <b>Name the accented syllable each round:</b>",
       try:{ type:"custom",
-        hint:"Every note moves UP a Perfect 5th — count 5 letter names, starting on the note itself as 1.",
-        mount:(container,fb)=>MF_L38_machine(container,fb) } },
-    { say:"There's a second method — <b>transposing by key</b>, and solfège makes it easy: identify each note's <b>scale degree</b> (its syllable!) in the original key, then place it on the <b>same degree of the new key</b>. Do-Re-Mi in C major (C-D-E) becomes Do-Re-Mi in F major (F-G-A). \u{1F447} <b>Which notes are scale degrees 5–3–1 (Sol–Mi–Do) in G major?</b>",
-      try:{ type:"mc", choices:["D–B–G","G–E–C","D–B♭–G"], answer:0,
-        success:"✓ In G major, degree 5 (Sol) is D, degree 3 (Mi) is B, and degree 1 (Do) is G. Same syllables, new home — the degree method in action.",
-        fail:"Count up the G major scale: G(Do)–A(Re)–B(Mi)–C(Fa)–D(Sol).",
-        hint:"G major begins G–A–B–C–D." } },
-    { say:"Last detail: the transposed melody lives in a <b>new key</b> — so it needs that key's <b>KEY SIGNATURE</b>. Transpose from C major up to G major and the new version carries one sharp (F♯), even if no F appears in the tune. The signature announces the new home. \u{1F447} <b>A melody transposed from C major to G major gets which key signature?</b>",
-      try:{ type:"mc", choices:["One sharp (F♯)","No sharps or flats","One flat (B♭)"], answer:0,
-        success:"✓ G major = 1 sharp. New key, new signature — always update it when you transpose.",
-        fail:"What is G major's key signature? (Lesson 29 knows…)",
-        hint:"G major carries exactly one sharp." } }
+        hint:"Whisper '1 e & a' along with the playback and catch the loud slot.",
+        mount:(container,fb)=>MF_L38_syll(container,fb) } },
+    { say:"Sixteenths also MIX with eighth notes inside one beat. Two favorites: <b>eighth + two sixteenths</b> = '1 <i>&nbsp;</i>& a' — and <b>two sixteenths + eighth</b> = '1 e &'. Note the beaming: one beam runs the whole group, the second beam covers only the sixteenths. \u{1F447} <b>In the pattern eighth + two sixteenths, which syllable is NOT played?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:60,time:"2/4",notes:[
+        {p:"B4",d:"8",label:"1"},{p:"B4",d:"16",label:"&"},{p:"B4",d:"16",label:"a"},
+        {p:"B4",d:"16",label:"2"},{p:"B4",d:"16",label:"e"},{p:"B4",d:"8",label:"&"},{bar:"final"}],
+        beams:[[0,2],[1,2,2],[3,5],[3,4,2]],
+        brackets:[{from:0,to:2,label:"1 (e) & a"},{from:3,to:5,label:"2 e & (a)"}],width:520} },
+      try:{ type:"mc", choices:["e — the eighth holds through it","1 — the beat is silent","a — the last slot"], answer:0,
+        success:"✓ The eighth note lasts 2 sixteenth-slots (1 AND e), so the next attack lands on &. Count '1 (e) & a'.",
+        fail:"The eighth = 2 sixteenths long — which slot does it swallow?",
+        hint:"The eighth occupies slots 1 and…" } }
   ],
   examples:[
-    { caption:"The solfège ladder in C major — sing along as it plays: Do Re Mi Fa Sol La Ti Do!",
-      staff:{clef:"treble",tempo:100,notes:[
-        {p:"C4",d:"q",label:"Do"},{p:"D4",d:"q",label:"Re"},{p:"E4",d:"q",label:"Mi"},{p:"F4",d:"q",label:"Fa"},{p:"G4",d:"q",label:"Sol"},{p:"A4",d:"q",label:"La"},{p:"B4",d:"q",label:"Ti"},{p:"C5",d:"q",label:"Do"}],width:520},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"One melody, two homes: Do-Re-Mi-Sol in C major, then the identical shape up a Perfect 5th in G major. Same intervals, same syllables — press play and hear the tune simply lift.",
-      staff:{clef:"treble",tempo:110,notes:[
-        {p:"C4",d:"q",label:"Do"},{p:"D4",d:"q",label:"Re"},{p:"E4",d:"q",label:"Mi"},{p:"G4",d:"q",label:"Sol"},{bar:"double"},{ksig:"G"},
-        {p:"G4",d:"q",label:"Do"},{p:"A4",d:"q",label:"Re"},{p:"B4",d:"q",label:"Mi"},{p:"D5",d:"q",label:"Sol"},{bar:"final"}],
-        brackets:[{from:0,to:3,label:"C major"},{from:6,to:9,label:"G major — up a P5"}],width:600},
-      kb:{start:60,octaves:1.3333,labels:true} }
+    { caption:"A full 4/4 measure of sixteenths with the complete count — 1 e & a 2 e & a 3 e & a 4 e & a. Play it and chant along!",
+      staff:{clef:"treble",tempo:60,notes:[
+        {p:"C5",d:"16",label:"1"},{p:"C5",d:"16",label:"e"},{p:"C5",d:"16",label:"&"},{p:"C5",d:"16",label:"a"},
+        {p:"D5",d:"16",label:"2"},{p:"D5",d:"16",label:"e"},{p:"D5",d:"16",label:"&"},{p:"D5",d:"16",label:"a"},
+        {p:"B4",d:"16",label:"3"},{p:"B4",d:"16",label:"e"},{p:"B4",d:"16",label:"&"},{p:"B4",d:"16",label:"a"},
+        {p:"C5",d:"16",label:"4"},{p:"C5",d:"16",label:"e"},{p:"C5",d:"16",label:"&"},{p:"C5",d:"16",label:"a"},{bar:"final"}],
+        beams:[[0,3,2],[4,7,2],[8,11,2],[12,15,2]],time:"4/4",width:660} },
+    { caption:"Mixed rhythm: quarters, eighths and sixteenths sharing the measures — watch the beams tell you the groupings.",
+      staff:{clef:"treble",tempo:66,time:"4/4",notes:[
+        {p:"C5",d:"q",label:"1"},{p:"D5",d:"8",label:"2"},{p:"D5",d:"8",label:"&"},
+        {p:"E5",d:"16",label:"3"},{p:"E5",d:"16",label:"e"},{p:"E5",d:"16",label:"&"},{p:"E5",d:"16",label:"a"},{p:"C5",d:"q",label:"4"},{bar:"single"},
+        {p:"D5",d:"8",label:"1"},{p:"E5",d:"16",label:"&"},{p:"D5",d:"16",label:"a"},{p:"C5",d:"q",label:"2"},{p:"B4",d:"h",label:"3-4"},{bar:"final"}],
+        beams:[[1,2],[3,6,2],[9,11],[10,11,2]],width:680} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Syllable Sprint (45s)",
-      intro:"Which syllable lands on that note? Movable Do, three keys, full speed!",
-      miaIntro:"Do is on the move — chase it! \u{1F3C3}",
-      spec:{gen:"solfege-id", params:{keys:["C","G","F"],ask:"syllable"}, seconds:45},
-      result:(score)=>score>=8?score+" syllables pinned in 45 seconds — sight-singer material!":null },
-    { type:"gen-race", title:"Game 2 · Find the Note (10 rounds)",
-      intro:"Reverse gear: given the syllable, name the NOTE in each key!",
-      miaIntro:"Now hunt the letters! \u{1F50D}",
-      spec:{gen:"solfege-id", params:{keys:["C","G","F","D"],ask:"note"}, rounds:10},
-      result:(score)=>score>=8?"Four keys, no misses — movable Do fully installed!":null },
-    { type:"key-climb", title:"Game 3 · Do-Re-Mi Dash",
-      intro:"Race up the C major scale in solfège — every key in order, against the clock!",
-      miaIntro:"Sing it as you press it! \u{1F3A4}",
-      spec:{seq:[60,62,64,65,67,69,71,72], names:["Do","Re","Mi","Fa","Sol","La","Ti","Do"], start:60, octaves:1,
-        title:"Press the C major scale: Do Re Mi Fa Sol La Ti Do"},
-      result:(score)=>score!==null?"The ladder is in your fingers AND your voice!":null },
-    { type:"term-race", title:"Game 4 · Solfège & Transposition Vocabulary",
-      intro:"Solfège, movable Do, transposition — match the big ideas at speed!",
-      miaIntro:"Vocabulary dash! \u{1F3C1}",
-      spec:{rounds:8, reverse:true, pool:[
-        ["Solfège","Syllables assigned to the scale degrees: Do Re Mi Fa Sol La Ti"],
-        ["Movable Do","Do is always the keynote of the current key"],
-        ["Transposition","Rewriting a melody in a different key, intervals unchanged"],
-        ["Do","The keynote's syllable in every major key"],
-        ["Ti","Scale degree 7 — one half step below Do"],
-        ["Interval of transposition","The distance every note moves during a transposition"]]},
-      result:(score)=>score>=7?"Vocabulary: complete!":null },
-    { type:"term-race", title:"Game 5 · Scale-Degree Translator",
-      intro:"Which note carries each scale degree in the given key? Translate at speed!",
-      miaIntro:"Begin with the key's Do and count up! \u{1F9EE}",
-      spec:{rounds:8, reverse:true, pool:[
-        ["Degree 1 in G major","G"],
-        ["Degree 3 in G major","B"],
-        ["Degree 5 in F major","C"],
-        ["Degree 1 in D major","D"],
-        ["Degree 3 in F major","A"],
-        ["Degree 5 in G major","D"],
-        ["Degree 2 in D major","E"],
-        ["Degree 3 in D major","F♯"]]},
-      result:(score)=>score>=6?"You matched the scale degrees and pitches correctly!":null }
+    { type:"value-race", title:"Game 1 · Value Race — sixteenth edition (45s)",
+      intro:"Whole to sixteenth — name the values and beats at top speed!",
+      miaIntro:"Two flags means quarter-beat — go! \u{1F3C3}",
+      spec:{seconds:45, values:["w","h","q","8","16"], ask:"name"},
+      result:(score)=>score>=9?score+" values named — subdivision master!":null },
+    { type:"rhythm-tap", title:"Game 2 · Sixteenth Tap Lab",
+      intro:"Tap the rhythms exactly — sixteenths included. Listen first, then echo!",
+      miaIntro:"Steady hands: 1 e & a! \u{1F945}",
+      spec:{tempo:60, rounds:3, patterns:[
+        ["q","8","8","16","16","16","16"],
+        ["16","16","16","16","q","8","8"],
+        ["8","16","16","8","16","16"]]},
+      result:(score)=>score!==null?"Your fingers subdivide like a metronome!":null },
+    { type:"measure-build", title:"Game 3 · Build-a-Beat",
+      intro:"Fill exactly ONE beat (4 sixteenth-slots) using the note buttons!",
+      miaIntro:"Four quarter-slots to fill — no spills! \u{1F9F1}",
+      spec:{beats:1, unique:false, buttons:[
+        {t:"8",label:"Eighth Note",beats:0.5,item:{p:"B4",d:"8"}},
+        {t:"16",label:"Sixteenth Note",beats:0.25,item:{p:"B4",d:"16"}},
+        {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}}]},
+      result:(score)=>score!==null?"Beat built to the exact sixteenth!":null },
+    { type:"gen-race", title:"Game 4 · Note-Spotter Sprint (10 rounds)",
+      intro:"Notes flash on the staff — name each value before it escapes!",
+      miaIntro:"Eyes on the flags and beams! \u{1F50D}",
+      spec:{gen:"note-value", params:{values:["8","16","q","q.","h"],ask:"name"}, rounds:10},
+      result:(score)=>score>=8?"No value escaped your eye!":null }
   ],
-  practiceIntro:"20 practice questions — syllables, movable Do, and transposition logic. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — values, counting, flags and beams, mixed patterns. Answer right and the next appears automatically!",
   practice:[
-    { gen:"solfege-id", params:{keys:["C","G","F"],ask:"syllable"}, count:4 },
-    { gen:"solfege-id", params:{keys:["C","G","F","D"],ask:"note"}, count:3 },
-    { gen:"term-match", params:{subject:"term", pool:[["Solfège","syllables for the scale degrees"],["Movable Do","Do = the keynote of the current key"],["Transposition","rewriting a melody in a different key"],["Scale degree","a note's position within its scale"]], reverse:true}, count:2 },
-    { gen:"term-match", params:{subject:"term", pool:[["Up a M2 from E","F♯"],["Up a P5 from C","G"],["Up a P4 from D","G"],["Up a M3 from F","A"]], reverse:true}, count:3 },
-    { type:"mc", q:"In a transposition from one key to another, each note normally keeps its…", choices:["scale-degree (syllable)","original pitch","original letter name"], answer:0,
-      explain:"Degree 3 (Mi) stays degree 3 (Mi) in the new key — that's the degree method." },
-    { type:"mc", q:"The solfège syllables in order are…", choices:["Do Re Mi Fa Sol La Ti","Do Mi Re Fa Sol Ti La","Do Re Mi Sol Fa La Ti"], answer:0,
-      explain:"Do Re Mi Fa Sol La Ti — then Do again." },
-    { type:"mc", q:"In G major, Ti is sung on…", choices:["F♯","F","E"], answer:0,
-      explain:"G major's 7th degree is F♯ — the key signature note!" },
-    { type:"mc", q:"Transposition is when a melody is rewritten in another…", choices:["key","clef","rhythm"], answer:0,
-      explain:"New key, same intervals." },
-    { type:"mc", q:"Transpose C-D-E up a Major 2nd:", choices:["D-E-F♯","D-E-F","C♯-D♯-E♯"], answer:0,
-      explain:"Each note up a M2: C→D, D→E, E→F♯ (E to F is only a half step!)." },
-    { type:"truefalse", q:"After transposition, the intervals between the notes stay exactly the same.", answer:true,
-      explain:"That's the definition — only the starting pitch (and key) changes." },
-    { type:"truefalse", q:"In movable Do, the syllable Do always means the note C.", answer:false,
-      explain:"Do = the KEYNOTE of the current key — it moves!" },
-    { type:"mc", q:"A melody in C major is transposed up a P5. Its new key signature is…", choices:["1 sharp","no accidentals","1 flat"], answer:0,
-      explain:"Up a P5 from C = G major = F♯." }
+    { gen:"note-value", params:{values:["8","16","q"],ask:"name"}, count:4 },
+    { gen:"note-value", params:{values:["8","16","q","h"],ask:"beats"}, count:4 },
+    { gen:"term-match", params:{subject:"term", pool:[["Sixteenth Note","a note worth ¼ of a beat"],["Two beams","how grouped sixteenths are written"],["Two flags","how a single sixteenth is written"],["1 e & a","the sixteenth-note count"],["Subdivision","dividing a beat into smaller equal parts"]], reverse:true}, count:3 },
+    { type:"mc", q:"In 4/4 time, four sixteenth notes equal…", choices:["one quarter note (1 beat)","one eighth note","one half note"], answer:0,
+      explain:"4 × ¼ = 1 beat." },
+    { type:"mc", q:"Two sixteenth notes equal…", choices:["one eighth note","one quarter note","one whole beat"], answer:0,
+      explain:"¼ + ¼ = ½ = an eighth note." },
+    { type:"mc", q:"A sixteenth note in 2/4, 3/4, or 4/4 time is worth…", choices:["¼ beat","½ beat","1 beat"], answer:0,
+      explain:"One quarter-count in all simple meters." },
+    { type:"mc", q:"The sixteenth count for one full beat is…", choices:["1 e & a","1 & 2 &","1 a & e"], answer:0,
+      explain:"Four slots, four syllables, in that order." },
+    { type:"truefalse", q:"Grouped sixteenth notes are connected by two beams.", answer:true,
+      explain:"Two beams = sixteenths; one beam = eighths." },
+    { type:"truefalse", q:"A single sixteenth note has one flag.", answer:false,
+      explain:"TWO flags — one flag is an eighth note." },
+    { type:"mc", q:"In the figure eighth + two sixteenths, the attacks fall on…", choices:["1, &, a","1, e, &","1, e, a"], answer:0,
+      explain:"The eighth swallows 'e'; the sixteenths land on & and a." },
+    { type:"mc", q:"How many sixteenth notes equal one HALF note?", choices:["8","4","6"], answer:0,
+      explain:"2 beats × 4 per beat = 8." }
   ],
-  miaQuizIntro:"Sing the ladder, move the Do, lift the melody — quiz time!",
+  miaQuizIntro:"Two flags up! Count 1-e-&-a and sprint!",
   quiz:[
-    { type:"mc", q:"Solfège is a system that…", choices:["names rhythms with numbers","assigns syllables to the scale degrees","replaces key signatures","tunes the piano"], answer:1,
-      explain:"Do Re Mi Fa Sol La Ti — one syllable per degree.", hint:"Sing-able names for 1-8." },
-    { type:"mc", q:"In the movable-Do system, Do is always…", choices:["middle C","the keynote of the current key","the lowest note of the melody","A 440"], answer:1,
-      explain:"Do follows the key — C in C major, G in G major.", hint:"MOVABLE Do." },
-    { type:"mc", q:"The syllable for scale degree 4 is…", choices:["Fa","Mi","Sol","Re"], answer:0,
-      explain:"Do(1) Re(2) Mi(3) FA(4).", hint:"Count up from Do." },
-    { type:"mc", q:"In G major, the note B is sung as…", choices:["Mi","Ti","Sol","Do"], answer:0,
-      explain:"G=Do, A=Re, B=Mi — degree 3.", hint:"Count from G as Do." },
-    { type:"truefalse", q:"In F major, Do is F.", answer:true,
-      explain:"The keynote is always Do.", hint:"Which note names the key?" },
-    { type:"truefalse", q:"When a melody is transposed, its intervals change size.", answer:false,
-      explain:"Intervals are preserved exactly — that's the whole point.", hint:"What makes it the SAME tune?" },
-    { type:"mc", q:"Transposition means…", choices:["rewriting a melody in a different key with the same intervals","playing a melody backwards","changing the rhythm of a melody","removing the key signature"], answer:0,
-      explain:"Same shape, new home.", hint:"Trans- = across (keys)." },
-    { type:"mc", q:"Why do musicians transpose melodies?", choices:["To fit a singer's range or an instrument's key","To make the melody harder","To avoid writing key signatures","To change the time signature"], answer:0,
-      explain:"Ranges and instrument keys are the classic reasons.", hint:"Think of a song pitched too high to sing." },
-    { type:"mc", q:"Transpose the melody C-E-G up a Major 2nd:", choices:["D-F♯-A","D-F-A","E-G-B"], answer:0,
-      explain:"C→D, E→F♯ (a M2 is 2 half steps — F is only 1!), G→A.", hint:"Every note exactly 2 half steps up." },
-    { type:"mc", q:"A melody in C major is transposed UP a Perfect 5th. The new key and signature are…", choices:["G major — 1 sharp","F major — 1 flat","D major — 2 sharps"], answer:0,
-      explain:"C up a P5 = G; G major carries F♯.", hint:"Count 5 letters up from C." },
-    { type:"mc", q:"Scale degrees 1–2–3 of F major are…", choices:["F–G–A","F–G–A♭","C–D–E"], answer:0,
-      explain:"Do–Re–Mi from F: F–G–A (F major's flat is B♭, degree 4).", hint:"F major begins on F — count up." },
-    { type:"mc", q:"In the key (degree) method of transposing, notes keep their…", choices:["scale degrees","letter names","octave"], answer:0,
-      explain:"Do stays Do, Mi stays Mi — the degrees carry the melody into the new key.", hint:"Think syllables, not letters." },
-    { type:"mc", q:"What is the solfège of this melody?",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"}],width:320},
-      choices:["Do Mi Sol Do","Do Re Mi Fa","Do Fa La Do"], answer:0,
-      explain:"In C major: C=Do, E=Mi, G=Sol, C=Do.", hint:"Degrees 1-3-5-8." },
-    { type:"mc", q:"After transposing, what must be updated at the start of the staff?", choices:["the key signature","the clef","the bar lines"], answer:0,
-      explain:"The new key's signature announces the new home.", hint:"New key = new…?" },
-    { type:"mc", q:"Which stays the SAME after transposition?", choices:["the melody's intervals and shape","the letter names","the keynote","the key signature"], answer:0,
-      explain:"Shape and intervals survive; letters, keynote, and signature all change.", hint:"What did the hook prove?" },
+    { type:"mc", q:"A sixteenth note is worth…", choices:["¼ of a beat","½ of a beat","1 beat","2 beats"], answer:0,
+      explain:"Four per beat in simple meter.", hint:"Four fit in one beat." },
+    { type:"mc", q:"A single sixteenth note is drawn with…", choices:["two flags","one flag","no stem","a hollow head"], answer:0,
+      explain:"Two flags (or two beams in groups).", hint:"One more than an eighth." },
+    { type:"mc", q:"Four sixteenth notes are counted…", choices:["1 e & a","1 & 2 &","1 2 3 4","ti-ta-ti-ta"], answer:0,
+      explain:"The universal subdivision count.", hint:"'one-ee-and-uh'." },
+    { type:"mc", q:"Two sixteenth notes equal the duration of…", choices:["one eighth note","one quarter note","one whole note","one half note"], answer:0,
+      explain:"¼ + ¼ = ½ beat = an eighth.", hint:"Half a beat total." },
+    { type:"truefalse", q:"Four sixteenth notes equal one quarter note.", answer:true,
+      explain:"Both fill exactly one beat.", hint:"4 × ¼ = ?" },
+    { type:"truefalse", q:"Sixteenth notes in a group are joined by a single beam.", answer:false,
+      explain:"TWO beams — the second beam is the sixteenth's signature.", hint:"Count the beams." },
+    { type:"mc", q:"Which syllable is halfway through a beat of sixteenths?", choices:["&","e","a","2"], answer:0,
+      explain:"1 e & a — the & splits the beat exactly in half.", hint:"Same & as in eighth-note counting." },
+    { type:"mc", q:"Name this note.",
+      staff:{clef:"treble",notes:[{p:"B4",d:"16"}],width:160},
+      choices:["Sixteenth note","Eighth note","Quarter note"], answer:0,
+      explain:"Filled head, stem, two flags.", hint:"How many flags?" },
+    { type:"mc", q:"How many sixteenth notes fill a measure of 2/4?", choices:["8","4","16"], answer:0,
+      explain:"2 beats × 4 = 8.", hint:"Four per beat, two beats." },
+    { type:"mc", q:"The pattern two-sixteenths-then-eighth is counted…", choices:["1 e &","1 & a","1 e a"], answer:0,
+      explain:"Attacks on 1, e, and & — the eighth holds through 'a'.", hint:"The eighth comes LAST here." },
+    { type:"mc", q:"Adding a second flag to an eighth note makes it…", choices:["a sixteenth note","a quarter note","a dotted eighth","a grace note"], answer:0,
+      explain:"Each added flag halves the value.", hint:"Flags halve values." },
+    { type:"mc", q:"Which shows one FULL beat?",
+      staff:{clef:"treble",notes:[{p:"B4",d:"16"},{p:"B4",d:"16"},{p:"B4",d:"16"},{p:"B4",d:"16"}],beams:[[0,3,2]],width:220},
+      choices:["Yes — four sixteenths = 1 beat","No — it's half a beat","No — it's two beats"], answer:0,
+      explain:"4 × ¼ = exactly one beat.", hint:"Count the quarter-slots." },
     /* generated */
-    { gen:"solfege-id", params:{keys:["C","G","F"],ask:"syllable"}, count:3 },
-    { gen:"solfege-id", params:{keys:["C","G","F","D"],ask:"note"}, count:2 },
-    { gen:"term-match", params:{subject:"term", pool:[["Solfège","syllables for the scale degrees"],["Movable Do","Do = the keynote of the current key"],["Transposition","rewriting a melody in a different key"],["Ti","scale degree 7"]], reverse:true}, count:2 }
+    { gen:"note-value", params:{values:["8","16","q"],ask:"name"}, count:3 },
+    { gen:"note-value", params:{values:["8","16","q","h"],ask:"beats"}, count:3 },
+    { gen:"term-match", params:{subject:"term", pool:[["Sixteenth Note","a note worth ¼ of a beat"],["Two beams","how grouped sixteenths are written"],["1 e & a","the sixteenth-note count"],["Subdivision","dividing a beat into smaller equal parts"]], reverse:true}, count:2 }
   ],
   vocabulary:[
-    {term:"Solfège", def:"A system that assigns syllables — Do, Re, Mi, Fa, Sol, La, Ti — to the scale degrees of a major scale."},
-    {term:"Movable Do", def:"The system in which Do is always the keynote (tonic) of the current major key — syllables follow the key, not fixed pitches."},
-    {term:"Transposition", def:"Rewriting or performing a melody in a different key while preserving the same intervals and melodic relationships."},
-    {term:"Transposing by Interval", def:"Pick the interval; move each note exactly that far — double-check the half-step spots (E→F, B→C)."},
-    {term:"Transposing by Key", def:"Write the new key signature; place each note on the same scale degree (the same solfège syllable) in the new key."},
-    {term:"Scale Degree", def:"The position of a note within a scale — degree 1 is the keynote, degree 5 is Sol, and so on."}
+    {term:"Sixteenth Note", def:"A note worth one-fourth of a beat in simple meter. A single sixteenth has two flags; grouped sixteenths are connected by two beams."},
+    {term:"Subdivision", def:"Dividing a beat into smaller, equal parts — eighths split it in two, sixteenths in four."},
+    {term:"Beam", def:"A horizontal line connecting note groups: one beam for eighths, two beams for sixteenths."},
+    {term:"1 e & a", def:"The counting syllables for four sixteenth notes in one beat — 'one-ee-and-uh'."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Solfège</b>: Do Re Mi Fa Sol La Ti (Do) — singable names for scale degrees 1-8.",
-    "✔ <b>Movable Do</b>: Do = the keynote of the CURRENT key. G major → G is Do and F♯ is Ti.",
-    "✔ Syllables name <b>relationships</b>, not letters — 'Do-Mi-Sol' is the same shape in every key.",
-    "✔ <b>Transposition</b> = same melody, new key: every note moves by the same interval; every interval is preserved.",
-    "✔ Two methods: <b>by interval</b> (every note the same distance) and <b>by key</b> (new signature + same scale degrees).",
-    "✔ After transposing, write the <b>new key signature</b> — the melody has a new home."
+    "✔ <b>Sixteenth note = ¼ beat</b> — four per beat, eight per half note, sixteen per whole.",
+    "✔ Spot them by the <b>double</b>: two flags alone, two beams in groups.",
+    "✔ Count every beat as <b>1 e & a</b> — steady and even, four slots per beat.",
+    "✔ 2 sixteenths = 1 eighth · 4 sixteenths = 1 quarter.",
+    "✔ Mixed figures: eighth + 2 sixteenths = '1 & a' · 2 sixteenths + eighth = '1 e &'."
   ],
   tips:[
-    "Sing the scale in solfège daily — up AND down (Do Ti La Sol Fa Mi Re Do). Down is where most people wobble.",
-    "Transposing by interval? Move every note the SAME distance, and double-check any spot where the letters step E→F or B→C — the half steps hide there.",
-    "Singers ask for keys, not notes: 'take it down a whole step' = transpose everything down a Major 2nd.",
-    "The degree method beats the interval method in fast sessions — think Do-Mi-Sol (1-3-5), not letter names.",
-    "Solfège + transposition are the same insight twice: music lives in RELATIONSHIPS, not fixed letters."
+    "Practice slow: sixteenths at ♩=60 with perfect evenness beat sixteenths at ♩=120 with lumps.",
+    "Say 'ti-ri-ti-ri' (an alternative count) if '1 e & a' twists your tongue at speed.",
+    "Watch the SECOND beam like a hawk — it's the only difference between a run of eighths and a run of sixteenths.",
+    "Next lesson: the sixteenth REST — a quarter-beat of precisely-placed silence."
   ],
-  rewards:{ badge:"Melody Mover", icon:"\u{1F3A4}" },
+  rewards:{ badge:"Speed Splitter", icon:"\u{26A1}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
-    "secGame0","secGame1","secGame2","secGame3","secGame4","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect score — Do would follow YOU anywhere! \u{1F3A4}\u{1F389}",
-  miaPass:"Passed! Keep singing: Do Re Mi Fa Sol La Ti Do — in every key you meet.",
+    "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
+  miaPerfect:"A perfect score at sixteenth-note speed — lightning! \u{26A1}\u{1F389}",
+  miaPass:"Passed! Keep chanting 1-e-&-a — evenness beats speed every time.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Both versions were Do-Re-Mi-Sol: first from C, then from G — the same melody transposed up a Perfect 5th. Shape preserved, letters changed.",
-      play:()=>{[0,2,4,7].forEach((s,ix)=>MFAudio.tone(60+s,.3,ix*.35));[0,2,4,7].forEach((s,ix)=>MFAudio.tone(67+s,.3,1.7+ix*.35));} },
-    learn:{ label:"solfège & transposition",
-      explain:"Do Re Mi Fa Sol La Ti ride the scale degrees; Do is always the keynote (movable Do). Transposition moves every note by one fixed interval — or by key: same degrees, new signature. Shape and syllables survive.",
-      hint:"Do = keynote. Intervals never change.",
-      play:()=>{[60,62,64,65,67].forEach((m,ix)=>MFAudio.tone(m,.25,ix*.3));} },
+      explain:"Run A was eighth notes — 2 per beat. Run B was sixteenths — 4 per beat, twice as tightly packed. Same beat, finer slicing.",
+      play:()=>{[0,1,2,3].forEach(k=>MFAudio.tone(72,.18,k*.4,.4));[0,1,2,3,4,5,6,7].forEach(k=>MFAudio.tone(74,.1,2+k*.2,.4));} },
+    learn:{ label:"sixteenth notes",
+      explain:"¼ beat each; two flags or two beams; count 1-e-&-a. Two sixteenths = an eighth; four = a quarter. Mixed with eighths they make the '1 & a' and '1 e &' figures.",
+      hint:"Two of everything: flags, beams.",
+      play:()=>{[0,1,2,3].forEach(k=>MFAudio.tone(76,.1,k*.16,.45));} },
     example:{ label:"the examples",
-      explain:"Example 1 is the solfège ladder in C; example 2 lifts one melody from C major to G major — identical shape, new key signature." },
+      explain:"Example 1 is a full measure of counted sixteenths; example 2 mixes quarters, eighths and sixteenths — read the beams to find the groups." },
     game:{ label:"the games",
-      explain:"Sprint the syllables, hunt the notes, dash up Do-Re-Mi, race the vocabulary, then translate scale degrees across keys.",
-      hint:"In every game, find Do first — everything else is counted from it." },
+      explain:"Race the values, tap the rhythms, build exact beats, then spot notes at speed.",
+      hint:"In the tap lab: whisper the count while you tap." },
     quiz:{ label:"this question",
-      explain:"Anchor on two facts: Do = the keynote of the current key, and transposition preserves every interval.",
-      play:()=>{MFAudio.tone(60,.3,0);MFAudio.tone(64,.3,.35);MFAudio.tone(67,.4,.7);} }
+      explain:"Everything reduces to one fact: sixteenth = ¼ beat, written with two flags or two beams, counted 1-e-&-a.",
+      play:()=>{[0,1,2,3].forEach(k=>MFAudio.tone(72,.1,k*.15,.4));} }
   }
 };

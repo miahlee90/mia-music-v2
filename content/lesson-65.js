@@ -1,305 +1,275 @@
-/* Lesson 65 — Broken Chords and Arpeggiated Accompaniments (AEMT Book 3, Unit 16)
-   Built from drafts/UNIT 16 – Lesson 65.md; AEMT3 p.103 verified by render.
-   Core: BLOCK CHORD = notes together; BROKEN CHORD = notes NOT together;
-   ARPEGGIO = chord tones played sequentially, one after another (Italian
-   arpeggiare, "to play upon a harp"); may extend an octave or more; arpeggios
-   outline the chords; a repeated chord's symbol is not re-written.
-   NOTE: edit by FULL-FILE UPDATE only. */
+/* Lesson 65 (8.8, formerly L32) — Chromatic Scale (AEMT Book 2, Unit 8)
+   Built from drafts/UNIT 8 – Lesson 32.md; AEMT p.51 verified by render.
+   QA note honored: chromatic (EVERY pitch, all half steps) contrasted side by side
+   with the major scale; keyboard runs where the student physically plays every key.
+   Game-forward: the Chromatic Run (key-climb), half-step radar (gen-race), 13-tap spelling ladder.
+   NOTE: edit by FULL-FILE REWRITE only. */
 
-/* texture detective: block, broken or arpeggio — by ear */
-function MF_L65_ear(container,fb){
-  const KINDS=[
-    {name:"Block chord", play:()=>[60,64,67].forEach(m=>MFAudio.tone(m,1.4,0,.33))},
-    {name:"Broken chord", play:()=>{[60,67,64,67].forEach((m,i)=>MFAudio.tone(m,.5,i*.42,.38));}},
-    {name:"Arpeggio", play:()=>{[60,64,67,72].forEach((m,i)=>MFAudio.tone(m,.5,i*.4,.38));}}];
-  let order=[0,2,1,2].sort(()=>Math.random()-.5), r=0, played=false;
-  container.innerHTML=`<div class="big-q l65e-q" style="text-align:center"></div>
-    <div style="text-align:center"><button class="play l65e-play">▶ Play the mystery texture</button></div>
-    <div class="choices chips l65e-ch" style="display:none"><button>Block</button><button>Broken</button><button>Arpeggio</button></div>`;
-  const q=container.querySelector(".l65e-q"), pl=container.querySelector(".l65e-play"), ch=container.querySelector(".l65e-ch");
-  function ask(){
-    if(r>=order.length){ q.textContent="Great! You identified every texture."; pl.style.display="none"; ch.style.display="none"; return; }
-    played=false; ch.style.display="none";
-    q.innerHTML=`Round ${r+1} of ${order.length}: same C chord — which TEXTURE?`;
+/* staff + keyboard side by side */
+function MF_L65_staffKb(el,staffSpec,kbOpts){
+  const s=document.createElement("div"); el.appendChild(s); Staff.render(s,staffSpec);
+  const k=document.createElement("div"); k.style.marginTop="10px"; el.appendChild(k); Keyboard.create(k,kbOpts);
+}
+
+/* fill the missing sharps in the ascending spelling */
+function MF_L65_fillBlanks(container,fb){
+  const SEQ=["C","C♯","D","?","E","F","F♯","G","?","A","?","B","C"];
+  const ANS=["D♯","G♯","A♯"];
+  let i=0;
+  container.innerHTML=`<div class="l32-line" style="text-align:center;font-weight:700;font-size:1.05rem;letter-spacing:1px;line-height:2"></div>
+    <div class="choices chips l32-ch"></div>`;
+  const line=container.querySelector(".l32-line"), ch=container.querySelector(".l32-ch");
+  function drawLine(){
+    let k=0;
+    line.innerHTML=SEQ.map(s=>{
+      if(s!=="?") return s;
+      k++;
+      return k<=i? `<b style="color:var(--correct)">${ANS[k-1]}</b>` : `<span style="display:inline-block;min-width:34px;border:2px dashed var(--primary-dark);border-radius:6px;padding:0 4px">?</span>`;
+    }).join(" – ");
   }
-  pl.onclick=()=>{ const K=KINDS[order[r]]; if(!K) return;
-    K.play(); played=true; setTimeout(()=>ch.style.display="",1900); };
-  [...ch.children].forEach((b,i)=>b.onclick=()=>{
-    if(!played) return;
-    const want=order[r];
-    if(i===want){ MFAudio.yay();
-      fb(true,`✓ ${KINDS[want].name}! ${want===0?"All the notes at once — block chord.":want===1?"The notes played separately, out of order — broken chord.":"One at a time, in order — arpeggio."}`);
-      r++; setTimeout(ask,1300); }
-    else { MFAudio.tone(40,.2); fb(false,"Replay: together = block; taking turns = broken; climbing in ORDER = arpeggio."); }
+  ["D♯","E♯","G♯","A♯","B♯"].forEach(lbl=>{ const b=document.createElement("button"); b.textContent=lbl;
+    b.onclick=()=>{
+      if(i>=ANS.length||b.disabled) return;
+      if(lbl===ANS[i]){ b.disabled=true; b.style.opacity=".4"; i++; MFAudio.tone(56+i*5,.3); drawLine();
+        if(i>=ANS.length) fb(true,"✓ C–C♯–D–D♯–E–F–F♯–G–G♯–A–A♯–B–C — thirteen notes, twelve half steps, nothing skipped!");
+        else fb(true,"✓ That half step fits! Next blank…"); }
+      else { MFAudio.tone(40,.25); fb(false,`The blank sits one half step above ${["D","G","A"][i]} — which sharp is that?`); }
+    };
+    ch.appendChild(b); });
+  drawLine();
+}
+
+/* half-step detective: are the two marked keys a half step apart? */
+function MF_L65_detective(container,fb){
+  const ROUNDS=[
+    {a:60,b:61,half:true, why:"C to C♯ — the very next key"},
+    {a:64,b:65,half:true, why:"E to F — white neighbors with no black key between"},
+    {a:65,b:67,half:false,why:"F to G skips F♯ — a whole step"},
+    {a:71,b:72,half:true, why:"B to C — the other white-key half step"},
+    {a:61,b:63,half:false,why:"C♯ to D♯ skips D — a whole step"},
+    {a:68,b:69,half:true, why:"G♯ to A — the very next key"}];
+  let i=0;
+  container.innerHTML=`<div class="big-q l32-dq" style="text-align:center"></div><div class="l32-dkb"></div>
+    <div class="choices l32-dch"><button>Half step — the VERY next key</button><button>NOT a half step — a key is skipped</button></div>`;
+  const q=container.querySelector(".l32-dq"), kbHolder=container.querySelector(".l32-dkb"), ch=container.querySelector(".l32-dch");
+  function ask(){ q.textContent=`Pair ${i+1} of ${ROUNDS.length}: are the two marked keys a half step apart?`;
+    kbHolder.innerHTML=""; Keyboard.create(kbHolder,{start:60,octaves:1,labels:true,marks:[ROUNDS[i].a,ROUNDS[i].b]}); }
+  [...ch.children].forEach((b,bi)=>b.onclick=()=>{
+    const cur=ROUNDS[i], saidHalf=bi===0;
+    if(saidHalf===cur.half){ i++; MFAudio.tone(74,.3);
+      if(i>=ROUNDS.length){ ch.style.display="none"; kbHolder.innerHTML=""; q.textContent="Half-step radar calibrated!";
+        fb(true,"✓ Six pairs judged perfectly — chromatic motion is nothing but these half steps, one after another."); }
+      else { fb(true,`✓ ${cur.why}. Next…`); ask(); } }
+    else { MFAudio.tone(40,.25); fb(false,`Look between the marked keys: ${cur.half?"NOTHING sits between them — half step.":"one key is skipped — that's a whole step."}`); }
   });
   ask();
 }
 
-/* arpeggio builder: play the C and G arpeggios — FOUR notes, root to the root
-   above. Each round rebuilds a ONE-OCTAVE keyboard so exactly one starting
-   note can complete the arpeggio (instructor round: no double-start ambiguity). */
-function MF_L65_build(container,fb){
-  const ROUNDS=[
-    {name:"C major arpeggio", pcs:[60,64,67,72], names:["C","E","G","C (the root above)"], start:60},
-    {name:"G major arpeggio", pcs:[55,59,62,67], names:["G","B","D","G (the root above)"], start:55}];
-  let r=0,k=0;
-  container.innerHTML=`<div class="big-q l65b-q" style="text-align:center"></div><div class="l65b-kb"></div>`;
-  const q=container.querySelector(".l65b-q"), kh=container.querySelector(".l65b-kb");
-  function onKey(m){
-    const R=ROUNDS[r]; if(!R) return;
-    if(m===R.pcs[k]){
-      k++;
-      if(k>=R.pcs.length){ MFAudio.yay();
-        fb(true,`✓ ${R.name} — root, 3rd, 5th, and the root above, played as a line.`);
-        r++; setTimeout(ask,1400); }
-      else q.innerHTML=`Now play <b>${R.names[k]}</b>.`;
-    } else { MFAudio.tone(40,.2); fb(false,"Chord tones only, in rising order — root, 3rd, 5th, then the root above."); }
-  }
-  function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Excellent! You played both arpeggios."; return; }
-    k=0;
-    q.innerHTML=`Play a <b>${ROUNDS[r].name}</b> — one note at a time, in order. Start on <b>${ROUNDS[r].names[0]}</b>.`;
-    kh.innerHTML="";
-    Keyboard.create(kh,{start:ROUNDS[r].start,octaves:1,labels:true,onKey});
-  }
-  ask();
-}
-
 LESSON_CONTENT[65]={
-  welcome:"One chord, three textures: block, broken, and arpeggio. \u{1F3B5}",
+  welcome:"Major scales skip keys. Today's scale skips NOTHING — every key, black and white. \u{1F9D7}",
   hook:{
-    say:"<b>One chord can be played in different ways.</b> Listen to the three examples. <b>Which example sounds like an arpeggio?</b>",
+    say:"Two scales, both starting on C. Listen to each — <b>which one uses EVERY key on the keyboard?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
+        const MAJ=[60,62,64,65,67,69,71,72];
+        const CHR=[60,61,62,63,64,65,66,67,68,69,70,71,72];
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Example 1</button>
-          <button class="play hk-b">▶ Example 2</button>
-          <button class="play hk-c">▶ Example 3</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Example 3 — the notes play one at a time, in order</button><button>Example 1 — all the notes at once</button><button>Example 2 — the notes take turns out of order</button></div>`;
+          <button class="play hk-a">▶ Scale A</button>
+          <button class="play hk-b">▶ Scale B</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Scale B — it hit every single key</button><button>Scale A — it had more notes</button><button>Both used every key</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        let heard=new Set();
-        const show=()=>{ if(heard.size>=3) setTimeout(()=>ch.style.display="",2200); };
-        container.querySelector(".hk-a").onclick=()=>{ [60,64,67].forEach(m=>MFAudio.tone(m,1.3,0,.33)); heard.add(1); show(); };
-        container.querySelector(".hk-b").onclick=()=>{ [60,67,64,67].forEach((m,i)=>MFAudio.tone(m,.5,i*.42,.38)); heard.add(2); show(); };
-        container.querySelector(".hk-c").onclick=()=>{ [60,64,67,72,76].forEach((m,i)=>MFAudio.tone(m,.5,i*.38,.38)); heard.add(3); show(); };
+        let hA=false,hB=false;
+        container.querySelector(".hk-a").onclick=()=>{ MAJ.forEach((m,i)=>MFAudio.tone(m,.28,i*.26)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2400); };
+        container.querySelector(".hk-b").onclick=()=>{ CHR.forEach((m,i)=>MFAudio.tone(m,.2,i*.18)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2600); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Example 3 was an ARPEGGIO — the notes of the chord played one at a time, in order. Example 1 was a BLOCK chord; example 2 a BROKEN chord. Today's lesson!");
-          else fb(false,"An arpeggio plays the notes one at a time, IN ORDER, often past the octave.");
+          if(i===0) fb(true,"✓ Scale B is the CHROMATIC scale — all twelve pitches, moving only by half steps. Scale A (the major scale) skips keys; the chromatic scale never does.");
+          else fb(false,"Play both again — count how tightly packed Scale B's steps are.");
         });
       } }
   },
   objectives:[
-    "Define block chord: chord tones played together",
-    "Define broken chord: chord tones NOT played together",
-    "Define arpeggio: chord tones in sequence — 'to play upon a harp'",
-    "Extend arpeggios an octave or more",
-    "See how arpeggiated accompaniments outline the chords",
-    "Know that a repeated chord's symbol isn't re-written"
+    "Define a chromatic scale",
+    "Explain why every interval is a half step",
+    "Count the twelve pitches within one octave",
+    "Write ascending and descending chromatic scales",
+    "Recognize the use of sharps (up) and flats (down)",
+    "Perform a chromatic scale on the keyboard"
   ],
   steps:[
-    { say:"<b>Block Chords and Broken Chords:</b> A <b>block chord</b> plays all notes together. A <b>broken chord</b> plays the notes separately. \u{1F447} <b>What is the difference?</b>",
-      show:{ type:"staff", spec:{clef:"bass",tempo:80,time:"3/4",notes:[
-        {p:"C3",d:"h.",label:"block"},{p:"E3",d:"h.",chord:true},{p:"G3",d:"h.",chord:true},{bar:"double"},
-        {p:"C3",d:"q",label:"broken…"},{p:"G3",d:"q"},{p:"E3",d:"q"},{bar:"final"}],width:440} },
-      try:{ type:"mc", choices:["Only the TIMING — the notes are identical","The notes themselves","The key"], answer:0,
-        success:"✓ C-E-G either way. Texture is about WHEN, not WHAT.",
-        fail:"Compare the letters in both halves of the staff…",
-        hint:"Same notes — together vs. separately." } },
-    { say:"<b>Arpeggios:</b> An <b>arpeggio</b> plays the notes of a chord one at a time, usually in order. It may continue for more than one octave. <b>Remember: block chord = notes together · broken chord = notes played separately · arpeggio = a broken chord played in order.</b> \u{1F447} <b>How is an arpeggio different from a block chord?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:100,notes:[
-        {p:"C4",d:"8"},{p:"E4",d:"8"},{p:"G4",d:"8"},{p:"C5",d:"8"},{p:"E5",d:"8"},{p:"G5",d:"8"},{p:"C6",d:"q"},{bar:"final"}],
-        beams:[[0,1],[2,3],[4,5]],width:460} },
-      try:{ type:"mc", choices:["Its notes are played one at a time, in order","It uses different notes","It is always slower"], answer:0,
-        success:"✓ Same notes — played one at a time, in order, often past the octave.",
-        fail:"A block chord sounds all at once; an arpeggio…",
-        hint:"One at a time, in order." } },
-    { say:"Listen to the three textures. \u{1F447}",
+    { say:"The <b>CHROMATIC SCALE</b> is made up entirely of <b>half steps in consecutive order</b> — a <b>twelve-note scale</b> containing <b>every pitch within the octave</b>. On a keyboard it uses <b>every key, black and white</b>, and it may begin on any note. Unlike the major scale — seven different pitches built around a home keynote that <b>establishes a key center</b> — the chromatic scale has <b>no key center and no hierarchy</b>: musicians use it for <b>color</b>, for decorating melodies, for <b>smooth half-step connections</b>, and for <b>modulation</b> between keys. \u{1F447} <b>How many different pitches are inside one octave of a chromatic scale?</b>",
+      show:{ type:"custom", mount:(el)=>MF_L65_staffKb(el,
+        {clef:"treble",notes:[{p:"C4",d:"q",label:"C"},{p:"C#4",d:"q",label:"C♯"},{p:"D4",d:"q",label:"D"},{p:"D#4",d:"q",label:"D♯"},{p:"E4",d:"q",label:"E"},{p:"F4",d:"q",label:"F"},{p:"F#4",d:"q",label:"F♯"},{p:"G4",d:"q",label:"G"},{p:"G#4",d:"q",label:"G♯"},{p:"A4",d:"q",label:"A"},{p:"A#4",d:"q",label:"A♯"},{p:"B4",d:"q",label:"B"},{p:"C5",d:"q",label:"C"}],width:560},
+        {start:60,octaves:1,labels:true,marks:[60,61,62,63,64,65,66,67,68,69,70,71,72]}) },
+      try:{ type:"mc", choices:["12","7","8","15"], answer:0,
+        success:"✓ Twelve pitches — the 13th note is the starting letter again, an octave up.",
+        fail:"Count the marked keys, but don't count the top C twice.",
+        hint:"Every key from C up to (not including) the next C." } },
+    { say:"Spelling convention: going <b>UP</b>, a chromatic scale usually uses <b>SHARPS</b>. Three sharps are missing below. \u{1F447} <b>Fill the blanks in the ascending chromatic scale:</b>",
       try:{ type:"custom",
-        hint:"Together = block; taking turns = broken; climbing in order = arpeggio.",
-        mount:(container,fb)=>MF_L65_ear(container,fb) } },
-    { say:"<b>Arpeggiated Accompaniment:</b> Arpeggios create smooth, flowing accompaniment while outlining the harmony. \u{1F447} <b>Why are arpeggios often used as accompaniment?</b>",
-      try:{ type:"mc", choices:["They add smooth, flowing motion while sounding the harmony","They are louder","They change the chords"], answer:0,
-        success:"✓ The same chords, played as flowing lines — motion and harmony together.",
-        fail:"What does an arpeggio add that a block chord doesn't?",
-        hint:"Motion + harmony." } },
-    { say:"<b>Reading Chord Symbols:</b> If the chord does not change, the chord symbol may not be repeated. \u{1F447} <b>What chord do you play in the next measure?</b>",
-      try:{ type:"mc", choices:["The same chord as the previous measure","No chord at all","The I chord automatically"], answer:0,
-        success:"✓ No new symbol means the harmony continues.",
-        fail:"If nothing changes, nothing new is written…",
-        hint:"The harmony continues." } },
-    { say:"Play two arpeggios. \u{1F447}",
+        hint:"Each blank is a half step above the note before it: D♯, G♯, A♯.",
+        mount:(container,fb)=>MF_L65_fillBlanks(container,fb) } },
+    { say:"Going <b>DOWN</b>, the convention flips: a descending chromatic scale usually uses <b>FLATS</b>: C–B–B♭–A–A♭–G–G♭–F–E–E♭–D–D♭–C. \u{1F447} <b>Descending chromatic scales are usually written with…?</b>",
+      show:{ type:"staff", spec:{clef:"bass",notes:[{p:"C3",d:"q",label:"C"},{p:"B2",d:"q",label:"B"},{p:"Bb2",d:"q",label:"B♭"},{p:"A2",d:"q",label:"A"},{p:"Ab2",d:"q",label:"A♭"},{p:"G2",d:"q",label:"G"},{p:"Gb2",d:"q",label:"G♭"},{p:"F2",d:"q",label:"F"}],width:520} },
+      try:{ type:"mc", choices:["Flats","Sharps","Naturals only","Double sharps"], answer:0,
+        success:"✓ Up = sharps, down = flats — the standard beginning-theory spelling.",
+        fail:"Look at the accidentals on the descending staff above.",
+        hint:"⬆♯ · ⬇♭" } },
+    { say:"Half-step radar time — chromatic motion is ONLY half steps, so you must spot them instantly. \u{1F447} <b>Judge each pair of marked keys:</b>",
       try:{ type:"custom",
-        hint:"Root → 3rd → 5th → root, always climbing.",
-        mount:(container,fb)=>MF_L65_build(container,fb) } },
-    { say:"<b>This accompaniment plays one chord as an arpeggio.</b> \u{1F447} <b>Which chord do these four notes outline?</b>",
-      show:{ type:"staff", spec:{clef:"bass",tempo:100,notes:[
-        {p:"G2",d:"q"},{p:"B2",d:"q"},{p:"D3",d:"q"},{p:"G3",d:"q"},{bar:"final"}],width:340} },
-      try:{ type:"mc", choices:["The G chord (G-B-D)","The C chord","The E chord"], answer:0,
-        success:"✓ G-B-D-G: the G chord in root position, played one note at a time.",
-        fail:"Stack the four notes into 3rds…",
-        hint:"Collect the letters: G, B, D." } }
+        hint:"Half step = the VERY next key, black or white. E–F and B–C count too!",
+        mount:(container,fb)=>MF_L65_detective(container,fb) } }
   ],
   examples:[
-    { caption:"One chord, three textures in 4/4: block (all together — a whole note), broken (chord tones one at a time — quarter notes), arpeggio (up through the chord, past the octave — eighth notes).",
-      staff:{clef:"treble",time:"4/4",tempo:90,notes:[
-        {p:"C4",d:"w",label:"block"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"double"},
-        {p:"C4",d:"q",label:"broken"},{p:"G4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{bar:"double"},
-        {p:"C4",d:"8",label:"arpeggio"},{p:"E4",d:"8"},{p:"G4",d:"8"},{p:"C5",d:"8"},{p:"E5",d:"8"},{p:"G5",d:"8"},{p:"C6",d:"q"},{bar:"final"}],
-        beams:[[9,12],[13,14]],width:660},
-      kb:{start:60,octaves:2,labels:true} },
-    { caption:"An arpeggiated accompaniment: the bass arpeggiates I, then V, then I in root position — each measure's notes outline exactly one chord.",
-      staff:{clef:"bass",tempo:90,time:"3/4",notes:[
-        {p:"C3",d:"q",label:"I"},{p:"E3",d:"q"},{p:"G3",d:"q"},{bar:true},
-        {p:"G2",d:"q",label:"V"},{p:"B2",d:"q"},{p:"D3",d:"q"},{bar:true},
-        {p:"C3",d:"q",label:"I"},{p:"E3",d:"q"},{p:"G3",d:"q"},{bar:"final"}],width:560},
-      kb:{start:41,octaves:1.5,labels:true} }
+    { caption:"Ascending chromatic scale from C — sharps on the way up. Every neighboring note is one half step.",
+      staff:{clef:"treble",tempo:140,notes:[{p:"C4",d:"q",label:"C"},{p:"C#4",d:"q",label:"C♯"},{p:"D4",d:"q",label:"D"},{p:"D#4",d:"q",label:"D♯"},{p:"E4",d:"q",label:"E"},{p:"F4",d:"q",label:"F"},{p:"F#4",d:"q",label:"F♯"},{p:"G4",d:"q",label:"G"},{p:"G#4",d:"q",label:"G♯"},{p:"A4",d:"q",label:"A"},{p:"A#4",d:"q",label:"A♯"},{p:"B4",d:"q",label:"B"},{p:"C5",d:"q",label:"C"}],width:560},
+      kb:{start:60,octaves:1,labels:true,marks:[60,61,62,63,64,65,66,67,68,69,70,71,72]} },
+    { caption:"Descending chromatic scale from C — flats on the way down. Same twelve keys, opposite direction.",
+      staff:{clef:"treble",tempo:140,notes:[{p:"C5",d:"q",label:"C"},{p:"B4",d:"q",label:"B"},{p:"Bb4",d:"q",label:"B♭"},{p:"A4",d:"q",label:"A"},{p:"Ab4",d:"q",label:"A♭"},{p:"G4",d:"q",label:"G"},{p:"Gb4",d:"q",label:"G♭"},{p:"F4",d:"q",label:"F"},{p:"E4",d:"q",label:"E"},{p:"Eb4",d:"q",label:"E♭"},{p:"D4",d:"q",label:"D"},{p:"Db4",d:"q",label:"D♭"},{p:"C4",d:"q",label:"C"}],width:560},
+      kb:{start:60,octaves:1,labels:true,marks:[60,61,62,63,64,65,66,67,68,69,70,71,72]} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Texture-Term Sprint (45s)",
-      intro:"Block, broken, arpeggio — race the definitions and the Italian!",
-      miaIntro:"Arpeggiare — say it with flair! \u{26A1}",
-      spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Block chord","chord tones played together"],
-        ["Broken chord","chord tones NOT played together"],
-        ["Arpeggio","chord tones in sequence, one after another"],
-        ["Arpeggiare","Italian: 'to play upon a harp'"],
-        ["An arpeggio's range","may extend an octave or more"],
-        ["Repeated chord in a chart","symbol not written again"],
-        ["Arpeggiated accompaniment","outlines each chord as a flowing line"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — texture vocabulary secured!":null },
-    { type:"key-climb", title:"Game 2 · Grand Arpeggio",
-      intro:"Play a C major arpeggio over TWO octaves — one note at a time, in order!",
-      miaIntro:"Root-3rd-5th, rinse and rise! \u{1FA9C}",
-      spec:{seq:[60,64,67,72,76,79,84],
-        names:["C","E","G","C (octave 1!)","E","G","C (octave 2!)"],
-        start:60, octaves:2, title:"C major arpeggio, two octaves up"},
-      result:(score)=>score!==null?"Two full octaves — excellent arpeggio!":null },
-    { type:"symbol-hunt", title:"Game 3 · Texture Spotter",
-      intro:"Block, broken and arpeggio in NOTATION — click what's called!",
-      miaIntro:"Stacked or strung out? \u{1F440}",
-      spec:{rounds:6, pool:[
-        {label:"Block chord", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"Broken chord", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"G4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"}],width:170}},
-        {label:"Arpeggio (rising)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"}],width:170}},
-        {label:"Scale (not a chord!)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"}],width:170}}]},
-      result:(score)=>score>=5?"No texture disguises itself from you!":null },
-    { type:"term-race", title:"Game 4 · Outline Detective Race",
-      intro:"Arpeggiated lines fly by as text — name the chord each outlines!",
-      miaIntro:"Stack the letters in your head! \u{1F3C1}",
+    { type:"key-climb", title:"Game 1 · THE CHROMATIC RUN \u{1F3C3}",
+      intro:"Every key from C to C — thirteen keys, zero skips. How fast can you run it clean?",
+      miaIntro:"The ultimate keyboard run — GO! \u{1F9D7}",
+      spec:{start:60, octaves:1, seq:[60,61,62,63,64,65,66,67,68,69,70,71,72],
+        names:["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B","C"],
+        title:"Play EVERY key from C up to C — don't skip a single one!"},
+      result:(stars)=>stars>=3?"A flawless chromatic run — every key, no misses!":null },
+    { type:"order-tap", title:"Game 2 · Spell the Climb (13 taps)",
+      intro:"Spell the ascending chromatic scale in order — sharps on the way up!",
+      miaIntro:"Thirteen names, perfect order! \u{1F520}",
+      spec:{sequence:["C","C♯","D","D♯","E","F","F♯","G","G♯","A","A♯","B","C"], title:"Tap the ascending chromatic spelling — C first!"},
+      result:(stars)=>stars>=3?"Perfect chromatic spelling!":null },
+    { type:"gen-race", title:"Game 3 · Half-Step Radar (30s)",
+      intro:"Half step or whole step? Judge as many as you can in 30 seconds!",
+      miaIntro:"Radar ON — trust your keyboard eyes! \u{1F4E1}",
+      spec:{gen:"step-type", params:{}, seconds:30},
+      result:(score)=>score>=8?score+" in 30 seconds — radar locked!":null },
+    { type:"term-race", title:"Game 4 · Chromatic Vocabulary Race",
+      intro:"Every term from today — match them at speed!",
+      miaIntro:"Words as fast as your fingers! \u{26A1}",
       spec:{rounds:8, reverse:true, pool:[
-        ["C-E-G-C rising","outlines the C major chord"],
-        ["G-B-D-G rising","outlines the G major chord"],
-        ["F-A-C-F rising","outlines the F major chord"],
-        ["A-C-E-A rising","outlines the A minor chord"],
-        ["G-B-D-F rising","outlines the G7 chord"],
-        ["D-F-A-D rising","outlines the D minor chord"],
-        ["Block chord","all tones at once"],
-        ["Arpeggio","tones in rising (or falling) order"]]},
-      result:(score)=>score>=6?"Outlines read like large print!":null }
+        ["Chromatic Scale","All twelve pitches, moving only by half steps"],
+        ["Half Step","The smallest interval — the very next key"],
+        ["Ascending","Moving from lower pitches to higher — usually spelled with sharps"],
+        ["Descending","Moving from higher pitches to lower — usually spelled with flats"],
+        ["12","How many tones a chromatic scale has in one octave"]]},
+      result:(score)=>score>=7?"Chromatic vocabulary complete!":null }
   ],
-  practiceIntro:"20 practice questions — textures, the Italian, and outline-reading. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — half steps, the 12 pitches, and the sharp-up/flat-down convention. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Block chord","notes together"],["Broken chord","notes apart"],["Arpeggio","notes in sequence"],["Arpeggiare","to play upon a harp"],["Octave or more","how far an arpeggio may extend"]], reverse:true}, count:6 },
-    { gen:"triad-id", params:{}, count:3 },
-    { type:"mc", q:"When the notes of a chord are played together, it is called a…", choices:["block chord","broken chord","cluster"], answer:0,
-      explain:"Solid, vertical, all-at-once." },
-    { type:"mc", q:"When they are NOT played together, it is called a…", choices:["broken chord","block chord","rest"], answer:0,
-      explain:"Same tones, spread over time." },
-    { type:"mc", q:"How are the notes of an arpeggio played?", choices:["sequentially, one after another","all at once","in random order"], answer:0,
-      explain:"The defining word is SEQUENTIALLY." },
-    { type:"mc", q:"The word arpeggio comes from Italian arpeggiare, meaning…", choices:["to play upon a harp","to break apart","to hurry"], answer:0,
-      explain:"The harp's ripple, borrowed by every instrument." },
-    { type:"mc", q:"An arpeggio may be extended…", choices:["an octave or more","only five notes","never past the 5th"], answer:0,
-      explain:"An arpeggio may extend an octave or more." },
-    { type:"mc", q:"The rising bass line F-A-C-F outlines which chord?", choices:["F major","C major","D minor"], answer:0,
-      explain:"F-A-C stacked = F major, root position." },
-    { type:"truefalse", q:"Block and broken chords contain different notes.", answer:false,
-      explain:"Identical notes — only the timing differs." },
-    { type:"truefalse", q:"When a chord repeats in the next measure, its symbol is written again.", answer:false,
-      explain:"No symbol = same chord continues." },
-    { type:"truefalse", q:"Arpeggiated accompaniments outline the chords of the harmony.", answer:true,
-      explain:"A chord unrolled is still that chord." },
-    { type:"truefalse", q:"Every broken chord is an arpeggio.", answer:false,
-      explain:"Arpeggios are the SEQUENTIAL kind of broken chord." }
+    { gen:"step-type", params:{}, count:4 },
+    { gen:"term-match", params:{subject:"term", pool:[["Chromatic Scale","all twelve pitches, only half steps"],["Half Step","the smallest interval"],["Ascending","moving upward — usually sharps"],["Descending","moving downward — usually flats"]], reverse:true}, count:4 },
+    { gen:"note-name", params:{clef:"treble"}, count:2 },
+    { type:"mc", q:"A chromatic scale is made up entirely of…", choices:["half steps","whole steps","major thirds"], answer:0,
+      explain:"Twelve consecutive half steps." },
+    { type:"mc", q:"How many different pitches are within one octave of a chromatic scale?", choices:["12","7","8"], answer:0,
+      explain:"Every key, black and white, exactly once." },
+    { type:"truefalse", q:"A chromatic scale includes every pitch within an octave.", answer:true,
+      explain:"No skips — that's its definition." },
+    { type:"truefalse", q:"Ascending chromatic scales are usually written using flats.", answer:false,
+      explain:"Ascending uses SHARPS; descending uses flats." },
+    { type:"mc", q:"The chromatic scale may begin on…", choices:["any note","only C","only white keys"], answer:0,
+      explain:"Start anywhere — the pattern is identical." },
+    { type:"mc", q:"Complete the ascending spelling: C – C♯ – D – ____ – E", choices:["D♯","E♭","D"], answer:0,
+      explain:"Ascending = sharps: D♯." },
+    { type:"mc", q:"Complete the descending spelling: C – B – ____ – A", choices:["B♭","A♯","G"], answer:0,
+      explain:"Descending = flats: B♭." },
+    { type:"mc", q:"Within one octave, the major scale has ____ different pitches; the chromatic scale has ____.", choices:["7 · 12","8 · 13","8 · 12"], answer:0,
+      explain:"Both scales END on the repeated keynote — it doesn't count twice." },
+    /* — from the unit review sheet — */
+    { type:"mc", q:"The chromatic scale is made up entirely of ____ in consecutive order.", choices:["half steps","whole steps","thirds"], answer:0,
+      explain:"Review-sheet wording — half steps, one after another." },
+    { type:"mc", q:"How many half steps are found within one octave of a chromatic scale?", choices:["12","8","13"], answer:0,
+      explain:"Twelve half steps connect the thirteen written notes." }
   ],
-  miaQuizIntro:"Quiz! Block, broken, or arpeggio — know each by sight and sound.",
+  miaQuizIntro:"Every key, every half step — run the quiz like you ran the keyboard!",
   quiz:[
-    { type:"mc", q:"A BLOCK chord is played…", choices:["with all notes together","one note at a time","with the melody only"], answer:0,
-      explain:"The vertical wall.", hint:"Think 'building block'." },
-    { type:"mc", q:"A BROKEN chord is played…", choices:["with its notes not together","with wrong notes","without the root"], answer:0,
-      explain:"Same tones, spread out.", hint:"Broken apart in TIME." },
-    { type:"mc", q:"How are the notes of an arpeggio played?", choices:["One at a time, usually in order","All at once","Backwards only"], answer:0,
-      explain:"One at a time, in order.", hint:"Arpeggiare!" },
-    { type:"mc", q:"Arpeggiare means…", choices:["to play upon a harp","to march","to whisper"], answer:0,
-      explain:"Italian: 'to play upon a harp.'", hint:"Think of the instrument." },
-    { type:"truefalse", q:"An arpeggio may extend an octave or more.", answer:true,
-      explain:"An arpeggio may extend an octave or more.", hint:"How far did Game 2 go?" },
-    { type:"truefalse", q:"When a chord is repeated in following measures, the chord symbol must be repeated too.", answer:false,
-      explain:"If the harmony stays the same, the symbol is not repeated.", hint:"The harmony continues." },
-    { type:"mc", q:"Identify the texture.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"}],width:280},
-      choices:["A rising arpeggio (C major)","A block chord","A scale"], answer:0,
-      explain:"Chord tones in order = arpeggio.", hint:"Are these steps or skips?" },
-    { type:"mc", q:"Identify the texture.",
-      staff:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:220},
-      choices:["A block chord (F major)","A broken chord","An arpeggio"], answer:0,
-      explain:"Stacked and simultaneous.", hint:"One stem, one moment." },
-    { type:"mc", q:"This accompaniment bass plays G-B-D-G. The harmony is…", choices:["the V chord in C major (G major)","the I chord in C major","the IV chord"], answer:0,
-      explain:"G-B-D = G major = V of C.", hint:"Stack, then place in the key." },
-    { type:"mc", q:"Why are arpeggios often used in accompaniment?", choices:["They create smooth, flowing motion while outlining the harmony","They are louder","They change the melody"], answer:0,
-      explain:"Flowing motion suits gentle accompaniment.", hint:"Motion + harmony." },
-    { type:"mc", q:"Which is true of block vs broken chords?", choices:["Same notes, different timing","Different notes, same timing","Nothing in common"], answer:0,
-      explain:"Texture ≠ content.", hint:"The step-1 discovery." },
-    { type:"mc", q:"If a chord symbol is not repeated, what harmony should you play?", choices:["The same chord as before","Silence","Automatically G7"], answer:0,
-      explain:"No new symbol = carry on.", hint:"The score-reading rule." },
+    { type:"mc", q:"A chromatic scale is made up entirely of:", choices:["Whole steps","Half steps","Major thirds","Perfect fifths"], answer:1,
+      explain:"Half steps in consecutive order.", hint:"The smallest possible moves." },
+    { type:"mc", q:"How many different pitches are found within one octave of a chromatic scale?", choices:["7","8","12","15"], answer:2,
+      explain:"All twelve keys, black and white.", hint:"Count the marked keyboard." },
+    { type:"mc", q:"The distance between every pair of adjacent notes in a chromatic scale is:", choices:["A whole step","A half step","A minor third","A perfect fourth"], answer:1,
+      explain:"Always exactly one half step.", hint:"No exceptions, ever." },
+    { type:"truefalse", q:"A chromatic scale includes every pitch within an octave.", answer:true,
+      explain:"That's what makes it chromatic.", hint:"Chromatic = every key." },
+    { type:"truefalse", q:"Ascending chromatic scales are usually written using flats.", answer:false,
+      explain:"Up = sharps, down = flats.", hint:"⬆♯ ⬇♭" },
+    { type:"mc", q:"Which matching is correct?",
+      choices:["Chromatic → all half steps · Ascending → up (sharps) · Descending → down (flats)",
+               "Chromatic → all whole steps · Ascending → down · Descending → up",
+               "Chromatic → eight notes · Ascending → flats · Descending → sharps"], answer:0,
+      explain:"The three core facts of the lesson.", hint:"Direction decides the spelling." },
+    { type:"mc", q:"A chromatic scale contains ____ different pitches within one octave.", choices:["12","7","13"], answer:0,
+      explain:"Twelve — the 13th written note repeats the keynote.", hint:"Don't double-count the top note." },
+    { type:"mc", q:"Every interval in a chromatic scale is a ____ step.", choices:["half","whole","skipped"], answer:0,
+      explain:"Half steps only.", hint:"The definition itself." },
+    { type:"mc", q:"Composers use the chromatic scale for…",
+      choices:["color, smooth half-step connections, and modulation between keys","establishing the home key","keeping the beat steady"], answer:0,
+      explain:"With no key center of its own, the chromatic scale decorates, connects and travels.", hint:"It has no 'home' to establish." },
+    { type:"mc", q:"Which comparison is correct?",
+      choices:["Major: 7 different pitches, establishes a key center · Chromatic: all 12, adds color with no key center",
+               "Major: 12 pitches · Chromatic: 7 pitches",
+               "Both scales establish a key center"], answer:0,
+      explain:"The major scale builds a home key; the chromatic scale supplies every color without one.", hint:"Which scale has a 'home'?" },
+    { type:"mc", q:"Complete the ascending chromatic scale: C  C♯  D  ____  E  F  F♯  G  ____  A  A♯  B  C",
+      choices:["D♯ · G♯","E♭ · A♭","D · G"], answer:0,
+      explain:"Ascending uses sharps: D♯ and G♯.", hint:"One half step above D, one above G." },
+    { type:"mc", q:"How many half steps are found within one octave of a chromatic scale?", choices:["12","8","6"], answer:0,
+      explain:"Twelve half-step moves from C to shining C.", hint:"Same as the number of pitches." },
+    { type:"mc", q:"Which statement is correct?",
+      choices:["A chromatic scale skips all black keys","Every interval in a chromatic scale is a half step","Chromatic scales contain only eight notes","Chromatic scales always use sharps in both directions"], answer:1,
+      explain:"Half steps only — and the spelling flips with direction.", hint:"Test each claim against the keyboard." },
+    { type:"mc", q:"Which scale is shown?",
+      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"C#4",d:"q"},{p:"D4",d:"q"},{p:"D#4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"}],width:340},
+      choices:["The start of a chromatic scale","A major scale","A tetrachord"], answer:0,
+      explain:"C–C♯–D–D♯–E–F: nothing skipped — chromatic motion.", hint:"Check the accidentals between the letters." },
     /* generated */
-    { gen:"term-match", params:{subject:"term", pool:[["Block","together"],["Broken","apart"],["Arpeggio","in sequence"],["Arpeggiare","play upon a harp"]], reverse:true}, count:3 },
-    { gen:"triad-id", params:{}, count:2 },
-    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:1 }
+    { gen:"step-type", params:{}, count:4 },
+    { gen:"term-match", params:{subject:"term", pool:[["Chromatic Scale","all twelve pitches, only half steps"],["Half Step","the smallest interval"],["Ascending","upward — usually sharps"],["Descending","downward — usually flats"]], reverse:true}, count:2 },
+    { gen:"note-name", params:{clef:"bass"}, count:2 }
   ],
   vocabulary:[
-    {term:"Block Chord", def:"All chord tones played together — solid and vertical.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:380}},
-    {term:"Broken Chord", def:"Chord tones NOT played together — spread over time.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"E4",d:"q"}],width:380}},
-    {term:"Arpeggio", def:"Chord tones played sequentially, one after another — may extend an octave or more. From arpeggiare, 'to play upon a harp.'",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"}],width:380}},
-    {term:"Arpeggiated Accompaniment", def:"A flowing accompaniment whose arpeggios outline each chord of the harmony."}
+    {term:"Chromatic Scale", def:"The chromatic scale is a twelve-note scale that includes every half step within the octave — C, C♯, D, D♯, E, F, F♯, G, G♯, A, A♯, B. On the keyboard it uses every key, black and white; ascending versions usually use sharps, descending versions flats."},
+    {term:"Half Step", def:"The smallest interval between two adjacent notes — the very next key."},
+    {term:"Ascending", def:"Moving from lower pitches to higher pitches. Ascending chromatic scales usually use sharps."},
+    {term:"Descending", def:"Moving from higher pitches to lower pitches. Descending chromatic scales usually use flats."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Block chord</b> = tones together; <b>broken chord</b> = tones apart.",
-    "✔ <b>Arpeggio</b> = tones in SEQUENCE — <i>arpeggiare</i>, 'to play upon a harp' — extendable <b>an octave or more</b>.",
-    "✔ Arpeggiated accompaniments <b>outline the chords</b> in root position while adding motion.",
-    "✔ A repeated chord's <b>symbol is not re-written</b>.",
-    "✔ Texture changes the delivery, <b>never the harmony</b>."
+    "✔ The <b>chromatic scale</b> = <b>every pitch</b> in the octave — <b>12 tones</b>, all <b>half steps</b>, no skips.",
+    "✔ On the keyboard: <b>every key, black and white</b>.",
+    "✔ Spelling convention: <b>ascending → sharps</b>, <b>descending → flats</b>.",
+    "✔ It may begin on <b>any note</b>.",
+    "✔ Count carefully: <b>major = 7 different pitches</b> (the 8th written note repeats the keynote) · <b>chromatic = all 12</b>.",
+    "✔ <b>Function</b>: the major scale <b>establishes a key center</b> — home, hierarchy, progressions; the chromatic scale has <b>no center</b> — it supplies <b>color, embellishment, smooth connections and modulation</b>."
   ],
   tips:[
-    "Reading trick: when a bass line skips (not steps), try stacking its notes — you're probably looking at an unrolled chord.",
-    "Alberti bass — the classical pattern low-high-middle-high (C-G-E-G) — is history's most famous broken chord. Mozart built careers on it.",
-    "Play your harmonized scale from Lesson 64 again, but arpeggiate every chord for a flowing accompaniment.",
-    "Next lesson: the melody itself gets decorated — passing tones and neighbors that don't belong to the chord (on purpose!)."
+    "The chromatic scale is your interval ruler: ANY interval can be measured by counting its half steps.",
+    "At a piano, run C to C touching every key — thumb-crossing drills love the chromatic scale.",
+    "Remember the two white-key half steps (E–F, B–C): the chromatic scale passes straight through them with no black key needed.",
+    "Next lesson: intervals — and now you own the ruler that measures them."
   ],
-  rewards:{ badge:"Harp Whisperer", icon:"\u{1F3B5}" },
+  rewards:{ badge:"Chromatic Climber", icon:"\u{1F9D7}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! Block, broken, or arpeggio — you know every texture. \u{1F3B5}\u{1F389}",
-  miaPass:"Passed! You know all three textures. Next: decorating the melody…",
+  miaPerfect:"A perfect chromatic quiz — every key, every half step, every answer! \u{1F9D7}\u{1F389}",
+  miaPass:"You passed! Chant it on the way out: up with sharps, down with flats, never skip a key.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Example 1 = block (together), 2 = broken (separately), 3 = arpeggio — one at a time, in order, past the octave.",
-      play:()=>{[60,64,67,72,76].forEach((m,i)=>MFAudio.tone(m,.5,i*.36,.38));} },
-    learn:{ label:"chord textures",
-      explain:"Block = together; broken = apart; arpeggio = apart AND in sequence, an octave or more. Accompaniments arpeggiate to add motion; repeated chords don't repeat their symbol.",
-      hint:"Together / apart / in-order-apart.",
-      play:()=>{[60,64,67].forEach(m=>MFAudio.tone(m,.9,0,.3));[60,64,67,72].forEach((m,i)=>MFAudio.tone(m,.45,1.1+i*.32,.36));} },
+      explain:"Scale A was the C major scale (it skips keys); Scale B was the chromatic scale — all twelve pitches by half step.",
+      play:()=>{[60,61,62,63,64,65].forEach((m,i)=>MFAudio.tone(m,.18,i*.17));} },
+    learn:{ label:"the chromatic scale",
+      explain:"Twelve tones, all half steps, every key on the keyboard. Ascending is spelled with sharps, descending with flats.",
+      hint:"'Chromatic = every key' — nothing is skipped.",
+      play:()=>{[72,71,70,69].forEach((m,i)=>MFAudio.tone(m,.2,i*.2));} },
     example:{ label:"the examples",
-      explain:"Example 1 plays one chord three ways; example 2 is an accompaniment bass arpeggiating I-V-I." },
+      explain:"The same twelve keys twice: up with sharp spellings, down with flat spellings — watch the fully-marked keyboard." },
     game:{ label:"the games",
-      explain:"Match the terms, play a two-octave arpeggio, spot textures in notation, then identify outlined chords.",
-      hint:"Skips in a line usually spell a chord." },
+      explain:"Run every key against the clock, spell the climb in 13 taps, judge half steps on radar, then race the vocabulary.",
+      hint:"In the Run, accuracy first — misses cost more than seconds." },
     quiz:{ label:"this question",
-      explain:"Two axes: WHAT (the chord — stack the letters) and HOW (block/broken/arpeggio — the timing).",
-      play:()=>{[55,59,62,67].forEach((m,i)=>MFAudio.tone(m,.5,i*.35,.38));} }
+      explain:"Three facts do the work: 12 pitches, all half steps, sharps up / flats down.",
+      play:()=>{MFAudio.tone(60,.2,0);MFAudio.tone(61,.2,.2);MFAudio.tone(62,.3,.4);} }
   }
 };

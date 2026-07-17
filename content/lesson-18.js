@@ -1,288 +1,321 @@
-/* Lesson 18 — Dynamic Signs (AEMT Book 1, Unit 5)
-   Built from drafts/UNIT 5 – Lesson 18.md.
-   QA note honored: each symbol repeatedly paired with Italian term + English meaning,
-   with LISTENING activities for soft/loud/crescendo/decrescendo.
-   Draft Q12 implementation note followed: option B revised so only one answer is correct.
+/* Lesson 18 (2.9, formerly L15) — Eighth Notes (AEMT Book 1, Unit 4)
+   Built from drafts/UNIT 4 – Lessons 15 & 16.md (combined draft — pages stay separate, DD-12).
+   QA note honored: "1 eighth = ½ beat, 2 eighths = 1 quarter" and counting
+   "1-and-2-and-3-and-4-and" repeated across steps, games and quiz.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* loud-or-soft listening drill (unique L18 prefix) */
-function MF_L18_loudSoft(container,fb,rounds){
-  const seq=[]; for(let i=0;i<rounds;i++) seq.push(i%2===0);
-  seq.sort(()=>Math.random()-.5);
-  let i=0,played=false;
-  container.innerHTML=`<div class="big-q lsd-q" style="text-align:center"></div>
-    <div style="text-align:center"><button class="play lsd-play">▶ Listen</button></div>
-    <div class="choices lsd-ch" style="display:none"><button>\u{1F92B} piano (p) — soft</button><button>\u{1F4E2} forte (f) — loud</button></div>`;
-  const q=container.querySelector(".lsd-q"), ch=container.querySelector(".lsd-ch"), btn=container.querySelector(".lsd-play");
-  function ask(){ q.textContent=`Sound ${i+1} of ${seq.length}: p or f?`; played=false; ch.style.display="none"; }
-  btn.onclick=()=>{
-    const loud=seq[i];
-    [60,64,67].forEach((m,k)=>MFAudio.tone(m,.5,k*.45,loud?.8:.15));
-    played=true;
-    setTimeout(()=>{ ch.style.display=""; },1800);
-  };
+/* flag-or-beam drill (unique L15 prefix) */
+function MF_L18_flagBeam(container,fb,rounds){
+  const POOL=[
+    {items:[{p:"G4",d:"8"}],beam:null,flag:true},
+    {items:[{p:"E4",d:"8"},{p:"F4",d:"8"}],beam:[0,1],flag:false},
+    {items:[{p:"B4",d:"8"}],beam:null,flag:true},
+    {items:[{p:"C4",d:"8"},{p:"D4",d:"8"}],beam:[0,1],flag:false},
+    {items:[{p:"A4",d:"8"},{p:"G4",d:"8"}],beam:[0,1],flag:false},
+    {items:[{p:"D5",d:"8"}],beam:null,flag:true}];
+  const seq=[...POOL].sort(()=>Math.random()-.5).slice(0,rounds);
+  let i=0;
+  container.innerHTML=`<div class="big-q fbm-q" style="text-align:center"></div><div class="fbm-staff"></div>
+    <div class="choices fbm-ch"><button>\u{1F3F3}\u{FE0F} Flag — one alone</button><button>\u{1F91D} Beam — a connected group</button></div>`;
+  const q=container.querySelector(".fbm-q"), st=container.querySelector(".fbm-staff"), ch=container.querySelector(".fbm-ch");
+  function ask(){
+    const cur=seq[i];
+    Staff.render(st,{clef:"treble",notes:cur.items,beams:cur.beam?[cur.beam]:undefined,width:240});
+    q.textContent=`Eighth note ${i+1} of ${seq.length}: flag or beam?`;
+  }
   [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-    if(!played){ fb(false,"Listen first!"); return; }
-    const saidLoud=bi===1, ok=saidLoud===seq[i];
-    if(ok){ i++;
-      if(i>=seq.length){ ch.style.display="none"; btn.style.display="none"; q.textContent="Golden ears!";
-        fb(true,"✓ Every level identified — p is the whisper, f is the shout!"); }
-      else { fb(true,`✓ ${seq[i-1]?"FORTE — full volume!":"piano — soft and gentle."} Next…`); ask(); } }
-    else fb(false,"Compare it to your speaking voice: whisper = p, shout = f. Play it again!");
+    const cur=seq[i], saidFlag=bi===0, ok=saidFlag===cur.flag;
+    if(ok){ MFAudio.tone(MFAudio.midi(cur.items[0].p),.25); i++;
+      if(i>=seq.length){ ch.style.display="none"; q.textContent="Flags and beams sorted!";
+        fb(true,"✓ One alone wears a FLAG; two or more hold hands with a BEAM. Same notes, same value!"); }
+      else { fb(true,`✓ ${cur.flag?"Single eighth — it wears a flag.":"A group — the flags fused into one beam."} Next…`); ask(); } }
+    else fb(false,`Count the eighth notes: ${cur.flag?"only ONE, so it keeps its flag.":"more than one, so they're BEAMED together."}`);
   });
   ask();
 }
 
 LESSON_CONTENT[18]={
-  welcome:"Unit 5! Today music learns to whisper AND shout. \u{1F4E2}",
+  welcome:"Ready to go FASTER? Today the beat splits in two! \u{1F3C3}",
   hook:{
-    say:"Have you ever whispered a secret… or shouted across a room? Music works the same way! Press play — the same melody, twice. <b>What's different?</b>",
+    say:"So far your quickest note lasted one beat. Press play — the beat stays steady, but the notes suddenly <b>double their speed</b>. What happened?",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ Twice</button></div>
-          <div class="choices hk-ch" style="display:none"><button>The VOLUME changed — soft, then loud</button><button>The speed changed</button><button>The notes changed</button></div>`;
+        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ Steady… then double!</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Each beat split into TWO notes</button><button>The beat got faster</button><button>The notes got louder</button></div>`;
         const ch=container.querySelector(".hk-ch");
         container.querySelector(".hk-play").onclick=()=>{
-          [60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.45,k*.4,.15));
-          [60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.45,2.2+k*.4,.8));
-          setTimeout(()=>{ ch.style.display=""; },4400);
+          const spb=60/92;
+          for(let k=0;k<8;k++) MFAudio.click(k*spb,.45,k%4===0);
+          for(let k=0;k<4;k++) MFAudio.tone(67,spb*.85,k*spb);
+          for(let k=0;k<8;k++) MFAudio.tone(67,spb*.42,(4+k*0.5)*spb);
+          setTimeout(()=>{ ch.style.display=""; },8*spb*1000+400);
         };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Same notes, same speed — only the VOLUME changed. Those volume instructions are called DYNAMICS!");
-          else fb(false,"The notes and speed were identical — listen for how STRONG the sound is.");
+          if(i===0) fb(true,"✓ The CLICKS never changed — each beat simply split into two equal halves. Those halves are EIGHTH NOTES!");
+          else fb(false,"Listen to the clicks — they stayed perfectly steady. Something happened INSIDE each beat…");
         });
       } }
   },
   objectives:[
-    "Identify common dynamic markings",
-    "Explain the meanings of Italian dynamic terms",
-    "Recognize the symbols for crescendo and decrescendo",
-    "Describe gradual changes in volume",
-    "Order dynamics from softest to loudest",
-    "Read dynamic symbols in a musical score"
+    "Identify eighth notes",
+    "Explain the difference between a flag and a beam",
+    "Count rhythms using “and” between beats",
+    "Recognize that two eighth notes equal one quarter note",
+    "Read rhythms containing eighth notes",
+    "Build measures using quarter and eighth notes"
   ],
   steps:[
-    { say:"Dynamics tell us <b>how loud or soft</b> to play — in Italian, music's official language for centuries. The two anchors: <b>p (piano) = soft</b> \u{1F92B} and <b>f (forte) = loud</b> \u{1F4E2}. \u{1F447} <b>Trust your ears:</b>",
-      try:{ type:"custom",
-        hint:"Whisper = p, shout = f.",
-        mount:(container,fb)=>MF_L18_loudSoft(container,fb,4) } },
-    { say:"Between soft and loud lives <b>mezzo = moderately</b>: <b>mp (mezzo piano)</b> = moderately soft, <b>mf (mezzo forte)</b> = moderately loud. Add the extremes — <b>pp (pianissimo)</b> very soft, <b>ff (fortissimo)</b> very loud — and you have the whole ladder. \u{1F447} <b>What does “mezzo” mean?</b>",
-      show:{ type:"html", html:"<div style='display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-family:Georgia,serif'>"+["pp","p","mp","mf","f","ff"].map((d,i)=>`<div style='padding:10px 14px;border:1.5px solid var(--primary);border-radius:10px;text-align:center'><div style='font-size:${15+i*3}px;font-weight:800;font-style:italic'>${d}</div><div style='font-size:11px'>${["very soft","soft","mod. soft","mod. loud","loud","very loud"][i]}</div></div>`).join("")+"</div>" },
+    { say:"An <b>eighth note</b> is worth <b>½ beat</b> — half a quarter note. Alone, it wears a <b>flag</b>; in groups, the flags fuse into a <b>beam</b>. \u{1F447} <b>How many beats does one eighth note receive?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"E4",d:"8",label:"a pair joined by a BEAM"},{p:"F4",d:"8"},
+        {p:"A4",d:"8",label:"single —"},{p:"B4",d:"8",label:"with a FLAG"}],
+        beams:[[0,1]],width:420} },
       try:{ type:"mc",
-        choices:["Moderately","Very","Suddenly"], answer:0,
-        success:"✓ Mezzo = moderately. mp and mf live in the comfortable middle of the ladder.",
-        fail:"Mezzo softens the extremes — it means MODERATELY.",
-        hint:"mp = moderately soft." } },
-    { say:"Volume can also change <b>gradually</b>, shown by a long wedge under the notes. <b>Crescendo ( &lt; )</b> = gradually LOUDER — the wedge opens wider. <b>Decrescendo ( &gt; )</b> = gradually SOFTER — the wedge closes. \u{1F447} <b>Listen and identify:</b>",
+        choices:["½ beat","1 beat","2 beats"], answer:0,
+        success:"✓ Half a beat — two of them share one quarter note's time.",
+        fail:"It's HALF of a quarter note's beat.",
+        hint:"Its name is a fraction hint: eighth." } },
+    { say:"Flag or beam? One alone = flag \u{1F3F3}\u{FE0F}. Two or more = beam \u{1F91D}. The VALUE never changes — ½ beat each. \u{1F447} <b>Sort them:</b>",
       try:{ type:"custom",
-        hint:"Growing = crescendo, shrinking = decrescendo.",
+        hint:"Count the eighth notes: one = flag, more = beam.",
+        mount:(container,fb)=>MF_L18_flagBeam(container,fb,5) } },
+    { say:"To count eighth notes, add the word <b>“and”</b> between beats: <b>1-and-2-and-3-and-4-and</b>. Notes ON the beat get numbers; notes BETWEEN beats get “and.” \u{1F447} <b>Press play and count along:</b>",
+      try:{ type:"custom",
+        hint:"Numbers on the clicks, “and” exactly between them.",
         mount:(container,fb)=>{
-          const seq=["c","d","c","d"].sort(()=>Math.random()-.5);
-          let i=0,played=false;
-          container.innerHTML=`<div class="big-q cd-q" style="text-align:center"></div>
-            <div class="cd-staff"></div>
-            <div style="text-align:center"><button class="play cd-play">▶ Listen</button></div>
-            <div class="choices cd-ch" style="display:none"><button>\u{1F4C8} Crescendo — growing louder</button><button>\u{1F4C9} Decrescendo — fading softer</button></div>`;
-          const q=container.querySelector(".cd-q"), ch=container.querySelector(".cd-ch"), st=container.querySelector(".cd-staff");
-          function ask(){
-            q.textContent=`Sound ${i+1} of ${seq.length}: which way is the volume moving?`;
-            const type=seq[i]==="c"?"cresc":"decresc";
-            Staff.render(st,{clef:"treble",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"}],hairpins:[{from:0,to:3,type}],width:320});
-            played=false; ch.style.display="none";
-          }
-          container.querySelector(".cd-play").onclick=()=>{
-            const c=seq[i]==="c";
-            for(let k=0;k<6;k++) MFAudio.tone(67,.35,k*.35, c? .1+k*.14 : .8-k*.13);
+          let played=false;
+          container.innerHTML=`<div class="ca-staff"></div>
+            <div style="text-align:center"><button class="play ca-play">▶ Play & count</button></div>
+            <div class="choices ca-ch" style="display:none"><button>1-and-2-and-3-and-4-and</button><button>1-2-3-4-5-6-7-8</button><button>1-and-a-2-and-a</button></div>`;
+          Staff.render(container.querySelector(".ca-staff"),{clef:"treble",time:"4/4",
+            notes:[{p:"C4",d:"8",label:"1"},{p:"C4",d:"8",label:"and"},{p:"E4",d:"8",label:"2"},{p:"E4",d:"8",label:"and"},{p:"G4",d:"8",label:"3"},{p:"G4",d:"8",label:"and"},{p:"E4",d:"q",label:"4"},{bar:"final"}],
+            beams:[[0,1],[2,3],[4,5]],width:460});
+          const ch=container.querySelector(".ca-ch");
+          container.querySelector(".ca-play").onclick=()=>{
+            const spb=60/84;
+            for(let k=0;k<4;k++) MFAudio.click(k*spb,.5,k===0);
+            const seq=[60,60,64,64,67,67]; seq.forEach((m,i)=>MFAudio.tone(m,spb*.42,i*.5*spb));
+            MFAudio.tone(64,spb*.9,3*spb);
             played=true;
-            setTimeout(()=>{ ch.style.display=""; },2400);
+            setTimeout(()=>{ ch.style.display=""; },4*spb*1000+400);
           };
-          [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-            if(!played){ fb(false,"Listen first!"); return; }
-            const saidC=bi===0, ok=saidC===(seq[i]==="c");
-            if(ok){ i++;
-              if(i>=seq.length){ ch.style.display="none"; q.textContent="Gradual changes mastered!";
-                fb(true,"✓ Opening wedge = crescendo (<), closing wedge = decrescendo (>) — and you HEARD both!"); }
-              else { fb(true,`✓ ${seq[i-1]==="c"?"Growing — crescendo!":"Fading — decrescendo!"} Next…`); ask(); } }
-            else fb(false,"Did it GROW or SHRINK? Match the arrow's opening to the volume.");
+          [...ch.children].forEach((b,i)=>b.onclick=()=>{
+            if(!played){ fb(false,"Play it first!"); return; }
+            if(i===0) fb(true,"✓ 1-and-2-and-3-and — the “and” lives exactly halfway between the clicks. That's the eighth-note count!");
+            else fb(false,"The beat count stays 1-2-3-4 — eighth notes just add “and” BETWEEN the numbers.");
           });
-          ask();
         } } },
-    { say:"On the staff, dynamics sit <b>below the notes</b>, right where they take effect. \u{1F447} <b>Which dynamic starts this line?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:90,time:"4/4",notes:[{p:"C4",d:"q",dyn:"p"},{p:"E4",d:"q"},{p:"G4",d:"q",dyn:"f"},{p:"C5",d:"q"},{bar:"final"}],width:400} },
+    { say:"<b>2 eighths = 1 quarter</b>, and <b>8 eighths = 1 whole note</b>. \u{1F447} <b>How many eighth notes equal one whole note?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"B4",d:"8"},{p:"B4",d:"8",label:"= "},{p:"B4",d:"q",label:"1 quarter"}],beams:[[0,1]],width:300} },
       try:{ type:"mc",
-        choices:["p — it starts soft, then f makes it loud","f — it starts loud","mp all the way"], answer:0,
-        success:"✓ p under the first note = start soft; the f under note 3 flips it to loud. Dynamics act exactly where they're printed!",
-        fail:"Read the letters UNDER the notes, left to right.",
-        hint:"First marking wins first." } },
-    { say:"Put the whole ladder in order — softest to loudest. \u{1F447} <b>Tap them in order:</b>",
+        choices:["8","4","2"], answer:0,
+        success:"✓ Eight eighths = one whole note. ½ × 8 = 4 beats!",
+        fail:"Each eighth is ½ beat; a whole note is 4 beats. Divide!",
+        hint:"4 ÷ ½ = ?" } },
+    { say:"Now BUILD with the new brick. Fill the 4/4 measure — eighths welcome! \u{1F447} <b>Two different measures:</b>",
       try:{ type:"custom",
-        hint:"pp → p → mp → mf → f → ff.",
+        hint:"Eighth = ½, Quarter = 1, Half = 2. Land on exactly 4 — no half-beat left hanging!",
         mount:(container,fb)=>{
-          const seq=["pp","p","mp","mf","f","ff"];
-          let next=0;
-          container.innerHTML=`<div class="big-q dl-q" style="text-align:center">Softest first!</div>
-            <div class="dl-done" style="text-align:center;font-weight:800;font-style:italic;min-height:30px;color:var(--primary);font-size:1.2rem"></div>
-            <div class="choices chips dl-ch"></div>`;
-          const done=container.querySelector(".dl-done"), ch=container.querySelector(".dl-ch");
-          [...seq].sort(()=>Math.random()-.5).forEach(s=>{
-            const b=document.createElement("button"); b.textContent=s; b.style.fontStyle="italic"; b.style.fontWeight="800";
-            b.onclick=()=>{
-              if(s===seq[next]){ next++; b.disabled=true;
-                MFAudio.tone(67,.35,0,.1+next*.13);
-                done.textContent=seq.slice(0,next).join(" → ");
-                if(next===seq.length){ ch.style.display="none";
-                  fb(true,"✓ pp → p → mp → mf → f → ff — the complete volume ladder, softest whisper to biggest shout!"); } }
-              else { MFAudio.tone(40,.25); fb(false,`Not yet — what's the ${next===0?"SOFTEST":"next louder"} level?`); }
-            };
-            ch.appendChild(b);
-          });
+          const BT=[{t:"8",label:"Eighth Note",beats:.5,item:{p:"B4",d:"8"}},
+                    {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}},
+                    {t:"h",label:"Half Note",beats:2,item:{p:"B4",d:"h"}}];
+          let cur=[],sum=0,found=[],doneItems=[];
+          container.innerHTML=`<div class="be-staff"></div><div class="big-q be-q" style="text-align:center"></div>
+            <div class="choices be-ch"></div>`;
+          const st=container.querySelector(".be-staff"), q=container.querySelector(".be-q"), ch=container.querySelector(".be-ch");
+          const BTNS_LOCAL=BT;
+          BTNS_LOCAL.forEach(bt=>{ const b=document.createElement("button");
+            b.style.cssText="border-radius:10px;padding:6px 10px;min-width:104px";
+            const d0=document.createElement("div"); b.appendChild(d0);
+            Staff.render(d0,{clef:"none",notes:[bt.item],width:100});
+            const nm=document.createElement("div"); nm.style.cssText="font-weight:700;font-size:13px";
+            nm.textContent=bt.label.replace(/\s*\([^)]*\)\s*$/,""); b.appendChild(nm);
+            b.onclick=()=>add(bt); ch.appendChild(b); });
+          const clr=document.createElement("button"); clr.className="ghost"; clr.textContent="↺ Clear";
+          clr.onclick=()=>{ cur=[];sum=0;draw(); }; ch.appendChild(clr);
+          function draw(){
+            const items=[...doneItems,...cur.map(bt=>bt.item)];
+            if(found.length>=2&&items.length&&items[items.length-1].bar==="single") items[items.length-1]={bar:"final"};
+            for(let m=found.length;m<2;m++) items.push({bar: m===2-1? "final":"single"});
+            Staff.render(st,{clef:"treble",time:"4/4",notes:items,width:470});
+            q.textContent=`Beats: ${sum} of 4 · Measures built: ${found.length} of 2`;
+          }
+          function add(bt){
+            if(sum+bt.beats>4){ fb(false,`That would make ${sum+bt.beats} — too many!`); return; }
+            cur.push(bt); sum+=bt.beats; MFAudio.tone(71,Math.max(.2,bt.beats*.4)); draw();
+            if(sum===4){
+              const key=cur.map(x=>x.t).sort().join("");
+              if(found.includes(key)){ fb(false,"Same recipe — clear and invent a different one!"); cur=[];sum=0; setTimeout(draw,900); return; }
+              found.push(key);
+              let t=0; cur.forEach(bt=>{ MFAudio.tone(71,Math.max(.2,bt.beats*.45),t); t+=bt.beats*.5; });
+              doneItems.push(...cur.map(bt=>bt.item), {bar:"single"});
+              cur=[]; sum=0; draw();
+              if(found.length>=2){ ch.style.display="none"; q.textContent="Two measures with eighths!";
+                fb(true,"✓ Half-beats and whole beats adding to exactly 4 — you're building with the full toolbox now!"); }
+              else fb(true,"✓ Exactly 4 — it stays as measure 1. One more, different mix…");
+            }
+          }
+          draw();
+        } } },
+    { say:"Let's READ eighth notes in real music. Count out loud: <b>1-and-2-and, 3, 4</b>. \u{1F447}",
+      try:{ type:"custom",
+        hint:"Beamed pairs = “number-and” — quarters get the number alone.",
+        mount:(container,fb)=>{
+          const spec={clef:"treble",time:"4/4",tempo:88,
+            notes:[{p:"C4",d:"8",label:"1"},{p:"D4",d:"8",label:"and"},{p:"E4",d:"8",label:"2"},{p:"F4",d:"8",label:"and"},{p:"G4",d:"q",label:"3"},{p:"E4",d:"q",label:"4"},{bar:"single"},{p:"C4",d:"w",label:"1-2-3-4"},{bar:"final"}],
+            beams:[[0,1],[2,3]],width:460};
+          container.innerHTML=`<div class="r8-staff"></div><div style="text-align:center"><button class="play r8-play">▶ Play & count along</button></div>`;
+          const api=Staff.render(container.querySelector(".r8-staff"),spec);
+          container.querySelector(".r8-play").onclick=()=>{
+            const total=Staff.play(spec,api);
+            setTimeout(()=>fb(true,"✓ 1-and-2-and, 3, 4 — running notes, walking notes, then one long landing. Real rhythm reading!"),total*1000+300);
+          };
         } } }
   ],
   examples:[
-    { caption:"The same phrase at two volumes: p whispers it, f declares it. Listen to the marking take effect.",
-      staff:{clef:"treble",tempo:92,time:"4/4",notes:[{p:"C4",d:"q",dyn:"p",label:"soft…"},{p:"E4",d:"q"},{p:"G4",d:"h"},{bar:"single"},{p:"C4",d:"q",dyn:"f",label:"LOUD!"},{p:"E4",d:"q"},{p:"G4",d:"h"},{bar:"final"}],width:460} },
-    { caption:"A crescendo wedge: the notes grow from p to f as the wedge opens.",
-      staff:{clef:"treble",tempo:92,time:"4/4",notes:[{p:"E4",d:"q",dyn:"p"},{p:"E4",d:"q"},{p:"E4",d:"q"},{p:"E4",d:"q",dyn:"f"},{bar:"final"}],hairpins:[{from:0,to:3,type:"cresc"}],width:420} }
+    { caption:"Quarter notes WALK, eighth notes RUN — count “1-and-2-and” under the beamed pairs.",
+      staff:{clef:"treble",tempo:88,time:"4/4",notes:[{p:"C4",d:"q",label:"1"},{p:"C4",d:"q",label:"2"},{p:"E4",d:"8",label:"3"},{p:"E4",d:"8",label:"and"},{p:"G4",d:"q",label:"4"},{bar:"final"}],beams:[[2,3]],width:440} },
+    { caption:"Two eighths = one quarter: the same beat, sliced in half. Listen — the total time never changes.",
+      staff:{clef:"treble",tempo:88,time:"4/4",notes:[{p:"G4",d:"q",label:"1"},{p:"G4",d:"8",label:"2"},{p:"G4",d:"8",label:"and"},{p:"G4",d:"q",label:"3"},{p:"G4",d:"q",label:"4"},{bar:"final"}],beams:[[1,2]],width:440} }
   ],
   games:[
-    { type:"term-race", title:"Game 1 · Dynamic Dash",
-      intro:"A symbol flashes — pick its meaning fast! All six levels plus the wedges.",
-      miaIntro:"Speed round — whisper or shout?! \u{26A1}",
-      spec:{rounds:8, pool:[
-        ["<i>p</i> (piano)","Soft"],["<i>f</i> (forte)","Loud"],
-        ["<i>mp</i> (mezzo piano)","Moderately soft"],["<i>mf</i> (mezzo forte)","Moderately loud"],
-        ["<i>pp</i> (pianissimo)","Very soft"],["<i>ff</i> (fortissimo)","Very loud"],
-        ["&lt; (crescendo)","Gradually louder"],["&gt; (decrescendo)","Gradually softer"]]},
-      result:(score)=>score>=7?"Every symbol matched — dynamic vocabulary complete!":null },
-    { type:"symbol-hunt", title:"Game 2 · Find the Marking",
-      intro:"Click the dynamic Mia names — p, f, mp, mf and the wedges, hiding among the cards!",
-      miaIntro:"Hunt the volume signs! \u{1F50D}",
+    { type:"value-race", title:"Game 1 · Eighth Note Flash",
+      intro:"Flags, beams, stems, dots — name each note value FAST. The eighth note joins the lineup!",
+      miaIntro:"New value on the board — eyes sharp! \u{26A1}",
+      spec:{rounds:10, ask:"name", values:["8","q","h","h."]},
+      result:(score)=>score>=9?"The eighth note can't hide from you!":null },
+    { type:"rhythm-tap", title:"Game 2 · Run & Walk Tap",
+      intro:"Tap rhythms mixing walking quarters and RUNNING eighths — say “1-and” in your head!",
+      miaIntro:"Hands, meet the half-beat! \u{1F44F}",
+      spec:{tempo:84, rounds:3, patterns:[["8","8","q","q","q"],["q","8","8","q","q"],["8","8","8","8","h"],["q","q","8","8","q"]]},
+      result:(score)=>score>=10?"Running eighths right on time — impressive hands!":null },
+    { type:"measure-build", title:"Game 3 · Half-Beat Builder",
+      intro:"Build 4-beat measures with eighths in the mix — the math now includes ½!",
+      miaIntro:"Builder time — tiny bricks included! \u{1F3D7}\u{FE0F}",
+      spec:{beats:4, unique:true, rounds:3, buttons:[
+        {t:"8",label:"Eighth Note",beats:.5,item:{p:"B4",d:"8"}},
+        {t:"q",label:"Quarter Note",beats:1,item:{p:"B4",d:"q"}},
+        {t:"h",label:"Half Note",beats:2,item:{p:"B4",d:"h"}},
+        {t:"w",label:"Whole Note",beats:4,item:{p:"B4",d:"w"}}]},
+      result:(stars)=>stars>=3?"Three different measures — half-beat math mastered!":null },
+    { type:"symbol-hunt", title:"Game 4 · Flag vs Beam Hunt",
+      intro:"Single eighths, beamed pairs, quarters — click exactly what Mia asks for!",
+      miaIntro:"Last hunt — is it flying a flag or holding hands? \u{1F50D}",
       spec:{rounds:6, pool:[
-        {label:"piano (soft)", html:"<i>p</i>"},
-        {label:"forte (loud)", html:"<i>f</i>"},
-        {label:"mezzo piano (moderately soft)", html:"<i>mp</i>"},
-        {label:"mezzo forte (moderately loud)", html:"<i>mf</i>"},
-        {label:"Crescendo", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"}],hairpins:[{from:0,to:2,type:"cresc"}]}},
-        {label:"Decrescendo", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"}],hairpins:[{from:0,to:2,type:"decresc"}]}}]},
-      result:(score)=>score>=5?"No marking escapes your eyes!":null },
-    { type:"order-tap", title:"Game 3 · Volume Ladder",
-      intro:"Tap the six dynamic levels from SOFTEST to LOUDEST — against the clock!",
-      miaIntro:"Climb the ladder — whisper to roar! \u{1FA9C}",
-      spec:{title:"Softest → loudest!", sequence:["pp","p","mp","mf","f","ff"], timer:20},
-      result:(stars)=>stars>=3?"The whole ladder in seconds — impressive!":null },
-    { type:"term-race", title:"Game 4 · Reverse Dash (45s)",
-      intro:"Now backwards: Mia names the MEANING, you pick the symbol. 45 seconds!",
-      miaIntro:"Final challenge — meanings to symbols, fast! \u{23F1}",
-      spec:{seconds:45, reverse:true, pool:[
-        ["<i>p</i>","Soft"],["<i>f</i>","Loud"],["<i>mp</i>","Moderately soft"],["<i>mf</i>","Moderately loud"],
-        ["<i>pp</i>","Very soft"],["<i>ff</i>","Very loud"],["&lt;","Gradually louder (crescendo)"],["&gt;","Gradually softer (decrescendo)"]]},
-      result:(score)=>score>=12?score+" matched — dynamic fluency achieved!":null }
+        {label:"Single Eighth Note (flag)", spec:{clef:"treble",notes:[{p:"B4",d:"8"}]}},
+        {label:"Beamed Eighth Notes", spec:{clef:"treble",notes:[{p:"A4",d:"8"},{p:"B4",d:"8"}],beams:[[0,1]]}},
+        {label:"Quarter Note", spec:{clef:"treble",notes:[{p:"B4",d:"q"}]}},
+        {label:"Half Note", spec:{clef:"treble",notes:[{p:"B4",d:"h"}]}},
+        {label:"Quarter Rest", spec:{clef:"treble",notes:[{rest:"q"}]}}]},
+      result:(score)=>score>=5?"Flags and beams — spotted every time!":null }
   ],
-  practiceIntro:"20 practice questions — symbols, Italian terms, and gradual changes. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — eighth-note values, flags vs beams, and “and” counting. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"dynamic marking", pool:[["p (piano)","Soft"],["f (forte)","Loud"],["mp (mezzo piano)","Moderately soft"],["mf (mezzo forte)","Moderately loud"],["pp (pianissimo)","Very soft"],["ff (fortissimo)","Very loud"],["< (crescendo)","Gradually louder"],["> (decrescendo)","Gradually softer"]], reverse:true}, count:8 },
-    { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 },
-    { gen:"note-name", params:{clef:"treble"}, count:2 },
-    { type:"mc", q:"Dynamics tell musicians…", choices:["how loud or soft to play","how fast to play","which notes to play"], answer:0,
-      explain:"Volume instructions — music's expression dial." },
-    { type:"truefalse", q:"Dynamic terms are traditionally written in Italian.", answer:true,
-      explain:"Italian has been music's shared language for centuries." },
-    { type:"mc", q:"Mezzo means…", choices:["moderately","very","suddenly"], answer:0,
-      explain:"mp = moderately soft, mf = moderately loud." },
-    { type:"truefalse", q:"pp is softer than p.", answer:true,
-      explain:"Pianissimo — very soft, the extreme whisper." },
-    { type:"mc", q:"The crescendo symbol looks like…", choices:["an opening wedge <","a closing wedge >","two dots"], answer:0,
-      explain:"Opening = growing louder." },
-    { type:"truefalse", q:"A decrescendo means becoming gradually softer.", answer:true,
-      explain:"Also called diminuendo — the closing wedge." },
-    { type:"mc", q:"Softest to loudest:", choices:["pp p mp mf f ff","ff f mf mp p pp","p pp mp mf ff f"], answer:0,
-      explain:"The complete ladder in order." },
-    { type:"truefalse", q:"Dynamics change WHICH notes you play.", answer:false,
-      explain:"Same notes — different volume!" },
-    /* — from the unit review sheet — */
-    { type:"mc", q:"The Italian ending “-issimo” means…", choices:["very","moderately","gradually"], answer:0, explain:"pianISSIMO = VERY soft; fortISSIMO = VERY loud." },
-    { type:"mc", q:"Diminuendo (dim.) is another name for…", choices:["decrescendo — gradually softer","crescendo — gradually louder","fortissimo"], answer:0, explain:"Two words for the same fading wedge." }
+    { gen:"note-value", params:{values:["8","q","h"], ask:"beats"}, count:3 },
+    { gen:"note-value", params:{values:["8","q","h","h."], ask:"name"}, count:3 },
+    { gen:"measure-complete", params:{beats:4}, count:2 },
+    { gen:"rhythm-count", params:{values:["h","q"],maxNotes:3}, count:2 },
+    { type:"mc", q:"One eighth note is worth…", choices:["½ beat","1 beat","2 beats"], answer:0,
+      explain:"Half a beat — half of a quarter note." },
+    { type:"mc", q:"Two eighth notes equal…", choices:["one quarter note","one half note","one whole note"], answer:0,
+      explain:"½ + ½ = 1 beat = one quarter note." },
+    { type:"truefalse", q:"A single eighth note has a flag.", answer:true,
+      explain:"Alone it flies a flag; in groups it's beamed." },
+    { type:"truefalse", q:"A beam connects two or more eighth notes.", answer:true,
+      explain:"The flags fuse into one horizontal beam." },
+    { type:"mc", q:"Eighth notes are counted using the word…", choices:["“and”","“plus”","“y”"], answer:0,
+      explain:"1-and-2-and-3-and-4-and." },
+    { type:"truefalse", q:"Beaming changes an eighth note's value.", answer:false,
+      explain:"Flag or beam — always ½ beat. Only the LOOK changes." },
+    { type:"mc", q:"How many eighth notes equal one whole note?", choices:["8","4","2"], answer:0,
+      explain:"8 × ½ = 4 beats." },
+    { type:"mc", q:"How many eighth notes equal one half note?", choices:["4","2","8"], answer:0,
+      explain:"4 × ½ = 2 beats." },
+    { type:"truefalse", q:"“1-and-2-and” counts four eighth notes.", answer:true,
+      explain:"Numbers on the beats, “and” between them — four half-beats." },
+    { type:"mc", q:"Eighth notes make music feel…", choices:["faster-moving over the same beat","slower","louder"], answer:0,
+      explain:"Twice the notes inside every beat!" }
   ],
-  miaQuizIntro:"Quiz time! Whisper the p's, shout the f's — go!",
+  miaQuizIntro:"Quiz time! Count “1-and-2-and” and those half beats will carry you through!",
   quiz:[
-    { type:"mc", q:"What does forte (f) mean?", choices:["Soft","Loud","Fast","Slow"], answer:1,
-      explain:"Forte = loud, full volume.", hint:"F = Full Volume." },
-    { type:"mc", q:"What does piano (p) mean?", choices:["Loud","Soft","Moderate","Very loud"], answer:1,
-      explain:"Piano = soft.", hint:"P = Peaceful." },
-    { type:"mc", q:"What does mezzo mean?", choices:["Very","Moderately","Slowly","Suddenly"], answer:1,
-      explain:"The comfortable middle.", hint:"mp, mf — the middle levels." },
-    { type:"truefalse", q:"mf means moderately loud.", answer:true,
-      explain:"Mezzo forte.", hint:"Mezzo + forte." },
-    { type:"truefalse", q:"A crescendo means to become gradually softer.", answer:false,
-      explain:"Crescendo = gradually LOUDER; decrescendo is the soft one.", hint:"Which way does < open?" },
-    { type:"truefalse", q:"Dynamics tell musicians how loud or soft to play.", answer:true,
-      explain:"Exactly their job.", hint:"The volume dial." },
-    { type:"mc", q:"Which symbol means moderately soft?", choices:["mp","mf","pp","f"], answer:0,
-      explain:"Mezzo piano.", hint:"m + p." },
+    { type:"mc", q:"How many beats does one eighth note receive?", choices:["¼ beat","½ beat","1 beat","2 beats"], answer:1,
+      explain:"Half a beat.", hint:"Half of a quarter note." },
+    { type:"mc", q:"Two eighth notes equal:", choices:["One half note","One quarter note","One whole note","Two quarter notes"], answer:1,
+      explain:"½ + ½ = 1 beat — a quarter note.", hint:"Add the halves." },
+    { type:"mc", q:"What connects a group of eighth notes?", choices:["Flag","Beam","Stem","Tie"], answer:1,
+      explain:"The beam — a horizontal bar replacing the flags.", hint:"They hold hands." },
+    { type:"truefalse", q:"A single eighth note normally has a flag.", answer:true,
+      explain:"Flying solo = flag.", hint:"What does a lone eighth wear?" },
+    { type:"truefalse", q:"A beam connects two or more eighth notes.", answer:true,
+      explain:"Groups share one beam.", hint:"Hands held." },
+    { type:"truefalse", q:"An eighth note lasts one full beat.", answer:false,
+      explain:"Half a beat — the quarter note owns the full beat.", hint:"Check the fraction." },
+    { type:"mc", q:"How many eighth notes equal one WHOLE note?", choices:["2","4","8","16"], answer:2,
+      explain:"8 × ½ = 4 beats.", hint:"4 beats ÷ ½." },
     { type:"mc", q:"Which matching is correct?",
-      choices:["p → Soft · f → Loud · < → Crescendo · > → Decrescendo",
-               "p → Loud · f → Soft · < → Decrescendo · > → Crescendo",
-               "p → Moderate · f → Very soft · < → The end · > → Repeat"], answer:0,
-      explain:"The four essentials, correctly paired.", hint:"Whisper, shout, open, close." },
-    { type:"mc", q:"The Italian word forte means ____.", choices:["loud","soft","fast"], answer:0,
-      explain:"Loud!", hint:"Think F = Full volume." },
-    { type:"mc", q:"A crescendo means becoming gradually ____.", choices:["louder","softer","slower"], answer:0,
-      explain:"The opening wedge.", hint:"<" },
-    { type:"mc", q:"How many dynamic markings appear in this excerpt?",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q",dyn:"p"},{p:"E4",d:"q"},{p:"G4",d:"q",dyn:"mf"},{p:"C5",d:"q",dyn:"f"}],width:380},
-      choices:["2","3","4"], answer:1,
-      explain:"Three: p, mf, f — under notes 1, 3 and 4.",
-      hint:"Count the italic letters under the staff." },
+      choices:["Whole → 4 · Half → 2 · Quarter → 1 · Eighth → ½",
+               "Whole → 2 · Half → 1 · Quarter → ½ · Eighth → ¼",
+               "Whole → 8 · Half → 4 · Quarter → 2 · Eighth → 1"], answer:0,
+      explain:"Each value is half the one before.", hint:"The halving family." },
+    { type:"mc", q:"An eighth note is worth ____ beat.", choices:["½","1","2"], answer:0,
+      explain:"One half.", hint:"Two per beat." },
+    { type:"mc", q:"The horizontal line connecting eighth notes is called a ____.", choices:["flag","beam","tie"], answer:1,
+      explain:"The beam.", hint:"Not the solo decoration." },
+    { type:"mc", q:"Which of these is the BEAMED pair?",
+      staff:{clef:"treble",notes:[{p:"B4",d:"8",label:"1"},{p:"E4",d:"8",label:"2"},{p:"F4",d:"8",label:"2"}],beams:[[1,2]],width:320},
+      choices:["1","2"], answer:1,
+      explain:"Notes 2 share one beam; note 1 flies its own flag.",
+      hint:"Where did the flags fuse?" },
     { type:"mc", q:"Which statement is correct?",
-      choices:["p means loud","mf means moderately soft","A crescendo means gradually becoming louder","A decrescendo means play suddenly loud"], answer:2,
-      explain:"Crescendo = gradual growth. (mf is moderately LOUD; p is soft.)",
-      hint:"One option matches its true meaning." },
+      choices:["A beam connects a group of eighth notes","An eighth note lasts one full beat","An eighth rest lasts one beat","Two eighth notes equal one half note"], answer:0,
+      explain:"Beams join eighth-note groups; the value stays ½ beat each.",
+      hint:"Review the beam's job." },
     /* generated */
-    { gen:"term-match", params:{subject:"dynamic marking", pool:[["p (piano)","Soft"],["f (forte)","Loud"],["mp (mezzo piano)","Moderately soft"],["mf (mezzo forte)","Moderately loud"],["pp (pianissimo)","Very soft"],["ff (fortissimo)","Very loud"],["< (crescendo)","Gradually louder"],["> (decrescendo)","Gradually softer"]], reverse:true}, count:6 },
-    { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 }
+    { gen:"note-value", params:{values:["8","q","h"], ask:"beats"}, count:3 },
+    { gen:"measure-complete", params:{beats:4}, count:2 },
+    { gen:"rhythm-count", params:{values:["h","q"],maxNotes:3}, count:2 },
+    { gen:"note-name", params:{clef:"treble"}, count:1 }
   ],
   vocabulary:[
-    {def:"Dynamic signs indicate the volume — how soft or loud the music should be played.", term:"Dynamics"},
-    {def:"Soft.", term:"piano (p)", staff:{clef:"none",notes:[{p:"B4",d:"q",dyn:"p"}],width:140}},
-    {def:"Loud.", term:"forte (f)", staff:{clef:"none",notes:[{p:"B4",d:"q",dyn:"f"}],width:140}},
-    {def:"Moderately — mp is moderately soft, mf is moderately loud.", term:"mezzo (m)"},
-    {def:"Gradually louder.", term:"Crescendo"},
-    {def:"Gradually softer.", term:"Decrescendo"}
+    {def:"In time signatures with 4 as the bottom number, it receives ½ beat.", term:"Eighth Note", staff:{clef:"none",notes:[{p:"B4",d:"8"}],width:140}},
+    {def:"The small curved stroke on the stem of a single eighth note.", term:"Flag", staff:{clef:"none",notes:[{p:"B4",d:"8"}],width:140}},
+    {def:"The thick line that joins the stems of two or more eighth notes.", term:"Beam", staff:{clef:"none",notes:[{p:"A4",d:"8"},{p:"B4",d:"8"}],beams:[[0,1]],width:150}},
+    {def:"Eighth notes divide the beat: counted 1-and 2-and 3-and 4-and.", term:"“And” Counting"}
   ],
   mistakes:[],
   summary:[
-    "✔ Dynamics = <b>volume</b> instructions, written in Italian.",
-    "✔ <b>p = soft</b> \u{1F92B} · <b>f = loud</b> \u{1F4E2} · <b>mezzo = moderately</b>.",
-    "✔ The ladder: <b>pp → p → mp → mf → f → ff</b>.",
-    "✔ <b>&lt; crescendo</b> = gradually louder · <b>&gt; decrescendo</b> = gradually softer.",
-    "✔ Dynamics sit <b>below the notes</b>, right where they take effect."
+    "✔ Eighth note = <b>½ beat</b>; <b>two eighths = one quarter</b>.",
+    "✔ Alone = <b>flag</b> \u{1F3F3}\u{FE0F} · In groups = <b>beam</b> \u{1F91D}.",
+    "✔ Count with <b>“and”</b>: 1-and-2-and-3-and-4-and.",
+    "✔ 8 eighths = 1 whole note; 4 eighths = 1 half note.",
+    "✔ Beaming changes the LOOK, never the VALUE."
   ],
   tips:[
-    "Sing any tune at pp, then at ff — feel how the ENERGY changes, not the notes.",
-    "P = Peaceful, F = Full volume — the two anchors of the whole system.",
-    "Wedges point at the soft end: the tip is always the quietest moment.",
-    "\u{1F422} Next lesson: Italian words for SPEED — tempo marks from Adagio to Vivace!"
+    "Walk and say “1, 2, 3, 4” — then jog saying “1-and-2-and.” Your feet know eighth notes already.",
+    "See a beam? Read the group as “number-and” before you play a single note.",
+    "Keep the BEAT steady and let the eighths split it — never rush the clicks.",
+    "\u{1F910} Next lesson: the eighth note's silent twin — the eighth REST!"
   ],
-  rewards:{ badge:"Dynamics Director", icon:"\u{1F4E2}" },
+  rewards:{ badge:"Eighth Note Racer", icon:"\u{1F3C3}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT — from pianissimo to fortissimo, flawless! Tempo marks are next. \u{1F4E2}\u{1F389}",
-  miaPass:"You passed! The volume ladder is yours. Review below or climb again for a perfect run.",
+  miaPerfect:"PERFECT — 1-and-2-and all the way to 100! The eighth rest is next, and it's sneaky-quiet. \u{1F3C3}\u{1F389}",
+  miaPass:"You passed! Half beats are officially yours. Review below or run it again for perfection.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Dynamics are volume instructions: p soft, f loud, and everything between. Same notes, different power.",
-      play:()=>{[60,64,67].forEach((m,k)=>MFAudio.tone(m,.4,k*.35,.15));[60,64,67].forEach((m,k)=>MFAudio.tone(m,.4,1.6+k*.35,.8));} },
-    learn:{ label:"the dynamics",
-      explain:"pp p mp mf f ff — softest to loudest; mezzo = moderately. Crescendo (<) grows, decrescendo (>) fades.",
-      hint:"P = Peaceful, F = Full volume.",
-      play:()=>{for(let k=0;k<6;k++) MFAudio.tone(67,.3,k*.32,.1+k*.14);} },
+      explain:"Eighth notes split each beat into two equal halves — the beat stays steady while the notes run.",
+      play:()=>{const s=.65;for(let k=0;k<2;k++) MFAudio.tone(67,s*.85,k*s);for(let k=0;k<4;k++) MFAudio.tone(67,s*.4,(2+k*.5)*s);} },
+    learn:{ label:"eighth notes",
+      explain:"½ beat each; two share a quarter's time. Alone = flag, grouped = beam. Count 1-and-2-and-3-and-4-and.",
+      hint:"Numbers on the beat, “and” between.",
+      play:()=>{const s=.6;[60,62,64,65,67].forEach((m,i)=>MFAudio.tone(m,s*.4,i*.5*s));} },
     example:{ label:"the examples",
-      explain:"Hear the p phrase whisper and the f phrase declare — then the crescendo grow underneath the wedge." },
+      explain:"Quarters walk, beamed eighths run — but the click underneath never changes speed." },
     game:{ label:"the games",
-      explain:"Race the symbols, hunt the markings, climb the ladder in order, then reverse-match against the clock.",
-      hint:"Six levels, two wedges — that's the whole kit." },
+      explain:"Flash-name the new value, tap running rhythms, build with ½-beat bricks, and hunt flags vs beams.",
+      hint:"Say “and” out loud while you tap — it locks the half-beat in." },
     quiz:{ label:"this question",
-      explain:"Anchor on p = soft and f = loud; mezzo = moderately; wedges = gradual change.",
-      play:()=>{MFAudio.tone(67,.4,0,.15);MFAudio.tone(67,.4,.5,.8);} }
+      explain:"Three facts: eighth = ½ beat; 2 eighths = 1 quarter; flag alone / beam in groups.",
+      play:()=>{const s=.5;[67,67,67,67].forEach((m,i)=>MFAudio.tone(m,s*.4,i*.5*s));} }
   }
 };

@@ -1,304 +1,277 @@
-/* Lesson 67 — Composing a Melody in a Major Key (AEMT Book 3, Unit 16 FINALE)
-   Built from drafts/UNIT 16 – Lesson 67.md; AEMT3 p.105 verified by render.
-   Core: COMPOSE = create a melody for a chord progression (the reverse of
-   harmonizing). Method: analyze the progression (numerals below, symbols
-   above) → melody from CHORD TONES + non-harmonic decorations. The first
-   and last melody note tends to be the ROOT of I; V(7) precedes the last
-   chord. The book labels melody notes R / 3 / 5 / 7 / P (chord member or
-   passing tone) — as in its Ghanaian folk-song model.
+/* Lesson 67 (9.1, formerly L86) — Roman Numeral Analysis (Book 4, Unit 21 — SELF-AUTHORED)
+   Core: numerals name each chord's DEGREE + QUALITY, portable to any key.
+   HARMONIC FUNCTION: Tonic (I, vi) = rest · Predominant (ii, IV) = motion
+   toward D · Dominant (V, vii°) = tension seeking T. Flow: T → PD → D → T.
+   Color code: T = blue #2F6DA8 · PD = gold #A9821F · D = orange #C05A21.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* compose-a-melody: pick a chord tone per measure, then hear your piece */
-function MF_L67_compose(container,fb){
-  const MEAS=[
-    {label:"I", sym:"C", tones:{C:60,E:64,G:67}, chord:[48,64,67], must:"C",
-      note:"Rule: a melody TENDS TO BEGIN on the root of I."},
-    {label:"IV", sym:"F", tones:{F:65,A:69,C:72}, chord:[53,65,69],
-      note:"Any tone of F-A-C sings here."},
-    {label:"I", sym:"C", tones:{C:72,E:76,G:67}, chord:[48,64,67],
-      note:"Back home — pick any C-chord tone."},
-    {label:"V7", sym:"G7", tones:{G:67,B:71,D:74,F:77}, chord:[43,67,71,77],
-      note:"The dominant before the close — B (the leading tone) loves this spot."},
-    {label:"I", sym:"C", tones:{C:72}, chord:[48,64,67], must:"C",
-      note:"Rule: end on the ROOT of the final I."}];
-  let k=0; const picked=[];
-  container.innerHTML=`<div class="big-q l67c-q" style="text-align:center"></div>
-    <div class="l67c-map" style="text-align:center;margin:10px 0;letter-spacing:normal"></div>
-    <div class="choices chips l67c-ch"></div>
-    <div style="text-align:center"><button class="play l67c-play" style="display:none">▶ Play YOUR composition</button></div>`;
-  const q=container.querySelector(".l67c-q"), map=container.querySelector(".l67c-map"), ch=container.querySelector(".l67c-ch"), pl=container.querySelector(".l67c-play");
-  function drawMap(){
-    map.innerHTML=MEAS.map((m,i)=>{
-      const done=i<picked.length, cur=(i===k && k<MEAS.length);
-      const note=done?picked[i].name:"?";
-      const bg=cur?"var(--accent,#4f7cff)":done?"#e6efff":"#f2f4f8";
-      const fg=cur?"#fff":done?"#1f4bd8":"#8a93a3";
-      const bd=cur?"var(--accent,#4f7cff)":done?"#bcd2ff":"#dde2ea";
-      return `<span style="display:inline-block;min-width:56px;margin:3px;padding:6px 6px;border-radius:10px;border:1.5px solid ${bd};background:${bg};color:${fg};text-align:center;vertical-align:top">
-        <span style="display:block;font-size:10.5px;font-weight:600;opacity:.85">m.${i+1}</span>
-        <span style="display:block;font-size:15px;font-weight:800;line-height:1.35">${m.sym}</span>
-        <span style="display:block;font-size:13px;font-weight:700">${note}</span></span>`;
-    }).join("");
-  }
+/* label the progression: hear 4 chords, pick the numeral for each */
+function MF_L67_label(container,fb){
+  const CH={I:[60,64,67],ii:[62,65,69],IV:[65,69,72],V:[67,71,74],vi:[69,72,76]};
+  const PROG=["I","IV","V","I"], PROG2=["I","vi","ii","V"];
+  let stage=0, k=0, cur=PROG;
+  container.innerHTML=`<div class="big-q l86l-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play l86l-play">▶ Hear chord</button></div>
+    <div class="choices chips l86l-ch"><button>I</button><button>ii</button><button>IV</button><button>V</button><button>vi</button></div>
+    <div class="l86l-map" style="text-align:center;font-weight:800;letter-spacing:4px;margin-top:6px"></div>`;
+  const q=container.querySelector(".l86l-q"), pl=container.querySelector(".l86l-play"), ch=container.querySelector(".l86l-ch"), map=container.querySelector(".l86l-map");
+  const done=[];
+  function draw(){ map.textContent=cur.map((c,i)=>i<done.length?done[i]:"?").join("  "); }
   function ask(){
-    drawMap();
-    if(k>=MEAS.length){ q.textContent="Excellent! Your melody is complete. Press play!"; ch.innerHTML=""; pl.style.display="inline-block"; return; }
-    const M=MEAS[k];
-    q.innerHTML=`Measure ${k+1} — chord: <b>${M.sym} (${M.label})</b>. ${M.must?`<b>Required: ${M.must}</b> — `:""}pick your melody note. <i>${M.note}</i>`;
-    ch.innerHTML="";
-    const opts=Object.keys(M.tones);
-    if(!M.must) opts.push(k===1?"B":"F#"); /* one non-chord-tone distractor */
-    opts.sort(()=>Math.random()-.5).forEach(name=>{
-      const b=document.createElement("button"); b.textContent=name;
-      b.onclick=()=>{
-        const M2=MEAS[k];
-        if(M2.must && name!==M2.must){ MFAudio.tone(40,.2); fb(false,`The ${k===0?"first":"last"} note tends to be the ROOT of the I chord — that's ${M2.must}.`); return; }
-        if(M2.tones[name]===undefined){ MFAudio.tone(40,.2); fb(false,`${name} is not a tone of ${M2.sym} — start with a chord tone. (Passing and neighboring tones come later!)`); return; }
-        MFAudio.tone(M2.tones[name],.7,.05,.42);
-        M2.chord.forEach(m=>MFAudio.tone(m,.8,.05,.2));
-        picked.push({name, midi:M2.tones[name]}); k++;
-        fb(true,`✓ Great! ${name} is a chord tone of ${M2.sym} — your melody fits the chords.`);
-        setTimeout(ask,1000);
-      };
-      ch.appendChild(b);
-    });
+    draw();
+    if(k>=cur.length){
+      if(stage===0){ stage=1; cur=PROG2; k=0; done.length=0; fb(true,"✓ I-IV-V-I labeled! Now a longer trip: listen for the vi and ii."); setTimeout(ask,1500); return; }
+      q.textContent="Excellent! Both progressions analyzed."; pl.style.display="none"; ch.style.display="none"; return;
+    }
+    q.innerHTML=`Progression ${stage+1} — chord ${k+1} of 4. Hear it, then choose its numeral. <i>(Key: C major)</i>`;
   }
-  pl.onclick=()=>{
-    picked.forEach((p,i)=>{
-      MFAudio.tone(p.midi,.8,i*.85,.44);
-      MEAS[i].chord.forEach(m=>MFAudio.tone(m,.85,i*.85,.2));
-    });
-    setTimeout(()=>fb(true,"✓ Your composition begins on the root and closes V7 → I on the root. Try again — every choice makes a new melody!"),4700);
-  };
+  pl.onclick=()=>{ if(k>=cur.length) return; CH[cur[k]].forEach(m=>MFAudio.tone(m,.9,.05,.3)); };
+  [...ch.children].forEach(b=>b.onclick=()=>{
+    if(k>=cur.length) return;
+    if(b.textContent===cur[k]){ CH[cur[k]].forEach(m=>MFAudio.tone(m,.7,.05,.28)); done.push(cur[k]); k++;
+      fb(true,`✓ ${done[done.length-1]} — correct.`); setTimeout(ask,900);
+    } else { MFAudio.tone(40,.2); fb(false,"Listen again — compare the bass note with the C major scale degrees."); }
+  });
   ask();
 }
 
-LESSON_CONTENT[67]={
-  welcome:"Composing: writing a melody for a chord progression. \u{270D}\u{FE0F}",
+LESSON_CONTENT[67]={stackFigures:true,
+  welcome:"Roman-numeral analysis shows how chords relate to a key.",
   hook:{
-    say:"<b>Here is a simple chord progression:</b> I - IV - I - V7 - I. Listen to the chords alone, then with a melody composed on top. <b>How can you create a melody that fits these chords?</b>",
+    say:"<b>Two progressions in different keys can share the same harmonic pattern.</b> Listen to one in C major and one in G major. \u{1F447} <b>What do they have in common?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Chords alone</button>
-          <button class="play hk-b">▶ Chords + composed melody</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Build it from each chord's own tones</button><button>Use notes from a different key</button><button>Pick random notes</button></div>`;
-        const chords=[[48,64,67],[53,65,69],[48,64,67],[43,67,71,77],[48,64,67]];
-        const mel=[72,69,76,74,72];
+          <button class="play hk-a">▶ In C major</button>
+          <button class="play hk-b">▶ In G major</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Both follow the progression I-IV-V-I</button><button>Both use exactly the same pitches</button><button>They have no harmonic relationship</button></div>`;
+        const A=[[60,64,67],[65,69,72],[67,71,74],[60,64,67]], B=[[67,71,74],[72,76,79],[74,78,81],[67,71,74]];
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ chords.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.25))); hA=true; if(hB) setTimeout(()=>ch.style.display="",4700); };
-        container.querySelector(".hk-b").onclick=()=>{ chords.forEach((row,i)=>{ row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2)); MFAudio.tone(mel[i],.8,i*.9,.44); }); hB=true; if(hA) setTimeout(()=>ch.style.display="",4700); };
+        container.querySelector(".hk-a").onclick=()=>{ A.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.7,i*.75,.28))); hA=true; if(hB) setTimeout(()=>ch.style.display="",3400); };
+        container.querySelector(".hk-b").onclick=()=>{ B.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.7,i*.75,.28))); hB=true; if(hA) setTimeout(()=>ch.style.display="",3400); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Each melody note was a CHORD TONE of its measure's chord — C from C major, A from F major, E from C, D from G7, back to C. Today you compose your own!");
-          else fb(false,"Listen again — every melody note agreed perfectly with its chord…");
+          if(i===0) fb(true,"✓ Correct. The progressions use different pitches but share the same scale-degree relationships: I-IV-V-I. Roman numerals make those relationships visible.");
+          else fb(false,"The two progressions use different chord names, but their relationships to the tonic are the same.");
         });
       } }
   },
   objectives:[
-    "Define composing: creating a melody for a chord progression",
-    "Analyze first: numerals below the staff, symbols above",
-    "Build the melody from CHORD TONES",
-    "Add passing and neighboring tones",
-    "Begin and end on the root of I; V(7) precedes the last chord",
-    "Read the R / 3 / 5 / P melody labels"
+    "Analyze chords with Roman numerals: degree + quality in one symbol",
+    "Know why numerals are portable across keys",
+    "Identify each triad's common FUNCTION: Tonic, Predominant or Dominant",
+    "Follow the common function flow: T → PD → D → T",
+    "Label progressions by ear and by eye",
+    "Read function colors: T = blue, PD = gold, D = orange"
   ],
   steps:[
-    { say:"<b>Composing a Melody:</b> Instead of adding chords to a melody, you will write a melody that fits a chord progression. \u{1F447} <b>What does composing mean in this lesson?</b>",
-      try:{ type:"mc", choices:["Writing a melody to fit a given progression","Writing a progression to fit a melody","Copying an existing tune"], answer:0,
-        success:"✓ The chords come first this time; the tune is yours to invent.",
-        fail:"Which direction is the REVERSE of Lesson 64?",
-        hint:"Progression → melody." } },
-    { say:"<b>Analyze the Chords:</b> Before writing the melody, identify each chord using Roman numerals and chord symbols. This helps you choose notes that fit each harmony. \u{1F447} <b>Why should you analyze the progression first?</b>",
-      try:{ type:"mc", choices:["Each measure's chord tells you which melody notes will fit","It makes the page look professional","Analysis replaces composing"], answer:0,
-        success:"✓ Analysis shows which notes fit each measure's harmony.",
-        fail:"What did every melody note in the hook have in common with its chord?",
-        hint:"Chord tones = safe notes." } },
-    { say:"<b>Build the Melody:</b> Start with <b>chord tones</b>. Then add <b>passing and neighboring tones</b> to create smoother melodic movement. <b>Remember: good melodies begin with chord tones. Non-harmonic tones make the melody smoother and more interesting.</b> \u{1F447} <b>Which notes form the basic framework of the melody?</b>",
-      try:{ type:"mc", choices:["Chord tones","Passing tones","Rests"], answer:0,
-        success:"✓ Chord tones form the framework; non-harmonic tones make it smoother and more interesting.",
-        fail:"Which notes are guaranteed to fit each chord?",
-        hint:"Start with the notes inside the chord." } },
-    { say:"<b>Beginning and Ending:</b> Most melodies begin and end on the <b>root of the I chord</b>. A <b>V (or V7)</b> chord usually comes before the final I chord. \u{1F447} <b>Which note is the best choice to begin and end a melody in C major?</b>",
-      try:{ type:"mc", choices:["C","G","B"], answer:0,
-        success:"✓ C — the root of the I chord. And the second-to-last measure will usually carry G7.",
-        fail:"The root of I in C major is…",
-        hint:"The tonic itself." } },
-    { say:"<b>Reading the Labels:</b> R = root · 3 = third · 5 = fifth · 7 = seventh · P = passing tone. Decode this measure over a C chord: \u{1F447} <b>What is the correct label for the D?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:100,time:"3/4",notes:[
-        {p:"E4",d:"q",label:"3"},{p:"D4",d:"q",label:"?"},{p:"C4",d:"q",label:"R"},{bar:"single"},{p:"G4",d:"h.",label:"5"},{bar:"final"}],width:460} },
-      try:{ type:"mc", choices:["P — a passing tone between 3 and R","5 — the chord's fifth","R — a second root"], answer:0,
-        success:"✓ P — a passing tone. D is not in C-E-G; it connects the 3rd (E) to the root (C).",
-        fail:"Is D inside C-E-G?",
-        hint:"Chord member or bridge?" } },
-    { say:"Compose a five-measure melody using the chord progression <b>I - IV - I - V7 - I</b>. \u{1F447}",
-      show:{ type:"html", html:`<div style="max-width:340px;margin:0 auto;font-size:14.5px;line-height:1.9;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:12px 18px;text-align:center;font-weight:700">
-        Analyze Chords<br>↓<br>Choose Chord Tones<br>↓<br>Add Passing &amp; Neighboring Tones<br>↓<br>Check Beginning &amp; Ending<br>↓<br>Finished Melody</div>` },
+    { say:"<b>Roman-Numeral Analysis:</b> A Roman numeral identifies a chord's <b>root by scale degree</b>. Capitalization and quality symbols identify the chord's <b>quality</b>. For example, IV in C major represents a major triad rooted on F, the fourth scale degree. Figured-bass symbols may also show the chord's inversion. Because Roman numerals describe relationships within a key, the same progression pattern can be transposed to different keys. \u{1F447} <b>What information can a basic Roman numeral provide?</b>",
+      try:{ type:"mc", choices:["The chord's root scale degree and quality","The tempo and articulation","The text and language"], answer:0,
+        success:"✓ Correct. The numeral identifies the root's scale degree, while capitalization and symbols indicate chord quality.",
+        fail:"Examine both the numeral and its capitalization or quality symbol.",
+        hint:"Identify the root scale degree and chord quality." } },
+    { say:"<b>Harmonic Function:</b> chords often participate in three broad functional categories. <b style='color:#2F6DA8'>TONIC (T)</b> — provides stability and centers the key: <b>I</b> is the primary tonic chord, and <b>vi</b> may sometimes serve as a tonic substitute or tonic prolongation · <b style='color:#A9821F'>PREDOMINANT (PD)</b> — prepares the dominant: <b>ii</b> and <b>IV</b> commonly serve this role · <b style='color:#C05A21'>DOMINANT (D)</b> — creates a strong expectation of resolution to tonic: <b>V</b> and <b>vii°</b> are the principal dominant-function triads. \u{1F447} <b>Which pair most commonly serves dominant function in a major key?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:300px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Function</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Typical role</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Common chords</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;color:#2F6DA8">Tonic (T)</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px">rest, home</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800;color:#2F6DA8">I · vi</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;color:#A9821F">Predominant (PD)</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px">moves toward D</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800;color:#A9821F">ii · IV</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;color:#C05A21">Dominant (D)</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px">tension, seeks home</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800;color:#C05A21">V · vii°</td></tr></table>` },
+      try:{ type:"mc", choices:["V and vii°","I and vi","ii and IV"], answer:0,
+        success:"✓ Correct. Both V and vii° contain the leading tone and commonly resolve toward tonic.",
+        fail:"Identify the two principal chords that contain the leading tone and commonly resolve to I.",
+        hint:"The triads rooted on scale degrees 5 and 7." } },
+    { say:"<b>A Common Functional Progression:</b> a frequently used tonal-harmony pattern is tonic → predominant → dominant → tonic, abbreviated <b style='color:#2F6DA8'>T</b>–<b style='color:#A9821F'>PD</b>–<b style='color:#C05A21'>D</b>–<b style='color:#2F6DA8'>T</b>. Both I-IV-V-I and I-ii-V-I follow this pattern. Tonal music also uses many other progressions and functional combinations. \u{1F447} <b>In the common T–PD–D–T model, which function occurs between predominant and tonic?</b>",
+      show:{ type:"html", html:`<div style="text-align:center;font-weight:800;font-size:17px;letter-spacing:1px">
+        <span style="color:#2F6DA8">T</span> \u{2192} <span style="color:#A9821F">PD</span> \u{2192} <span style="color:#C05A21">D</span> \u{2192} <span style="color:#2F6DA8">T</span></div>` },
+      try:{ type:"mc", choices:["Dominant","Tonic","No harmonic function"], answer:0,
+        success:"✓ Correct. In this common model, predominant prepares dominant, and dominant resolves to tonic.",
+        fail:"Follow the functional sequence shown in the lesson.",
+        hint:"PD → D → T." } },
+    { say:"<b>How to Analyze a Chord:</b><br>1. Find the key.<br>2. Find the chord's root.<br>3. Identify its quality.<br>4. Write the Roman numeral. \u{1F447} <b>In C major, how is the root-position chord F-A-C labeled?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"?"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:560} },
+      try:{ type:"mc", choices:["IV — a major triad rooted on scale degree 4","iv — a minor triad rooted on scale degree 4","ii — a minor triad rooted on scale degree 2"], answer:0,
+        success:"✓ Correct. F is scale degree 4 in C major, and F-A-C is a major triad in root position. It is labeled IV and commonly serves predominant function.",
+        fail:"Identify the root and determine its scale degree in C major.",
+        hint:"Count C-D-E-F." } },
+    { say:"<b>Roman Numerals and Inversions:</b> Roman numerals identify a chord's root and quality. If the chord is inverted, figured-bass symbols (such as <b>I⁶</b> and <b>I⁶₄</b>) indicate its inversion. \u{1F447} <b>In C major, how is E-G-C labeled?</b>",
+      try:{ type:"mc", choices:["I⁶ — the tonic triad in first inversion","iii — an E minor triad","I⁶₄ — the tonic triad in second inversion"], answer:0,
+        success:"✓ Correct. The chord's root is C, but E is in the bass, so the chord is a first-inversion tonic triad: I⁶.",
+        fail:"The bass note is not always the root — stack the notes in thirds to find the root first.",
+        hint:"Find the root before using the bass note to determine the inversion." } },
+    { say:"Identify and label two root-position chord progressions by ear. \u{1F447}",
       try:{ type:"custom",
-        hint:"Start with chord tones; the first and last notes are the root of I.",
-        mount:(container,fb)=>MF_L67_compose(container,fb) } },
-    { say:"<b>Try Another Key:</b> Apply the same process in G major (G - C - D7 - G). \u{1F447} <b>Which note is the best opening note?</b>",
-      try:{ type:"mc", choices:["G — the root of the I chord","C — the loudest note","F♯ — the leading tone"], answer:0,
-        success:"✓ Root of I, first and last — in any key. The process: analyze → chord tones → non-harmonic tones → check the beginning and ending.",
-        fail:"What's the I chord in G major, and what's its root?",
-        hint:"Same frame rule, new key." } }
+        hint:"In this activity, every chord is in root position, so each bass note identifies the chord root. In C major: C=I, D=ii, F=IV, G=V, A=vi.",
+        mount:(container,fb)=>MF_L67_label(container,fb) } },
+    { say:"<b>Why Roman Numerals Transfer Between Keys:</b> the progression I-vi-IV-V describes the same scale-degree and chord-quality relationships in any major key. Chord symbols such as C-Am-F-G identify the progression specifically in C major, while Roman numerals describe its relationship to the key. \u{1F447} <b>How is I-vi-IV-V realized in G major?</b>",
+      try:{ type:"mc", choices:["G - Em - C - D","G - Gm - C - D","C - Am - F - G"], answer:0,
+        success:"✓ Correct. In G major, I is G major, vi is E minor, IV is C major, and V is D major.",
+        fail:"Match each Roman numeral with its diatonic triad in G major.",
+        hint:"Scale degree 6 of G major is E." } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which pair most commonly serves predominant function?</b>",
+      try:{ type:"mc", choices:["ii and IV","I and vi","V and vii°"], answer:0,
+        success:"✓ Correct. ii and IV commonly prepare the dominant and therefore serve predominant function.",
+        fail:"Predominant chords commonly prepare the dominant.",
+        hint:"Identify the chords that commonly precede V." } }
   ],
   examples:[
-    { caption:"A composed melody with labels: every note is R, 3, 5 — or P for a passing tone.",
-      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
-        {p:"C5",d:"q",label:"R"},{p:"E5",d:"q",label:"3"},{p:"G5",d:"q",label:"5"},{p:"E5",d:"q",label:"3"},{bar:"single"},
-        {p:"A4",d:"q",label:"3/IV"},{p:"B4",d:"q",label:"P"},{p:"C5",d:"h",label:"5/IV"},{bar:"single"},
-        {p:"E5",d:"q",label:"3/I"},{p:"D5",d:"q",label:"5/V7"},{p:"B4",d:"q",label:"3/V7"},{p:"D5",d:"q",label:"5"},{bar:"single"},
-        {p:"C5",d:"w",label:"R — home!"},{bar:"final"}],width:780},
-      kb:{start:69,octaves:1.1667,labels:true} },
-    { caption:"The same melody twice: chord tones only, then with passing tones added on the weak beats.",
-      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
-        {p:"C4",d:"h",label:"chord tones"},{p:"E4",d:"h"},{bar:"single"},{p:"G4",d:"h"},{p:"C5",d:"h"},{bar:"double"},
-        {p:"C4",d:"q",label:"+ P tones"},{p:"D4",d:"q",label:"P"},{p:"E4",d:"q"},{p:"F4",d:"q",label:"P"},{bar:"single"},{p:"G4",d:"q"},{p:"A4",d:"q",label:"P"},{p:"B4",d:"q",label:"P"},{p:"C5",d:"q"},{bar:"final"}],width:780},
-      kb:{start:60,octaves:1,labels:true} }
+    { caption:"I-IV-V7-I in C major with its analysis — hear T (home), PD (departure), D (tension), T (return).",
+      staff:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:600},
+      kb:{start:60,octaves:2,labels:true} },
+    { caption:"I-vi-ii-V — the classic turnaround: two tonics' worth of rest, then predominant and dominant hand in hand back to the top.",
+      staff:{clef:"treble",tempo:80,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"vi"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"ii"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"G4",d:"w",label:"V"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{bar:"final"}],width:600},
+      kb:{start:57,octaves:1.5833,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Composer's Checklist Sprint (45s)",
-      intro:"Analyze, chord tones, non-harmonic tones, beginning and ending — race the method!",
-      miaIntro:"The four-step checklist! \u{26A1}",
+    { type:"gen-race", title:"Game 1 · Harmonic-Function Sprint (45s)",
+      intro:"Identify the most likely harmonic function of each chord in context.",
+      miaIntro:"Choose tonic, predominant, or dominant.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["To compose","create a melody for a chord progression"],
-        ["Step 1","analyze: numerals below, symbols above"],
-        ["The framework","chord tones"],
-        ["To add interest","passing and neighboring tones"],
-        ["First & last melody note","the root of the I chord"],
-        ["Before the last chord","V or V7"],
-        ["R / 3 / 5 labels","which chord member the note is"],
-        ["P label","a passing tone"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — checklist locked in!":null },
-    { type:"key-climb", title:"Game 2 · Play the Model Melody",
-      intro:"Perform the example's first phrase: R-3-5-3 on C, then 3-P-5 on F!",
-      miaIntro:"Composer, meet performer! \u{1FA9C}",
-      spec:{seq:[72,76,79,76, 69,71,72],
-        names:["C (R)","E (3)","G (5)","E (3)","A (3rd of F)","B (P — passing!)","C (5th of F)"],
-        start:65, octaves:1.5, title:"The model melody, phrase one"},
-      result:(score)=>score!==null?"Composed AND performed!":null },
-    { type:"symbol-hunt", title:"Game 3 · Safe-Note Spotter",
-      intro:"A chord is called — click the melody fragment that fits ENTIRELY inside it!",
-      miaIntro:"Chord tones only! \u{1F440}",
+        ["I","primary tonic chord"],
+        ["vi","common tonic substitute"],
+        ["ii","commonly predominant"],
+        ["IV","commonly predominant"],
+        ["V","primary dominant chord"],
+        ["vii°","common dominant substitute"],
+        ["A common flow","T \u{2192} PD \u{2192} D \u{2192} T"],
+        ["Numerals are portable because","they speak in degrees"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — harmonic functions identified!":null },
+    { type:"symbol-hunt", title:"Game 2 · Roman-Numeral Analysis",
+      intro:"Examine each chord in C major and select its Roman numeral.",
+      miaIntro:"Identify the root, scale degree, quality, and inversion.",
       spec:{rounds:6, pool:[
-        {label:"Fits the C chord (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"E4",d:"q"}],width:170}},
-        {label:"Fits the F chord (F-A-C)", spec:{clef:"treble",notes:[{p:"F4",d:"q"},{p:"A4",d:"q"},{p:"C5",d:"q"},{p:"A4",d:"q"}],width:170}},
-        {label:"Fits the G7 chord (G-B-D-F)", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"B4",d:"q"},{p:"D5",d:"q"},{p:"F5",d:"q"}],width:170}},
-        {label:"Fits NO single chord (scale run)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"}],width:170}}]},
-      result:(score)=>score>=5?"Safe notes spotted instantly!":null },
-    { type:"term-race", title:"Game 4 · UNIT 16 GRAND FINALE Race",
-      intro:"The victory lap — harmonizing, textures, non-harmonic tones and composing!",
-      miaIntro:"Everything from Unit 16 — GO! \u{1F3C6}",
-      spec:{rounds:10, reverse:true, pool:[
-        ["To harmonize","add chords to a melody"],
-        ["To compose","add a melody to chords"],
-        ["Degrees 1,3,5","the I chord's row"],
-        ["Degrees 1,4,6","the IV chord's row"],
-        ["Block chord","tones together"],
-        ["Arpeggio","tones one at a time, in order"],
-        ["Passing tone","connects two different chord tones"],
-        ["Neighboring tone","returns to the same chord tone"],
-        ["First & last note","root of I"],
-        ["The pre-final chord","V or V7"]]},
-      result:(score)=>score>=8?"UNIT 16 CHAMPION!":null }
+        {label:"I (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"ii (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}},
+        {label:"V (G-B-D)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
+        {label:"vi (A-C-E)", spec:{clef:"treble",notes:[{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"You labeled the chords correctly.":null },
+    { type:"order-tap", title:"Game 3 · Build a Functional Progression",
+      intro:"Arrange the functions to form the common T → PD → D → T progression.",
+      miaIntro:"Tonic → predominant → dominant → tonic.",
+      spec:{sequence:["Tonic — home (I)","Predominant — departure (IV or ii)","Dominant — tension (V)","Tonic — return (I)"],
+        title:"A common functional progression"},
+      result:(stars)=>stars>=2?"You completed the functional progression.":null },
+    { type:"term-race", title:"Game 4 · Translate the Numerals",
+      intro:"Translate I-vi-IV-V into chord symbols in each major key.",
+      miaIntro:"Match each numeral with its root and quality.",
+      spec:{rounds:8, reverse:true, pool:[
+        ["I in G major","G"],
+        ["vi in G major","Em"],
+        ["IV in G major","C"],
+        ["V in G major","D"],
+        ["I in F major","F"],
+        ["vi in F major","Dm"],
+        ["IV in F major","B\u{266D}"],
+        ["V in F major","C"]]},
+      result:(score)=>score>=6?"You translated the progression correctly.":null }
   ],
-  practiceIntro:"20 practice questions — the method, the labels and the frame rules. Answer right and the next appears automatically!",
+  practiceIntro:"Complete 20 practice questions on Roman numerals, chord inversions, harmonic functions, and common functional progressions. The next question will appear after each correct answer.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Compose","melody for a progression"],["Analyze first","numerals below, symbols above"],["Framework","chord tones"],["To add interest","passing & neighboring tones"],["R","the root as a melody note"],["P","a passing tone"]], reverse:true}, count:6 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
-    { type:"mc", q:"What does composing mean in this lesson?", choices:["Creating a melody for a chord progression","Playing by ear","Writing a drum part"], answer:0,
-      explain:"The reverse of harmonizing." },
-    { type:"mc", q:"What should you do before writing the melody?", choices:["Analyze the progression: numerals below, symbols above","Choose a tempo","Erase the chords"], answer:0,
-      explain:"Know the palette first." },
-    { type:"mc", q:"The melody's first and last note tends to be…", choices:["the root of the I chord","the leading tone","degree 5"], answer:0,
-      explain:"Home at both ends." },
-    { type:"mc", q:"The chord that usually precedes the final chord is…", choices:["V or V7","IV","ii"], answer:0,
-      explain:"The cadence rule, one more time." },
-    { type:"mc", q:"Which notes are the basic melody notes over an F chord?", choices:["F, A and C","Any white key","Only F"], answer:0,
-      explain:"Chord tones = guaranteed fits." },
-    { type:"mc", q:"The label 'P' under a melody note means…", choices:["passing tone","perfect","piano"], answer:0,
-      explain:"The one non-chord label in the model." },
-    { type:"truefalse", q:"A composed melody may include non-harmonic tones.", answer:true,
-      explain:"They make the melody more interesting." },
-    { type:"truefalse", q:"Every note of a composed melody must be a chord tone.", answer:false,
-      explain:"Chord tones form the framework; non-harmonic tones are added." },
-    { type:"truefalse", q:"The numbers between the staffs (R, 3, 5) name each melody note's chord member.", answer:true,
-      explain:"The analysis labels: R, 3, 5, 7, P." },
-    { type:"truefalse", q:"Composing and harmonizing are opposite processes.", answer:true,
-      explain:"Melody→chords vs chords→melody." }
-  ],
-  miaQuizIntro:"The Unit 16 finale quiz! Analyze → chord tones → non-harmonic tones → beginning and ending.",
-  quiz:[
-    { type:"mc", q:"What is the first step in composing a melody?", choices:["Analyze the chord progression","Write the melody immediately","Choose a tempo"], answer:0,
-      explain:"Analysis shows which notes fit each harmony.", hint:"Chords first, tune second." },
-    { type:"mc", q:"The first analysis step is writing…", choices:["Roman numerals under the chords and symbols above the staff","the melody immediately","the time signature"], answer:0,
-      explain:"Analysis shows which notes fit each harmony.", hint:"Numerals below, symbols above." },
-    { type:"mc", q:"What should most melody notes come from?", choices:["The tones of each measure's chord","The chromatic scale","The drum pattern"], answer:0,
-      explain:"Chord tones form the framework.", hint:"The hook's discovery." },
-    { type:"mc", q:"Which notes can make a melody more interesting?", choices:["Passing and neighboring tones","More rests","Louder dynamics"], answer:0,
-      explain:"Non-harmonic tones add smoothness and interest.", hint:"Lesson 66's tones." },
-    { type:"truefalse", q:"The first and last note of a melody tends to be the root of the I chord.", answer:true,
-      explain:"Begin and end on the root of I.", hint:"The tonic." },
-    { type:"truefalse", q:"A V or V7 chord usually precedes the last chord.", answer:true,
-      explain:"The cadence sets up the landing.", hint:"Third time this unit!" },
-    { type:"mc", q:"Over a G7 measure, which is NOT a chord tone?", choices:["A","G","B","F"], answer:0,
-      explain:"G7 = G-B-D-F; A is not a chord tone.", hint:"Spell G7." },
-    { type:"mc", q:"What do the labels R, 3, 5, and P represent?", choices:["The melody note's role in the current chord","Finger numbers","Measure numbers"], answer:0,
-      explain:"Root, third, fifth — or passing tone.", hint:"Chord member or passing." },
-    { type:"mc", q:"A melody measure over C major reads E-D-C. The best labels are…", choices:["3 - P - R","R - 3 - 5","5 - 3 - R"], answer:0,
-      explain:"E is the 3rd, C the root; D connects them.", hint:"Which note is non-harmonic?" },
-    { type:"mc", q:"You're composing in F major. Your final two measures should likely carry…", choices:["C7 then F, melody ending on F","B♭ then G, ending on A","F then C7, ending on C"], answer:0,
-      explain:"V7→I with the root on top — frame complete.", hint:"V7 of F is C7." },
-    { type:"mc", q:"Two students compose over the same progression and produce different melodies. Who's right?", choices:["Both — the chord tones offer many valid paths","Only the one using roots","Neither — progressions allow one melody"], answer:0,
-      explain:"Composition is choice; the rules just keep the choices musical.", hint:"Your builder made a unique tune too." },
-    { type:"mc", q:"What is the correct order for composing a melody?", choices:["Analyze → build with chord tones → add non-harmonic tones → check the beginning and ending","Add non-harmonic tones first, then analyze","Write the ending first, then analyze"], answer:0,
-      explain:"These four steps summarize the whole lesson.", hint:"What did you do in the builder?" },
-    /* generated */
-    { gen:"term-match", params:{subject:"term", pool:[["Compose","chords → melody"],["Harmonize","melody → chords"],["Framework","chord tones"],["P","passing tone"]], reverse:true}, count:3 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
-    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:1 }
+    { gen:"term-match", params:{subject:"term", pool:[["I, vi","commonly tonic"],["ii, IV","commonly predominant"],["V, vii°","commonly dominant"],["T\u{2192}PD\u{2192}D\u{2192}T","a common flow"],["Numeral case","quality"]], reverse:true}, count:6 },
+    { gen:"triad-id", params:{ask:"numeral"}, count:3 },
+    { type:"mc", q:"A basic Roman numeral identifies a chord's…", choices:["root scale degree and quality","dynamic level and articulation","tempo and meter"], answer:0,
+      explain:"Number + case." },
+    { type:"mc", q:"Which pair includes the primary tonic chord and a common tonic substitute in major keys?", choices:["I and vi","ii and IV","V and vii°"], answer:0,
+      explain:"I is the primary tonic chord, while vi may serve as a tonic substitute or prolongational chord in some contexts." },
+    { type:"mc", q:"Which chords commonly serve predominant function in a major key?", choices:["ii and IV","I and V","iii and vii°"], answer:0,
+      explain:"They commonly prepare the dominant." },
+    { type:"mc", q:"Which sequence represents a common functional progression?", choices:["T → PD → D → T","D → PD → T","PD → T → D"], answer:0,
+      explain:"Home, departure, tension, return." },
+    { type:"truefalse", q:"V and vii° commonly serve dominant function.", answer:true,
+      explain:"Both carry the leading tone." },
+    { type:"truefalse", q:"Roman-numeral analysis can describe corresponding chord relationships in different keys.", answer:true,
+      explain:"Numerals describe relationships to the tonic, so the same pattern can be applied in different keys." },
+    { type:"truefalse", q:"In some contexts, vi can serve as a tonic substitute for I.", answer:true,
+      explain:"The vi and I triads share two pitch classes, and vi can provide tonic-related stability in certain contexts. Its function still depends on the progression." },
+    { type:"mc", q:"In C major, how is E-G-C labeled?", choices:["I⁶","iii","I⁶₄"], answer:0,
+      explain:"C is the root, and E is in the bass, so the tonic triad is in first inversion." },
+    { gen:"triad-id", params:{ask:"numeral"}, count:3 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
   ],
   vocabulary:[
-    {term:"Compose", def:"To create (write) a melody for a previously written chord progression — harmonizing in reverse."},
-    {term:"Melody Framework", def:"The chord tones a composed melody is built from — each measure's chord provides the notes that fit."},
-    {term:"R / 3 / 5 / P Labels", def:"The analysis labels: which chord member each melody note is — or P for a passing tone."},
-    {term:"The Frame Rule", def:"Begin and end on the root of I; let V(7) set up the final chord."}
+    {term:"Roman Numeral Analysis", def:"Labeling each chord by scale degree (number) and quality (case), with figured-bass symbols for inversion — transferable between keys."},
+    {term:"Tonic Function (T)", def:"Stability and rest: I is the primary tonic chord; vi may substitute in some contexts."},
+    {term:"Predominant Function (PD)", def:"Prepares the dominant: commonly ii and IV."},
+    {term:"Dominant Function (D)", def:"Tension seeking resolution to tonic: commonly V and vii° — both carry the leading tone."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Composing</b> = writing a melody over a given progression — the reverse of harmonizing.",
-    "✔ Method: <b>analyze</b> (numerals below, symbols above) → <b>outline from chord tones</b> → <b>decorate</b> with passing/neighboring tones.",
-    "✔ Frame: <b>first and last note = root of I</b>; <b>V(7) precedes the final chord</b>.",
-    "✔ The labels <b>R / 3 / 5 / P</b> name each melody note's job.",
-    "✔ Many melodies fit one progression — <b>your choices make yours</b>. UNIT 16 COMPLETE! \u{1F389}"
+    "✔ Numeral = <b>degree + quality</b>, with figured bass for <b>inversion</b>; the same pattern transfers <b>between keys</b>.",
+    "✔ Common functions: <b style='color:#2F6DA8'>T = I (vi may substitute)</b> · <b style='color:#A9821F'>PD = ii, IV</b> · <b style='color:#C05A21'>D = V, vii°</b>.",
+    "✔ A common flow: <b>T → PD → D → T</b> — home, departure, tension, return.",
+    "✔ To analyze: key → root → degree → quality → inversion → context.",
+    "✔ I-vi-IV-V names the same relationships in any major key."
   ],
   tips:[
-    "Composer's warm-up: take ANY progression you know and hum only roots. Then upgrade some roots to 3rds and 5ths. Then add one passing tone. Congratulations — you compose.",
-    "The 3rd of each chord is the juiciest melody note — it carries the chord's whole personality.",
-    "Label your own melodies R/3/5/P and see whether the P's land on weak beats.",
-    "Unit 17 takes composing into MINOR keys — and then somewhere unexpected: the blues."
+    "Analyze the bass line first — in root-position chords the bass is the root, but watch for inversions, where it is not.",
+    "When a progression feels 'stuck at home,' look for vi masquerading as tonic.",
+    "Translate one favorite song into numerals this week — then play it in three keys from the numerals alone.",
+    "Next lesson: where progressions STOP — the cadences."
   ],
-  rewards:{ badge:"Composer's Quill — Unit 16 Champion", icon:"\u{270D}\u{FE0F}" },
+  rewards:{ badge:"Harmony Analyst", icon:"\u{1F3DB}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! Analyze, chord tones, non-harmonic tones, beginning and ending — Unit 16 complete! \u{270D}\u{FE0F}\u{1F3C6}\u{1F389}",
-  miaPass:"Passed — and Unit 16 is COMPLETE! You can harmonize, play textures, and compose. \u{1F389}",
+  miaQuizIntro:"Quiz: Identify the key, root, scale degree, quality, inversion, and likely function.",
+  quiz:[
+    { type:"mc", q:"What information does a basic Roman numeral encode through its numeral, capitalization, and quality symbol?", choices:["Root scale degree and chord quality","Tempo and dynamics","Key signature and meter"], answer:0,
+      explain:"Number + case.", hint:"Two in one." },
+    { type:"mc", q:"Why can the same Roman-numeral progression be applied in different keys?", choices:["Roman numerals describe relationships to the tonic rather than fixed pitches","Roman numerals ignore chord relationships","Roman numerals apply only to C major"], answer:0,
+      explain:"Degrees are key-independent.", hint:"Relationships, not letters." },
+    { type:"mc", q:"What are the three broad harmonic-function categories introduced in this lesson?", choices:["Tonic, predominant, and dominant","Loud, soft, and moderate","Fast, slow, and moderate"], answer:0,
+      explain:"T, PD, D.", hint:"Home, bridge, tension." },
+    { type:"mc", q:"Which pair contains the primary tonic triad and a common tonic substitute?", choices:["I and vi","ii and IV","V and vii°"], answer:0,
+      explain:"I is the primary tonic chord; vi may serve as a tonic substitute in some contexts.", hint:"Identify the primary tonic chord and its common substitute." },
+    { type:"mc", q:"Which pair commonly serves predominant function?", choices:["ii and IV","I and V","vi and vii°"], answer:0,
+      explain:"Both chords commonly prepare the dominant.", hint:"Identify the chords that commonly precede V." },
+    { type:"mc", q:"Which pair commonly serves dominant function?", choices:["V and vii°","I and IV","ii and vi"], answer:0,
+      explain:"Both chords contain the leading tone and commonly resolve toward tonic.", hint:"Identify the chords rooted on scale degrees 5 and 7." },
+    { type:"mc", q:"Which sequence shows a common functional progression?", choices:["T → PD → D → T","D → T → PD","PD → D → PD"], answer:0,
+      explain:"Home, departure, tension, return.", hint:"The progression begins and ends with tonic function." },
+    { type:"mc", q:"In C major, label the chord.",
+      staff:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:160},
+      choices:["ii — D minor, commonly predominant","II — D major","IV — F major"], answer:0,
+      explain:"D is scale degree 2 in C major, and D-F-A is a minor triad, so it is labeled ii.", hint:"Root first." },
+    { type:"mc", q:"How is I-vi-IV-V realized in F major?", choices:["F - Dm - B♭ - C","F - D - B - C","C - Am - F - G"], answer:0,
+      explain:"Degrees 1, 6, 4, 5 of F major.", hint:"F major has B♭." },
+    { type:"truefalse", q:"In some major-key contexts, vi can function as a tonic substitute for I.", answer:true,
+      explain:"vi shares two tones with I and can provide tonic-like stability in some contexts.", hint:"A-C-E vs C-E-G." },
+    { type:"truefalse", q:"IV commonly serves dominant function in a major key.", answer:false,
+      explain:"IV commonly serves predominant function and prepares V. Its exact function depends on context.", hint:"Think about which chord IV commonly prepares." },
+    { type:"mc", q:"A progression follows I → IV → V → I. Which functional pattern does it represent?", choices:["T → PD → D → T","T → D → PD → T","T → T → T → T"], answer:0,
+      explain:"T→PD→D→T — a common functional pattern.", hint:"Map each numeral." },
+    { type:"mc", q:"In C major, the notes are G-C-E, with G in the bass. How should the chord be labeled?",
+      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:160},
+      choices:["I⁶₄","V","I⁶"], answer:0,
+      explain:"C is the chord root, but G is in the bass, placing the tonic triad in second inversion.", hint:"Find the root first; then identify the bass note." }
+  ],
+  miaPerfect:"Perfect score! You accurately identified chord roots, qualities, inversions, and common harmonic functions.",
+  miaPass:"You passed! Next, you will identify cadences and their roles in musical phrases.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"The melody's notes came from inside each measure's chord: C, A, E, D, C over C-F-C-G7-C. Chord tones are the composer's palette.",
-      play:()=>{const chords=[[48,64,67],[53,65,69],[48,64,67],[43,67,71,77],[48,64,67]],mel=[72,69,76,74,72];chords.forEach((row,i)=>{row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2));MFAudio.tone(mel[i],.8,i*.9,.44);});} },
-    learn:{ label:"composing",
-      explain:"Analyze the progression, build a framework from chord tones, decorate with passing/neighboring tones, frame it: root of I at both ends, V(7) before the close.",
-      hint:"Analyze → chord tones → non-harmonic tones → beginning and ending.",
-      play:()=>{[72,76,79,76].forEach((m,i)=>MFAudio.tone(m,.5,i*.45,.42));} },
+      explain:"Both versions played I-IV-V-I — different keys, identical numerals. Roman numerals name what keys share.",
+      play:()=>{const B=[[67,71,74],[72,76,79],[74,78,81],[67,71,74]];B.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.7,i*.75,.28)));} },
+    learn:{ label:"Roman numeral analysis",
+      explain:"Numeral = degree + quality, with figured bass for inversion. Common functions: T (I; vi may substitute), PD (ii, IV), D (V, vii°); a common flow is T→PD→D→T.",
+      hint:"Key → root → degree → quality → inversion → context.",
+      play:()=>{[[60,64,67],[65,69,72],[67,71,74],[60,64,67]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.6,i*.65,.28)));} },
     example:{ label:"the examples",
-      explain:"Example 1 is a fully labeled composed melody (R/3/5/P); example 2 shows the same framework before and after decoration." },
+      explain:"Example 1 analyzes I-IV-V7-I; example 2 walks the I-vi-ii-V turnaround — hear each function do its job." },
     game:{ label:"the games",
-      explain:"Sprint the checklist, perform the model, spot safe notes, then run the Unit 16 victory lap.",
-      hint:"Chord tones first — always." },
+      explain:"Sprint the functions, spot numerals on cards, build the common progression in order, then translate numerals across keys.",
+      hint:"Tonic rests, predominant prepares, dominant resolves." },
     quiz:{ label:"this question",
-      explain:"Every question is one of the four steps: analyze, framework, decorate, frame. Identify which step, and the answer follows.",
-      play:()=>{[67,71,74,77].forEach(m=>MFAudio.tone(m,.8,0,.3));[60,64,67,72].forEach(m=>MFAudio.tone(m,1,.9,.32));} }
+      explain:"Work step by step: identify the key, find the root, count its degree, set the case and inversion, then judge the likely function from context.",
+      play:()=>{[[62,65,69],[67,71,74],[60,64,67]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.6,i*.65,.28)));} }
   }
 };

@@ -1,278 +1,260 @@
-/* Lesson 87 — Cadences (Book 4, Unit 21 — SELF-AUTHORED)
-   Core: CADENCE = the harmonic resting point ending a phrase.
-   AUTHENTIC V(7)→I — PERFECT (PAC: both root position, tonic on top) vs
-   IMPERFECT (IAC). HALF: ends ON V. PLAGAL: IV→I. DECEPTIVE: V→vi.
-   NOTE: chord demos play immediately (no chime before demos).
+/* Lesson 87 (12.3, formerly L100) — Ornaments (Book 4, Unit 25 — SELF-AUTHORED)
+   Core: TRILL (rapid alternation with upper neighbor), MORDENT (single
+   quick alternation; upper/lower), TURN (four-note loop around the note),
+   GRACE NOTES (appoggiatura long / acciaccatura crushed).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* cadence ear lab */
+/* ornament ear lab */
 function MF_L87_ear(container,fb){
-  const CAD={
-    auth:{rows:[[67,71,74,77],[60,64,67,72]], name:"Authentic (V7 \u{2192} I)"},
-    half:{rows:[[62,65,69],[67,71,74]], name:"Half (ends ON V)"},
-    plag:{rows:[[65,69,72],[60,64,67,72]], name:"Plagal (IV \u{2192} I)"},
-    dec:{rows:[[67,71,74,77],[69,72,76]], name:"Deceptive (V7 \u{2192} vi)"}};
-  const ROUNDS=["auth","half","dec","plag"];
+  const play={
+    trill:()=>{ for(let i=0;i<8;i++) MFAudio.tone(i%2?74:72,.09,i*.09,.34); MFAudio.tone(72,.5,.75,.4); return 1.4; },
+    mord:()=>{ MFAudio.tone(72,.09,0,.36); MFAudio.tone(74,.09,.09,.34); MFAudio.tone(72,.7,.18,.42); return 1.0; },
+    turn:()=>{ [74,72,71,72].forEach((m,i)=>MFAudio.tone(m,i===3?.55:.12,i*.12,.36)); return 1.0; },
+    grace:()=>{ MFAudio.tone(71,.07,0,.3); MFAudio.tone(72,.8,.07,.42); return 1.0; }};
+  const NAME={trill:"Trill — rapid alternation",mord:"Mordent — one quick alternation",turn:"Turn — around the note",grace:"Grace note — crushed in"};
+  const ROUNDS=["mord","trill","grace","turn"], KEY=["trill","mord","turn","grace"];
   let r=0, played=false;
-  container.innerHTML=`<div class="big-q l87e-q" style="text-align:center"></div>
-    <div style="text-align:center"><button class="play l87e-play">▶ Hear the phrase ending</button></div>
-    <div class="choices l87e-ch" style="display:none"><button>Authentic — V to I, finished</button><button>Half — stops on V, unfinished</button><button>Plagal — IV to I, gentle</button><button>Deceptive — V to vi, surprise</button></div>`;
-  const q=container.querySelector(".l87e-q"), pl=container.querySelector(".l87e-play"), ch=container.querySelector(".l87e-ch");
-  const KEY=["auth","half","plag","dec"];
-  pl.onclick=()=>{
-    const C=CAD[ROUNDS[r]]; if(!C) return;
-    MFAudio.tone(60,.5,.05,.3); MFAudio.tone(64,.5,.05,.2); MFAudio.tone(67,.5,.05,.2); /* set tonic context: I */
-    C.rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,.8+i*.9,.28)));
-    played=true; setTimeout(()=>ch.style.display="",2900);
-  };
+  container.innerHTML=`<div class="big-q l100e-q" style="text-align:center">Round 1 of 4: listen, then name the ornament.</div>
+    <div style="text-align:center"><button class="play l100e-play">▶ Play</button></div>
+    <div class="choices l100e-ch" style="display:none"><button>Trill</button><button>Mordent</button><button>Turn</button><button>Grace note</button></div>`;
+  const q=container.querySelector(".l100e-q"), pl=container.querySelector(".l100e-play"), ch=container.querySelector(".l100e-ch");
+  pl.onclick=()=>{ const w=ROUNDS[r]; if(!w) return; const d=play[w](); played=true; setTimeout(()=>ch.style.display="",d*1000+300); };
   [...ch.children].forEach((b,i)=>b.onclick=()=>{
     if(!played) return;
-    const want=ROUNDS[r];
-    if(KEY[i]===want){ fb(true,"✓ "+CAD[want].name+" — correct."); r++; played=false; ch.style.display="none";
-      if(r>=ROUNDS.length){ q.textContent="Excellent! All four cadences identified by ear."; pl.style.display="none"; } else q.innerHTML=`Round ${r+1} of ${ROUNDS.length}: listen, then name the cadence.`;
-    } else { MFAudio.tone(40,.2); fb(false,"Listen to the final two harmonies at the phrase ending: V\u{2192}I is authentic, IV\u{2192}I is plagal, an ending on V is half, and V\u{2192}vi is deceptive."); }
+    if(KEY[i]===ROUNDS[r]){ fb(true,"✓ "+NAME[ROUNDS[r]]+"."); r++; played=false; ch.style.display="none";
+      if(r>=ROUNDS.length){ q.textContent="Excellent! Every ornament named by ear."; pl.style.display="none"; } else q.innerHTML=`Round ${r+1} of 4: listen, then name the ornament.`;
+    } else { MFAudio.tone(40,.2); fb(false,"Count the alternations: many = trill, one = mordent, a loop = turn, a crush = grace note."); }
   });
-  q.innerHTML="Round 1 of 4: listen, then name the cadence.";
+}
+
+/* one ornament step: show the written-out realization, let students HEAR it, then ask */
+function MF_L87_orn(container,fb,cfg){
+  container.innerHTML=`<div class="orn-staff" style="margin:2px 0"></div>
+    <div style="text-align:center"><button class="play orn-play">▶ Hear it</button></div>
+    <div class="big-q orn-q" style="text-align:center;margin-top:6px">${cfg.q}</div>
+    <div class="choices orn-ch"></div>`;
+  Staff.render(container.querySelector(".orn-staff"),cfg.staff);
+  container.querySelector(".orn-play").onclick=cfg.play;
+  const ch=container.querySelector(".orn-ch");
+  cfg.choices.forEach((c,i)=>{ const b=document.createElement("button"); b.textContent=c;
+    b.onclick=()=>{ if(i===cfg.answer) fb(true,cfg.ok); else { MFAudio.tone(40,.2); fb(false,cfg.no); } };
+    ch.appendChild(b); });
 }
 
 LESSON_CONTENT[87]={
-  welcome:"Cadences create arrival, pause, or expectation at the ends of phrases.",
+  welcome:"Ornaments decorate a melody without changing the melody itself.",
   hook:{
-    say:"<b>Listen to two phrase endings.</b> One creates a strong sense of arrival, while the other ends with an expectation of continuation. \u{1F447} <b>Which ending sounds more complete?</b>",
+    say:"<b>Listen to a sustained note and then to an ornamented version.</b> \u{1F447} <b>What does the ornament add?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Ending A</button>
-          <button class="play hk-b">▶ Ending B</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Ending A — it resolves from V to I</button><button>Ending B — it stops on V and sounds incomplete</button></div>`;
+          <button class="play hk-a">▶ Plain</button>
+          <button class="play hk-b">▶ Decorated</button></div>
+          <div class="choices hk-ch" style="display:none"><button>A rapid alternation between the written note and its upper neighbor</button><button>A completely unrelated melody</button><button>Nothing</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ [[60,64,67],[65,69,72],[67,71,74,77],[60,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.75,i*.8,.28))); hA=true; if(hB) setTimeout(()=>ch.style.display="",3700); };
-        container.querySelector(".hk-b").onclick=()=>{ [[60,64,67],[62,65,69],[67,71,74]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.75,i*.8,.28))); hB=true; if(hA) setTimeout(()=>ch.style.display="",3000); };
+        container.querySelector(".hk-a").onclick=()=>{ MFAudio.tone(72,.9,.05,.42); hA=true; if(hB) setTimeout(()=>ch.style.display="",1400); };
+        container.querySelector(".hk-b").onclick=()=>{ for(let i=0;i<8;i++) MFAudio.tone(i%2?74:72,.09,i*.09,.36); MFAudio.tone(72,.5,.75,.42); hB=true; if(hA) setTimeout(()=>ch.style.display="",1700); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. Ending A resolves from dominant to tonic, creating a stronger sense of closure. Ending B stops on the dominant and suggests continuation.");
-          else fb(false,"Ending B stops on the dominant without resolving to tonic. Listen again for the ending that creates a stronger sense of arrival.");
+          if(i===0) fb(true,"✓ Correct. A trill rapidly alternates between the written note and its upper neighbor. The ornament changes the musical surface while embellishing the underlying melodic note.");
+          else fb(false,"The written note remains the structural focus. Listen to the neighboring pitch that alternates with it.");
         });
       } }
   },
   objectives:[
-    "Define cadence: a harmonic ending that marks the end of a phrase",
-    "Recognize Authentic, Half, Plagal, and Deceptive cadences",
-    "Distinguish PAC and IAC",
-    "Identify each cadence by ear and by notation",
-    "Understand how different cadences create different musical endings"
+    "Define ornament: a decoration of a single melody note",
+    "TRILL (tr): rapid alternation with the upper neighbor",
+    "MORDENT: one quick alternation — upper or lower",
+    "TURN: upper neighbor, note, lower neighbor, note",
+    "GRACE NOTES: appoggiatura (leans) vs acciaccatura (crushed)",
+    "Identify ornaments by symbol and by ear"
   ],
   steps:[
-    { say:"<b>Cadence:</b> a harmonic ending that marks the end of a phrase. You identify it by the final chord motion. \u{1F447} <b>Where does a cadence normally occur?</b>",
-      try:{ type:"mc", choices:["At or near the end of a phrase","On every beat","Only at the end of an entire composition"], answer:0,
-        success:"✓ Correct. Cadences commonly mark phrase endings, so a composition may contain many cadential points.",
-        fail:"Where does a phrase create a point of arrival or pause?",
-        hint:"Recall the phrase endings introduced in Lesson 72." } },
-    { say:"<b>Authentic Cadence — V (or V⁷) → I:</b> the dominant resolves to the tonic at a phrase ending. This is the strongest way to close a phrase. \u{1F447} <b>Which harmonic motion defines an authentic cadence in a major key?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:440} },
-      try:{ type:"mc", choices:["V or V⁷ to I","IV to I","I to V"], answer:0,
-        success:"✓ Correct. An authentic cadence moves from dominant to tonic at a phrase ending.",
-        fail:"Identify the motion from dominant to tonic.",
-        hint:"The leading tone resolves to the tonic in a typical authentic cadence." } },
-    { say:"<b>PAC vs IAC:</b><br>• <b>PAC</b> — V(⁷)→I, both chords in root position, soprano ends on the tonic (strongest ending).<br>• <b>IAC</b> — any authentic V–I that does not meet all PAC conditions. \u{1F447} <b>A root-position V–I cadence ends with scale degree 3 in the soprano. How is it classified?</b>",
-      try:{ type:"mc", choices:["Imperfect authentic cadence","Perfect authentic cadence","Half cadence"], answer:0,
-        success:"✓ Correct. The cadence is authentic because it moves from V to I, but it is imperfect because the soprano ends on scale degree 3 rather than the tonic.",
-        fail:"Check the chord positions and the final soprano note.",
-        hint:"A PAC requires root-position V–I and the tonic in the final soprano." } },
-    { say:"<b>Half Cadence — ends on V:</b> the phrase ends on the dominant. It feels unfinished and expects continuation. \u{1F447} <b>A half cadence normally ends on…</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"ii"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"G4",d:"w",label:"V — wait…"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{bar:"final"}],width:480} },
-      try:{ type:"mc", choices:["A root-position V chord","A I chord","A vi chord"], answer:0,
-        success:"✓ Correct. Ending on the dominant creates an open cadence that commonly suggests continuation.",
-        fail:"The dominant is reached but does not resolve to tonic.",
-        hint:"The phrase ends on V." } },
-    { say:"<b>Plagal Cadence — IV → I:</b> often called the “Amen” cadence. It gives a gentle sense of arrival, without the dominant-to-tonic motion of an authentic cadence. \u{1F447} <b>Which harmonic motion defines a plagal cadence?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:400} },
-      try:{ type:"mc", choices:["IV to I","V to I","V to vi"], answer:0,
-        success:"✓ Correct. A plagal cadence moves from IV to I without dominant-to-tonic harmonic motion.",
-        fail:"Identify the motion from IV to I.",
-        hint:"Subdominant to tonic." } },
-    { say:"<b>Deceptive Cadence:</b> V begins as if it will resolve to I, but moves somewhere else instead — <b>V → vi</b> in major, <b>V → VI</b> in minor. This delays the tonic and often keeps the music going. \u{1F447} <b>Why is V–vi in a major key called deceptive?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"A4",d:"w",label:"vi — surprise!"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:440} },
-      try:{ type:"mc", choices:["V creates an expectation of I but moves to vi instead","The progression contains no dominant chord","The dynamic level changes unexpectedly"], answer:0,
-        success:"✓ Correct. The dominant creates an expectation of tonic, but the progression moves to vi instead.",
-        fail:"Which chord normally follows V in an authentic cadence?",
-        hint:"The expected tonic chord does not arrive." } },
-    { say:"Listen to each phrase ending and identify the cadence. \u{1F447}",
+    { say:"<b>What is an ornament?</b> An ornament <b>decorates a melody without changing the melody itself</b> — it adds neighboring pitches, quick motion, or emphasis around a written note, while that note stays the structural focus. This lesson uses common <b>modern introductory realizations</b> (historical practice varies, but we keep it simple here). Ornaments are still everywhere today — <b>classical piano, jazz, gospel, pop vocals, and film scores</b>. \u{1F447} <b>What does an ornament normally do?</b>",
+      try:{ type:"mc", choices:["It embellishes a written note or melodic gesture","It replaces the complete formal structure","It changes the key automatically"], answer:0,
+        success:"✓ Correct. An ornament changes the musical surface while preserving the underlying melodic function.",
+        fail:"Compare the structural note with its ornamented realization.",
+        hint:"The written note remains the focus of the embellishment." } },
+    { say:"<b>The Trill (tr):</b> a trill is a <b>rapid alternation between the written note and its upper neighbor</b>, marked <b>tr</b> (sometimes with a wavy line). It usually lasts most of the note. Historical practice differs on its exact start and end; this lesson uses the modern introductory version. See it written out and hear it:",
+      try:{ type:"custom", mount:(c,fb)=>MF_L87_orn(c,fb,{
+        staff:{clef:"treble",tempo:120,notes:[{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"}],beams:[[0,7,3]],width:380},
+        play:()=>{[72,74,72,74,72,74,72,74].forEach((m,i)=>MFAudio.tone(m,.14,i*.13,.34));},
+        q:"\u{1F447} <b>Which neighboring pitch participates in a standard trill?</b>",
+        choices:["The upper neighbor","The lower octave","The tonic in every key"], answer:0,
+        ok:"✓ Correct. A standard trill alternates the written pitch with its upper neighbor.",
+        no:"Compare the neighboring pitch with the written note." }) } },
+    { say:"<b>The Mordent:</b> the basic idea is <b>written note → neighbor → written note</b> — one quick alternation. The neighbor may be <b>above</b> (upper mordent) or <b>below</b> (lower mordent, often marked with a vertical stroke through the symbol), depending on which symbol is used. See and hear an upper mordent:",
+      try:{ type:"custom", mount:(c,fb)=>MF_L87_orn(c,fb,{
+        staff:{clef:"treble",tempo:120,notes:[{p:"C5",d:"32",label:"main"},{p:"D5",d:"32"},{p:"C5",d:"16"},{p:"C5",d:"8"}],beams:[[0,3],[0,2,2],[0,1,3]],arcs:[{from:2,to:3,type:"tie"}],width:280},
+        play:()=>{MFAudio.tone(72,.12,0,.36);MFAudio.tone(74,.12,.13,.34);MFAudio.tone(72,.7,.26,.42);},
+        q:"\u{1F447} <b>How does a mordent normally differ from an extended trill?</b>",
+        choices:["It usually consists of one brief main–neighbor–main figure","It spans two octaves","It never returns to the written note"], answer:0,
+        ok:"✓ Correct. A mordent is normally a brief three-note figure rather than an extended alternation.",
+        no:"Listen for a single quick movement to the neighbor and back." }) } },
+    { say:"<b>The Turn:</b> a turn circles the written note through four pitches: <b>upper neighbor → written note → lower neighbor → written note</b>. Its symbol is a curved <b>sideways S</b>. Accidentals above or below the symbol can raise or lower a neighbor. See and hear a turn on C (D–C–B–C):",
+      try:{ type:"custom", mount:(c,fb)=>MF_L87_orn(c,fb,{
+        staff:{clef:"treble",tempo:104,notes:[{p:"D5",d:"16",label:"upper"},{p:"C5",d:"16"},{p:"B4",d:"16"},{p:"C5",d:"16"}],beams:[[0,3,2]],width:320},
+        play:()=>{[74,72,71,72].forEach((m,i)=>MFAudio.tone(m,i===3?.55:.14,i*.14,.36));},
+        q:"\u{1F447} <b>Which pattern represents the common turn introduced in this lesson?</b>",
+        choices:["Upper neighbor → written note → lower neighbor → written note","Written note → octave → written note","Lower neighbor → lower neighbor → upper neighbor"], answer:0,
+        ok:"✓ Correct. It moves above the written note, returns, moves below, and returns again.",
+        no:"Follow the motion around the written note: upper → main → lower → main." }) } },
+    { say:"<b>Grace Notes:</b> small notes that decorate the main note; their exact timing depends on style and period (avoid rigid rules).<br>• <b>Appoggiatura</b> — <i>unslashed</i>; <b>leans</b> on the beat and takes real time, often borrowed from the main note.<br>• <b>Acciaccatura</b> — <i>slashed</i>; <b>crushed</b> in very briefly, just before or at the main note. Hear the crushed grace note, then the main note:",
+      try:{ type:"custom", mount:(c,fb)=>MF_L87_orn(c,fb,{
+        staff:{clef:"treble",tempo:96,notes:[{p:"B4",d:"32",label:"crush"},{p:"C5",d:"32"},{p:"C5",d:"16"},{p:"C5",d:"8"}],beams:[[0,3],[0,2,2],[0,1,3]],arcs:[{from:1,to:2,type:"tie"},{from:2,to:3,type:"tie"}],width:240},
+        play:()=>{MFAudio.tone(71,.07,0,.3);MFAudio.tone(72,.9,.07,.42);},
+        q:"\u{1F447} <b>How is an acciaccatura commonly performed?</b>",
+        choices:["Very briefly before or at the beginning of the principal note, according to style","Always as exactly half the principal note's value","Always after the principal note ends"], answer:0,
+        ok:"✓ Correct. An acciaccatura is performed very briefly, but its exact placement depends on style.",
+        no:"The slashed grace note is normally very brief — a crush." }) } },
+    { say:"Listen to each clearly presented ornament and identify its type. \u{1F447}",
       try:{ type:"custom",
-        hint:"Identify the final two harmonies and confirm that they occur at a phrase ending. V–I is authentic, IV–I is plagal, a phrase ending on root-position V is a half cadence, and V–vi in major is deceptive.",
+        hint:"Listen for an extended alternation, a brief neighbor-and-return figure, a four-note turn, or a short grace note.",
         mount:(container,fb)=>MF_L87_ear(container,fb) } },
-    { say:"<b>Review:</b> \u{1F447} <b>Which cadence most clearly suggests that the phrase will continue?</b>",
-      try:{ type:"mc", choices:["A half cadence ending on V","A perfect authentic cadence","A plagal cadence"], answer:0,
-        success:"✓ Correct. A half cadence ends on the dominant without resolving to tonic, creating an expectation of continuation.",
-        fail:"Which cadence ends on V rather than resolving to I?",
-        hint:"Identify the cadence that stops on the dominant." } }
+    { say:"<b>Review:</b> \u{1F447} <b>In the common realization taught here, which ornament follows the pattern upper neighbor → written note → lower neighbor → written note?</b>",
+      try:{ type:"mc", choices:["Turn","Trill","Mordent"], answer:0,
+        success:"✓ Correct. This four-note pattern is a common realization of a turn.",
+        fail:"Identify the ornament that circles the written pitch.",
+        hint:"Upper → main → lower → main." } }
   ],
   examples:[
-    { caption:"Four endings from one phrase: authentic (V7-I), half (…V), plagal (IV-I), deceptive (V7-vi). Same music, four punctuation marks.",
-      staff:{clef:"treble",tempo:84,notes:[
-        {p:"G4",d:"q",label:"V7"},{p:"B4",d:"q",chord:true},{p:"F5",d:"q",chord:true},
-        {p:"C5",d:"q",label:"I"},{p:"E5",d:"q",chord:true},{p:"G5",d:"q",chord:true},{bar:"single"},
-        {p:"D4",d:"q",label:"ii"},{p:"F4",d:"q",chord:true},{p:"A4",d:"q",chord:true},
-        {p:"G4",d:"q",label:"V"},{p:"B4",d:"q",chord:true},{p:"D5",d:"q",chord:true},{bar:"single"},
-        {p:"F4",d:"q",label:"IV"},{p:"A4",d:"q",chord:true},{p:"C5",d:"q",chord:true},
-        {p:"C4",d:"q",label:"I"},{p:"E4",d:"q",chord:true},{p:"G4",d:"q",chord:true},{bar:"single"},
-        {p:"G4",d:"q",label:"V7"},{p:"B4",d:"q",chord:true},{p:"F5",d:"q",chord:true},
-        {p:"A4",d:"q",label:"vi!"},{p:"C5",d:"q",chord:true},{p:"E5",d:"q",chord:true},{bar:"final"}],width:680},
-      kb:{start:60,octaves:2,labels:true} },
-    { caption:"PAC vs IAC: the same V7-I twice — first with the tonic proudly on top (perfect), then with the 3rd on top (imperfect). Hear the difference in finality.",
-      staff:{clef:"treble",tempo:80,notes:[
-        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"I (C on top)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"single"},
-        {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true},
-        {p:"C4",d:"w",label:"I (E on top)"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:640},
-      kb:{start:60,octaves:2,labels:true} }
+    { caption:"Ornaments written out: a trill on C (8 fast C-D notes), then a mordent (C-D-C), then a turn (D-C-B-C). Same main note, three decorations.",
+      staff:{clef:"treble",tempo:120,notes:[
+        {p:"C5",d:"32",label:"trill…"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"},
+        {p:"C5",d:"32",label:"mordent"},{p:"D5",d:"32"},{p:"C5",d:"16"},{p:"C5",d:"8"},
+        {p:"D5",d:"16",label:"turn"},{p:"C5",d:"16"},{p:"B4",d:"16"},{p:"C5",d:"16"},{bar:"final"}],
+        beams:[[0,7,3],[8,11],[8,10,2],[8,9,3],[12,15,2]],arcs:[{from:10,to:11,type:"tie"}],width:720},
+      kb:{start:69,octaves:0.5833,labels:true} },
+    { caption:"Grace notes in context: a crushed acciaccatura into the downbeat, then an appoggiatura that leans on the harmony before resolving.",
+      staff:{clef:"treble",tempo:88,notes:[
+        {p:"B4",d:"32",label:"crush"},{p:"C5",d:"32"},{p:"C5",d:"16"},{p:"C5",d:"8"},
+        {p:"D5",d:"q",label:"lean…"},{p:"C5",d:"q"},{bar:"final"}],
+        beams:[[0,3],[0,2,2],[0,1,3]],arcs:[{from:1,to:2,type:"tie"},{from:2,to:3,type:"tie"}],width:440},
+      kb:{start:69,octaves:0.5833,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Cadence Identification (45s)",
-      intro:"Identify four cadence types, their harmonic motions, and their effects.",
-      miaIntro:"Authentic, half, plagal, or deceptive.",
+    { type:"gen-race", title:"Game 1 · Ornament Identification (45s)",
+      intro:"Match common ornament symbols with their introductory realizations.",
+      miaIntro:"Compare the neighboring-note patterns.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Authentic cadence","V(7) \u{2192} I"],
-        ["Half cadence","ends ON V"],
-        ["Plagal cadence","IV \u{2192} I"],
-        ["Deceptive cadence","V \u{2192} vi"],
-        ["PAC requires","root positions + tonic on top"],
-        ["IAC","authentic, but not perfect"],
-        ["The unfinished cadence","half"],
-        ["The gentle close","plagal"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Cadence-identification challenge completed!":null },
-    { type:"key-climb", title:"Game 2 · Perform an Authentic Cadence",
-      intro:"Play a root-position V⁷–I cadence. End with the tonic in the highest voice to create a PAC.",
-      miaIntro:"Resolve the dominant to tonic.",
-      spec:{seq:[55,59,62,65, 48,52,55,60],
-        names:["G (V7 root)","B (leading tone!)","D","F (the 7th)","C (I root)","E","G","C (tonic on top — PAC!)"],
-        start:48, octaves:2, title:"V7 \u{2192} I, note by note"},
-      result:(score)=>score!==null?"You performed a perfect authentic cadence.":null },
-    { type:"symbol-hunt", title:"Game 3 · Name That Cadence",
-      intro:"Examine each phrase ending and select the correct cadence type.",
-      miaIntro:"Identify the final harmonies and check the phrase ending.",
-      spec:{rounds:6, pool:[
-        {label:"Authentic (V \u{2192} I)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:210}},
-        {label:"Plagal (IV \u{2192} I)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:210}},
-        {label:"Deceptive (V \u{2192} vi)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:210}},
-        {label:"Half (ends on V)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:210}}]},
-      result:(score)=>score>=5?"You identified the cadences correctly.":null },
-    { type:"term-race", title:"Game 4 · Cadence Effect",
-      intro:"Match each cadence with its typical harmonic effect.",
-      miaIntro:"Listen for closure, continuation, or delayed resolution.",
+        ["Trill","rapid alternation, upper neighbor"],
+        ["Mordent","one quick alternation"],
+        ["Turn","upper, note, lower, note"],
+        ["Appoggiatura","leaning grace note — takes real time"],
+        ["Acciaccatura","crushed grace note — slashed"],
+        ["'tr' marking","trill"],
+        ["Sideways S","turn"],
+        ["Ornaments decorate","a single note"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?"Ornaments identified!":null },
+    { type:"key-climb", title:"Game 2 · Perform a Turn",
+      intro:"In C major, play a turn around C as D–C–B–C.",
+      miaIntro:"Upper neighbor → main note → lower neighbor → main note.",
+      spec:{seq:[62,60,59,60],
+        names:["D (upper)","C (the note)","B (lower)","C (home)"],
+        start:59, octaves:0.4167, title:"A written-out turn"},
+      result:(score)=>score!==null?"You performed the turn correctly.":null },
+    { type:"order-tap", title:"Game 3 · Build the Turn",
+      intro:"Arrange the four pitches of the indicated turn in order.",
+      miaIntro:"Upper → main → lower → main.",
+      spec:{sequence:["Upper neighbor","The main note","Lower neighbor","The main note again"],
+        title:"The turn's path"},
+      result:(stars)=>stars>=2?"You constructed the turn correctly.":null },
+    { type:"term-race", title:"Game 4 · Which Ornament?",
+      intro:"Match each description with the appropriate ornament.",
+      miaIntro:"Compare the pitch pattern, duration, and notation.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Strong closure on tonic","authentic (V\u{2192}I)"],
-        ["Open, suggests continuation","half (ends on V)"],
-        ["Gentle tonic arrival","plagal (IV\u{2192}I)"],
-        ["Avoids the expected tonic","deceptive (V\u{2192}vi)"],
-        ["Full closure","PAC"],
-        ["Closure with reservations","IAC"],
-        ["Keeps the music going","deceptive"],
-        ["Waits for an answer","half"]]},
-      result:(score)=>score>=6?"You matched each cadence with its typical effect.":null }
+        ["Shimmers as long as the note","trill"],
+        ["One fast bite","mordent"],
+        ["Four-note orbit","turn"],
+        ["Tiny slashed note","acciaccatura"],
+        ["Small note taking real time","appoggiatura"],
+        ["Lower mordent's mark","a vertical slash"],
+        ["Trill's partner note","the upper neighbor"],
+        ["All ornaments decorate","one note"]]},
+      result:(score)=>score>=6?"You identified each ornament correctly.":null }
   ],
-  practiceIntro:"Complete 20 practice questions on authentic, half, plagal, and deceptive cadences, including PAC and IAC. The next question will appear after each correct answer.",
+  practiceIntro:"Complete 20 practice questions on trills, mordents, turns, and grace notes.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Authentic","V \u{2192} I"],["Half","ends on V"],["Plagal","IV \u{2192} I"],["Deceptive","V \u{2192} vi"],["PAC","perfect authentic"],["Cadence","marks a phrase ending"]], reverse:true}, count:6 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
-    { type:"mc", q:"A cadence is best described as…", choices:["a melodic and harmonic gesture that marks a phrase ending or point of arrival","a rapidly performed scale","a type of clef"], answer:0,
-      explain:"Cadences help articulate phrase endings through melody, harmony, and rhythm." },
-    { type:"mc", q:"Which harmonic motion defines an authentic cadence?", choices:["V or V⁷ to I","IV to I","V to vi"], answer:0,
-      explain:"Dominant resolves to tonic at a phrase ending." },
-    { type:"mc", q:"A perfect authentic cadence requires…", choices:["root-position V or V⁷ and I, with the tonic in the final soprano","any V–I motion","a IV chord"], answer:0,
-      explain:"Both conditions for full closure." },
-    { type:"mc", q:"A half cadence normally ends on…", choices:["root-position V","I","vi"], answer:0,
-      explain:"The open door." },
-    { type:"mc", q:"Which harmonic motion defines a plagal cadence?", choices:["IV–I","V–I","V–vi"], answer:0,
-      explain:"A plagal cadence moves from IV to I." },
-    { type:"mc", q:"In a major key, V–vi most commonly produces which cadence?", choices:["Deceptive cadence","Plagal cadence","Half cadence"], answer:0,
-      explain:"The promised I never arrives." },
-    { type:"truefalse", q:"A half cadence normally creates a strong sense of final closure.", answer:false,
-      explain:"It waits on the dominant." },
-    { type:"truefalse", q:"An IAC is a type of authentic cadence.", answer:true,
-      explain:"It contains authentic dominant-to-tonic motion but does not meet all the conditions of a PAC." },
-    { gen:"term-match", params:{subject:"term", pool:[["Finished, strongest","PAC"],["Finished, gentle","plagal"],["Unfinished, waiting","half"],["Surprised","deceptive"]], reverse:true}, count:3 },
-    { gen:"triad-quality", params:{quals:["M","m"]}, count:1 }
+    { gen:"term-match", params:{subject:"term", pool:[["Trill","many alternations"],["Mordent","main–neighbor–main"],["Turn","the orbit"],["Acciaccatura","crushed"],["Appoggiatura","leans"]], reverse:true}, count:6 },
+    { gen:"note-value", params:{}, count:2 },
+    { type:"mc", q:"An ornament normally embellishes…", choices:["a written note or melodic gesture","the entire formal structure","the key signature"], answer:0, explain:"It adds surface detail to an underlying melodic event." },
+    { type:"mc", q:"A standard trill alternates the written note with…", choices:["its upper neighbor","its lower octave","the tonic in every context"], answer:0, explain:"Rapidly, for much of the note's length." },
+    { type:"mc", q:"A mordent normally consists of…", choices:["one brief main–neighbor–main figure","an extended continuous alternation","no neighboring motion"], answer:0, explain:"A brief main–neighbor–main figure." },
+    { type:"mc", q:"In the common realization taught here, a turn follows which pattern?", choices:["Upper neighbor → main note → lower neighbor → main note","Four repetitions of the main note","Lower → upper → lower → upper"], answer:0, explain:"The orbit." },
+    { type:"truefalse", q:"An acciaccatura is normally performed very briefly.", answer:true, explain:"Exact timing depends on style and context." },
+    { type:"truefalse", q:"A notated appoggiatura normally receives perceptible duration, often borrowing time from the principal note.", answer:true, explain:"It leans before resolving." },
+    { type:"truefalse", q:"A standard trill uses the upper neighbor of the written note.", answer:true, explain:"The trill uses the upper neighbor; its starting pitch is a separate, style-dependent matter." },
+    { gen:"term-match", params:{subject:"term", pool:[["tr","trill"],["Sideways S","turn"],["Slash through stem","acciaccatura"],["Vertical slash on mordent","lower mordent"]], reverse:true}, count:3 },
+    { gen:"step-type", params:{}, count:2 }
   ],
   vocabulary:[
-    {term:"Cadence", def:"A harmonic ending that marks the end of a musical phrase."},
-    {term:"Authentic Cadence (PAC / IAC)", sym:"V(⁷) → I", def:"V or V7 → I. PAC = strongest ending. IAC = less complete ending."},
-    {term:"Half Cadence", sym:"? → V", def:"Ends on V. Creates an expectation of continuation."},
-    {term:"Plagal & Deceptive", sym:"IV→I & V→vi", def:"Plagal: IV → I (“Amen” cadence). Deceptive: V → vi (major) or V → VI (minor)."}
+    {term:"Trill (tr)",
+      sym:"<svg viewBox='0 0 66 26' width='66' height='26' style='overflow:visible'><text x='1' y='19' font-family='Georgia,serif' font-style='italic' font-weight='700' font-size='19' fill='currentColor'>tr</text><path d='M26 11 q2.5 -4 5 0 t5 0 t5 0 t5 0 t5 0 t5 0' fill='none' stroke='currentColor' stroke-width='1.6'/></svg>",
+      staffBack:{clef:"none",notes:[{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"32"},{p:"D5",d:"32"}],beams:[[0,7,3]],width:280},
+      def:"Rapid alternation with the upper neighbor."},
+    {term:"Mordent",
+      sym:"<svg viewBox='0 0 42 22' width='42' height='22'><path d='M3 14 L10 6 L17 14 L24 6 L31 14 L38 6' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linejoin='round' stroke-linecap='round'/></svg>",
+      staffBack:{clef:"none",notes:[{p:"C5",d:"32"},{p:"D5",d:"32"},{p:"C5",d:"16"},{p:"C5",d:"8"}],beams:[[0,3],[0,2,2],[0,1,3]],arcs:[{from:2,to:3,type:"tie"}],width:180},
+      def:"Written note → neighbor → written note."},
+    {term:"Turn",
+      sym:"<svg viewBox='0 0 42 26' width='42' height='26'><path d='M6 17 C6 8 16 6 21 13 C26 20 36 18 36 9' fill='none' stroke='currentColor' stroke-width='2.4' stroke-linecap='round'/></svg>",
+      staffBack:{clef:"none",notes:[{p:"D5",d:"16"},{p:"C5",d:"16"},{p:"B4",d:"16"},{p:"C5",d:"16"}],beams:[[0,3,2]],width:190},
+      def:"Upper → note → lower → note."},
+    {term:"Grace Notes",
+      sym:"<svg viewBox='0 0 30 32' width='30' height='32'><ellipse cx='8.5' cy='24' rx='4.3' ry='3.1' fill='currentColor' transform='rotate(-22 8.5 24)'/><line x1='12.4' y1='23' x2='12.4' y2='7' stroke='currentColor' stroke-width='1.6'/><path d='M12.4 7 q6 2.5 4.5 9' fill='none' stroke='currentColor' stroke-width='1.6'/><line x1='5' y1='17' x2='19' y2='9' stroke='currentColor' stroke-width='1.5'/></svg>",
+      staffBack:{clef:"none",notes:[{p:"B4",d:"32"},{p:"C5",d:"32"},{p:"C5",d:"16"},{p:"C5",d:"8"}],beams:[[0,3],[0,2,2],[0,1,3]],arcs:[{from:1,to:2,type:"tie"},{from:2,to:3,type:"tie"}],width:180},
+      def:"A grace note quickly decorates the main note."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Cadence</b> = harmonic ending of a phrase.",
-    "✔ <b>Authentic</b>: V(⁷)→I — PAC strongest; otherwise IAC.",
-    "✔ <b>Half</b>: ends on V → unfinished.",
-    "✔ <b>Plagal</b>: IV→I (“Amen”).",
-    "✔ <b>Deceptive</b>: V→vi (major) or V→VI (minor).",
-    "✔ Listen to the final two chords to identify the cadence."
+    "✔ Ornaments decorate a melody without changing its identity.",
+    "✔ <b>Trill</b> = repeated alternation.",
+    "✔ <b>Mordent</b> = one quick alternation.",
+    "✔ <b>Turn</b> = upper–main–lower–main.",
+    "✔ <b>Grace notes</b> briefly decorate the main note.",
+    "✔ Ornament interpretation may vary slightly between musical styles and historical periods."
   ],
   tips:[
-    "Question-answer pairs: phrase 1 with a weaker cadence (often a half cadence), phrase 2 with a stronger one (often a PAC) — one common design in countless melodies (and next lesson's periods).",
-    "Deceptive cadences extend pieces: composers 'miss' the ending on purpose, then land it for real.",
-    "Sing the soprano at each cadence — ending on 1 (PAC) feels different from ending on 3 (IAC).",
-    "Unit 21 complete! Next unit: phrases pair into PERIODS — cadences make it possible."
+    "Practice trills slowly first — evenness beats speed.",
+    "Baroque scores assume ornaments even where unmarked; editions add suggestions in small print.",
+    "The turn fits beautifully on dotted notes — orbit during the dot.",
+    "Next lesson: whole VARIATIONS built from decorating a theme."
   ],
-  rewards:{ badge:"Cadence Keeper", icon:"\u{1F6A6}" },
+  rewards:{ badge:"Note Jeweler", icon:"\u{2728}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Identify cadence types from their harmonic motion and phrase-ending context.",
+  miaQuizIntro:"Quiz: Identify ornament symbols, neighboring-note patterns, and grace-note notation.",
   quiz:[
-    { type:"mc", q:"Which statement best describes a cadence?", choices:["It is a melodic and harmonic gesture that marks a phrase ending or point of arrival","It is the fastest passage in a composition","It is any repeated motive"], answer:0,
-      explain:"Punctuation in harmony.", hint:"Where phrases rest." },
-    { type:"mc", q:"Which progression can form an authentic cadence at a phrase ending?", choices:["V⁷–I","IV–I","V–vi"], answer:0,
-      explain:"Dominant resolves to tonic.", hint:"Dominant to tonic." },
-    { type:"mc", q:"A perfect authentic cadence (PAC) requires…", choices:["root-position V or V⁷ and I, with the tonic in the final soprano","any V–I motion","a IV chord before I"], answer:0,
-      explain:"Two strict conditions.", hint:"Perfection has rules." },
-    { type:"mc", q:"A root-position V–I cadence ends with scale degree 3 in the soprano. How is it classified?", choices:["Imperfect authentic cadence","Perfect authentic cadence","Plagal cadence"], answer:0,
-      explain:"Authentic but imperfect.", hint:"Check the top note." },
-    { type:"mc", q:"A half cadence normally…", choices:["ends on root-position V","ends on I","moves from IV to I"], answer:0,
-      explain:"Open — the comma.", hint:"Half-way home." },
-    { type:"mc", q:"Which progression can form a plagal cadence at a phrase ending?", choices:["IV–I","V–I","ii–V"], answer:0,
-      explain:"Plagal motion approaches tonic from IV rather than V.", hint:"Subdominant to tonic." },
-    { type:"mc", q:"In a major key, a deceptive cadence most commonly moves from V to…", choices:["vi","I","IV"], answer:0,
-      explain:"The expected tonic is avoided when V moves to vi.", hint:"The surprise chord." },
-    { type:"mc", q:"Name the cadence.",
-      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:240},
-      choices:["Deceptive cadence — V moves to vi","Authentic cadence","Plagal cadence"], answer:0,
-      explain:"In C major, G–B–D moves to A–C–E, producing V–vi at the phrase ending.", hint:"Where did V land?" },
-    { type:"truefalse", q:"A phrase ending on a root-position V chord normally creates a half cadence.", answer:true,
-      explain:"Stopping on the dominant defines it.", hint:"The open door." },
-    { type:"truefalse", q:"A deceptive cadence completes the expected V–I resolution.", answer:false,
-      explain:"A deceptive cadence avoids the expected tonic resolution.", hint:"De-CEP-tive." },
-    { type:"mc", q:"Which cadence pair commonly supports an antecedent–consequent period?", choices:["Half cadence followed by a PAC","PAC followed by a half cadence","Two deceptive cadences"], answer:0,
-      explain:"The antecedent commonly ends with a weaker or open cadence, while the consequent ends with a stronger cadence. A half cadence followed by a PAC is one common pattern.", hint:"Unfinished first." },
-    { type:"mc", q:"You hear a phrase ending with IV–I. Which cadence is it?", choices:["Plagal cadence","Authentic cadence","Half cadence"], answer:0,
-      explain:"A plagal cadence approaches tonic from IV rather than V.", hint:"Identify the chord immediately before I." }
+    { type:"mc", q:"An ornament is best described as…", choices:["an embellishment of a written note or melodic gesture","a new formal section","a chord quality"], answer:0, explain:"An embellishment of an underlying melodic event.", hint:"Small scale." },
+    { type:"mc", q:"What does 'tr' above a note indicate?", choices:["Trill","Turn","Triple forte"], answer:0, explain:"Rapid upper-neighbor alternation.", hint:"Two letters." },
+    { type:"mc", q:"A standard trill alternates the written note with…", choices:["the upper neighbor","the pitch a fifth below","the octave only"], answer:0, explain:"Above, rapidly.", hint:"Up." },
+    { type:"mc", q:"Which pattern best describes a common mordent?", choices:["A brief main–neighbor–main figure","An ornament lasting at least two measures","An extended alternation lasting the complete phrase"], answer:0, explain:"A brief main–neighbor–main figure.", hint:"Shortest ornament." },
+    { type:"mc", q:"In the common realization taught here, what is the pitch order of a turn?", choices:["Upper neighbor → main note → lower neighbor → main note","Main note → upper neighbor → main note → upper neighbor","Lower neighbor → lower neighbor → main note"], answer:0, explain:"The four-note orbit.", hint:"S shape." },
+    { type:"mc", q:"A slashed grace note normally indicates…", choices:["A very brief acciaccatura whose timing depends on style","A note that always lasts exactly half a beat","A note performed after the principal note has ended"], answer:0, explain:"The slash distinguishes the acciaccatura from a common unslashed appoggiatura notation.", hint:"Very brief, but not literally without duration." },
+    { type:"mc", q:"A common notated appoggiatura…", choices:["receives perceptible duration, often borrowed from the principal note","is silent","is nonmusical noise"], answer:0, explain:"It leans, then resolves.", hint:"Its analytical and expressive function depends on the surrounding harmony and performance style." },
+    { type:"mc", q:"In C major, D–C–B–C ornamenting C represents…", choices:["A turn","A trill","A mordent"], answer:0, explain:"Upper, note, lower, note.", hint:"The orbit." },
+    { type:"truefalse", q:"In the modern convention taught here, a lower mordent uses the note below the written note.", answer:true, explain:"A vertical stroke through the mordent symbol commonly indicates the lower-neighbor form. Historical conventions may differ.", hint:"Direction switch." },
+    { type:"truefalse", q:"An ornament can alter the surface rhythm and pitches while embellishing an underlying melodic note.", answer:true, explain:"It changes the musical surface while the underlying melodic note remains.", hint:"Surface versus structure." },
+    { type:"mc", q:"Which ornament normally continues through much or all of a sustained note's duration?", choices:["Trill","Mordent","Acciaccatura"], answer:0, explain:"A trill may continue for much or all of the written duration, depending on style and notation.", hint:"The long one." },
+    { type:"mc", q:"Which listening feature commonly distinguishes a mordent from an extended trill?", choices:["A mordent normally uses one brief neighbor-and-return figure, while a trill repeats the alternation","The dynamic level","The key signature alone"], answer:0, explain:"A brief neighbor-and-return figure versus a repeated alternation.", hint:"Count." }
   ],
-  miaPerfect:"Perfect score! You accurately identified authentic, half, plagal, and deceptive cadences.",
-  miaPass:"You passed and completed unit 21. Next, you will study phrases and periods.",
+  miaPerfect:"Perfect score! You accurately identified common trills, mordents, turns, and grace-note symbols.",
+  miaPass:"You passed! Next, you will study theme and variations.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Ending A closed V\u{2192}I (authentic — finished); ending B stopped ON V (half — waiting). Cadences are harmony's punctuation.",
-      play:()=>{[[60,64,67],[65,69,72],[67,71,74,77],[60,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.7,i*.75,.28)));} },
-    learn:{ label:"cadences",
-      explain:"Authentic V(7)→I (PAC: roots + tonic on top; else IAC) · half ends ON V · plagal IV→I · deceptive V→vi.",
-      hint:"Finished? From where?",
-      play:()=>{[[67,71,74,77],[69,72,76]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.28)));} },
+      explain:"The decorated C rapidly alternated with D — a trill: the note plus its upper neighbor.",
+      play:()=>{for(let i=0;i<8;i++) MFAudio.tone(i%2?74:72,.09,i*.09,.36); MFAudio.tone(72,.5,.75,.42);} },
+    learn:{ label:"ornaments",
+      explain:"Trill = many alternations (upper); mordent = one; turn = up-home-down-home; appoggiatura leans, acciaccatura crushes.",
+      hint:"Count the alternations.",
+      play:()=>{[74,72,71,72].forEach((m,i)=>MFAudio.tone(m,i===3?.55:.12,i*.12,.36));} },
     example:{ label:"the examples",
-      explain:"Example 1 plays all four endings in a row; example 2 contrasts PAC and IAC — listen to the soprano's landing note." },
+      explain:"Example 1 writes out trill, mordent and turn on one note; example 2 contrasts the two grace notes." },
     game:{ label:"the games",
-      explain:"Sprint the formulas, perform V7→I, name cadences on cards, then match punctuation at speed.",
-      hint:"Last two chords tell all." },
+      explain:"Sprint the names, play a turn, build its path, then match descriptions at speed.",
+      hint:"Many-one-loop-crush." },
     quiz:{ label:"this question",
-      explain:"Two questions crack every cadence: did it finish on I (authentic/plagal — check the approach chord)? If not, is it waiting on V (half) or surprised on vi (deceptive)?",
-      play:()=>{[[65,69,72],[60,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.28)));} }
+      explain:"Identify by count and path: many = trill, one = mordent, orbit = turn, tiny-before = grace (slash = crushed).",
+      play:()=>{MFAudio.tone(72,.09,0,.36);MFAudio.tone(74,.09,.09,.34);MFAudio.tone(72,.6,.18,.42);} }
   }
 };

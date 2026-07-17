@@ -25,8 +25,8 @@
 (function(){
   const prog=Quiz.progress();
   const doneCount=LESSONS.filter(l=>prog[l.n]&&prog[l.n].done).length;
-  document.getElementById("progLine").textContent=doneCount+" of 75 lessons completed";
-  document.getElementById("progFill").style.width=(doneCount/75*100)+"%";
+  document.getElementById("progLine").textContent=doneCount+" of "+LESSONS.length+" lessons completed";
+  document.getElementById("progFill").style.width=(doneCount/LESSONS.length*100)+"%";
   const list=document.getElementById("list");
   function href(n){ return "lessons/lesson-"+String(n).padStart(2,"0")+".html"; }
   function render(filter){
@@ -46,8 +46,8 @@
           const p=prog[l.n];
           const badge=p&&p.done?`<span class="done">✓ ${p.best}%</span>`:built?`<span style="color:var(--muted);font-size:13px">~${l.time} min</span>`:`<span style="color:#bbb;font-size:13px">coming soon</span>`;
           return built?
-            `<a class="lesson-link" href="${href(l.n)}"><span><span class="lnum">${l.n}.</span>${l.title}</span>${badge}</a>`:
-            `<div class="lesson-link" style="opacity:.55"><span><span class="lnum">${l.n}.</span>${l.title}</span>${badge}</div>`;
+            `<a class="lesson-link" href="${href(l.n)}"><span><span class="lnum">${l.label}</span>${l.title}</span>${badge}</a>`:
+            `<div class="lesson-link" style="opacity:.55"><span><span class="lnum">${l.label}</span>${l.title}</span>${badge}</div>`;
         }).join("")+`</div></div>`;
     });
     list.innerHTML=html||"<p style='margin-top:20px;color:var(--muted)'>No lessons match — try another word.</p>";

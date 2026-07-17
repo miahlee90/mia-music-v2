@@ -1,4 +1,4 @@
-/* Lesson 26 — Tetrachords and Major Scales (AEMT Book 2, Unit 7) — BOOK 2 BEGINS!
+/* Lesson 26 (4.1) — Tetrachords and Major Scales (AEMT Book 2, Unit 7) — BOOK 2 BEGINS!
    Built from drafts/UNIT 7 – Lesson 26.md; AEMT p.43 verified by render.
    QA note honored: reinforce that every major scale = TWO IDENTICAL tetrachords
    joined by one whole step (not just a memorized formula); review-style staff work included.

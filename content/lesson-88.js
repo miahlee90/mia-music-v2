@@ -1,250 +1,247 @@
-/* Lesson 88 — Phrases & Periods (Book 4, Unit 22 — SELF-AUTHORED)
-   Core: ANTECEDENT phrase (first phrase, ends with the weaker cadence — often
-   HC or IAC) + CONSEQUENT phrase (answering phrase, ends with a stronger
-   cadence — often PAC) = a PERIOD. Parallel period: both phrases begin with
-   the same or closely related material. Contrasting period: they begin differently.
+/* Lesson 88 (13.1, formerly L98) — Secondary Dominants (Book 4, Unit 24 — SELF-AUTHORED)
+   Core: any major or minor diatonic chord can be preceded by ITS OWN
+   dominant: V/V (D major in C), V/ii, V/vi, V/IV. Spot them by the
+   accidental; they TONICIZE their target briefly.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* period ear lab: which phrase is the question? */
-function MF_L88_ear(container,fb){
-  const ANT=[[60,.4],[64,.4],[67,.4],[74,.4],[71,.8]], CON=[[60,.4],[64,.4],[67,.4],[65,.4],[60,.8]];
-  let heardA=false,heardB=false;
-  container.innerHTML=`<div class="big-q l88e-q" style="text-align:center">Hear both phrases, then decide which is the QUESTION (antecedent).</div>
-    <div style="text-align:center">
-      <button class="play l88e-a">▶ Phrase 1</button>
-      <button class="play l88e-b">▶ Phrase 2</button></div>
-    <div class="choices l88e-ch" style="display:none"><button>Phrase 1 — it stops away from the tonic (half cadence)</button><button>Phrase 2 — it lands on the tonic</button></div>`;
-  const ch=container.querySelector(".l88e-ch"), q=container.querySelector(".l88e-q");
-  const play=(P)=>{ let t=0; P.forEach(([m,d])=>{ MFAudio.tone(m,d*.95,t,.42); t+=d; }); return t; };
-  container.querySelector(".l88e-a").onclick=()=>{ play(ANT); heardA=true; if(heardB) setTimeout(()=>ch.style.display="",2600); };
-  container.querySelector(".l88e-b").onclick=()=>{ play(CON); heardB=true; if(heardA) setTimeout(()=>ch.style.display="",2600); };
-  [...ch.children].forEach((b,i)=>b.onclick=()=>{
-    if(i===0){ fb(true,"✓ Phrase 1 paused on the dominant — the QUESTION (antecedent). Phrase 2 answered with the tonic — the CONSEQUENT. Together: a PERIOD."); q.textContent="Question found — the period is complete."; ch.style.display="none"; }
-    else { MFAudio.tone(40,.2); fb(false,"Which phrase feels UNFINISHED? That one asks the question."); }
-  });
-}
-
-LESSON_CONTENT[88]={
-  welcome:"Two related phrases can form a period.",
+LESSON_CONTENT[88]={stackFigures:true,
+  welcome:"Secondary dominants temporarily tonicize chords other than the tonic.",
   hook:{
-    say:"Listen to the two phrases. The first ends with an expectation of continuation, while the second provides stronger closure. \u{1F447} <b>How are the phrases related?</b>",
+    say:"<b>In C major, a D major chord containing F♯ appears and resolves to G.</b> \u{1F447} <b>What function does the D major chord perform?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play both phrases</button></div>
-          <div class="choices hk-ch" style="display:none"><button>The second phrase answers and completes the first</button><button>The phrases are unrelated</button><button>The second phrase is an exact repetition of the first</button></div>`;
+          <button class="play hk-a">▶ Play the progression</button></div>
+          <div class="choices hk-ch" style="display:none"><button>It resolves to G and functions as the dominant of G</button><button>It ends the piece as the tonic</button><button>It has no harmonic relationship to G</button></div>`;
+        const ROWS=[[60,64,67],[62,66,69],[55,59,62],[60,64,67]];
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{
-          const A=[[60,.4],[64,.4],[67,.4],[74,.4],[71,.9]], B=[[60,.4],[64,.4],[67,.4],[65,.4],[60,.9]];
-          let t=0; A.forEach(([m,d])=>{ MFAudio.tone(m,d*.95,t,.42); t+=d; }); t+=.35;
-          B.forEach(([m,d])=>{ MFAudio.tone(m,d*.95,t,.42); t+=d; });
-          setTimeout(()=>ch.style.display="",t*1000+400);
-        };
+        container.querySelector(".hk-a").onclick=()=>{ ROWS.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.27))); setTimeout(()=>ch.style.display="",ROWS.length*900+300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. The first phrase ends on the dominant, while the second returns to tonic with a stronger cadence. Together, the antecedent and consequent form a period. Because both phrases begin with the same opening material, this is a parallel period.");
-          else fb(false,"The phrases begin with related material, but their endings differ. Listen for the stronger cadence at the end of the second phrase.");
+          if(i===0) fb(true,"✓ Correct. D major functions as the dominant of G, the V chord in C major. It is therefore labeled V/V, a secondary or applied dominant.");
+          else fb(false,"Follow F♯ as it resolves upward to G. The D major chord creates a temporary dominant-to-tonic relationship with G.");
         });
       } }
   },
   objectives:[
-    "Review the musical phrase",
-    "Define Antecedent and Consequent",
-    "Define a Period",
-    "Distinguish Parallel and Contrasting periods",
-    "Recognize question vs. answer phrases",
-    "Identify periods by ear and by notation"
+    "Define a secondary (applied) dominant",
+    "Read Roman-numeral notation: V/V, V/ii, V/vi, V/IV",
+    "Build a secondary dominant from a target chord",
+    "Recognize chromatic leading tones",
+    "Distinguish tonicization from modulation",
+    "Predict normal resolutions"
   ],
   steps:[
-    { say:"<b>Phrase — Review:</b> A phrase is a musical idea that usually ends with a cadence. Two phrases can form a period when the second answers the first. \u{1F447} <b>What normally helps mark the end of a phrase?</b>",
-      try:{ type:"mc", choices:["A cadence","A key signature","A double bar line by itself"], answer:0,
-        success:"✓ Correct. A cadence normally marks the end of a phrase and helps define its degree of closure.",
-        fail:"Recall the harmonic and melodic gesture that marks a phrase ending.",
-        hint:"Review the cadence types from Lesson 87." } },
-    { say:"<b>The Antecedent — the first phrase of a period.</b> Usually ends with:<br>• Half Cadence, or<br>• Imperfect Authentic Cadence<br>This leaves the music feeling unfinished. \u{1F447} <b>How does an antecedent usually end?</b>",
-      try:{ type:"mc", choices:["With a cadence weaker than the consequent's cadence","With the strongest cadence in the period","Without any phrase ending"], answer:0,
-        success:"✓ Correct. The antecedent ends with less closure than the consequent, often through a half cadence or IAC.",
-        fail:"Compare the strength of the antecedent cadence with the consequent cadence.",
-        hint:"The first cadence is normally weaker than the final cadence." } },
-    { say:"<b>The Consequent — the second phrase of a period.</b> It answers the antecedent and usually ends with a <b>Perfect Authentic Cadence</b>, creating stronger closure. \u{1F447} <b>How does a consequent normally relate to the antecedent?</b>",
-      try:{ type:"mc", choices:["It provides a stronger cadential conclusion","It ends with less closure","It avoids cadential motion"], answer:0,
-        success:"✓ Correct. The consequent provides greater closure than the antecedent, commonly by ending with a PAC.",
-        fail:"Identify which phrase has the stronger final cadence.",
-        hint:"The consequent completes the period." } },
-    { say:"<b>The Period:</b> two related phrases — the antecedent asks, the consequent answers. The second phrase ends more strongly than the first. \u{1F447} <b>What is the defining relationship within a simple period?</b>",
-      show:{ type:"html", html:`<div style="display:flex;gap:12px;justify-content:center;align-items:center;font-weight:800;font-size:15px;flex-wrap:wrap">
-        <div style="border:2px solid #C05A21;border-radius:10px;padding:10px 16px;background:#fff;color:#C05A21">Antecedent<br><span style="font-weight:400;font-size:12.5px;color:#555">question · weaker cadence</span></div>
-        <div style="font-size:20px">+</div>
-        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:10px 16px;background:#fff;color:#2F6DA8">Consequent<br><span style="font-weight:400;font-size:12.5px;color:#555">answer · stronger cadence</span></div>
-        <div style="font-size:20px">=</div>
-        <div style="border:2px solid #A9821F;border-radius:10px;padding:10px 16px;background:#fff;color:#A9821F">PERIOD</div></div>` },
-      try:{ type:"mc", choices:["Two phrases in which the second provides stronger cadential closure","One phrase repeated without a cadence","Several unrelated motives"], answer:0,
-        success:"✓ Correct. The antecedent creates an expectation that the consequent answers with a stronger cadence.",
-        fail:"Compare the cadences at the ends of the two phrases.",
-        hint:"Antecedent followed by consequent." } },
-    { say:"<b>Parallel vs Contrasting Periods:</b><br>• <b>Parallel</b> — both phrases start the same (or similar).<br>• <b>Contrasting</b> — the second phrase starts differently.<br>Both still need the weaker → stronger cadence pair. \u{1F447} <b>Both phrases of a period begin with the same four-note motive. How is the period classified?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:100,notes:[
-        {p:"C4",d:"q",label:"a…"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"B4",d:"h",label:"HC"},{bar:"single"},
-        {p:"C4",d:"q",label:"a again…"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"C4",d:"h",label:"PAC"},{bar:"final"}],width:620} },
-      try:{ type:"mc", choices:["Parallel","Contrasting","It cannot be a period"], answer:0,
-        success:"✓ Correct. Because both phrases begin with the same melodic material, the period is parallel. Their different cadences establish the antecedent–consequent relationship.",
-        fail:"Compare the melodic material at the beginning of each phrase.",
-        hint:"Parallel periods have similar phrase openings." } },
-    { say:"Identify the antecedent phrase by ear. \u{1F447}",
-      try:{ type:"custom",
-        hint:"Listen for the phrase with the weaker cadence and less finality.",
-        mount:(container,fb)=>MF_L88_ear(container,fb) } },
-    { say:"<b>Review:</b> \u{1F447} <b>How are the two cadences in a simple period normally related?</b>",
-      try:{ type:"mc", choices:["The antecedent cadence is weaker than the consequent cadence","Both cadences must have equal strength","The antecedent cadence must be stronger"], answer:0,
-        success:"✓ Correct. A period depends on progressive cadential strength: the consequent provides greater closure than the antecedent.",
-        fail:"Compare the strength of the two cadences…",
-        hint:"Weaker → stronger." } }
+    { say:"<b>The Basic Idea:</b> a <b>secondary dominant</b> temporarily makes another diatonic chord sound like a tonic — a V→I aimed at a chord other than I. It is written <b>V/X</b> and normally resolves to <b>X</b>. In C major, D major → G is <b>V/V</b> (read \u{201C}five of five\u{201D}). In practice it is usually a <b>major triad or dominant seventh</b>. \u{1F447} <b>A secondary dominant is…</b>",
+      try:{ type:"mc", choices:["A chord that temporarily functions as the dominant of a nontonic chord","Any chord performed loudly","The second chord in a progression"], answer:0,
+        success:"✓ Correct. A secondary dominant applies dominant function temporarily to a major or minor chord other than the tonic.",
+        fail:"Identify the chord to which D major resolves.",
+        hint:"D major is the dominant of G." } },
+    { say:"<b>Constructing a Secondary Dominant — four steps:</b><br><b>1.</b> Choose the <b>target chord</b>.<br><b>2.</b> Find its <b>dominant</b> — a perfect 5th above the target root.<br><b>3.</b> Build a <b>major triad (or dominant 7th)</b> there.<br><b>4.</b> <b>Resolve</b> to the target. Example: target ii = Dm; a 5th above D is A, so <b>A major (A–C♯–E) = V/ii</b> (A7 = V⁷/ii). \u{1F447} <b>V/vi in C major is…</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:13px;min-width:340px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 8px">Target</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 8px">Roman</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 8px">Secondary dominant</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 8px">New note</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 8px">Resolves to</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">G</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">V</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center;font-weight:800">V/V = D major</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center;color:#C05A21;font-weight:800">F♯</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">G (V)</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">Dm</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">ii</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center;font-weight:800">V/ii = A major</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center;color:#C05A21;font-weight:800">C♯</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">Dm (ii)</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">Am</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">vi</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center;font-weight:800">V/vi = E major</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center;color:#C05A21;font-weight:800">G♯</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">Am (vi)</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">F</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">IV</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center;font-weight:800">V⁷/IV = C7</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center;color:#C05A21;font-weight:800">B♭</td><td style="border:1.5px solid #cdd5e1;padding:4px 8px;text-align:center">F (IV)</td></tr></table>` },
+      try:{ type:"mc", choices:["E major: E–G♯–B","E minor: E–G–B","A major: A–C♯–E"], answer:0,
+        success:"✓ Correct. E is a perfect fifth above the target root A. The G♯ in E major functions as the temporary leading tone to A.",
+        fail:"Find the dominant root of A, and then build a major triad.",
+        hint:"E–G♯–B is the dominant triad of A." } },
+    { say:"<b>Identifying Secondary Dominants:</b> a chromatic accidental often signals one (F♯ in D major = V/V, C♯ in A major = V/ii, G♯ in E major = V/vi). But <b>a chromatic accidental alone does not prove a secondary dominant.</b> Always identify <b>(1)</b> the complete chord and <b>(2)</b> its expected resolution. \u{1F447} <b>In C major, an E major chord containing G♯ resolves to A minor. How should E major be analyzed?</b>",
+      try:{ type:"mc", choices:["V/vi","A printing error","A modulation to G major"], answer:0,
+        success:"✓ Correct. G♯ acts as a temporary leading tone to A, and E major functions as V of vi.",
+        fail:"Identify the pitch a half step above G♯ and the chord rooted on that pitch.",
+        hint:"G♯ resolves upward to A." } },
+    { say:"<b>Tonicization vs. Modulation:</b> a secondary dominant creates <b>tonicization</b> — a brief spotlight on a chord — not a key change. Students often confuse the two; the difference is how long and how firmly the new center is established. \u{1F447} <b>What is tonicization?</b>",
+      show:{ type:"html", html:`<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:13px;text-align:left">
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 14px"><b style="color:#2F6DA8">Tonicization</b><br>• temporary<br>• a few chords<br>• original key stays active</div>
+        <div style="border:2px solid #C05A21;border-radius:10px;padding:8px 14px"><b style="color:#C05A21">Modulation</b><br>• a new tonic<br>• a cadence confirms the new key<br>• longer-lasting</div></div>` },
+      try:{ type:"mc", choices:["The temporary treatment of a nontonic chord as a local tonic","A permanently fixed change of key","An increase in the tonic chord's dynamic level"], answer:0,
+        success:"✓ Correct. Tonicization briefly emphasizes a local tonic without displacing the prevailing key structurally.",
+        fail:"Determine whether the original key remains structurally active.",
+        hint:"Tonicization is temporary and locally focused." } },
+    { say:"<b>Expected Resolution:</b> a secondary dominant normally resolves to its target — V/V → V, V/ii → ii, V/vi → vi. The temporary leading tone rises by step to the target root; any chordal 7th falls by step. But composers sometimes <b>delay or avoid</b> the expected resolution — the notation V/X names the <b>intended target</b>, not an absolute rule. \u{1F447} <b>What is the expected resolution of V/ii?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:72,notes:[
+        {p:"A3",d:"w",label:"V/ii"},{p:"C#4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"ii"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"final"}],width:380} },
+      try:{ type:"mc", choices:["ii","I","V"], answer:0,
+        success:"✓ Correct. In C major, A major or A7 functions as V/ii and normally resolves to D minor.",
+        fail:"Read the chord named after the slash.",
+        hint:"The denominator identifies the expected target." } },
+    { say:"<b>Secondary Dominants in Progressions:</b> applied dominants strengthen the pull toward the next chord. Compare:<br>• <b>I → V/V → V → I</b> — loads the arrival on V.<br>• <b>I → V/ii → ii → V → I</b> — tonicizes ii, then continues home.<br>Each secondary dominant adds a local dominant-to-tonic push. They appear in classical, jazz, pop, and film styles alike. \u{1F447} <b>What effect does placing V/V immediately before V commonly create?</b>",
+      try:{ type:"mc", choices:["It strengthens the expectation of arrival on V","It eliminates the dominant function of V","It requires the music to stop"], answer:0,
+        success:"✓ Correct. V/V creates a local dominant-to-tonic relationship directed toward V.",
+        fail:"Consider how a dominant prepares its expected tonic.",
+        hint:"V/V points toward V." } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which chord functions as V/V in F major?</b>",
+      try:{ type:"mc", choices:["G major, G–B♮–D, normally resolving to C","G minor, G–B♭–D","B♭ major, B♭–D–F"], answer:0,
+        success:"✓ Correct. C is V in F major, and G major is the dominant of C. The chromatic pitch B♮ functions as the temporary leading tone to C.",
+        fail:"Identify the dominant of C, the dominant chord in F major.",
+        hint:"Find V of V in two stages: F → C → G." } }
   ],
   examples:[
-    { caption:"A parallel period: both phrases open identically; phrase 1 pauses on the dominant (half cadence), phrase 2 closes on the tonic (PAC).",
-      staff:{clef:"treble",tempo:96,notes:[
-        {p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},
-        {p:"A4",d:"q"},{p:"F4",d:"q"},{p:"D4",d:"h",label:"half cadence"},{bar:"single"},
-        {p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},
-        {p:"F4",d:"q"},{p:"D4",d:"q"},{p:"C4",d:"h",label:"PAC — closed"},{bar:"final"}],width:680},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"A contrasting period: the consequent begins with NEW material but still delivers the closing cadence — contrast in the opening, agreement at the end.",
-      staff:{clef:"treble",tempo:96,notes:[
-        {p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"B4",d:"h",label:"half cadence"},{bar:"single"},
-        {p:"A4",d:"q"},{p:"G4",d:"q"},{p:"F4",d:"q"},{p:"D4",d:"q"},{p:"C4",d:"h",label:"PAC"},{bar:"final"}],width:620},
-      kb:{start:60,octaves:1,labels:true} }
+    { caption:"I → V/V → V → I in C major: the D major chord (F♯) loads the arrival on G, which then closes home. Hear the double push.",
+      staff:{clef:"treble",tempo:72,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"V/V"},{p:"F#4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"G3",d:"w",label:"V"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:560},
+      kb:{start:53,octaves:1.58,labels:true} },
+    { caption:"I → V/vi → vi: E major's G♯ tonicizes A minor — for one moment, Am sounds like home. Brief homeness = tonicization.",
+      staff:{clef:"treble",tempo:72,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"E4",d:"w",label:"V/vi"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
+        {p:"A4",d:"w",label:"vi"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"final"}],width:480},
+      kb:{start:60,octaves:1.41,labels:true} },
+    { caption:"Secondary dominants live in every key — not just C. In G major, A7 → D is V/V → V; the C♯ is the temporary leading tone to D.",
+      staff:{clef:"treble",tempo:72,notes:[
+        {p:"A3",d:"w",label:"V/V = A7"},{p:"C#4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"V = D"},{p:"F#4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"final"}],width:360},
+      kb:{start:57,octaves:1.1667,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Period Structure (45s)",
-      intro:"Identify antecedents, consequents, and their cadence relationships.",
-      miaIntro:"Antecedent first, consequent second.",
+    { type:"gen-race", title:"Game 1 · Applied-Dominant Identification",
+      intro:"Identify targets, spellings, and temporary leading tones.",
+      miaIntro:"Read V/X as \u{201C}five of X.\u{201D}",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Antecedent","the question phrase"],
-        ["Consequent","the answer phrase"],
-        ["Period","antecedent + consequent"],
-        ["Antecedent's cadence","the weaker cadence"],
-        ["Consequent's cadence","the stronger cadence"],
-        ["Parallel period","both phrases begin alike"],
-        ["Contrasting period","the phrases begin differently"],
-        ["A phrase ends at","a cadence"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Period-structure challenge completed!":null },
-    { type:"order-tap", title:"Game 2 · Assemble the Period",
-      intro:"Arrange the components of a simple period in the correct order.",
-      miaIntro:"Antecedent → consequent.",
-      spec:{sequence:["Antecedent begins","Half cadence — open","Consequent begins","Authentic cadence — closed"],
-        title:"One period, start to finish"},
-      result:(stars)=>stars>=2?"You assembled the period correctly.":null },
-    { type:"symbol-hunt", title:"Game 3 · Compare the Cadences",
-      intro:"Identify each cadence and compare its strength within the period.",
-      miaIntro:"Which cadence provides greater closure?",
+        ["Secondary dominant","the V of a non-tonic chord"],
+        ["V/V in C","D major (F♯)"],
+        ["V/ii in C","A major (C♯)"],
+        ["V/vi in C","E major (G♯)"],
+        ["V/IV in C","C7 (B♭)"],
+        ["The temporary leading tone","an accidental within a secondary dominant"],
+        ["Tonicization","a chord briefly treated as tonic"],
+        ["V/X resolves to","X"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Secondary dominants identified!":null },
+    { type:"key-climb", title:"Game 2 · Perform the Applied-Dominant Progression",
+      intro:"Follow the red arrow and press each chord's root: C → D → G → C. Each press sounds the full chord, so you hear the I → V/V → V → I progression.",
+      miaIntro:"Press the root — the whole chord rings. Follow F♯ as it resolves to G.",
+      spec:{seq:[60,62,67,72],
+        chords:[[60,64,67],[62,66,69],[67,71,74],[64,67,72]],
+        names:["C major (I)","D major (V/V — the F♯ chord)","G major (V)","C major (I — home, 1st inversion)"],
+        start:60, octaves:1.3333, title:"Press each root — hear the chord:  I → V/V → V → I"},
+      result:(score)=>score!==null?"You performed the applied-dominant progression.":null },
+    { type:"symbol-hunt", title:"Game 3 · Identify the Secondary Dominant",
+      intro:"Examine each chromatic chord and its resolution, then select the correct secondary-dominant label.",
+      miaIntro:"Identify the chord, temporary leading tone, and target.",
       spec:{rounds:6, pool:[
-        {label:"Half cadence (a common antecedent ending)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:210}},
-        {label:"Authentic cadence (a common consequent ending)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:210}},
-        {label:"Plagal cadence", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:210}},
-        {label:"Deceptive cadence", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"A4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:210}}]},
-      result:(score)=>score>=5?"You compared the phrase endings correctly.":null },
-    { type:"term-race", title:"Game 4 · Parallel or Contrasting?",
-      intro:"Compare the beginnings of the two phrases and classify the period.",
-      miaIntro:"Related openings suggest a parallel period.",
+        {label:"V/V (D-F♯-A)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F#4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}},
+        {label:"V/ii (A-C♯-E)", spec:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"C#4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:150}},
+        {label:"V/vi (E-G♯-B)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:150}},
+        {label:"Plain ii (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"You identified the applied dominants from their spelling and context.":null },
+    { type:"term-race", title:"Game 4 · Resolve the Applied Dominant",
+      intro:"Identify the expected target of each applied dominant.",
+      miaIntro:"Read the chord after the slash.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Both phrases open with motive a","parallel period"],
-        ["Phrase 2 opens with new material","contrasting period"],
-        ["a + a\u{2032} phrases","parallel"],
-        ["a + b phrases","contrasting"],
-        ["Same start, HC then PAC","parallel period"],
-        ["New start, HC then PAC","contrasting period"],
-        ["The question phrase","antecedent"],
-        ["The answer phrase","consequent"]]},
-      result:(score)=>score>=6?"You classified the periods correctly.":null }
+        ["V/V","resolves to V"],
+        ["V/ii","resolves to ii"],
+        ["V/vi","resolves to vi"],
+        ["V/IV","resolves to IV"],
+        ["F♯ in C major","V/V's leading tone"],
+        ["C♯ in C major","V/ii's leading tone"],
+        ["G♯ in C major","V/vi's leading tone"],
+        ["Extended tonicization","becomes modulation"]]},
+      result:(score)=>score>=6?"You identified each expected target correctly.":null }
   ],
-  practiceIntro:"Complete 20 practice questions on antecedents, consequents, cadence strength, and parallel and contrasting periods. The next question will appear after each correct answer.",
+  practiceIntro:"Complete 20 practice questions on constructing, identifying, and resolving secondary dominants.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Antecedent","question"],["Consequent","answer"],["Period","Q + A"],["Half cadence","open end"],["Authentic cadence","closed end"],["Parallel","same openings"]], reverse:true}, count:6 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
-    { type:"mc", q:"A simple period consists of…", choices:["an antecedent and a consequent","two unrelated motives","one extended phrase"], answer:0,
-      explain:"Question phrase + answer phrase." },
-    { type:"mc", q:"The antecedent normally ends with…", choices:["a cadence weaker than the consequent's cadence","the strongest cadence in the period","no cadence"], answer:0,
-      explain:"An antecedent often ends with an HC or IAC." },
-    { type:"mc", q:"The consequent normally ends with…", choices:["a cadence stronger than the antecedent's cadence","a weaker cadence than the antecedent","no cadence"], answer:0,
-      explain:"A consequent often concludes with a PAC." },
-    { type:"mc", q:"A period whose phrases begin with the same or closely related material is…", choices:["Parallel","Contrasting","Deceptive"], answer:0,
-      explain:"Same opening = parallel." },
-    { type:"truefalse", q:"A simple period contains two phrases in an antecedent–consequent relationship.", answer:true,
-      explain:"Question + answer." },
-    { type:"truefalse", q:"In a contrasting period, the consequent begins with material different from the antecedent's opening.", answer:true,
-      explain:"Contrasting = different openings." },
-    { type:"truefalse", q:"The consequent provides the stronger cadential response in a period.", answer:true,
-      explain:"The ANTECEDENT asks; the consequent answers with the stronger cadence." },
-    { gen:"term-match", params:{subject:"term", pool:[["Open cadence","half"],["Closed cadence","authentic"],["a + a\u{2032}","parallel"],["a + b","contrasting"]], reverse:true}, count:3 },
-    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["V/V","D major in C"],["V/ii","A major in C"],["V/vi","E major in C"],["Tonicization","brief tonic treatment"],["V/X","resolves to X"]], reverse:true}, count:6 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 },
+    { type:"mc", q:"A secondary dominant temporarily functions as the dominant of…", choices:["a major or minor chord other than the prevailing tonic","only the prevailing tonic","no identifiable target"], answer:0,
+      explain:"A secondary dominant applies dominant function to a nontonic chord." },
+    { type:"mc", q:"To construct V/X, find the dominant root of X and build…", choices:["a major triad or dominant seventh chord","a minor triad","a diminished triad"], answer:0,
+      explain:"An applied V is a major triad; an applied V⁷ is a major-minor seventh chord." },
+    { type:"mc", q:"V/V in C major is…", choices:["D major","D minor","G major"], answer:0,
+      explain:"A P5 above G, with F♯." },
+    { type:"mc", q:"V/vi in C major needs which accidental?", choices:["G♯","F♯","B♭"], answer:0,
+      explain:"Am's leading tone." },
+    { type:"truefalse", q:"V/ii resolves to ii.", answer:true,
+      explain:"The slash names the target." },
+    { type:"truefalse", q:"Tonicization briefly treats a nontonic chord as a local tonic while the prevailing key remains structurally active.", answer:true,
+      explain:"The prevailing key remains structurally active during a tonicization." },
+    { type:"truefalse", q:"Accidentals can help identify secondary dominants, but chord spelling and resolution must also be examined.", answer:true,
+      explain:"An accidental alone does not confirm a secondary dominant." },
+    { gen:"term-match", params:{subject:"term", pool:[["P5 above the target","the secondary's root"],["Borrowed leading tone","rises to the target's root"],["V/IV in C","C7"],["Double push","V/V then V"]], reverse:true}, count:3 },
+    { gen:"inversion-id", params:{subject:"v7", ask:"position"}, count:2 }
   ],
   vocabulary:[
-    {term:"Antecedent", def:"The question phrase. Ends with a weaker cadence."},
-    {term:"Consequent", def:"The answer phrase. Ends with a stronger cadence."},
-    {term:"Period", def:"Two phrases that form one complete musical idea."},
-    {term:"Parallel / Contrasting Period", def:"Parallel: same or similar opening. Contrasting: different opening."}
+    {term:"Secondary Dominant", def:"The dominant of a chord other than the tonic."},
+    {term:"Applied Dominant", def:"Another name for a secondary dominant."},
+    {term:"Tonicization", def:"A temporary emphasis on a diatonic chord as if it were a tonic."},
+    {term:"Expected Resolution", def:"V/X → X."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Antecedent</b> = question phrase → weaker cadence.",
-    "✔ <b>Consequent</b> = answer phrase → stronger cadence.",
-    "✔ Together they form a <b>Period</b>.",
-    "✔ <b>Parallel</b> = same beginning.",
-    "✔ <b>Contrasting</b> = different beginning.",
-    "✔ Stronger second cadence completes the musical sentence."
+    "✔ Secondary dominant = the dominant of a chord other than I.",
+    "✔ Another name: <b>applied dominant</b>.",
+    "✔ Notation: <b>V/X</b>.",
+    "✔ Build it by finding the dominant of the target chord (a 5th above).",
+    "✔ The chromatic accidental is usually the temporary <b>leading tone</b>.",
+    "✔ Secondary dominants create <b>tonicization, not modulation</b>.",
+    "✔ They normally resolve to the target chord (<b>V/X → X</b>)."
   ],
   tips:[
-    "Hum a familiar tune phrase by phrase — most begin with a classic parallel period.",
-    "Writing your own: copy the antecedent, change only its last measure to reach I — instant parallel period.",
-    "A half cadence often leaves the antecedent open; the consequent closes with a stronger cadence, often a PAC.",
-    "Next lesson: repeating an idea at NEW pitch levels — the melodic sequence."
+    "See an accidental mid-phrase? Ask: whose leading tone is this? The answer names the target.",
+    "V7/X is even stronger than V/X — the borrowed 7th adds the tritone pull.",
+    "Chain them: V/vi → vi can continue vi → V/V → V → I — pushes all the way home.",
+    "Next lesson: when the borrowed key KEEPS the spotlight — modulation."
   ],
-  rewards:{ badge:"Sentence Builder", icon:"\u{1F4AC}" },
+  rewards:{ badge:"Dominant Lender", icon:"\u{1F3AF}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Antecedent plus consequent, with weaker-to-stronger cadential motion, forms a simple period.",
+  miaQuizIntro:"Quiz: Identify the target, construct its dominant, and examine the expected resolution.",
   quiz:[
-    { type:"mc", q:"A simple period is…", choices:["two phrases in an antecedent–consequent relationship","one motive","a type of cadence"], answer:0,
-      explain:"Antecedent + consequent.", hint:"A musical sentence." },
-    { type:"mc", q:"The antecedent phrase normally…", choices:["ends with less closure than the consequent","ends with the strongest cadence in the period","has no ending"], answer:0,
-      explain:"It creates an expectation that the consequent will complete.", hint:"It is the first phrase of the period." },
-    { type:"mc", q:"The consequent phrase normally…", choices:["responds with a stronger cadence","creates less closure than the antecedent","avoids cadences"], answer:0,
-      explain:"It closes the sentence.", hint:"The full stop." },
-    { type:"mc", q:"Which cadence pair can form a simple period?", choices:["IAC followed by PAC","PAC followed by HC","Two equally strong PACs"], answer:0,
-      explain:"The consequent's PAC provides stronger closure than the antecedent's IAC. HC followed by PAC is another common pattern.", hint:"Weaker, then stronger." },
-    { type:"mc", q:"In a parallel period, the two phrases…", choices:["begin with the same or closely related melodic material","begin with unrelated material","must be in different keys"], answer:0,
-      explain:"a + a\u{2032}.", hint:"Same start." },
-    { type:"mc", q:"In a contrasting period, the consequent…", choices:["begins with material different from the antecedent's opening","repeats the antecedent's opening closely","has no cadence"], answer:0,
-      explain:"a + b.", hint:"New opening." },
-    { type:"mc", q:"Phrase 1 ends with a half cadence. Phrase 2 begins with the same melodic material and ends with a PAC. What is the structure?", choices:["A parallel period","A contrasting period","A rondo"], answer:0,
-      explain:"The related openings make the period parallel, while the HC–PAC relationship establishes antecedent and consequent.", hint:"Compare the starts." },
-    { type:"truefalse", q:"A simple period normally contains a cadence at the end of each of its two phrases.", answer:true,
-      explain:"One per phrase.", hint:"Count the endings." },
-    { type:"truefalse", q:"The antecedent normally ends with a cadence stronger than the consequent's cadence.", answer:false,
-      explain:"The antecedent cadence is normally weaker than the consequent cadence.", hint:"Questions don't close." },
-    { type:"mc", q:"Which cadence commonly gives an antecedent an open ending?", choices:["Half cadence","Perfect authentic cadence","Plagal cadence"], answer:0,
-      explain:"A half cadence is common at the end of an antecedent, although an IAC may also occur.", hint:"Lesson 87's comma." },
-    { type:"mc", q:"In the simplified label 'a + b' for a contrasting period, what do the letters primarily distinguish?", choices:["The different opening thematic material of the two phrases","The cadence names","The meter signatures"], answer:0,
-      explain:"Different letters indicate contrasting phrase beginnings.", hint:"Openings, not endings." },
-    { type:"mc", q:"What creates the antecedent–consequent relationship in a period?", choices:["The second phrase responds to the first and provides stronger cadential closure","Both phrases avoid cadences","The second phrase is unrelated to the first"], answer:0,
-      explain:"The consequent completes the formal relationship by ending more conclusively than the antecedent.", hint:"Q then A." }
+    { type:"mc", q:"A secondary dominant is…", choices:["a chord that temporarily functions as V of a nontonic chord","any seventh chord","the tonic chord with a different spelling"], answer:0,
+      explain:"A secondary dominant applies dominant function to a nontonic chord.", hint:"V of something else." },
+    { type:"mc", q:"How is 'V/V' read aloud?", choices:["five of five","five-five","V slash V"], answer:0,
+      explain:"The dominant OF the dominant.", hint:"Of." },
+    { type:"mc", q:"To build V/ii in C major:", choices:["A major — a P5 above D","D major","A minor"], answer:0,
+      explain:"V/ii in C major is A major or A7, containing the temporary leading tone C♯.", hint:"Target root D." },
+    { type:"mc", q:"V/vi in C major is spelled…", choices:["E-G♯-B","E-G-B","A-C♯-E"], answer:0,
+      explain:"V/vi in C major is E–G♯–B; G♯ resolves toward A.", hint:"Points at Am." },
+    { type:"mc", q:"In C major, F♯ most reliably signals V/V when it…", choices:["belongs to a D major or D7 chord that resolves to G","appears anywhere in the melody","is the only accidental present"], answer:0,
+      explain:"F♯ may signal V/V when it belongs to a D major or D7 chord that points toward G; the accidental alone does not confirm it.", hint:"Check the whole chord and its resolution." },
+    { type:"mc", q:"What is V⁷/IV in C major?", choices:["C7, C–E–G–B♭","F major, F–A–C","G7, G–B–D–F"], answer:0,
+      explain:"C7 functions as the dominant seventh of F. The added B♭ distinguishes V⁷/IV from the diatonic tonic triad C major.", hint:"Add the B♭ seventh to C." },
+    { type:"mc", q:"Identify the chord (key: C major).",
+      staff:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F#4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:160},
+      choices:["V/V — D major resolving toward G","ii — D minor","IV — F major"], answer:0,
+      explain:"D–F♯–A forms a major triad. When it points toward G, it functions as V/V.", hint:"Spot the accidental." },
+    { type:"mc", q:"What is the expected resolution of V/vi?", choices:["vi","V","I"], answer:0,
+      explain:"The slash names the target.", hint:"Read after the slash." },
+    { type:"truefalse", q:"Tonicization temporarily treats a nontonic chord as a local tonic.", answer:true,
+      explain:"Momentary homeness while the prevailing key remains active.", hint:"Brief." },
+    { type:"truefalse", q:"A secondary dominant triad has major quality.", answer:true,
+      explain:"An applied dominant seventh has major-minor seventh quality.", hint:"V quality." },
+    { type:"mc", q:"In I → V/V → V → I, which chord is directly tonicized by V/V?", choices:["V","The opening I","The final I"], answer:0,
+      explain:"V/V functions as the dominant of V and therefore directs attention toward V.", hint:"The loaded chord." },
+    { type:"mc", q:"When a new key receives structural confirmation through sustained harmonic activity or cadential emphasis, the process is called…", choices:["Modulation","Cadence","Pedal point"], answer:0,
+      explain:"A modulation establishes a new tonic more substantially than a brief tonicization.", hint:"L99." },
+    { type:"mc", q:"In C major, which note is the temporary leading tone in V/V (D major)?", choices:["F♯","C♯","G♯"], answer:0,
+      explain:"F♯ is the leading tone of G; it rises to G.", hint:"It resolves up to G." },
+    { type:"mc", q:"In C major, which accidental tells you a chord is functioning as V/ii?", choices:["C♯","F♯","B♭"], answer:0,
+      explain:"C♯ is the temporary leading tone to D (the root of ii = Dm).", hint:"The leading tone of D." },
+    { type:"mc", q:"Which chord should normally follow V/vi?", choices:["vi","V","IV"], answer:0,
+      explain:"A secondary dominant resolves to its target — V/vi → vi.", hint:"Read after the slash." }
   ],
-  miaPerfect:"Perfect score! You accurately identified antecedents, consequents, and parallel and contrasting periods.",
-  miaPass:"You passed! Next, you will study melodic sequence.",
+  miaPerfect:"Perfect score! You accurately constructed and identified secondary dominants and their targets.",
+  miaPass:"You passed! Next, you will study modulation between keys.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Phrase 1 stopped on the dominant (question); phrase 2 began the same way and closed on the tonic (answer) — a parallel period.",
-      play:()=>{const A=[[60,.4],[64,.4],[67,.4],[74,.4],[71,.9]],B=[[60,.4],[64,.4],[67,.4],[65,.4],[60,.9]];let t=0;A.forEach(([m,d])=>{MFAudio.tone(m,d*.95,t,.42);t+=d;});t+=.35;B.forEach(([m,d])=>{MFAudio.tone(m,d*.95,t,.42);t+=d;});} },
-    learn:{ label:"phrases & periods",
-      explain:"Antecedent (question, weaker cadence — often HC or IAC) + consequent (answer, stronger cadence — often PAC) = period. Parallel: same openings; contrasting: different.",
-      hint:"Weaker, then stronger.",
-      play:()=>{[[62,65,69],[67,71,74]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.7,i*.8,.28)));} },
+      explain:"D major (F♯) resolved into G exactly as a V resolves to I — V/V, the dominant of the dominant.",
+      play:()=>{const ROWS=[[60,64,67],[62,66,69],[55,59,62],[60,64,67]];ROWS.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.27)));} },
+    learn:{ label:"secondary dominants",
+      explain:"V/X = major chord a P5 above X; accidental = temporary leading tone; resolves V/X→X; brief homeness = tonicization.",
+      hint:"P5 up, made major.",
+      play:()=>{[62,66,69].forEach(m=>MFAudio.tone(m,.8,.05,.27));[55,59,62].forEach(m=>MFAudio.tone(m,.9,.95,.27));} },
     example:{ label:"the examples",
-      explain:"Example 1 is a parallel period (same openings); example 2 a contrasting one — both close with the answering PAC." },
+      explain:"Example 1 loads V with its own dominant (I-V/V-V-I); example 2 tonicizes vi with E major's G♯." },
     game:{ label:"the games",
-      explain:"Sprint the pairs, assemble a period in order, sort cadences on cards, then judge parallel vs contrasting.",
-      hint:"Openings name the type; cadences do the work." },
+      explain:"Sprint the spellings, walk the double push, spot secondaries by accidental, then resolve targets at speed.",
+      hint:"The accidental points at the target." },
     quiz:{ label:"this question",
-      explain:"Two checks: which phrase ends with the weaker cadence (that's the antecedent)? Do the openings match (parallel) or differ (contrasting)?",
-      play:()=>{[[67,71,74],[60,64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.28)));} }
+      explain:"Whose leading tone is the accidental? That names the target; the chord is a P5 above it, made major; it resolves to the slash.",
+      play:()=>{[64,68,71].forEach(m=>MFAudio.tone(m,.8,.05,.27));[69,72,76].forEach(m=>MFAudio.tone(m,.9,.95,.27));} }
   }
 };

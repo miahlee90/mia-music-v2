@@ -1,280 +1,241 @@
-/* Lesson 77 — Tuplets: Triplets and Duplets (Book 4, Unit 19 — SELF-AUTHORED)
-   Core: a TUPLET is a group of equal notes dividing a beat into a different
-   number of parts than normal. TRIPLET ("3") = 3 in the time of 2 (simple
-   meter); DUPLET ("2") = 2 in the time of 3 (compound meter). Other tuplets
-   exist (quintuplet, sextuplet). Introduce "tuplet" (the general category)
-   BEFORE triplet/duplet so students don't read it as a typo of "triplet."
-   Uses staff.js v8.1 tuplets:[{from,to,n}] — n=2 renders a duplet.
+/* Lesson 77 (11.2, formerly L97) — Voice Leading Basics (Book 4, Unit 24 — SELF-AUTHORED)
+   Core: SATB — four voices, their ranges and vertical spacing (≤ octave
+   between adjacent upper voices); no VOICE CROSSING; move voices as little
+   as possible (common tones, steps); avoid parallel 5ths/octaves (intro).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* ear lab: straight eighths vs triplets over the same beat */
-function MF_L77_ear(container,fb){
-  const ROUNDS=[1,0,0,1].sort(()=>Math.random()-.5); /* 1 = triplet */
-  let r=0, played=false;
-  container.innerHTML=`<div class="big-q l77e-q" style="text-align:center"></div>
-    <div style="text-align:center"><button class="play l77e-play">▶ Play the pattern</button></div>
-    <div class="choices l77e-ch" style="display:none"><button>Straight eighths — two per beat</button><button>Triplets — three per beat</button></div>`;
-  const q=container.querySelector(".l77e-q"), pl=container.querySelector(".l77e-play"), ch=container.querySelector(".l77e-ch");
-  pl.onclick=()=>{
-    if(r>=ROUNDS.length) return;
-    const trip=ROUNDS[r]===1, div=trip?3:2;
-    for(let b=0;b<4;b++){ MFAudio.tone(48,.3,b*.55,.4); for(let j=0;j<div;j++) MFAudio.tone(76,.11,b*.55+j*(.55/div),.17); }
-    played=true; setTimeout(()=>ch.style.display="",2600);
-  };
-  [...ch.children].forEach((b,i)=>b.onclick=()=>{
-    if(!played) return;
-    const trip=ROUNDS[r]===1;
-    if((i===1)===trip){ fb(true,trip?"✓ Three even notes per beat — triplets.":"✓ Two even notes per beat — straight eighths."); r++; played=false; ch.style.display="none";
-      if(r>=ROUNDS.length){ q.textContent="Excellent! You hear triplets instantly."; pl.style.display="none"; } else q.innerHTML=`Round ${r+1} of ${ROUNDS.length}: listen, then decide.`;
-    } else { MFAudio.tone(40,.2); fb(false,"Count the notes riding each low beat: two or three?"); }
-  });
-  q.innerHTML="Round 1 of 4: listen, then decide.";
-}
-
 LESSON_CONTENT[77]={
-  welcome:"A tuplet divides a beat into a different number of equal parts than normal — triplets and duplets are the common types.",
+  welcome:"Good voice leading creates smooth, independent melodic lines while supporting the harmony.",
   hook:{
-    say:"<b>In simple meter, each beat normally divides into two equal parts; in compound meter, each beat normally divides into three.</b> But composers sometimes divide a beat into a different number of equal parts — these special note groups are called <b>tuplets</b>. Listen to the two patterns. \u{1F447} <b>What changes in Pattern 2?</b>",
+    say:"<b>Listen to two ways of connecting the same chords.</b> Version A uses several large leaps, while Version B retains a common tone and uses smaller melodic intervals. \u{1F447} <b>Which version creates smoother voice leading?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Pattern 1 — two divisions per beat</button>
-          <button class="play hk-b">▶ Pattern 2 — three divisions per beat</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Three notes divide one beat equally, forming a triplet</button><button>The tempo doubled</button><button>The beat disappeared</button></div>`;
+          <button class="play hk-a">▶ Version A — several large leaps</button>
+          <button class="play hk-b">▶ Version B — common tone and stepwise motion</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Version B — the voices connect through smaller intervals</button><button>Version A — larger leaps always produce smoother lines</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ for(let b=0;b<4;b++){ MFAudio.tone(48,.3,b*.55,.4); for(let j=0;j<2;j++) MFAudio.tone(76,.11,b*.55+j*.275,.17); } hA=true; if(hB) setTimeout(()=>ch.style.display="",2400); };
-        container.querySelector(".hk-b").onclick=()=>{ for(let b=0;b<4;b++){ MFAudio.tone(48,.3,b*.55,.4); for(let j=0;j<3;j++) MFAudio.tone(76,.11,b*.55+j*(.55/3),.17); } hB=true; if(hA) setTimeout(()=>ch.style.display="",2400); };
+        container.querySelector(".hk-a").onclick=()=>{ [48,64,67,72].forEach(m=>MFAudio.tone(m,.9,.05,.26)); [65,69,72,77].forEach(m=>MFAudio.tone(m,1.0,1.0,.26)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2300); };
+        container.querySelector(".hk-b").onclick=()=>{ [48,64,67,72].forEach(m=>MFAudio.tone(m,.9,.05,.26)); [53,65,69,72].forEach(m=>MFAudio.tone(m,1.0,1.0,.26)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. Pattern 2 divides the beat into three equal notes in the time normally occupied by two. This is a triplet — a type of tuplet — indicated by a small 3.");
-          else fb(false,"The beat remains steady. Listen again and count the notes within each beat.");
+          if(i===0) fb(true,"✓ Correct. Version B retains the common tone C and connects the remaining upper voices primarily by step. Voice leading considers how each individual line moves from one chord to the next.");
+          else fb(false,"Version A uses unnecessary leaps. Listen for the version in which each individual voice forms a more connected melodic line.");
         });
       } }
   },
   objectives:[
-    "Define a tuplet and explain why it is used",
-    "Recognize triplets and duplets as types of tuplets",
-    "Understand how a triplet divides a simple-meter beat into three equal parts",
-    "Understand how a duplet divides a compound-meter beat into two equal parts",
-    "Read the small 3 and 2 markings",
-    "Recognize other tuplets, including quintuplets and sextuplets"
+    "Identify the four SATB voices",
+    "Understand basic spacing and voice order",
+    "Keep common tones when possible",
+    "Move voices by step or small intervals",
+    "Avoid voice crossing",
+    "Recognize parallel fifths and octaves (introduction only)"
   ],
   steps:[
-    { say:"<b>What Is a Tuplet?</b> A <b>tuplet</b> is a group of equal notes that divides a beat or note value into a different number of parts than normally expected. <b>Triplets</b> and <b>duplets</b> are two common types of tuplets. <b style='color:#2F6DA8'>In simple meter, a triplet divides a beat into three equal parts instead of the usual two.</b> <b style='color:#C05A21'>In compound meter, a duplet divides a beat into two equal parts instead of the usual three.</b> The time signature does not change. \u{1F447} <b>What is a tuplet?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:320px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Meter</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Normal Beat Division</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Common Tuplet Division</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;color:#2F6DA8;font-weight:800">Simple</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">2 equal parts</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">Triplet: 3 equal parts</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;color:#C05A21;font-weight:800">Compound</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">3 equal parts</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">Duplet: 2 equal parts</td></tr></table>` },
-      try:{ type:"mc", choices:["A group of equal notes that divides a beat or note value differently from its normal division","An incorrectly performed rhythm","A change of time signature"], answer:0,
-        success:"✓ Correct. A tuplet changes how a beat is divided, but the time signature stays the same. Triplets and duplets are its two common types.",
-        fail:"A tuplet is a note grouping, not an error or a change of meter.",
-        hint:"It regroups how a beat divides." } },
-    { say:"<b>The Triplet:</b> A triplet places <b>three notes of equal written value</b> in the time normally occupied by two. For example, three eighth-note triplets fill <b>one quarter-note beat</b> and are indicated by a small <b>3</b>. \u{1F447} <b>Three eighth-note triplets have the same total duration as…</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"4/4",tempo:76,notes:[
-        {p:"G4",d:"8"},{p:"G4",d:"8"},
-        {p:"C5",d:"8"},{p:"C5",d:"8"},{p:"C5",d:"8"},
-        {p:"G4",d:"8"},{p:"G4",d:"8"},
-        {p:"C5",d:"8"},{p:"C5",d:"8"},{p:"C5",d:"8"},{bar:"final"}],
-        beams:[[0,1],[2,4],[5,6],[7,9]], tuplets:[{from:2,to:4},{from:7,to:9}], width:520} },
-      try:{ type:"mc", choices:["One quarter note","One whole note","One eighth note"], answer:0,
-        success:"✓ Correct. Three eighth-note triplets occupy the same amount of time as two regular eighth notes, or one quarter note.",
-        fail:"Three eighth-note triplets occupy the time normally given to two regular eighth notes.",
-        hint:"Three in the time of two." } },
-    { say:"<b>Counting Triplets:</b> Use three evenly spaced syllables for each beat, such as <b>\u{201C}1-trip-let\u{201D}</b> or \u{201C}1-la-li\u{201D}. By comparison, straight eighth notes may be counted \u{201C}1-and\u{201D}. \u{1F447} <b>Which counting pattern fits an eighth-note triplet?</b>",
-      try:{ type:"mc", choices:["1-trip-let — three even syllables","1-and — two even syllables","1-e-and-a — four even syllables"], answer:0,
-        success:"✓ Correct. Each triplet note receives one evenly spaced syllable.",
-        fail:"Count the three notes within the beat.",
-        hint:"Three notes require three evenly spaced syllables." } },
-    { say:"<b>The Duplet:</b> In compound meter, a duplet divides a beat into <b>two equal parts instead of the usual three</b>. It is indicated by a small <b>2</b>. In 6/8, a pair of eighth-note duplets fills <b>one dotted-quarter beat</b>. \u{1F447} <b>A pair of eighth-note duplets in 6/8 has the same total duration as…</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"6/8",tempo:60,notes:[
-        {p:"G4",d:"8"},{p:"A4",d:"8"},{p:"B4",d:"8"},
-        {p:"C5",d:"8"},{p:"C5",d:"8"},{bar:"final"}],
-        beams:[[0,2],[3,4]], tuplets:[{from:3,to:4,n:2}], width:400} },
-      try:{ type:"mc", choices:["One dotted-quarter beat","Two full measures","One sixteenth note"], answer:0,
-        success:"✓ Correct. The two duplet notes divide the time normally occupied by three eighth notes.",
-        fail:"The duplet group occupies the time normally given to three eighth notes.",
-        hint:"Two in the time of three." } },
-    { say:"<b>Other Tuplets:</b> Tuplets can contain other numbers of notes. A <b>quintuplet</b> contains five equal notes, and a <b>sextuplet</b> contains six. A number placed above or below the group identifies <b>how many notes it contains</b>. The number of notes they replace depends on the meter, note values, and musical context. \u{1F447} <b>What does a small 5 above or below a note group indicate?</b>",
-      try:{ type:"mc", choices:["The group contains five tuplet notes","The notes should be played five times louder","Five notes should be omitted"], answer:0,
-        success:"✓ Correct. The 5 identifies the group as a quintuplet containing five evenly spaced notes. Its total duration is determined by the notation and musical context.",
-        fail:"The number identifies how many notes belong to the tuplet group.",
-        hint:"The number identifies the notes within the group." } },
-    { say:"Listen and identify whether the beat contains straight eighth notes or eighth-note triplets. \u{1F447}",
-      try:{ type:"custom",
-        hint:"In simple meter, two equal eighth notes form the normal division; three equal notes form an eighth-note triplet.",
-        mount:(container,fb)=>MF_L77_ear(container,fb) } },
-    { say:"<b>Review</b> \u{1F447} <b>Which tuplet divides a compound beat into two equal parts instead of three?</b>",
-      try:{ type:"mc", choices:["A duplet, indicated by a small 2","A triplet, indicated by a small 3","A fermata"], answer:0,
-        success:"✓ Correct. A duplet replaces the normal three-part division of a compound beat with two equal parts.",
-        fail:"Compound meter normally divides each beat into three. Which tuplet divides it into two?",
-        hint:"Look for the small 2." } }
+    { say:"<b>The Four Voices (SATB):</b> from <b>highest to lowest</b> — <b>S</b>oprano, <b>A</b>lto, <b>T</b>enor, <b>B</b>ass. In keyboard-style notation, soprano and alto share the <b>treble staff</b>; tenor and bass share the <b>bass staff</b>. \u{1F447} <b>What is the standard high-to-low order of SATB voices?</b>",
+      try:{ type:"mc", choices:["Soprano, alto, tenor, bass","Bass, tenor, alto, soprano","Soprano, tenor, alto, bass"], answer:0,
+        success:"✓ Correct. SATB is ordered from the highest voice, soprano, to the lowest voice, bass.",
+        fail:"Begin with the highest voice.",
+        hint:"S–A–T–B." } },
+    { say:"<b>Working Ranges:</b> these are practical <b>working ranges</b> for beginning SATB writing — not absolute vocal limits. Real ranges vary with the singer and the music. \u{1F447} <b>Which SATB voice normally occupies the lowest range?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Voice</th><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#2F6DA8">Soprano</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#A9821F">Alto</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#C05A21">Tenor</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800">Bass</td></tr>
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Range</th><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">C4–G5</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">G3–D5</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">C3–G4</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">E2–C4</td></tr></table>` },
+      try:{ type:"mc", choices:["Bass","Tenor","Alto"], answer:0,
+        success:"✓ Correct. The bass normally occupies the lowest range in SATB texture.",
+        fail:"Recall the high-to-low SATB order.",
+        hint:"Bass is the lowest voice." } },
+    { say:"<b>Spacing — one rule:</b> keep <b>adjacent upper voices (S–A and A–T) within an octave</b>. <b>Tenor–bass may be wider</b> — even more than an octave — as long as both stay in range. \u{1F447} <b>Which adjacent voice pair may normally be separated by more than an octave?</b>",
+      try:{ type:"mc", choices:["Tenor and bass","Soprano and alto","Alto and tenor"], answer:0,
+        success:"✓ Correct. Tenor and bass may be separated by more than an octave, while the adjacent upper voices normally remain within an octave.",
+        fail:"Identify the adjacent pair that includes the bass.",
+        hint:"The tenor–bass spacing rule is less restrictive." } },
+    { say:"<b>Voice Crossing:</b> keep the order <b>S above A above T above B</b>. <b>Voice crossing</b> is when a lower voice rises above a higher one (e.g., alto above soprano) — avoided in beginning writing because it blurs which line is which. \u{1F447} <b>At the same moment, the alto is written above the soprano. What is this called?</b>",
+      show:{ type:"html", html:`<div style="display:flex;gap:24px;justify-content:center;font-size:14px;text-align:center">
+        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 20px">
+          <div style="font-weight:800;color:#2F6DA8;margin-bottom:5px">Correct ✓</div>
+          <div style="line-height:1.8;font-weight:700">S<br>A<br>T<br>B</div>
+          <div style="font-size:11px;color:#555;margin-top:4px">high → low, in order</div></div>
+        <div style="border:2px solid #C05A21;border-radius:10px;padding:8px 20px">
+          <div style="font-weight:800;color:#C05A21;margin-bottom:5px">Crossing ✗</div>
+          <div style="line-height:1.8;font-weight:700"><span style="color:#C05A21">A</span><br><span style="color:#C05A21">S</span><br>T<br>B</div>
+          <div style="font-size:11px;color:#555;margin-top:4px">A rose above S</div></div></div>` },
+      try:{ type:"mc", choices:["Voice crossing","Contrary motion","Pedal point"], answer:0,
+        success:"✓ Correct. The vertical order of the soprano and alto has been reversed, creating voice crossing.",
+        fail:"Compare the vertical order of the two voices.",
+        hint:"Maintain S above A above T above B in these exercises." } },
+    { say:"<b>Efficient Voice Leading — the heart of this lesson:</b> <b>keep common tones</b> in the same voice, and move the remaining voices <b>by step</b> whenever possible. Avoid unnecessary leaps. (The bass leaps more freely, since it carries the chord roots.) \u{1F447} <b>Two adjacent chords share the pitch G. Which choice often creates efficient voice leading?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:72,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"B3",d:"w",label:"V (G stays)"},{p:"D4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{bar:"final"}],width:440} },
+      try:{ type:"mc", choices:["Retain G in the same voice when other considerations allow","Move G by an unnecessary octave","Omit G automatically"], answer:0,
+        success:"✓ Correct. Retaining a common tone can connect the chords smoothly, provided the result also follows range, spacing, doubling, and tendency-tone guidelines.",
+        fail:"Check whether the common tone can remain in the same voice without creating another problem.",
+        hint:"Retain common tones when practical." } },
+    { say:"<b>Doubling — three starter rules:</b> a triad has 3 tones but SATB has 4 voices, so one tone is doubled.<br>• <b>Double the root</b> — usually safest.<br>• <b>Don't double the leading tone</b> — it pulls up to the tonic.<br>• In a seventh chord, the <b>chordal 7th resolves down</b> by step. \u{1F447} <b>Which chord member should normally not be doubled in introductory SATB writing?</b>",
+      try:{ type:"mc", choices:["The leading tone","The tonic","The dominant"], answer:0,
+        success:"✓ Correct. The leading tone normally resolves upward to the tonic, so doubling it creates two strong tendency tones requiring resolution.",
+        fail:"Which tone has the strongest pull to resolve?",
+        hint:"It resolves up to the tonic." } },
+    { say:"<b>Parallel Fifths and Octaves (introduction):</b> when two voices move together from one perfect <b>5th</b> (or <b>octave</b>) to another, their independence is weakened — so these parallels are normally avoided. You will study this more deeply later. \u{1F447} <b>Why are parallel perfect fifths normally avoided in common-practice SATB writing?</b>",
+      try:{ type:"mc", choices:["They weaken the independence of the two voice lines","They automatically reduce the dynamic level","They change the key signature"], answer:0,
+        success:"✓ Correct. Successive perfect fifths or octaves in similar motion can make two voices sound less independent.",
+        fail:"Consider the effect of successive perfect intervals on melodic independence.",
+        hint:"Track the same pair of voices through both chords." } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which describes smoother voice leading between two chords?</b>",
+      try:{ type:"mc", choices:["Hold the common tones and move the other voices by step","Leap every voice to a new register","Let the alto cross above the soprano"], answer:0,
+        success:"✓ Correct. Held common tones plus stepwise motion in the other voices give the smoothest connection.",
+        fail:"Which option keeps each line connected and in order?",
+        hint:"Hold what is shared; step the rest." } }
   ],
   examples:[
-    { caption:"Triplets among straight eighths in 4/4: beats 1–2 divide in two, beats 3–4 use the triplet. Listen for the shift from '1-and' to '1-trip-let'.",
-      staff:{clef:"treble",time:"4/4",tempo:80,notes:[
-        {p:"C4",d:"8"},{p:"E4",d:"8"},{p:"G4",d:"8"},{p:"E4",d:"8"},
-        {p:"C5",d:"8"},{p:"B4",d:"8"},{p:"A4",d:"8"},
-        {p:"G4",d:"8"},{p:"F4",d:"8"},{p:"E4",d:"8"},{bar:"single"},
-        {p:"C4",d:"w"},{bar:"final"}],
-        beams:[[0,1],[2,3],[4,6],[7,9]], tuplets:[{from:4,to:6},{from:7,to:9}], width:600},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"A duplet in 6/8: the first beat rolls normally in three; the second stretches two even notes across the same time — marked 2.",
-      staff:{clef:"treble",time:"6/8",tempo:63,notes:[
-        {p:"E4",d:"8"},{p:"G4",d:"8"},{p:"B4",d:"8"},
-        {p:"C5",d:"8"},{p:"G4",d:"8"},{bar:"single"},
-        {p:"A4",d:"8"},{p:"B4",d:"8"},{p:"C5",d:"8"},
-        {p:"B4",d:"q."},{bar:"final"}],
-        beams:[[0,2],[3,4],[6,8]], tuplets:[{from:3,to:4,n:2}], width:560},
-      kb:{start:60,octaves:1,labels:true} }
+    { caption:"I–IV–V–I with smooth voice leading (upper voices on one staff): common tones held, steps everywhere else, bass doing the leaping.",
+      staff:{clef:"treble",tempo:69,notes:[
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"IV"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"B3",d:"w",label:"V"},{p:"D4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:620},
+      kb:{start:57,octaves:1.58,labels:true} },
+    { caption:"Spacing on display: the first chord spreads the top voices too far (hollow); the second keeps S–A and A–T inside an octave (balanced). Hear the difference.",
+      staff:{clef:"treble",tempo:60,notes:[
+        {p:"C4",d:"w",label:"hollow"},{p:"G4",d:"w",chord:true},{p:"E5",d:"w",chord:true},{bar:"single"},
+        {p:"C4",d:"w",label:"balanced"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:420},
+      kb:{start:57,octaves:1.58,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Tuplet Sprint (45s)",
-      intro:"Identify triplets, duplets, and their rhythmic values before time runs out.",
-      miaIntro:"A triplet is three in the time of two; a duplet is two in the time of three.",
+    { type:"gen-race", title:"Game 1 · SATB Guidelines (45s)",
+      intro:"Identify SATB voices, working ranges, spacing, and basic voice-leading guidelines.",
+      miaIntro:"Check range, spacing, crossing, and overlap.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Tuplet","a group that divides a beat differently than normal"],
-        ["Triplet","three notes in the time of two"],
-        ["Duplet","two notes in the time of three"],
-        ["Simple meter's common tuplet","the triplet"],
-        ["Compound meter's common tuplet","the duplet"],
-        ["Eighth-note triplet equals","one quarter-note beat"],
-        ["Duplet in 6/8 equals","one dotted-quarter beat"],
-        ["Quintuplet","a group of five tuplet notes"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Tuplet challenge completed!":null },
-    { type:"symbol-hunt", title:"Game 2 · Spot the Tuplet",
-      intro:"Select the rhythm that contains the named tuplet.",
-      miaIntro:"Look for the number above or below the note group.",
+        ["SATB","soprano, alto, tenor, bass"],
+        ["Adjacent upper voices","within an octave"],
+        ["Tenor–bass gap","may exceed an octave"],
+        ["Voice crossing","forbidden — keep the order"],
+        ["Common tone","hold it in the same voice"],
+        ["Other voices","move by step when possible"],
+        ["Parallel 5ths/octaves","avoided — independence dies"],
+        ["The leaping voice","usually the bass"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — SATB guidelines identified!":null },
+    { type:"order-tap", title:"Game 2 · Arrange the Voices",
+      intro:"Arrange the SATB voices from highest to lowest.",
+      miaIntro:"Soprano–alto–tenor–bass.",
+      spec:{sequence:["Soprano — highest","Alto","Tenor","Bass — lowest"],
+        title:"The four-voice stack"},
+      result:(stars)=>stars>=2?"You arranged the voices correctly.":null },
+    { type:"symbol-hunt", title:"Game 3 · Evaluate the Voicing",
+      intro:"Examine each voicing for range, spacing, crossing, overlap, and doubling.",
+      miaIntro:"Check every voice, not only the chord spelling.",
       spec:{rounds:6, pool:[
-        {label:"Triplet (3 in one beat)", spec:{clef:"treble",time:"2/4",notes:[{p:"G4",d:"8"},{p:"G4",d:"8"},{p:"G4",d:"8"},{p:"G4",d:"q"}],beams:[[0,2]],tuplets:[{from:0,to:2}],width:190}},
-        {label:"Straight eighths (2 per beat)", spec:{clef:"treble",time:"2/4",notes:[{p:"G4",d:"8"},{p:"G4",d:"8"},{p:"G4",d:"q"}],beams:[[0,1]],width:170}},
-        {label:"Duplet (2 in a compound beat)", spec:{clef:"treble",time:"6/8",notes:[{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"q."}],beams:[[0,1]],tuplets:[{from:0,to:1,n:2}],width:190}},
-        {label:"Normal 6/8 beat (3 eighths)", spec:{clef:"treble",time:"6/8",notes:[{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"q."}],beams:[[0,2]],width:190}}]},
-      result:(score)=>score>=5?"You identified the tuplets correctly.":null },
-    { type:"order-tap", title:"Game 3 · Match Meter to Tuplet",
-      intro:"Arrange each meter type with the tuplet that fits it.",
-      miaIntro:"Simple meter uses triplets; compound meter uses duplets.",
-      spec:{sequence:["Simple meter divides in 2","Its tuplet: the triplet (3)","Compound meter divides in 3","Its tuplet: the duplet (2)"],
-        title:"Each meter and its common tuplet"},
-      result:(stars)=>stars>=2?"You matched each meter with its tuplet.":null },
-    { type:"term-race", title:"Game 4 · Tuplet Value Race",
-      intro:"Determine the total duration of each tuplet group before time runs out.",
-      miaIntro:"Compare each tuplet with the notes it replaces.",
+        {label:"Balanced spacing", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
+        {label:"Hollow top (S–A over an octave)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G5",d:"w",chord:true}],width:150}},
+        {label:"Common tone held (I→V)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"C5",d:"w",chord:true},{p:"G4",d:"w"},{p:"B4",d:"w",chord:true}],width:170}},
+        {label:"Leaping upper voices (rough)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"C5",d:"w",chord:true},{p:"A4",d:"w"},{p:"F5",d:"w",chord:true}],width:170}}]},
+      result:(score)=>score>=5?"You evaluated the voicings correctly.":null },
+    { type:"term-race", title:"Game 4 · Guideline or Misconception?",
+      intro:"Distinguish common-practice SATB guidelines from inaccurate absolute statements.",
+      miaIntro:"Remember that these guidelines are style-specific.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Eighth triplet","one quarter beat"],
-        ["Quarter triplet","one half note"],
-        ["Duplet in 6/8","one dotted-quarter beat"],
-        ["The small 3","triplet marking"],
-        ["The small 2","duplet marking"],
-        ["The small 5","quintuplet"],
-        ["The small 6","sextuplet"],
-        ["Tuplet numbers count","the notes in the group"]]},
-      result:(score)=>score>=6?"You identified each tuplet's duration correctly.":null }
+        ["Keep common tones","real rule"],
+        ["Move by step when possible","real rule"],
+        ["Never let voices cross","real rule"],
+        ["Avoid parallel perfect 5ths","real rule"],
+        ["S–A within an octave","real rule"],
+        ["Every voice must leap","myth"],
+        ["The alto may top the soprano","myth"],
+        ["Bass may sit far below tenor","real rule"]]},
+      result:(score)=>score>=6?"You classified the statements correctly.":null }
   ],
-  practiceIntro:"Complete 20 practice questions on triplets, duplets, and other tuplets. The next question will appear after each correct answer.",
+  practiceIntro:"Complete 20 practice questions on SATB ranges, spacing, crossing, overlap, doubling, tendency tones, and voice leading.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Tuplet","divides a beat differently than normal"],["Triplet","3 in the time of 2"],["Duplet","2 in the time of 3"],["Quintuplet","a five-note group"],["Sextuplet","a six-note group"]], reverse:true}, count:6 },
-    { gen:"rhythm-count", params:{}, count:2 },
-    { type:"mc", q:"How many equal notes does a triplet place in the time normally occupied by two?", choices:["3","2","4"], answer:0,
-      explain:"A triplet places three equal notes in the time normally occupied by two." },
-    { type:"mc", q:"In which meter type does a duplet replace the normal three-part beat division?", choices:["Compound meter","Simple meter","Neither type"], answer:0,
-      explain:"In compound meter, a duplet divides the beat into two equal parts instead of three." },
-    { type:"mc", q:"A complete group of three eighth-note triplets fills…", choices:["one quarter-note beat","one full measure","half of a quarter-note beat"], answer:0,
-      explain:"The three triplet notes occupy the time normally given to two regular eighth notes, or one quarter note." },
-    { type:"mc", q:"Which counting pattern can be used for an eighth-note triplet?", choices:["1-trip-let","1-e-and-a","1-and"], answer:0,
-      explain:"The three syllables correspond to the three evenly spaced triplet notes." },
-    { type:"truefalse", q:"A duplet places two equal notes in the time normally occupied by three.", answer:true,
-      explain:"A duplet replaces the normal three-part division of a compound beat with two equal parts." },
-    { type:"truefalse", q:"Using a triplet changes the notated time signature.", answer:false,
-      explain:"The beat division changes temporarily, but the time signature remains the same." },
-    { type:"truefalse", q:"A quintuplet contains five evenly spaced tuplet notes.", answer:true,
-      explain:"The number 5 identifies the five notes in the tuplet group. Its total duration depends on the notation and context." },
-    { gen:"term-match", params:{subject:"term", pool:[["Simple meter's tuplet","triplet"],["Compound meter's tuplet","duplet"],["Small 3","triplet"],["Small 2","duplet"]], reverse:true}, count:3 },
-    { gen:"note-value", params:{}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["S","soprano"],["A","alto"],["T","tenor"],["B","bass"],["Common tone","hold it"],["Step motion","the default"]], reverse:true}, count:6 },
+    { gen:"triad-id", params:{}, count:2 },
+    { type:"mc", q:"SATB stands for…", choices:["soprano, alto, tenor, bass","strings and two brass","slow and then bright"], answer:0,
+      explain:"SATB stands for soprano, alto, tenor, and bass." },
+    { type:"mc", q:"Adjacent upper voices should stay within…", choices:["an octave","a 3rd","two octaves"], answer:0,
+      explain:"Soprano–alto and alto–tenor normally remain within an octave." },
+    { type:"mc", q:"Which voice pair may be spaced beyond an octave?", choices:["Tenor and bass","Soprano and alto","Alto and tenor"], answer:0,
+      explain:"Tenor–bass spacing may exceed an octave within practical vocal ranges." },
+    { type:"mc", q:"When two chords share a pitch, an efficient option is to…", choices:["retain it in the same voice when practical","move it by octave automatically","omit it automatically"], answer:0,
+      explain:"Common-tone retention." },
+    { type:"truefalse", q:"Voice crossing occurs when a lower voice moves above an adjacent higher voice, or a higher voice moves below an adjacent lower voice.", answer:true,
+      explain:"Crossing is any reversal of the normal order of adjacent voices." },
+    { type:"truefalse", q:"Parallel perfect fifths are normally avoided in common-practice SATB writing.", answer:true,
+      explain:"They weaken the independence of the two voices." },
+    { type:"truefalse", q:"In root-position chorale-style progressions, the bass often uses larger intervals than the upper voices.", answer:true,
+      explain:"The bass frequently presents chord roots, but its line should remain coherent and singable." },
+    { gen:"term-match", params:{subject:"term", pool:[["Crossing","forbidden swap"],["Parallel 5ths","independence lost"],["Spacing","octave rule up top"],["Bass","the leaper"]], reverse:true}, count:3 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
   ],
   vocabulary:[
-    {term:"Tuplet", def:"A group of equal notes that divides a beat or note value into a different number of parts than normally expected."},
-    {term:"Triplet", def:"A type of tuplet that places three equal notes in the time normally occupied by two (marked with a small 3).",
-      sym:`<svg viewBox="0 0 152 96" style="height:76px;width:auto;max-width:150px" xmlns="http://www.w3.org/2000/svg">
-        <path d="M24 30 L24 22 L62 22 M86 22 L130 22 L130 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-        <text x="74" y="28" text-anchor="middle" font-size="19" font-style="italic" font-weight="700" fill="currentColor">3</text>
-        <g stroke="currentColor" stroke-width="2.6" fill="currentColor">
-          <line x1="29.5" y1="74" x2="29.5" y2="30"/><ellipse cx="22" cy="74" rx="8" ry="5.6" transform="rotate(-20 22 74)"/>
-          <line x1="79.5" y1="74" x2="79.5" y2="30"/><ellipse cx="72" cy="74" rx="8" ry="5.6" transform="rotate(-20 72 74)"/>
-          <line x1="129.5" y1="74" x2="129.5" y2="30"/><ellipse cx="122" cy="74" rx="8" ry="5.6" transform="rotate(-20 122 74)"/>
-        </g></svg>`},
-    {term:"Duplet", def:"A type of tuplet that places two equal notes in the time normally occupied by three (marked with a small 2).",
-      sym:`<svg viewBox="0 0 102 96" style="height:76px;width:auto;max-width:110px" xmlns="http://www.w3.org/2000/svg">
-        <path d="M24 30 L24 22 L42 22 M60 22 L80 22 L80 30" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/>
-        <text x="51" y="28" text-anchor="middle" font-size="19" font-style="italic" font-weight="700" fill="currentColor">2</text>
-        <g stroke="currentColor" stroke-width="2.6" fill="currentColor">
-          <line x1="29.5" y1="74" x2="29.5" y2="30"/><ellipse cx="22" cy="74" rx="8" ry="5.6" transform="rotate(-20 22 74)"/>
-          <line x1="79.5" y1="74" x2="79.5" y2="30"/><ellipse cx="72" cy="74" rx="8" ry="5.6" transform="rotate(-20 72 74)"/>
-        </g></svg>`},
-    {term:"Other Tuplets", def:"Tuplets may contain other numbers of equal notes, such as five in a quintuplet or six in a sextuplet."}
+    {term:"SATB", def:"Soprano, Alto, Tenor, Bass."},
+    {term:"Voice Leading", def:"Move each voice as smoothly as possible. Keep common tones. Prefer stepwise motion."},
+    {term:"Spacing", def:"S–A and A–T normally stay within one octave. T–B may exceed an octave."},
+    {term:"Voice Independence", def:"Avoid voice crossing, parallel fifths, and parallel octaves."}
   ],
   mistakes:[],
   summary:[
-    "✔ A <b>tuplet</b> divides a beat into a different number of equal parts than normal.",
-    "✔ <b>Triplet</b>: 3 in the time of 2 — simple meter's tuplet; count <b>1-trip-let</b>.",
-    "✔ <b>Duplet</b>: 2 in the time of 3 — compound meter's tuplet.",
-    "✔ Eighth triplet = one <b>quarter</b> beat; 6/8 duplet = one <b>dotted-quarter</b> beat.",
-    "✔ Other tuplets exist: <b>quintuplet (5), sextuplet (6)</b> — the small number counts the notes."
+    "✔ <b>SATB</b> = Soprano, Alto, Tenor, Bass.",
+    "✔ Keep <b>common tones</b> whenever possible.",
+    "✔ Move voices mostly <b>by step</b>.",
+    "✔ Avoid <b>voice crossing</b>.",
+    "✔ <b>Root doubling</b> is usually safest.",
+    "✔ Avoid doubling the <b>leading tone</b>.",
+    "✔ <b>Parallel fifths and octaves</b> weaken voice independence."
   ],
   tips:[
-    "Keep the BEAT steady and let the tuplet bend inside it — tap your foot while saying 1-trip-let.",
-    "Swing feel lives between straight eighths and triplets — first hear both cleanly, then split the difference.",
-    "When you see a small number over notes, read it as 'this many notes in this group.'",
-    "Next lesson: rhythms that fight the beat on purpose — SYNCOPATION."
+    "Write the outer voices (S and B) first — if they sound good together, the middle fills easily.",
+    "Check parallels the mechanical way: find every P5/P8 pair, then look one chord ahead.",
+    "Piano players: practice I-IV-V-I holding common tones — your hands learn voice leading before your eyes do.",
+    "Next lesson: dominants that point at chords OTHER than I — secondary dominants."
   ],
-  rewards:{ badge:"Tuplet Technician", icon:"\u{1F3B6}" },
+  rewards:{ badge:"Part Writer", icon:"\u{1F465}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"A triplet places three notes in the time of two; a duplet places two notes in the time of three.",
+  miaQuizIntro:"Quiz: Check range, spacing, common tones, tendency tones, crossing, overlap, and parallel perfect intervals.",
   quiz:[
-    { type:"mc", q:"What is a tuplet?", choices:["A group of equal notes that divides a beat differently from its normal division","A rhythmic performance error","A change in tempo"], answer:0,
-      explain:"A tuplet regroups a beat's division; the meter stays the same.", hint:"The division changes, not the meter." },
-    { type:"mc", q:"A triplet places…", choices:["three equal notes in the time normally occupied by two","two equal notes in the time normally occupied by three","three measures within one beat"], answer:0,
-      explain:"A small 3 identifies the triplet group.", hint:"Look for three notes replacing the usual two-part division." },
-    { type:"mc", q:"A duplet places…", choices:["two equal notes in the time normally occupied by three","three equal notes in the time normally occupied by two","two beats at the same time"], answer:0,
-      explain:"A small 2 identifies the duplet group.", hint:"Look for two notes replacing the usual three-part division." },
-    { type:"mc", q:"In which meter type does a triplet replace the normal two-part beat division?", choices:["Simple meter","Compound meter","Neither meter type"], answer:0,
-      explain:"Simple meter normally divides each beat into two. A triplet temporarily divides it into three.", hint:"Which meter type normally divides each beat into two?" },
-    { type:"mc", q:"A complete group of three eighth-note triplets lasts as long as…", choices:["one quarter note","one eighth note","one dotted quarter note"], answer:0,
-      explain:"The group occupies the time normally given to two eighth notes.", hint:"One simple beat." },
-    { type:"mc", q:"A complete pair of eighth-note duplets in 6/8 lasts as long as…", choices:["one dotted quarter note","one quarter note","two measures"], answer:0,
-      explain:"The pair occupies the time normally given to three eighth notes, or one dotted-quarter beat.", hint:"One compound beat." },
-    { type:"mc", q:"Identify the marking.",
-      staff:{clef:"treble",time:"2/4",notes:[{p:"A4",d:"8"},{p:"A4",d:"8"},{p:"A4",d:"8"},{p:"A4",d:"q"}],beams:[[0,2]],tuplets:[{from:0,to:2}],width:200},
-      choices:["An eighth-note triplet — three equal notes within one quarter-note beat","An eighth-note duplet","Three separate beats"], answer:0,
-      explain:"A small 3 above three beamed eighth notes identifies a triplet.", hint:"Count the group." },
-    { type:"mc", q:"Which counting pattern fits an eighth-note triplet?", choices:["1-trip-let","1-e-and-a","1-and"], answer:0,
-      explain:"Three even syllables per beat.", hint:"Three notes." },
-    { type:"truefalse", q:"A small 5 above or below a note group identifies five notes as a quintuplet.", answer:true,
-      explain:"The number 5 identifies the five notes in the tuplet group.", hint:"The number counts notes." },
-    { type:"truefalse", q:"Using a tuplet changes the notated time signature of the measure.", answer:false,
-      explain:"A tuplet temporarily changes the rhythmic division without changing the time signature.", hint:"The meter stays." },
-    { type:"mc", q:"In 4/4, beats 1 and 2 divide into two equal eighth notes, while beats 3 and 4 each divide into three equal notes. Which rhythmic device is used on beats 3 and 4?", choices:["eighth-note triplets","eighth-note duplets","a new time signature"], answer:0,
-      explain:"In simple meter, dividing a beat into three equal parts produces a triplet.", hint:"Which family is 4/4?" },
-    { type:"mc", q:"Which pairing correctly matches each meter type with its common tuplet?", choices:["Simple meter → triplet; compound meter → duplet","Simple meter → duplet; compound meter → triplet","Both meter types use only triplets"], answer:0,
-      explain:"A triplet introduces a three-part division in simple meter, while a duplet introduces a two-part division in compound meter.", hint:"Compare each tuplet with the meter's normal beat division." }
+    { type:"mc", q:"The four voices, high to low:", choices:["S, A, T, B","B, T, A, S","S, T, A, B"], answer:0,
+      explain:"Soprano to bass.", hint:"The acronym." },
+    { type:"mc", q:"In keyboard-style notation, which voices share the treble staff?", choices:["Soprano and alto","Tenor and bass","Alto and tenor"], answer:0,
+      explain:"S stems up, A stems down.", hint:"The top pair." },
+    { type:"mc", q:"The octave spacing guideline applies to…", choices:["adjacent upper voices (S–A, A–T)","tenor and bass","all pairs equally"], answer:0,
+      explain:"The bass is exempt.", hint:"Up top only." },
+    { type:"mc", q:"Voice crossing is…", choices:["a voice moving past its neighbor — avoided","a good blending technique","required at cadences"], answer:0,
+      explain:"It reverses the normal order of adjacent voices.", hint:"S above A above T above B." },
+    { type:"mc", q:"Two consecutive chords share the pitch E. Which choice often creates efficient voice leading?", choices:["Retain E in the same voice when practical","Move E up an octave automatically","Omit E automatically"], answer:0,
+      explain:"Common-tone retention.", hint:"The anchor note." },
+    { type:"mc", q:"When no common tone can be retained, the upper voices should generally…", choices:["use the smallest singable motions that satisfy harmonic and tendency-tone requirements","leap as far as possible","move in parallel octaves"], answer:0,
+      explain:"Smallest singable motion, within harmonic and tendency-tone requirements.", hint:"Small, singable motion." },
+    { type:"mc", q:"Why are parallel perfect fifths and octaves normally avoided in common-practice SATB writing?", choices:["They weaken the perceptual independence of the voices","They are highly dissonant","They are impossible to sing"], answer:0,
+      explain:"Successive perfect intervals reduce the independence of the two lines.", hint:"Independence." },
+    { type:"mc", q:"In root-position chorale-style progressions, which voice often makes larger leaps because it presents chord roots?", choices:["The bass","The alto","The soprano"], answer:0,
+      explain:"Root motion lives downstairs.", hint:"The foundation." },
+    { type:"truefalse", q:"The standard working ranges of alto and soprano overlap, although the alto generally occupies a lower tessitura.", answer:true,
+      explain:"Their ranges overlap; the alto simply sits lower on average.", hint:"Ranges overlap." },
+    { type:"truefalse", q:"Good voice leading always moves each voice by the smallest mathematically possible interval.", answer:false,
+      explain:"Efficient motion matters, but tendency tones, melodic shape, spacing, independence, and harmonic function also apply.", hint:"Not purely mathematical." },
+    { type:"mc", q:"In introductory SATB chorale writing, soprano and alto separated by a tenth normally violate which guideline?", choices:["Upper-voice spacing","Vocal order","Harmonic rhythm"], answer:0,
+      explain:"Upper pairs stay within the octave.", hint:"Count the gap." },
+    { type:"mc", q:"Which chord member should normally not be doubled in introductory common-practice SATB writing?", choices:["The leading tone","The tonic","A stable chord root"], answer:0,
+      explain:"The leading tone has a strong tendency to resolve upward to the tonic.", hint:"The tone that pulls to tonic." }
   ],
-  miaPerfect:"Perfect score! You accurately identified triplets, duplets, and other tuplets.",
-  miaPass:"You passed! Next, you will explore syncopation.",
+  miaPerfect:"Perfect score! You accurately applied the introductory SATB voice-leading guidelines.",
+  miaPass:"You passed! Next, you will study secondary dominants.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Pattern 2 squeezed three notes into a beat that normally holds two — a triplet, simple meter's common tuplet.",
-      play:()=>{for(let b=0;b<4;b++){ MFAudio.tone(48,.3,b*.55,.4); for(let j=0;j<3;j++) MFAudio.tone(76,.11,b*.55+j*(.55/3),.17); }} },
-    learn:{ label:"triplets & duplets",
-      explain:"A tuplet divides a beat differently than normal. Triplet: 3 in the time of 2 (simple meter). Duplet: 2 in the time of 3 (compound meter). Quintuplet/sextuplet extend the idea.",
-      hint:"3 in 2 · 2 in 3.",
-      play:()=>{MFAudio.tone(48,.3,0,.4);for(let j=0;j<3;j++) MFAudio.tone(76,.11,j*.18,.17);MFAudio.tone(48,.3,.6,.4);for(let j=0;j<2;j++) MFAudio.tone(76,.13,.6+j*.27,.17);} },
+      explain:"Version B held the common tone and stepped the rest — voice leading: smallest useful motion per voice.",
+      play:()=>{[48,64,67,72].forEach(m=>MFAudio.tone(m,.9,.05,.26));[53,65,69,72].forEach(m=>MFAudio.tone(m,1.0,1.0,.26));} },
+    learn:{ label:"voice leading",
+      explain:"SATB ranges; S–A/A–T within an octave; no crossing; hold common tones, step the rest; avoid parallel 5ths/octaves.",
+      hint:"Hold, step, don't cross.",
+      play:()=>{[48,64,67,72].forEach(m=>MFAudio.tone(m,.8,.05,.26));[47,62,67,74].forEach(m=>MFAudio.tone(m,.9,.95,.26));} },
     example:{ label:"the examples",
-      explain:"Example 1 mixes straight eighths with triplets in 4/4; example 2 places a duplet inside 6/8." },
+      explain:"Example 1 voice-leads I-IV-V-I with held common tones; example 2 contrasts balanced vs hollow spacing." },
     game:{ label:"the games",
-      explain:"Sprint the facts, spot tuplets on cards, match each meter to its tuplet, then race the values.",
-      hint:"The small number counts the notes." },
+      explain:"Sprint the rules, stack the choir, judge voicings on cards, then separate rules from myths.",
+      hint:"Smoothness is the goal." },
     quiz:{ label:"this question",
-      explain:"One rule answers everything: the small number tells how many notes belong to the tuplet group — and each meter's common tuplet uses the other meter's division count.",
-      play:()=>{MFAudio.tone(48,.3,0,.4);for(let j=0;j<3;j++) MFAudio.tone(76,.11,j*.18,.17);} }
+      explain:"The checklist: ranges ok? spacing within octaves up top? order uncrossed? common tones held? parallels avoided?",
+      play:()=>{[48,64,67,72].forEach(m=>MFAudio.tone(m,.9,.05,.26));} }
   }
 };

@@ -1,298 +1,344 @@
-/* Lesson 70 — 12-Bar Blues Chord Progression (AEMT Book 3, Unit 17)
-   Built from drafts/UNIT 17 – Lesson 70.md; AEMT3 p.110 verified by render.
-   Core: the BLUES has roots in America's south — West African rhythms +
-   gospel singing + European harmonies; found in jazz, rock and pop.
-   A BLUES CHORD PROGRESSION is usually 12 measures ("bars"); the traditional
-   form: I (4 bars) · IV (2) · I (2) · V or V7 (1) · IV (1) · I (2).
+/* Lesson 70 (9.4, formerly L61) — Minor Chord Progressions (AEMT Book 3, Unit 15)
+   Built from drafts/UNIT 15 – Lesson 61.md; AEMT3 p.97 verified by render.
+   Core: i, iv, V(7) contain all the notes of the harmonic minor scale →
+   they accompany minor melodies; V7 often replaces V; smooth version:
+   iv → iv⁶₄ (5th drops an octave), V → V⁶, V7 → V⁶₅; common tones connect
+   neighbors. Smooth pattern: i → iv⁶₄ → i → V⁶₅ → i, bass A-A-A-G♯-A.
+   Root-finding reminders: triads — root on top of the 4th; sevenths — on top of the 2nd.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* build the 12-bar blues, bar by bar */
-function MF_L70_build(container,fb){
-  const FORM=["I","I","I","I","IV","IV","I","I","V7","IV","I","I"];
-  const HINTS=["Four bars of I to start…","…still I…","…still I…","…one more!","Bar 5: the FIRST change — up to…","…two bars of it.","Back to I for two…","…second one.","Bar 9: V or V7!","Bar 10: step down through…","Back to I…","…and done!"];
-  const CH={I:[48,64,67,72], IV:[53,65,69,72], V7:[43,67,71,77]};
-  let k=0; const picked=[];
-  container.innerHTML=`<div class="big-q l70b-q" style="text-align:center"></div>
-    <div class="l70b-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;max-width:420px;margin:10px auto"></div>
-    <div class="choices chips l70b-ch"><button>I</button><button>IV</button><button>V7</button></div>
-    <div style="text-align:center"><button class="play l70b-play" style="display:none">▶ Play YOUR 12-bar blues</button></div>`;
-  const q=container.querySelector(".l70b-q"), grid=container.querySelector(".l70b-grid"), ch=container.querySelector(".l70b-ch"), pl=container.querySelector(".l70b-play");
-  function drawGrid(){
-    grid.innerHTML="";
-    FORM.forEach((f,i)=>{
-      const cell=document.createElement("div");
-      cell.style.cssText="border:2px solid "+(i<picked.length?"#3a9b57":"#cdd5e1")+";border-radius:8px;padding:8px 2px;text-align:center;font-weight:800;background:"+(i===picked.length?"#fff7df":"#fff");
-      cell.textContent=(i+1)+": "+(i<picked.length?picked[i]:"?");
-      grid.appendChild(cell);
-    });
-  }
+/* common-tone finder in A minor */
+function MF_L70_common(container,fb){
+  const ROUNDS=[
+    {a:{name:"i (A-C-E)", ps:["A3","C4","E4"]}, b:{name:"iv (D-F-A)", ps:["D4","F4","A4"]}, shared:"A",
+      expl:"A is i's root and iv's 5th — hold it while the other voices step."},
+    {a:{name:"i (A-C-E)", ps:["A3","C4","E4"]}, b:{name:"V (E-G♯-B)", ps:["E4","G#4","B4"]}, shared:"E",
+      expl:"E is i's 5th and V's root — the hinge of every minor cadence."},
+    {a:{name:"i (A-C-E)", ps:["A3","C4","E4"]}, b:{name:"V7 (E-G♯-B-D)", ps:["E4","G#4","B4","D5"]}, shared:"E",
+      expl:"V7 keeps the same hinge — plus D, the 7th that leans toward C."}];
+  let r=0;
+  container.innerHTML=`<div class="big-q l61c-q" style="text-align:center"></div>
+    <div class="l61c-staff"></div>
+    <div style="text-align:center"><button class="play l61c-hear">▶ Hear both chords</button></div>`;
+  const q=container.querySelector(".l61c-q"), holder=container.querySelector(".l61c-staff"), hear=container.querySelector(".l61c-hear");
   function ask(){
-    drawGrid();
-    if(k>=FORM.length){ q.textContent="Excellent! Your 12-bar blues is complete. Listen to your progression!"; ch.style.display="none"; pl.style.display="inline-block"; return; }
-    q.innerHTML=`Bar ${k+1} of 12 — <i>${HINTS[k]}</i>`;
+    if(r>=ROUNDS.length){ q.textContent="Great! You found every common tone."; holder.innerHTML=""; hear.style.display="none"; return; }
+    const R=ROUNDS[r];
+    q.innerHTML=`${R.a.name} then ${R.b.name}: tap the note <b>shared by both chords</b>.`;
+    const notes=[...R.a.ps.map((p,ix)=>ix===0?{p,d:"w",label:R.a.name.split(" ")[0]}:{p,d:"w",chord:true}),
+                 ...R.b.ps.map((p,ix)=>ix===0?{p,d:"w",label:R.b.name.split(" ")[0]}:{p,d:"w",chord:true})];
+    const bStart=R.a.ps.length;
+    Staff.render(holder,{clef:"treble",notes,width:420,clickNotes:true,
+      onNote:(i,p)=>{
+        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
+        if(i<bStart){ fb(false,"Tap inside the SECOND chord."); return; }
+        if(p[0]===ROUNDS[r].shared){ MFAudio.yay(); fb(true,`✓ ${ROUNDS[r].shared} is the common tone. ${ROUNDS[r].expl}`);
+          r++; setTimeout(ask,1500); }
+        else fb(false,`${p[0].replace("#","♯")} appears only in the second chord. Compare the spellings letter by letter.`);
+      }});
   }
-  [...ch.children].forEach(b=>b.onclick=()=>{
-    if(k>=FORM.length) return;
-    if(b.textContent===FORM[k]){
-      CH[b.textContent].forEach(m=>MFAudio.tone(m,.7,.05,.26));
-      picked.push(b.textContent); k++;
-      fb(true,`✓ Great! Bar ${k}: ${picked[k-1]}. ${k===12?"Pattern complete!":"Keep building the progression."}`);
-      ask();
-    } else { MFAudio.tone(40,.2); fb(false,`Which chord belongs in bar ${k+1}? The pattern: I×4, IV×2, I×2, V7×1, IV×1, I×2.`); }
-  });
-  pl.onclick=()=>{
-    picked.forEach((f,i)=>CH[f].forEach(m=>MFAudio.tone(m,.75,i*.8,.26)));
-    setTimeout(()=>fb(true,"✓ Twelve bars of blues — one of the most common progressions in popular music, built by you."),9800);
+  hear.onclick=()=>{
+    const R=ROUNDS[r]; if(!R) return;
+    R.a.ps.forEach(p=>MFAudio.tone(MFAudio.midi(p),.9,0,.32));
+    R.b.ps.forEach(p=>MFAudio.tone(MFAudio.midi(p),1.1,1.0,.32));
   };
   ask();
 }
 
-/* the 12-bar blues as it is REALLY played: a boogie-woogie shuffle —
-   walking bass (1-3-5-6-b7-6-5-3, swung eighths) under backbeat chord stabs */
-function MF_L70_shuffle(host){
-  const FORM=["I","I","I","I","IV","IV","I","I","V","IV","I","I"];
-  const COL={I:["#e3f0fb","#8fbce0"],IV:["#f8e0e0","#dc9a9a"],V:["#dcecd6","#94c384"]};
-  const ROOT={I:36,IV:41,V:43};                                 /* boogie bass root: C2, F2, G2 */
-  const WALK=[0,4,7,9,10,9,7,4];                                /* 1-3-5-6-b7-6-5-3 */
-  const COMP={I:[64,67,70,74],IV:[65,69,72,75],V:[67,71,74,77]}; /* dominant comp voicings */
-  const BPM=132, beat=60/BPM, BAR=beat*4, sw=beat*2/3;           /* swung eighths */
-  host.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;max-width:360px;margin:0 auto">${
-    FORM.map((s,i)=>`<span data-b="${i}" style="background:${COL[s][0]};border:1.5px solid ${COL[s][1]};border-radius:6px;padding:12px 0;text-align:center;font-weight:800;font-size:17px;color:#243244;transition:transform .12s,box-shadow .12s">${s}<sup style="font-size:.62em">7</sup></span>`).join("")
-  }</div>
-  <div style="text-align:center;margin-top:14px"><button class="play" id="l70shuffleBtn">\u{25B6} Play the blues shuffle</button></div>`;
-  const cells=[...host.querySelectorAll("[data-b]")], btn=host.querySelector("#l70shuffleBtn");
-  btn.onclick=()=>{
-    btn.disabled=true;
-    FORM.forEach((sym,i)=>{
-      const t0=i*BAR;
-      WALK.forEach((off,e)=>{ const t=t0+(e>>1)*beat+((e&1)?sw:0); MFAudio.tone(ROOT[sym]+off, beat*0.44, t, .32); });
-      [beat, beat*3].forEach(ht=>COMP[sym].forEach(m=>MFAudio.tone(m, beat*0.5, t0+ht, .18)));
-      setTimeout(()=>{ cells.forEach(x=>{x.style.boxShadow="";x.style.transform="";}); const c=cells[i]; if(c){ c.style.boxShadow="0 0 0 3px rgba(79,124,255,.55)"; c.style.transform="translateY(-2px)"; } }, i*BAR*1000);
-    });
-    setTimeout(()=>{ cells.forEach(x=>{x.style.boxShadow="";x.style.transform="";}); btn.disabled=false; }, FORM.length*BAR*1000+200);
-  };
+/* smooth-or-choppy compare in A minor */
+function MF_L70_smooth(container,fb){
+  let hA=false,hB=false;
+  const CHOPPY=[[45,60,64,69],[50,62,65,69],[45,60,64,69],[52,64,68,71,74],[45,60,64,69]];
+  const SMOOTH=[[45,60,64,69],[45,62,65,69],[45,60,64,69],[44,64,68,71,74],[45,60,64,69]];
+  function playProg(rows){ rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.05,.27))); }
+  container.innerHTML=`<div class="big-q" style="text-align:center">Listen to both examples. Which bass line sounds smoother?</div>
+    <div style="text-align:center">
+      <button class="play l61-a">▶ Version A (all root position)</button>
+      <button class="play l61-b">▶ Version B (with inversions)</button></div>
+    <div class="choices l61-ch" style="display:none"><button>Version B — the bass stays near the tonic</button><button>Version A — big leaps flow better</button></div>`;
+  const ch=container.querySelector(".l61-ch");
+  container.querySelector(".l61-a").onclick=()=>{ playProg(CHOPPY); hA=true; if(hB) setTimeout(()=>ch.style.display="",5600); };
+  container.querySelector(".l61-b").onclick=()=>{ playProg(SMOOTH); hB=true; if(hA) setTimeout(()=>ch.style.display="",5600); };
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    if(i===0) fb(true,"✓ Version B used iv⁶₄ and V⁶₅: the bass sang A-A-A-G♯-A — barely moving, with the leading tone as its only step. Same chords as version A, completely different flow.");
+    else fb(false,"Follow only the LOWEST voice: A→D→A→E→A versus A→A→A→G♯→A. Which is smoother?");
+  });
 }
 
-LESSON_CONTENT[70]={
-  welcome:"The 12-bar blues: one pattern, thousands of songs. \u{1F3B7}",
+/* build-a-smooth-minor-progression */
+function MF_L70_build(container,fb){
+  const SLOTS=[
+    {q:"Slot 2 — the iv chord. Which position keeps the bass ON A (the common tone with i)?",
+      choices:["iv⁶₄ (A-D-F)","iv root position (D-F-A)"], right:0,
+      expl:"Drop the iv chord's 5th (A) an octave — 2nd inversion, bass unchanged."},
+    {q:"Slot 4 — the V7 chord. Which position lets the bass slide a half step to the leading tone?",
+      choices:["V⁶₅ (G♯-B-D-E)","V7 root position (E-G♯-B-D)"], right:0,
+      expl:"1st inversion puts G♯ — the leading tone — in the bass: A to G♯ to A, the tightest walk in music."}];
+  let s=0;
+  container.innerHTML=`<div class="big-q l61b-q" style="text-align:center"></div>
+    <div class="l61b-map" style="text-align:center;font-weight:800;font-size:15px;letter-spacing:1px;margin:8px 0"></div>
+    <div class="choices l61b-ch"></div>
+    <div style="text-align:center"><button class="play l61b-play" style="display:none">▶ Play YOUR smooth minor progression</button></div>`;
+  const q=container.querySelector(".l61b-q"), map=container.querySelector(".l61b-map"), ch=container.querySelector(".l61b-ch"), pl=container.querySelector(".l61b-play");
+  const picked=[];
+  function drawMap(){ map.textContent="i → "+(picked[0]||"?")+" → i → "+(picked[1]||"?")+" → i"; }
+  function ask(){
+    drawMap();
+    if(s>=SLOTS.length){ q.textContent="Great! Listen to your progression."; ch.innerHTML=""; pl.style.display="inline-block"; return; }
+    q.innerHTML=SLOTS[s].q; ch.innerHTML="";
+    SLOTS[s].choices.forEach((c,i)=>{
+      const b=document.createElement("button"); b.textContent=c;
+      b.onclick=()=>{
+        if(i===SLOTS[s].right){ MFAudio.yay(); picked.push(c.split(" ")[0]); fb(true,"✓ "+SLOTS[s].expl); s++; setTimeout(ask,1300); }
+        else { MFAudio.tone(40,.2); fb(false,"That version makes the bass LEAP. Keep it on or next to A."); }
+      };
+      ch.appendChild(b);
+    });
+  }
+  pl.onclick=()=>{
+    const rows=[[45,60,64,69],[45,62,65,69],[45,60,64,69],[44,64,68,71,74],[45,60,64,69]];
+    rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.05,.27)));
+    setTimeout(()=>fb(true,"✓ i → iv⁶₄ → i → V⁶₅ → i — bass line A-A-A-G♯-A: smooth voice leading."),5400);
+  };
+  ask();
+}
+
+LESSON_CONTENT[70]={stackFigures:true,
+  welcome:"Minor chord progressions — with smooth voice leading. \u{1F32B}\u{FE0F}",
   hook:{
-    say:"<b>Many blues, rock, and jazz songs use the same chord pattern.</b> Listen to these twelve bars. <b>Can you recognize the 12-bar blues?</b>",
+    say:"<b>Both examples use the same chord progression.</b> Listen carefully. <b>Which one has the smoother bass line?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play the 12 bars</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Yes — it's the famous BLUES progression</button><button>No — it's a classical symphony pattern</button><button>No — it sounds brand new</button></div>`;
-        const CH={I:[48,64,67,70],IV:[53,69,72,75],V7:[43,67,71,77]}; /* dominant 7ths on every chord — THE blues sound */
-        const BASS={I:36,IV:41,V7:43};
-        const PROG=["I","I","I","I","IV","IV","I","I","V7","IV","I","I"], BAR=0.85;
+          <button class="play hk-a">▶ Version A</button>
+          <button class="play hk-b">▶ Version B</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Version B — inversions keep the bass close to the tonic</button><button>Version B changed to a major key</button><button>Version B skipped the V7 chord</button></div>`;
+        const A=[[45,60,64,69],[50,62,65,69],[52,64,68,71],[45,60,64,69]];
+        const B=[[45,60,64,69],[45,62,65,69],[44,64,68,71],[45,60,64,69]];
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{
-          PROG.forEach((sym,i)=>{
-            const t=i*BAR;
-            CH[sym].forEach(m=>MFAudio.tone(m,BAR*.9,t,.24)); /* ONE held chord per bar → exactly 12 bars, 12 chords */
-            MFAudio.tone(BASS[sym],BAR*.9,t,.30);
-          });
-          setTimeout(()=>ch.style.display="", PROG.length*BAR*1000+400);
-        };
+        let hA=false,hB=false;
+        const play=rows=>rows.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.27)));
+        container.querySelector(".hk-a").onclick=()=>{ play(A); hA=true; if(hB) setTimeout(()=>ch.style.display="",4300); };
+        container.querySelector(".hk-b").onclick=()=>{ play(B); hB=true; if(hA) setTimeout(()=>ch.style.display="",4300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ The 12-BAR BLUES — born in America's south from West African rhythms, gospel singing and European harmonies, and used in jazz, rock and pop. Today you learn its pattern!");
-          else fb(false,"Think of old rock'n'roll, boogie-woogie piano, jazz jams… this chord pattern is everywhere.");
+          if(i===0) fb(true,"✓ Version B used inversions for iv and V, so the bass moved A-A-G♯-A instead of leaping A-D-E-A — a smoother bass line and better voice leading.");
+          else fb(false,"Both versions used the same chords. Listen again and follow only the LOWEST voice.");
         });
       } }
   },
   objectives:[
-    "Know where the blues began: the southern United States — West African rhythms + gospel + European harmonies",
-    "Know where it lives now: jazz, rock and pop",
-    "Define the form: 12 measures ('bars')",
-    "Know the traditional pattern: I×4 · IV×2 · I×2 · V(7)×1 · IV×1 · I×2",
-    "Build a 12-bar blues in C (and transfer to other keys)",
-    "Use only I, IV and V(7)"
+    "Accompany minor melodies with i, iv and V(7) — they hold the whole scale",
+    "Swap V7 in place of V, exactly as in major",
+    "Smooth the progression: iv → iv⁶₄ and V → V⁶, V7 → V⁶₅",
+    "Track the bass line: A - A - A - G♯ - A",
+    "Keep common tones between neighboring chords",
+    "Recall the root-finder tricks: top of the 4th (triads), top of the 2nd (sevenths)"
   ],
   steps:[
-    { say:"<b>The Blues:</b> Blues music began in the southern United States. It combines <b>West African rhythms, gospel singing, and European harmony</b>. Today, blues influences jazz, rock, and pop music. \u{1F447} <b>Blues music combines which musical traditions?</b>",
-      try:{ type:"mc", choices:["West African rhythms + gospel singing + European harmonies","A single European composer","Electronic dance music"], answer:0,
-        success:"✓ Three traditions met in the American south and built a musical language the whole world now speaks.",
-        fail:"Three traditions combined…",
-        hint:"Rhythms + singing + harmonies." } },
-    { say:"<b>The 12-Bar Blues:</b> A traditional blues progression lasts <b>12 measures (bars)</b>. It mainly uses three chords: <b>I, IV, and V (or V7)</b>. \u{1F447} <b>How many measures are in a standard blues progression?</b>",
-      try:{ type:"mc", choices:["12 bars","8 bars","16 bars"], answer:0,
-        success:"✓ Twelve — hence the name. And those twelve bars loop, verse after verse.",
-        fail:"The lesson's title has the number…",
-        hint:"It's in the name." } },
-    { say:"<b>Bars 1–4:</b> The progression begins with <b>four measures of the I chord</b>. \u{1F447} <b>Which chord is played in bars 1–4 of a C blues?</b>",
-      try:{ type:"mc", choices:["C (the I chord)","F (the IV chord)","G7 (the V7)"], answer:0,
-        success:"✓ Four bars of I. (Singers use these bars for the first line of the verse.)",
-        fail:"The progression begins on the tonic…",
-        hint:"The I chord opens the form." } },
-    { say:"<b>Bars 5–8:</b> Bars 5–6 use the <b>IV chord</b>. Bars 7–8 return to the <b>I chord</b>. \u{1F447} <b>When does the first chord change occur?</b>",
-      show:{ type:"html", html:`<div style="text-align:center">
-        <div style="font-weight:800;margin-bottom:8px;color:var(--ink,#333)">12-bar blues</div>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;max-width:340px;margin:0 auto">${
-          [["I","b"],["I","b"],["I","b"],["I","b"],["IV","r"],["IV","r"],["I","b"],["I","b"],["V","g"],["IV","r"],["I","b"],["I","b"]]
-          .map(([n,c])=>{const col={b:["#e3f0fb","#8fbce0"],r:["#f8e0e0","#dc9a9a"],g:["#dcecd6","#94c384"]}[c];
-            return `<span style="background:${col[0]};border:1.5px solid ${col[1]};border-radius:6px;padding:11px 0;font-weight:800;font-size:18px;color:#243244">${n}<sup style="font-size:.62em">7</sup></span>`;}).join("")
-        }</div></div>` },
-      try:{ type:"mc", choices:["Bar 5 — up to IV","Bar 2","Bar 9"], answer:0,
-        success:"✓ Bar 5 — after four bars of I, the progression moves to IV.",
-        fail:"Count the four bars of I first…",
-        hint:"After the long opening." } },
-    { say:"<b>Bars 9–12:</b> Bar 9 uses <b>V (or V7)</b>. Bar 10 moves to <b>IV</b>. Bars 11–12 return to <b>I</b>. <b>Remember: the chord pattern stays the same. Only the key changes.</b> \u{1F447} <b>Which chord comes after V?</b>",
-      try:{ type:"mc", choices:["IV","I","V"], answer:0,
-        success:"✓ IV — unlike a classical cadence (V→I), the blues steps V DOWN to IV before landing home. That's the blues sound!",
-        fail:"Bar 9 is V; bar 10 steps DOWN to…",
-        hint:"V, then IV, then I." } },
-    { say:"Build a complete 12-bar blues progression in C major. \u{1F447}",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:13px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">Bar</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">1</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">2</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">3</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">4</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">5</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">6</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">7</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">8</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">9</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">10</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">11</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:4px 7px">12</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 7px;font-weight:800">Chord</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">IV</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">IV</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">V7</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">IV</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td><td style="border:1.5px solid #cdd5e1;padding:4px 7px;text-align:center;font-weight:800">I</td></tr></table>` },
+    { say:"<b>Primary Chords in Minor:</b> The <b>i, iv, and V</b> chords contain all the notes of the <b>harmonic minor scale</b>. These three chords can accompany many simple melodies. <b>V7</b> is also commonly used instead of <b>V</b>. \u{1F447} <b>Which notes do i, iv, and V contain in A minor?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"iv"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"E4",d:"w",label:"V"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:440} },
+      try:{ type:"mc", choices:["All seven: A-C-E + D-F-A + E-G♯-B","Only the white keys","Only five notes"], answer:0,
+        success:"✓ A, B, C, D, E, F, G♯ — the complete harmonic minor. Any melody note has a chord waiting.",
+        fail:"List them: i gives A,C,E; iv adds D,F; V adds B and G♯…",
+        hint:"Count the distinct letters." } },
+    { say:"<b>Why Use Inversions?</b> If every chord stays in <b>root position</b>, the bass makes large leaps. Using inversions creates a <b>smoother bass line</b>. \u{1F447} <b>Which example has the smoother bass line?</b>",
       try:{ type:"custom",
-        hint:"I×4 · IV×2 · I×2 · V7×1 · IV×1 · I×2.",
+        hint:"Track only the lowest voice.",
+        mount:(container,fb)=>MF_L70_smooth(container,fb) } },
+    { say:"<b>Creating a Smooth Progression:</b> Using inversions keeps the bass close to the tonic: <b>iv → iv⁶₄ · V → V⁶ · V7 → V⁶₅</b>. \u{1F447} <b>Why does iv⁶₄ help create a smoother bass line?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"D4",d:"w",label:"iv"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"iv⁶₄"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
+        {p:"E4",d:"w",label:"V7"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
+        {p:"G#3",d:"w",label:"V⁶₅"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:580} },
+      try:{ type:"mc", choices:["Its 5th is the tonic (A), so the bass can stay in place","It makes the chord louder","It removes the minor quality"], answer:0,
+        success:"✓ iv's 5th = A = the common tone with i. Drop it to the bass and i → iv⁶₄ happens without the floor shifting an inch.",
+        fail:"What NOTE is the 5th of D-F-A? And what key are we in?",
+        hint:"The dropped note becomes the bass — you want it to be the tonic." } },
+    { say:"<b>Common Tones:</b> Find the notes shared by neighboring chords. \u{1F447}",
+      try:{ type:"custom",
+        hint:"Compare spellings letter by letter.",
+        mount:(container,fb)=>MF_L70_common(container,fb) } },
+    { say:"<b>A Smooth Minor Progression:</b> i → iv⁶₄ → i → V⁶ (or V⁶₅) → i. The bass moves <b>A → A → A → G♯ → A</b>. Each pair of neighboring chords shares at least one common tone. <b>Remember: smooth voice leading keeps common tones in the same voice and moves the other notes by the shortest distance.</b> \u{1F447} <b>What happens in the bass during V⁶₅?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"iv⁶₄"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"G#3",d:"w",label:"V⁶₅"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{bar:"final"}],width:620} },
+      try:{ type:"mc", choices:["It slides a half step down to the leading tone, then home","It leaps a 5th","It stays on A"], answer:0,
+        success:"✓ A → G♯ → A: the leading tone in the BASS — the single most magnetic bass move a minor key owns.",
+        fail:"G♯ is not A… but it's very, very close.",
+        hint:"Half step down, half step back." } },
+    { say:"Arrange the chords to create the smoothest bass line. \u{1F447}",
+      try:{ type:"custom",
+        hint:"Keep the bass on A or a half step away.",
         mount:(container,fb)=>MF_L70_build(container,fb) } },
-    { say:"<b>Try Another Key:</b> Use the same pattern in G major. \u{1F447} <b>Which three chords are used?</b>",
-      try:{ type:"mc", choices:["G, C and D7","G, A and B7","C, F and G7"], answer:0,
-        success:"✓ I=G, IV=C, V7=D7. The chord pattern stays the same — only the key changes.",
-        fail:"Find I, IV and V of G major…",
-        hint:"Count up 4 and 5 from G." } }
+    { say:"<b>Finding the Root:</b> In close position, a triad's root is the <b>upper note of the 4th</b>; a V7 chord's root is the <b>upper note of the 2nd</b>. \u{1F447} <b>In G♯–B–D–E, where is the root?</b>",
+      try:{ type:"mc", choices:["E — the top of the 2nd (D-E)","G♯ — the bass is always the root","B — the middle"], answer:0,
+        success:"✓ D→E is the 2nd; its upper note E is the root — this is E7 (V7 of A minor) in 1st inversion, our V⁶₅.",
+        fail:"Find two neighbors a 2nd apart inside G♯-B-D-E…",
+        hint:"Lesson 53's crunch-pair trick." } }
   ],
   examples:[
-    { caption:"Now hear it the way it is really played — a boogie-woogie <b>shuffle</b>: a walking bass in the left hand under chord stabs on the backbeat, all over the same 12-bar I-IV-V form. Watch each bar light up as it plays.",
-      mount:(host)=>MF_L70_shuffle(host) }
+    { caption:"The CHOPPY version: i-iv-i-V7-i in root position. Honest, but hear the bass leap around: A, D, A, E, A.",
+      staff:{clef:"treble",tempo:70,notes:[
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"iv"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"E4",d:"w",label:"V7"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{bar:"final"}],width:620},
+      kb:{start:57,octaves:1.5833,labels:true} },
+    { caption:"The SMOOTH version: i-iv⁶₄-i-V⁶₅-i. The bass moves A-A-A-G♯-A while the common tones stay in place. The same chords — a much smoother bass line.",
+      staff:{clef:"treble",tempo:70,notes:[
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"iv⁶₄"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"G#3",d:"w",label:"V⁶₅"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true},
+        {p:"A3",d:"w",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{bar:"final"}],width:620},
+      kb:{start:53,octaves:1,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Blues Pattern Sprint (45s)",
-      intro:"Bars, origins, chords — race everything 12-bar!",
-      miaIntro:"I, IV, V7 — twelve seats! \u{26A1}",
-      spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["The blues' roots","America's south"],
-        ["Its three ingredients","West African rhythms + gospel + European harmonies"],
-        ["Where it lives today","jazz, rock and pop"],
-        ["Length of a blues progression","12 measures (bars)"],
-        ["Bars 1-4","the I chord"],
-        ["Bars 5-6","the IV chord"],
-        ["Bar 9","V or V7"],
-        ["Bar 10","IV — after the V"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — pattern memorized!":null },
-    { type:"key-climb", title:"Game 2 · Blues Bass Walk",
-      intro:"Play the ROOT of each of the 12 bars — the bass player's night at work!",
-      miaIntro:"C-C-C-C, F-F, C-C, G-F, C-C! \u{1FA9C}",
-      spec:{seq:[48,48,48,48, 53,53, 48,48, 55,53, 48,48],
-        names:["C (bar 1)","C (2)","C (3)","C (4)","F (5 — first change!)","F (6)","C (7)","C (8)","G (9 — the V bar!)","F (10 — step down)","C (11)","C (12 — done!)"],
-        start:48, octaves:0.9167, title:"The 12-bar bass roots, in order"},
-      result:(score)=>score!==null?"Twelve bars walked — hired for the gig!":null },
-    { type:"symbol-hunt", title:"Game 3 · Blues Chord Spotter",
-      intro:"The three chords of a C blues — click the bar's chord when called!",
-      miaIntro:"Just three chords to know! \u{1F440}",
+    { type:"gen-race", title:"Game 1 · Minor Toolkit Sprint (45s)",
+      intro:"Inversions and figures — the tools that power smooth minor progressions!",
+      miaIntro:"Everything from Units 13-15! \u{1F9F0}",
+      spec:{gen:"inversion-id", params:{subject:"both", ask:"both"}, seconds:45},
+      result:(score)=>score>=8?score+" — toolkit razor-sharp!":null },
+    { type:"key-climb", title:"Game 2 · Smooth Minor Climb",
+      intro:"Play the smooth progression chord by chord: i, iv⁶₄, V⁶₅, i!",
+      miaIntro:"Feel the A→G♯→A magnet! \u{1FA9C}",
+      spec:{seq:[57,60,64, 57,62,65, 56,59,62,64, 57,60,64],
+        names:["A (i: bass)","C","E","A (iv⁶₄: same bass!)","D","F","G♯ (V⁶₅: leading tone!)","B","D","E","A (home)","C","E"],
+        start:56, octaves:0.75, title:"i → iv⁶₄ → V⁶₅ → i in A minor"},
+      result:(score)=>score!==null?"You played the smooth progression!":null },
+    { type:"symbol-hunt", title:"Game 3 · Minor Progression Spotter",
+      intro:"The four chords of the smooth minor progression — click what's called!",
+      miaIntro:"Know your minor cast! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"I (C-E-G) — bars 1-4, 7-8, 11-12", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"IV (F-A-C) — bars 5-6 and 10", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
-        {label:"V7 (G-B-D-F) — bar 9", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:150}},
-        {label:"V (G-B-D) — bar 9's other option", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"Three chords, twelve bars, zero doubts!":null },
-    { type:"order-tap", title:"Game 4 · Assemble the Pattern",
-      intro:"Tap the six segments of the 12-bar blues in order!",
-      miaIntro:"Six segments, in order! \u{1F3C1}",
-      spec:{sequence:["I — four bars","IV — two bars","I — two bars","V(7) — one bar","IV — one bar","I — two bars"],
-        title:"The traditional 12-bar blues, segment by segment"},
-      result:(stars)=>stars>=2?"The 12-bar pattern is yours!":null }
+        {label:"i (A-C-E)", spec:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:150}},
+        {label:"iv⁶₄ (A-D-F)", spec:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}},
+        {label:"V⁶₅ (G♯-B-D-E)", spec:{clef:"treble",notes:[{p:"G#3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:150}},
+        {label:"V⁶ (G♯-B-E)", spec:{clef:"treble",notes:[{p:"G#3",d:"w"},{p:"B3",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"Cast memorized — minor-key director!":null },
+    { type:"term-race", title:"Game 4 · Minor-Progression Race",
+      intro:"Inversions, the bass line and common tones — at speed!",
+      miaIntro:"A-A-A-G♯-A forever! \u{1F3C1}",
+      spec:{rounds:8, reverse:true, pool:[
+        ["Smooth minor formula","i → iv⁶₄ → i → V⁶₅ → i"],
+        ["The smooth bass line","A - A - A - G♯ - A"],
+        ["iv⁶₄","iv with its 5th (the tonic!) in the bass"],
+        ["V⁶₅ in minor","V7 with the leading tone in the bass"],
+        ["Common tone of i and iv","A"],
+        ["Common tone of i and V","E"],
+        ["Root of a flipped triad","top of the 4th"],
+        ["Root of a flipped V7","top of the 2nd"]]},
+      result:(score)=>score>=6?"Smooth voice leading is second nature!":null }
   ],
-  practiceIntro:"20 practice questions — the map, the history and the transfers. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — inversions, common tones and the bass line. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["12 bars","the blues' usual length"],["Bars 1-4","I"],["Bars 5-6","IV"],["Bars 7-8","I again"],["Bar 9","V or V7"],["Bar 10","IV"],["Bars 11-12","I — home"]], reverse:true}, count:6 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
-    { type:"mc", q:"Where did blues music begin?", choices:["The southern United States","Northern Europe","Ancient Greece"], answer:0,
-      explain:"Where three musical traditions met." },
-    { type:"mc", q:"Which musical traditions influenced the blues?", choices:["West African rhythms, gospel singing, European harmonies","Asian scales and electronic beats","Opera and plainchant"], answer:0,
-      explain:"Three traditions, one style." },
-    { type:"mc", q:"The blues can often be found in…", choices:["jazz, rock and pop","only opera","only folk dances"], answer:0,
-      explain:"It crossed into nearly every popular style." },
-    { type:"mc", q:"A blues chord progression is usually…", choices:["12 measures long","4 measures long","32 measures long"], answer:0,
-      explain:"Twelve bars — the name says it." },
-    { type:"mc", q:"How many bars of I open the traditional blues?", choices:["4","2","1"], answer:0,
-      explain:"The long settle-in." },
-    { type:"mc", q:"Which chord is played in bar 9?", choices:["V or V7","IV","I"], answer:0,
-      explain:"One bar of the dominant." },
-    { type:"truefalse", q:"The traditional blues uses only the I, IV and V(7) chords.", answer:true,
-      explain:"Three chords, endless songs." },
-    { type:"truefalse", q:"Bar 10 uses the IV chord after bar 9's V (or V7).", answer:true,
-      explain:"V → IV → I — a signature blues move." },
-    { type:"truefalse", q:"There are many variations of the blues progression.", answer:true,
-      explain:"Ours is the traditional version." },
-    { type:"truefalse", q:"A 12-bar blues in F uses F, B♭ and C7.", answer:true,
-      explain:"I=F, IV=B♭, V7=C7." }
+    { gen:"inversion-id", params:{subject:"both", ask:"both"}, count:5 },
+    { gen:"term-match", params:{subject:"term", pool:[["i iv V in minor","they hold the whole harmonic minor scale"],["iv⁶₄","bass stays on the tonic"],["V⁶₅","leading tone in the bass"],["Common tone","the note two chords share"],["Smooth bass in A minor","A-A-A-G♯-A"]], reverse:true}, count:4 },
+    { type:"mc", q:"Why can i, iv, and V accompany many minor melodies?", choices:["They contain all the notes of the harmonic minor scale","They are the loudest chords","They avoid the leading tone"], answer:0,
+      explain:"Every scale note lives in one of the three." },
+    { type:"mc", q:"Why is iv often changed to iv⁶₄?", choices:["So the bass can stay on the tonic (A)","To make the chord louder","To change the key"], answer:0,
+      explain:"The 5th of iv is the tonic — in 2nd inversion it becomes the bass." },
+    { type:"mc", q:"Why is V7 often changed to V⁶₅?", choices:["So the leading tone (G♯) is in the bass, a half step from the tonic","To remove the 7th","To make the chord quieter"], answer:0,
+      explain:"E-G♯-B-D → G♯-B-D-E: the leading tone takes the bass." },
+    { type:"mc", q:"What is the smooth bass line for this progression? (i → iv⁶₄ → i → V⁶₅ → i)", choices:["A-A-A-G♯-A","A-D-A-E-A","A-C-E-G♯-A"], answer:0,
+      explain:"Two common-tone basses and one half-step move." },
+    { type:"mc", q:"The common tone between i and V in A minor is…", choices:["E","A","G♯"], answer:0,
+      explain:"i's 5th = V's root." },
+    { type:"truefalse", q:"V7 is often used in place of V in minor progressions.", answer:true,
+      explain:"Same swap as in major keys." },
+    { type:"truefalse", q:"All-root-position minor progressions sound smoother than inverted ones.", answer:false,
+      explain:"Root-only = leaping bass = choppy." },
+    { type:"truefalse", q:"In close position, a flipped triad's root is the upper note of the 4th.", answer:true,
+      explain:"Rearrange into 3rds — the root is the top note of the 4th." },
+    { type:"truefalse", q:"In close position, a flipped V7's root is the upper note of the 2nd.", answer:true,
+      explain:"Find the crunch pair, take its top." },
+    { type:"mc", q:"In D minor, the smooth bass line of i → iv⁶₄ → i → V⁶₅ → i would be…", choices:["D-D-D-C♯-D","D-G-D-A-D","D-F-A-C♯-D"], answer:0,
+      explain:"Same shape, new tonic: the leading tone is C♯." }
   ],
-  miaQuizIntro:"Quiz! Twelve bars, six segments, three chords.",
+  miaQuizIntro:"Quiz! Common tones stay in place; the leading tone moves by half step.",
   quiz:[
-    { type:"mc", q:"Where did blues music begin?", choices:["The southern United States","Vienna","The Baroque courts"], answer:0,
-      explain:"The southern United States.", hint:"Its birthplace." },
-    { type:"mc", q:"Which musical traditions helped create the blues?", choices:["West African rhythms, gospel singing, European harmonies","Baroque figures, waltzes, marches","Plainchant, opera, ragtime"], answer:0,
-      explain:"Three traditions combined.", hint:"Rhythm + voice + harmony." },
-    { type:"mc", q:"A blues chord progression is usually how long?", choices:["12 measures","8 measures","24 measures"], answer:0,
-      explain:"Hence '12-bar blues.'", hint:"The title." },
-    { type:"mc", q:"The traditional blues opens with…", choices:["four bars of the I chord","four bars of V7","two bars of IV"], answer:0,
-      explain:"Four bars of the tonic.", hint:"The longest segment." },
-    { type:"mc", q:"Bars 5 and 6 carry…", choices:["the IV chord","the V chord","the ii chord"], answer:0,
-      explain:"The first change, two bars of it.", hint:"Up a 4th from I." },
-    { type:"mc", q:"Which chord is played in bar 9?", choices:["V or V7","IV","vi"], answer:0,
-      explain:"One bar of the dominant.", hint:"The V chord's moment." },
-    { type:"mc", q:"Immediately after the V(7) bar comes…", choices:["one bar of IV","two bars of V","the final chord immediately"], answer:0,
-      explain:"V → IV → I: the blues' signature order.", hint:"The step-down." },
-    { type:"truefalse", q:"The last two bars of the traditional 12-bar blues are the I chord.", answer:true,
-      explain:"I closes the form — ready to repeat.", hint:"Bars 11-12." },
-    { type:"mc", q:"Complete the 12-bar blues pattern: I×4, IV×2, I×2, ___, ___, I×2.", choices:["V(7)×1, IV×1","IV×1, V×1","V×2, nothing"], answer:0,
-      explain:"Bars 9 and 10 in order.", hint:"V, then IV." },
-    { type:"mc", q:"A 12-bar blues in G uses…", choices:["G, C and D7","G, B and D","C, F and G7"], answer:0,
-      explain:"I=G, IV=C, V7=D7.", hint:"Translate the numerals." },
-    { type:"mc", q:"A 12-bar blues in B♭ uses…", choices:["B♭, E♭ and F7","B♭, C and D7","F, B♭ and C7"], answer:0,
-      explain:"I=B♭, IV=E♭, V7=F7.", hint:"Count up 4 and 5 from B♭." },
-    { type:"mc", q:"Why is the 12-bar blues progression important?", choices:["It is one of the most common progressions in blues, jazz, rock, and pop","It was the first progression ever written","It uses chords no other style has"], answer:0,
-      explain:"Learn one pattern, play a thousand songs.", hint:"Think of how many genres use it." },
+    { type:"mc", q:"The i, iv and V triads can accompany most simple minor melodies because…", choices:["they contain all the notes of the harmonic minor scale","minor melodies use only three notes","they never need inversions"], answer:0,
+      explain:"Seven letters, three chords, full coverage.", hint:"Same argument as Lesson 55, minor edition." },
+    { type:"mc", q:"Which inversion is commonly used for the iv chord?", choices:["2nd inversion (iv⁶₄)","3rd inversion","open position"], answer:0,
+      explain:"Its 5th — the tonic A — drops to the bass.", hint:"Which inversion parks the tonic in the bass?" },
+    { type:"mc", q:"Which inversion is commonly used for the V or V7 chord?", choices:["1st inversion (V⁶ or V⁶₅)","2nd inversion","root position"], answer:0,
+      explain:"The 3rd (the leading tone!) takes the bass.", hint:"G♯ under everything." },
+    { type:"mc", q:"Why is G♯ important in the V⁶₅ chord?", choices:["it's the leading tone — a half step below the tonic","it's the loudest note","it's the chord's root"], answer:0,
+      explain:"The bass itself leans into A.", hint:"What's a half step above G♯?" },
+    { type:"truefalse", q:"There is a common tone between each pair of neighboring chords in the smooth progression.", answer:true,
+      explain:"Each pair of neighboring chords shares a note.", hint:"The common tones you found earlier." },
+    { type:"truefalse", q:"The common tone between i and iv in A minor is E.", answer:false,
+      explain:"It's A (i's root, iv's 5th). E connects i and V.", hint:"Spell both chords." },
+    { type:"mc", q:"Identify this chord in A minor.",
+      staff:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:200},
+      choices:["iv⁶₄ — D minor with A in the bass","iv in root position","i with a wrong note"], answer:0,
+      explain:"D-F-A in 2nd inversion — the tonic (A) is the bass.", hint:"Rearrange into thirds: D-F-A." },
+    { type:"mc", q:"Identify this chord in A minor.",
+      staff:{clef:"treble",notes:[{p:"G#3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:200},
+      choices:["V⁶₅ — E7 with G♯ in the bass","V7 in root position","vii°"], answer:0,
+      explain:"Four notes, 2nd on top (D-E) → root E → E7, 1st inversion.", hint:"Crunch pair D-E; root on top." },
+    { type:"mc", q:"Which bass line shows smooth voice leading?", choices:["A - A - A - G♯ - A","A - D - A - E - A","A - B - C - D - E"], answer:0,
+      explain:"Hold, hold, hold, lean, resolve.", hint:"Almost nothing moves." },
+    { type:"mc", q:"How is the minor progression similar to the major progression?", choices:["It uses the same inversions (iv⁶₄ and V⁶₅) for the same reason — a smooth bass","It requires completely different inversions","It cannot use V7"], answer:0,
+      explain:"iv⁶₄ ↔ IV⁶₄, V⁶₅ ↔ V⁶₅ — one grammar, two moods.", hint:"Compare the two formulas side by side." },
+    { type:"mc", q:"A student writes every chord in root position. How can the progression be made smoother?", choices:["Use iv⁶₄ and V⁶₅ to create smoother bass movement","Play it faster","Remove the V7"], answer:0,
+      explain:"The whole lesson in one sentence.", hint:"Two flips, one glide." },
+    { type:"mc", q:"In E minor, the V⁶₅ chord's bass note would be…", choices:["D♯ (the leading tone of E minor)","B","D"], answer:0,
+      explain:"V7 = B-D♯-F♯-A; 1st inversion puts D♯ in the bass.", hint:"Half step below the tonic E." },
     /* generated */
-    { gen:"term-match", params:{subject:"term", pool:[["I×4","the opening"],["IV×2, I×2","the middle"],["V7, IV","bars 9 and 10"],["I×2","the close"]], reverse:true}, count:3 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:2 },
-    { gen:"inversion-id", params:{subject:"v7", ask:"position"}, count:1 }
+    { gen:"inversion-id", params:{subject:"both", ask:"both"}, count:4 },
+    { gen:"term-match", params:{subject:"term", pool:[["iv⁶₄","tonic in the bass"],["V⁶₅","leading tone in the bass"],["Common tone","the joint's anchor"],["A-A-A-G♯-A","the smooth minor bass"]], reverse:true}, count:2 },
+    { gen:"triad-quality", params:{}, count:2 }
   ],
   vocabulary:[
-    {term:"The Blues", def:"Music born in America's south from West African rhythms, gospel singing and European harmonies — alive today in jazz, rock and pop."},
-    {term:"Bar", def:"Another word for measure — the blues is counted in bars."},
-    {term:"12-Bar Blues Progression", def:`The traditional form — each box is one bar:<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;max-width:152px;margin:8px auto 0">${[["I","b"],["I","b"],["I","b"],["I","b"],["IV","r"],["IV","r"],["I","b"],["I","b"],["V7","g"],["IV","r"],["I","b"],["I","b"]].map(([n,c])=>{const col={b:["#e3f0fb","#8fbce0"],r:["#f8e0e0","#dc9a9a"],g:["#dcecd6","#94c384"]}[c];return `<span style="background:${col[0]};border:1.5px solid ${col[1]};border-radius:4px;padding:4px 0;text-align:center;font-weight:800;font-size:12px;color:#243244">${n}</span>`;}).join("")}</div>`},
-    {term:"The V→IV Descent", def:"Bars 9-10: the dominant steps DOWN through IV before landing home — a signature blues move.",
-      staff:{clef:"treble",notes:[{p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true},{p:"F4",d:"w",label:"IV"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:280}}
+    {term:"Minor Chord Progression", def:"i, iv and V(7) in motion — three chords that hold the entire harmonic minor scale."},
+    {term:"iv⁶₄", def:"The iv chord in 2nd inversion — its 5th (the TONIC note) in the bass.",
+      staff:{clef:"treble",notes:[{p:"A3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:130}},
+    {term:"V⁶₅ (minor key)", def:"V7 in 1st inversion — the LEADING TONE in the bass, a half step under home.",
+      staff:{clef:"treble",notes:[{p:"G#3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"E4",d:"w",chord:true}],width:130}},
+    {term:"The Smooth Bass", def:"A - A - A - G♯ - A: two anchors and one half-step lean — the sound of good minor voice leading."}
   ],
   mistakes:[],
   summary:[
-    "✔ The blues: <b>America's south</b> — West African rhythms + gospel singing + European harmonies → <b>jazz, rock, pop</b>.",
-    "✔ Usually <b>12 measures ('bars')</b> long, with many variations.",
-    "✔ The traditional map: <b>I×4 · IV×2 · I×2 · V(7)×1 · IV×1 · I×2</b>.",
-    "✔ Only <b>three chords</b> — I, IV, V(7) — carry the whole form.",
-    "✔ Translate the numerals and the blues plays in <b>every key</b>."
+    "✔ <b>i, iv, V(7)</b> hold every note of the harmonic minor scale → they accompany minor melodies.",
+    "✔ Smoothing recipe: <b>iv → iv⁶₄</b> (5th = tonic drops to the bass), <b>V → V⁶, V7 → V⁶₅</b> (leading tone takes the bass).",
+    "✔ The formula: <b>i → iv⁶₄ → i → V⁶₅ → i</b>, bass <b>A-A-A-G♯-A</b>.",
+    "✔ A <b>common tone</b> connects every pair of chords (A between i/iv, E between i/V).",
+    "✔ Root-finders still work: triads — <b>top of the 4th</b>; sevenths — <b>top of the 2nd</b>."
   ],
   tips:[
-    "Count bars in groups of four: 'I-I-I-I / IV-IV-I-I / V-IV-I-I.' Twelve becomes easy.",
-    "Play the bass-root walk (Game 2) every day this week — your hands will memorize the form before your head does.",
-    "Listen test: put on early rock'n'roll tonight and count to twelve. You'll catch the pattern within one song.",
-    "Next lesson: the blues' other secret — a special SCALE with three 'blue notes'."
+    "Transpose the glide: in E minor the bass is E-E-E-D♯-E; in D minor, D-D-D-C♯-D. One shape, every minor key.",
+    "That A→G♯→A bass is the DNA of countless laments, tangos and film scores — once you hear it, you'll hear it everywhere.",
+    "Checklist: (1) common tones stay, (2) the bass moves a half step at most, (3) everything else takes the nearest path.",
+    "Next lesson we leave major/minor entirely: eight-note scales with GREEK names — the modes!"
   ],
-  rewards:{ badge:"12-Bar Architect", icon:"\u{1F3B7}" },
+  rewards:{ badge:"Minor Glide Pilot", icon:"\u{1F32B}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! Twelve bars, zero mistakes — the bandstand awaits. \u{1F3B7}\u{1F389}",
-  miaPass:"Passed! The 12-bar pattern is yours. Next: the blues SCALE…",
+  miaPerfect:"PERFECT! Your minor progressions breathe like a cellist's bow. \u{1F32B}\u{FE0F}\u{1F389}",
+  miaPass:"Passed! The A-G♯-A magnet is in your hands now. Greek scales next…",
   mia:{
     hook:{ label:"the welcome",
-      explain:"That was the traditional 12-bar blues: I×4, IV×2, I×2, V7, IV, I×2 — the most reused progression in popular music.",
-      play:()=>{const F=[[48,64,67,70],[53,69,72,75],[48,64,67,70],[43,67,71,77],[53,69,72,75],[48,64,67,70]];F.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.7,i*.75,.26)));} },
-    learn:{ label:"the 12-bar blues",
-      explain:"Born in America's south (African rhythms + gospel + European harmony). 12 bars: I×4, IV×2, I×2, V(7), IV, I×2 — three chords total.",
-      hint:"4-2-2-1-1-2.",
-      play:()=>{[48,64,67,72].forEach(m=>MFAudio.tone(m,.8,0,.26));[53,65,69,72].forEach(m=>MFAudio.tone(m,.8,.9,.26));[43,67,71,77].forEach(m=>MFAudio.tone(m,.8,1.8,.26));} },
-    example:{ label:"the shuffle",
-      explain:"This is the real thing — a boogie-woogie shuffle: a walking bass under backbeat chord stabs, all over the same 12-bar I-IV-V form.",
-      play:()=>{const b=document.getElementById("l70shuffleBtn"); if(b)b.click();} },
+      explain:"Both versions were i-iv-V7-i in A minor. Version B flipped iv and V7 so the bass walked A-A-G♯-A instead of leaping A-D-E-A.",
+      play:()=>{const B=[[45,60,64,69],[45,62,65,69],[44,64,68,71],[45,60,64,69]];B.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.27)));} },
+    learn:{ label:"minor progressions",
+      explain:"i-iv-V(7) cover the harmonic minor scale. Smooth them: iv⁶₄ keeps the tonic bass; V⁶₅ puts the leading tone under everything. Bass: A-A-A-G♯-A.",
+      hint:"Common tones stay; the leading tone moves by half step.",
+      play:()=>{[[45,60,64,69],[45,62,65,69],[45,60,64,69],[44,64,68,71,74],[45,60,64,69]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.25)));} },
+    example:{ label:"the examples",
+      explain:"Example 1 is the leaping root-position version; example 2 is the smooth rewrite with the stepwise bass." },
     game:{ label:"the games",
-      explain:"Sprint the pattern, walk the bass, spot the three chords, then assemble the segments in order.",
-      hint:"Segments: 4-2-2-1-1-2." },
+      explain:"Sprint the toolkit, play the smooth climb, spot the minor cast, then race the facts.",
+      hint:"G♯ under a chord = V⁶₅ nearby." },
     quiz:{ label:"this question",
-      explain:"Everything hangs on the pattern — I×4, IV×2, I×2, V(7), IV, I×2 — plus the three traditions that created the blues.",
-      play:()=>{[43,67,71,77].forEach(m=>MFAudio.tone(m,.8,0,.27));[53,65,69,72].forEach(m=>MFAudio.tone(m,.8,.85,.27));[48,64,67,72].forEach(m=>MFAudio.tone(m,1,1.7,.27));} }
+      explain:"Same grammar as major: common tones stay put, inversions shorten the bass's journey — plus one minor-only star, the leading tone in the bass.",
+      play:()=>{[[45,60,64,69],[44,64,68,71,74],[45,60,64,69]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,1.0,i*1.0,.27)));} }
   }
 };

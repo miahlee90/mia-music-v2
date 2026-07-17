@@ -1,73 +1,73 @@
-/* Lesson 36 — Minor Intervals (AEMT Book 2, Unit 9)
-   Built from drafts/UNIT 9 – Lesson 36.md; AEMT p.57 verified by render.
-   M8 directive: slow and thorough. Core rule: Major − 1 half step = minor,
-   SAME letter names; only 2,3,6,7 can be minor; Perfect intervals cannot.
-   Uses quiz.js v5.4 interval-quality (M/m mode).
+/* Lesson 36 (5.4, formerly L37) — Augmented and Diminished Intervals (AEMT Book 2, Unit 9)
+   Built from drafts/UNIT 9 – Lesson 37.md; AEMT p.58 verified by render.
+   M8 directive: slow and thorough. Rules: raise M or P a half step = Augmented;
+   lower P or m a half step = diminished. Letters never change (𝄪/𝄫 exist for this).
+   Perfect unison cannot be diminished. Chromatic vs diatonic intervals.
+   Uses quiz.js v5.4 interval-quality (full P/M/m/A/d mode).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* shrink lab: press the Major note, hear it — then press one half step lower
-   and hear the interval melt into minor. Letter name stays! */
-function MF_L36_shrink(container,fb){
+/* stretch-and-shrink lab: one interval family at a time — press the sequence
+   normal → raised (Augmented) → lowered (diminished) and hear all three sizes. */
+function MF_L36_lab(container,fb){
   const ROUNDS=[
-    {name:"3rd",majKey:"E",majM:64,minKey:"E♭",minM:63},
-    {name:"6th",majKey:"A",majM:69,minKey:"A♭",minM:68},
-    {name:"2nd",majKey:"D",majM:62,minKey:"D♭",minM:61},
-    {name:"7th",majKey:"B",majM:71,minKey:"B♭",minM:70}];
-  let r=0,phase=0,kb=null;
-  container.innerHTML=`<div class="big-q l36-q" style="text-align:center"></div>
-    <div class="l36-kb"></div>
-    <p style="text-align:center;font-size:13.5px;color:var(--primary);font-weight:700;margin:6px 0 0">Same letter, one half step lower — Major melts into minor. Listen for the color change!</p>`;
-  const q=container.querySelector(".l36-q"), kbHolder=container.querySelector(".l36-kb");
+    {label:"5th family", seq:[
+      {m:67,name:"G — Perfect 5th (7 half steps)",short:"P5"},
+      {m:68,name:"G♯ — Augmented 5th (8 half steps)",short:"aug 5"},
+      {m:66,name:"G♭ — diminished 5th (6 half steps)",short:"dim 5"}]},
+    {label:"4th family", seq:[
+      {m:65,name:"F — Perfect 4th (5 half steps)",short:"P4"},
+      {m:66,name:"F♯ — Augmented 4th (6 half steps)",short:"aug 4"},
+      {m:64,name:"F♭ — diminished 4th (4 half steps) — the F♭ key LOOKS like E!",short:"dim 4"}]}];
+  let r=0,k=0,kb=null;
+  container.innerHTML=`<div class="big-q l37-q" style="text-align:center"></div>
+    <div class="l37-kb"></div>
+    <p style="text-align:center;font-size:13.5px;color:var(--primary);font-weight:700;margin:6px 0 0">One family, three sizes: normal, stretched (+1), shrunk (−1). The LETTER never changes!</p>`;
+  const q=container.querySelector(".l37-q"), kbHolder=container.querySelector(".l37-kb");
   function ask(){
-    const cur=ROUNDS[r]; phase=0;
-    q.innerHTML=`Lab ${r+1} of ${ROUNDS.length}: first press <b>${cur.majKey}</b> to hear the <b>Major ${cur.name}</b> above C.`;
-    kbHolder.innerHTML="";
-    kb=Keyboard.create(kbHolder,{start:60,octaves:1,labels:true,point:cur.majM,
-      onKey:m=>{
-        const c=ROUNDS[r];
-        if(phase===0){
-          if(m===c.majM){ phase=1; kb.mark([60,m]); MFAudio.tone(60,.8,0,.4); MFAudio.tone(m,.8,0,.4);
-            q.innerHTML=`That's the Major ${c.name} — bright. Now press <b>${c.minKey}</b>, ONE half step lower, and listen…`; kb.point(c.minM);
-            fb(true,`✓ C–${c.majKey} = Major ${c.name}. Now shrink it by one half step…`); }
-          else { MFAudio.tone(40,.2); fb(false,`First the Major version: press ${c.majKey}.`); } }
-        else {
-          if(m===c.minM){ kb.mark([60,m]); MFAudio.tone(60,.9,0,.4); MFAudio.tone(m,.9,0,.4); r++;
-            if(r>=ROUNDS.length){ q.textContent="Major → minor, mastered by ear!";
-              fb(true,`✓ C–${c.minKey} = minor ${c.name} — darker, softer. Same letters, one half step smaller. That's the whole rule!`); }
-            else { fb(true,`✓ C–${c.minKey} = minor ${c.name}! Hear how the color darkened? Next pair…`); setTimeout(ask,1500); } }
-          else { MFAudio.tone(40,.2); fb(false,`One half step below ${c.majKey} — the very next key down.`); } }
-      }});
+    const cur=ROUNDS[r], step=cur.seq[k];
+    q.innerHTML=`${cur.label} — press <b>${step.name.split(" — ")[0]}</b> above C to hear the <b>${step.short}</b>.`;
+    if(kb) kb.point(step.m);
+    if(k===0){ kbHolder.innerHTML="";
+      kb=Keyboard.create(kbHolder,{start:60,octaves:1,labels:true,
+        onKey:m=>{
+          const c=ROUNDS[r], s=c.seq[k];
+          if(m===s.m){ kb.mark([60,m]); MFAudio.tone(60,.8,0,.4); MFAudio.tone(m,.8,0,.4); k++;
+            if(k>=c.seq.length){ r++; k=0;
+              if(r>=ROUNDS.length){ q.textContent="Stretching and shrinking mastered!";
+                fb(true,`✓ ${s.name}. You've now sized every quality: dim < minor < Major < aug, with Perfect in the middle of its own family.`); }
+              else { fb(true,`✓ ${s.name}. New family…`); setTimeout(ask,1500); } }
+            else { fb(true,`✓ ${s.name}. Now the next size…`); setTimeout(ask,1200); } }
+          else { MFAudio.tone(40,.2); fb(false, k===0? "Start with the NORMAL size — the plain scale note." : "One half step at a time — count carefully from the previous key."); }
+        }});
+      kb.point(ROUNDS[r].seq[0].m); }
   }
   ask();
 }
 
-/* convert on the staff: choose the accidental that turns each Major interval minor */
-function MF_L36_convert(container,fb){
+/* size ladder: tap the five qualities of a 5th/3rd from SMALLEST to LARGEST */
+function MF_L36_ladder(container,fb){
   const ROUNDS=[
-    {root:"C4",upper:"E4",upperFlat:"Eb4",name:"3rd",letter:"E"},
-    {root:"C4",upper:"A4",upperFlat:"Ab4",name:"6th",letter:"A"},
-    {root:"C4",upper:"B4",upperFlat:"Bb4",name:"7th",letter:"B"},
-    {root:"C4",upper:"D4",upperFlat:"Db4",name:"2nd",letter:"D"}];
-  let i=0;
-  container.innerHTML=`<div class="big-q l36-cq" style="text-align:center"></div>
-    <div class="l36-cstaff"></div><div class="choices chips l36-cch"></div>`;
-  const q=container.querySelector(".l36-cq"), holder=container.querySelector(".l36-cstaff"), ch=container.querySelector(".l36-cch");
+    {title:"the 5th family", order:["dim 5 (6)","Perfect 5 (7)","aug 5 (8)"]},
+    {title:"the 3rd family", order:["dim 3 (2)","minor 3 (3)","Major 3 (4)","aug 3 (5)"]}];
+  let r=0,next=0;
+  container.innerHTML=`<div class="big-q l37-lq" style="text-align:center"></div><div class="choices chips l37-lch"></div>
+    <div class="l37-ldone" style="text-align:center;font-weight:800;min-height:24px;color:var(--correct)"></div>`;
+  const q=container.querySelector(".l37-lq"), ch=container.querySelector(".l37-lch"), done=container.querySelector(".l37-ldone");
   function ask(){
-    const cur=ROUNDS[i];
-    q.innerHTML=`Convert ${i+1} of ${ROUNDS.length}: this is a <b>Major ${cur.name}</b>. Which accidental on <b>${cur.letter}</b> makes it a <b>minor ${cur.name}</b>?`;
-    Staff.render(holder,{clef:"treble",notes:[{p:cur.root,d:"w"},{p:cur.upper,d:"w",chord:true}],brackets:[{from:0,to:1,label:"M"+cur.name[0]}],width:220});
+    const cur=ROUNDS[r]; next=0; done.textContent="";
+    q.innerHTML=`Sort ${cur.title} from <b>SMALLEST to LARGEST</b> — tap in order! (half steps in parentheses)`;
     ch.innerHTML="";
-    [["♭ flat",true],["♯ sharp",false],["♮ natural",false]].forEach(([t,ok])=>{
+    [...cur.order].sort(()=>Math.random()-.5).forEach(t=>{
       const b=document.createElement("button"); b.textContent=t;
       b.onclick=()=>{
-        const c2=ROUNDS[i];
-        if(ok){
-          const spec={clef:"treble",tempo:70,notes:[{p:c2.root,d:"w"},{p:c2.upperFlat,d:"w",chord:true}],brackets:[{from:0,to:1,label:"m"+c2.name[0]}],width:220};
-          const api=Staff.render(holder,spec); setTimeout(()=>Staff.play(spec,api),250); i++;
-          if(i>=ROUNDS.length){ ch.style.display="none"; q.textContent="All four conversions complete!";
-            fb(true,`✓ ${c2.letter}→${c2.letter}♭: the Major ${c2.name} became minor. Flat the top, keep the letters — every time.`); }
-          else { fb(true,`✓ C–${c2.letter}♭ = minor ${c2.name}! Next conversion…`); setTimeout(ask,1500); } }
-        else { MFAudio.tone(40,.2); fb(false,"Minor is SMALLER than Major — which accidental LOWERS a note by a half step?"); }
+        const cur2=ROUNDS[r];
+        if(t===cur2.order[next]){ b.disabled=true; b.style.opacity=.35; next++;
+          done.textContent=cur2.order.slice(0,next).join("  →  ");
+          if(next>=cur2.order.length){ r++;
+            if(r>=ROUNDS.length){ ch.style.display="none"; q.textContent="Both ladders sorted!";
+              fb(true,"✓ dim < minor < Major < aug — and for the perfect family: dim < Perfect < aug. The size line is fixed forever."); }
+            else { fb(true,"✓ Ladder complete! Now a family with FOUR rungs…"); setTimeout(ask,1300); } } }
+        else { MFAudio.tone(40,.2); fb(false,"Check the half-step counts — smallest number first."); }
       };
       ch.appendChild(b); });
   }
@@ -75,249 +75,224 @@ function MF_L36_convert(container,fb){
 }
 
 LESSON_CONTENT[36]={
-  welcome:"One half step. That's all it takes to turn bright Major into shadowy minor. \u{1F313}",
+  welcome:"Intervals can stretch bigger than Major and shrink smaller than minor. Meet augmented and diminished! \u{1F3D7}",
   hook:{
-    say:"Two 3rds above C — same letters, different mood. Press both. <b>Which one sounds darker?</b>",
+    say:"One of these 5ths powers a thousand horror movies. Press both. <b>Which one sounds tense and unstable?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ 3rd number 1</button>
-          <button class="play hk-b">▶ 3rd number 2</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Number 1 sounds darker</button><button>Number 2 sounds darker</button></div>`;
+          <button class="play hk-a">▶ 5th number 1</button>
+          <button class="play hk-b">▶ 5th number 2</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Number 1 — tense and unstable</button><button>Number 2 — tense and unstable</button></div>`;
         const ch=container.querySelector(".hk-ch");
         let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ MFAudio.tone(60,.9,0,.42); MFAudio.tone(64,.9,0,.42); hA=true; if(hB) setTimeout(()=>ch.style.display="",1100); };
-        container.querySelector(".hk-b").onclick=()=>{ MFAudio.tone(60,.9,0,.42); MFAudio.tone(63,.9,0,.42); hB=true; if(hA) setTimeout(()=>ch.style.display="",1100); };
+        container.querySelector(".hk-a").onclick=()=>{ MFAudio.tone(60,.9,0,.42); MFAudio.tone(67,.9,0,.42); hA=true; if(hB) setTimeout(()=>ch.style.display="",1100); };
+        container.querySelector(".hk-b").onclick=()=>{ MFAudio.tone(60,1.1,0,.42); MFAudio.tone(66,1.1,0,.42); hB=true; if(hA) setTimeout(()=>ch.style.display="",1100); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===1) fb(true,"✓ Number 2 was C–E♭ — a MINOR 3rd, one half step smaller than the Major 3rd (C–E) in number 1. Brighter vs darker, and the only difference is one half step. Today you learn to shrink intervals on purpose.");
-          else fb(false,"Press both again — one is bright and sunny, the other cooler and shaded.");
+          if(i===1) fb(true,"✓ Number 2 was C–G♭ — a DIMINISHED 5th, the Perfect 5th shrunk by one half step. So dissonant that medieval theorists nicknamed it 'the devil in music'. Today: how intervals stretch (augmented) and shrink (diminished).");
+          else fb(false,"Press again — number 1 is the calm, open Perfect 5th from Lesson 35.");
         });
       } }
   },
   objectives:[
-    "Define a minor interval",
-    "Convert a Major interval into a minor interval",
-    "Distinguish Major from minor by eye and ear",
-    "Explain why Perfect intervals cannot become minor",
-    "Read the abbreviations M3, m3, M6, m6",
-    "Identify minor intervals on staff and keyboard"
+    "Define augmented and diminished intervals",
+    "Raise Major or Perfect intervals to augmented",
+    "Lower Perfect or minor intervals to diminished",
+    "Order all five qualities by size",
+    "Explain double sharps and double flats",
+    "Define chromatic intervals"
   ],
   steps:[
-    { say:"Review first — the two families from Lesson 35. \u{1F447} <b>Which numbers make up the MAJOR family?</b>",
-      try:{ type:"mc", choices:["2, 3, 6, 7","1, 4, 5, 8","1, 3, 5, 7"], answer:0,
-        success:"✓ 2-3-6-7 = Major. Keep that roster warm — today it's EXACTLY these four that learn a new trick.",
-        fail:"1-4-5-8 is the Perfect team. The other four are…",
-        hint:"The non-Perfect numbers." } },
-    { say:"The big rule of the day: lower a <b>MAJOR</b> interval by <b>one half step</b> — keeping the letter names — and it becomes <b>MINOR</b>. C→E is a Major 3rd (M3); flat the E and C→E♭ is a minor 3rd (m3). The letters didn't change, so it is still a 3rd; only the SIZE shrank. \u{1F447} <b>What changes when Major becomes minor?</b>",
+    { say:"Review the size line so far: <b>minor is one half step smaller than Major</b>, and Perfect stands alone in its own family. \u{1F447} <b>Which is SMALLER — m3 or M3?</b>",
+      try:{ type:"mc", choices:["m3 (3 half steps)","M3 (4 half steps)","They're equal"], answer:0,
+        success:"✓ m3 = 3, M3 = 4. Now let's push PAST both ends of that line…",
+        fail:"minor = Major minus one half step.",
+        hint:"Small m = smaller size." } },
+    { say:"<b>AUGMENTED</b> means 'made larger'. Raise a <b>Perfect OR Major</b> interval by <b>one half step</b> (letters unchanged) and it becomes augmented — abbreviated <b>aug</b>. C–G (P5) stretches to C–G♯ (aug 5). C–E (M3) stretches to C–E♯ (aug 3). \u{1F447} <b>C–G♯ is an…?</b>",
       show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
-        {p:"C4",d:"w",x:150},{p:"E4",d:"w",chord:true},{p:"C4",d:"w",x:330},{p:"Eb4",d:"w",chord:true}],
-        brackets:[{from:0,to:1,label:"M3 — 4 half steps"},{from:2,to:3,label:"m3 — 3 half steps"}],width:440},
-        kb:{start:60,octaves:0.3333,labels:true,marks:[60,63,64]} },
-      try:{ type:"mc", choices:["Only the size — one half step smaller","The letter names","The interval number"], answer:0,
-        success:"✓ Letters stay (still C to some kind of E, still a 3rd) — only the size shrinks by one half step.",
-        fail:"C→E♭ still uses the letters C and E…",
-        hint:"Is C→E♭ still a 3rd? Count the letters." } },
-    { say:"Hear the shrink with your own hands. \u{1F447} <b>For each pair: press the Major note, then the key one half step lower:</b>",
+        {p:"C4",d:"w",x:160},{p:"G4",d:"w",chord:true},{p:"C4",d:"w",x:340},{p:"G#4",d:"w",chord:true}],
+        brackets:[{from:0,to:1,label:"P5 — 7 half steps"},{from:2,to:3,label:"aug 5 — 8 half steps"}],width:460},
+        kb:{start:60,octaves:1,labels:true,marks:[60,67,68]} },
+      try:{ type:"mc", choices:["Augmented 5th","Major 5th","Perfect 6th"], answer:0,
+        success:"✓ P5 + one half step = aug 5. (And remember — 'Major 5th' still doesn't exist!)",
+        fail:"The G kept its letter but grew a sharp — the interval got BIGGER.",
+        hint:"Augmented = made larger." } },
+    { say:"<b>DIMINISHED</b> means 'made smaller'. Lower a <b>Perfect OR minor</b> interval by <b>one half step</b> (letters unchanged) and it becomes diminished — abbreviated <b>dim</b>. C–G (P5) shrinks to C–G♭ (dim 5). C–E♭ (m3) shrinks to C–E𝄫 (dim 3). \u{1F447} <b>C–G♭ is a…?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
+        {p:"C4",d:"w",x:160},{p:"G4",d:"w",chord:true},{p:"C4",d:"w",x:340},{p:"Gb4",d:"w",chord:true}],
+        brackets:[{from:0,to:1,label:"P5 — 7 half steps"},{from:2,to:3,label:"dim 5 — 6 half steps"}],width:460},
+        kb:{start:60,octaves:1,labels:true,marks:[60,66,67]} },
+      try:{ type:"mc", choices:["Diminished 5th","minor 5th","Perfect 4th"], answer:0,
+        success:"✓ P5 − one half step = dim 5, the hook's 'devil' interval. And NOT a minor 5th — Perfect intervals skip minor entirely and go straight to diminished!",
+        fail:"Perfect intervals never become minor — they shrink straight to…",
+        hint:"Diminished = made smaller." } },
+    { say:"Put the whole size line together. For 2nds, 3rds, 6ths, 7ths: <b>dim &lt; minor &lt; Major &lt; aug</b>. For unisons, 4ths, 5ths, octaves: <b>dim &lt; Perfect &lt; aug</b>. Every step on the line = one half step. \u{1F447} <b>Hands on the lab bench — press each size and hear the stretch and shrink:</b>",
       try:{ type:"custom",
-        hint:"E→E♭, A→A♭, D→D♭, B→B♭ — always the very next key DOWN, same letter with a flat.",
-        mount:(container,fb)=>MF_L36_shrink(container,fb) } },
-    { say:"The abbreviations make the difference visible at a glance: <b>CAPITAL M = Major</b>, <b>small m = minor</b>. M3 vs m3, M6 vs m6. Handwriting tip: musicians often underline the small m so it can't be misread. \u{1F447} <b>What does m6 mean?</b>",
-      try:{ type:"mc", choices:["Minor 6th","Major 6th","Middle 6th"], answer:0,
-        success:"✓ Small m = minor. m6 = minor 6th, one half step smaller than M6.",
-        fail:"Look at the CASE of the letter — capital or small?",
-        hint:"M = Major, m = minor. Size of letter, size of interval!" } },
-    { say:"Now the sizes in half steps — worth knowing cold. Major 2nd = 2, minor 2nd = <b>1</b>. Major 3rd = 4, minor 3rd = <b>3</b>. Major 6th = 9, minor 6th = <b>8</b>. Major 7th = 11, minor 7th = <b>10</b>. Each minor is exactly one less than its Major twin. \u{1F447} <b>A minor 3rd spans how many half steps?</b>",
-      show:{ type:"staff", spec:{clef:"bass",tempo:70,notes:[
-        {p:"C3",d:"w"},{p:"Db3",d:"w",chord:true},
-        {p:"C3",d:"w"},{p:"Eb3",d:"w",chord:true},
-        {p:"C3",d:"w"},{p:"Ab3",d:"w",chord:true},
-        {p:"C3",d:"w"},{p:"Bb3",d:"w",chord:true}],
-        brackets:[{from:0,to:1,label:"m2"},{from:2,to:3,label:"m3"},{from:4,to:5,label:"m6"},{from:6,to:7,label:"m7"}],width:460} },
-      try:{ type:"mc", choices:["3","4","2"], answer:0,
-        success:"✓ m3 = 3 half steps (M3 = 4, minus one). The minor twins are always Major − 1.",
-        fail:"Major 3rd is 4 — and minor is always one LESS.",
-        hint:"M3 = 4. Subtract the half step." } },
-    { say:"Critical fine print: <b>only Major intervals can become minor</b> — the 2nds, 3rds, 6ths and 7ths. <b>Perfect intervals (1, 4, 5, 8) can NEVER be minor.</b> There is no such thing as a 'minor 5th' — lowering a Perfect interval creates something else entirely (next lesson!). \u{1F447} <b>Which of these can become minor?</b>",
-      try:{ type:"mc", choices:["A Major 6th","A Perfect 5th","A Perfect octave","A Perfect 4th"], answer:0,
-        success:"✓ Only the Major family shrinks to minor. Perfect intervals follow different rules — coming in Lesson 37.",
-        fail:"Minor comes from MAJOR — which choice is a Major interval?",
-        hint:"2-3-6-7 can go minor; 1-4-5-8 cannot." } },
-    { say:"Convert on the staff — the writer's skill. \u{1F447} <b>Pick the accidental that turns each Major interval into its minor twin:</b>",
+        hint:"Normal first, then one key UP (aug), then find the shrunken size. The letter G stays G — only accidentals move.",
+        mount:(container,fb)=>MF_L36_lab(container,fb) } },
+    { say:"Why do we sometimes need <b>DOUBLE accidentals</b>? To lower a note that's already flat, use a <b>double flat (𝄫)</b>; to raise a note that's already sharp, use a <b>double sharp (𝄪)</b>. Example: m3 = C–E♭. To diminish it, E♭ must drop again — but it must STAY an E, so: C–E𝄫 (dim 3). The E𝄫 key sounds like D, but the spelling preserves the 3rd! \u{1F447} <b>Why write E𝄫 instead of just D?</b>",
+      try:{ type:"mc", choices:["To keep the letter names — and the interval number — correct","Because D is a forbidden note","Because double flats sound different from D"], answer:0,
+        success:"✓ C–D would be a 2nd; C–E𝄫 stays a 3rd. Spelling preserves the interval's identity even when the keys look the same.",
+        fail:"Count the letters: C→D is a 2nd, but we need a kind of 3rd…",
+        hint:"The letter E keeps the count at 3." } },
+    { say:"One important exception: <b>A perfect unison can never be diminished.</b> Because two identical notes have zero distance, lowering either note actually makes the interval larger. A perfect unison can only be perfect or augmented. \u{1F447} <b>Which interval quality can a perfect unison never have?</b>",
+      try:{ type:"mc", choices:["Diminished","Augmented","Perfect"], answer:0,
+        success:"✓ You can't shrink zero! The unison can be perfect or augmented — never diminished.",
+        fail:"A unison has NO distance — can it get smaller?",
+        hint:"Try to make 0 half steps smaller…" } },
+    { say:"Last vocabulary upgrade: intervals whose notes are both in the same major scale are <b>diatonic</b>. When the upper note is <b>NOT</b> from the keynote's major scale, the interval is <b>CHROMATIC</b>. Minor, diminished, and augmented intervals are always chromatic in major keys. \u{1F447} <b>In the key of C, the interval C–E♭ is…?</b>",
+      try:{ type:"mc", choices:["Chromatic — E♭ isn't in the C major scale","Diatonic — every 3rd is diatonic","Neither"], answer:0,
+        success:"✓ E♭ lives outside C major, so C–E♭ (m3) is a chromatic interval. Diatonic = in the scale; chromatic = colored from outside.",
+        fail:"Is E♭ one of the seven notes of C major?",
+        hint:"C major has no flats at all." } },
+    { say:"Final challenge — sort every quality by size. \u{1F447} <b>Tap each family's qualities from smallest to largest:</b>",
       try:{ type:"custom",
-        hint:"Minor = smaller. The flat ♭ lowers the top note one half step; the letters must not change.",
-        mount:(container,fb)=>MF_L36_convert(container,fb) } },
-    { say:"Ear check, one last time — bright or dark? \u{1F447} <b>Listen to each interval and call its quality:</b>",
-      try:{ type:"custom",
-        hint:"Major = brighter, sunnier. Minor = darker, cooler. Trust the mood.",
-        mount:(container,fb)=>{
-          const ROUNDS=[{a:60,b:64,minor:false,name:"3rd"},{a:60,b:63,minor:true,name:"3rd"},{a:60,b:68,minor:true,name:"6th"},{a:60,b:69,minor:false,name:"6th"}];
-          let i=0,heard=false;
-          container.innerHTML=`<div class="big-q l36-eq" style="text-align:center"></div>
-            <div style="text-align:center"><button class="play l36-play">▶ Hear the interval</button></div>
-            <div class="choices l36-ech" style="display:none"><button>☀️ Major — bright</button><button>\u{1F313} minor — dark</button></div>`;
-          const q=container.querySelector(".l36-eq"), ch=container.querySelector(".l36-ech");
-          function ask(){ heard=false; ch.style.display="none"; q.textContent=`Sound ${i+1} of ${ROUNDS.length}: Major or minor?`; }
-          container.querySelector(".l36-play").onclick=()=>{ const c=ROUNDS[i];
-            MFAudio.tone(c.a,.9,0,.42); MFAudio.tone(c.b,.9,0,.42); heard=true; setTimeout(()=>ch.style.display="",1100); };
-          [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-            if(!heard) return; const c=ROUNDS[i];
-            if((bi===1)===c.minor){ i++; MFAudio.yay();
-              if(i>=ROUNDS.length){ ch.style.display="none"; container.querySelector(".l36-play").style.display="none";
-                q.textContent="Ears fully tuned!"; fb(true,`✓ Four for four! That was a ${c.minor?"minor":"Major"} ${c.name} — the mood never lies.`); }
-              else { fb(true,`✓ ${c.minor?"Minor":"Major"} ${c.name} — well heard! Next sound…`); setTimeout(ask,900); } }
-            else { MFAudio.tone(40,.25); fb(false,"Listen again — does it glow, or does it shade?"); }
-          });
-          ask();
-        } } }
+        hint:"Use the half-step counts in parentheses — smallest number first.",
+        mount:(container,fb)=>MF_L36_ladder(container,fb) } }
   ],
   examples:[
-    { caption:"Every Major interval beside its minor twin — M2/m2, M3/m3, M6/m6, M7/m7. Play and hear each pair shrink by exactly one half step.",
-      staff:{clef:"treble",tempo:66,notes:[
-        {p:"C4",d:"w"},{p:"D4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"Db4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"E4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"A4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"Ab4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"B4",d:"w",chord:true},
-        {p:"C4",d:"w"},{p:"Bb4",d:"w",chord:true}],
-        brackets:[{from:0,to:1,label:"M2"},{from:2,to:3,label:"m2"},{from:4,to:5,label:"M3"},{from:6,to:7,label:"m3"},{from:8,to:9,label:"M6"},{from:10,to:11,label:"m6"},{from:12,to:13,label:"M7"},{from:14,to:15,label:"m7"}],width:660},
+    { caption:"The 5th at three sizes — diminished (6), Perfect (7), Augmented (8). Play and feel the tension: shrunk, pure, stretched.",
+      staff:{clef:"treble",tempo:60,notes:[
+        {p:"C4",d:"w"},{p:"Gb4",d:"w",chord:true},
+        {p:"C4",d:"w"},{p:"G4",d:"w",chord:true},
+        {p:"C4",d:"w"},{p:"G#4",d:"w",chord:true}],
+        brackets:[{from:0,to:1,label:"dim 5"},{from:2,to:3,label:"P5"},{from:4,to:5,label:"aug 5"}],width:460},
       kb:{start:60,octaves:1,labels:true} },
-    { caption:"Minor by another road: E–G uses no accidentals at all, yet it is a minor 3rd (3 half steps). Quality comes from the DISTANCE, not from whether a flat is visible!",
-      staff:{clef:"treble",tempo:70,notes:[
-        {p:"C4",d:"w",x:160},{p:"E4",d:"w",chord:true},
-        {p:"E4",d:"w",x:340},{p:"G4",d:"w",chord:true}],
-        brackets:[{from:0,to:1,label:"M3 — 4 half steps"},{from:2,to:3,label:"m3 — only 3"}],width:460},
-      kb:{start:60,octaves:1,labels:true} }
+    { caption:"The 3rd at four sizes — the full ladder from diminished to augmented. E𝄫 is WRITTEN on the E line (double flat) but SOUNDS on the D key; E♯ is written on E but sounds on F. Press play and watch the keyboard light the keys you actually hear.",
+      staff:{clef:"treble",tempo:60,notes:[
+        {p:"C4",d:"w"},{p:"E4",d:"w",chord:true,acc:"bb",sound:"D4"},
+        {p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true},
+        {p:"C4",d:"w"},{p:"E4",d:"w",chord:true,acc:"n"},
+        {p:"C4",d:"w"},{p:"E4",d:"w",chord:true,acc:"#",sound:"F4"}],
+        brackets:[{from:0,to:1,label:"dim 3"},{from:2,to:3,label:"m3"},{from:4,to:5,label:"M3"},{from:6,to:7,label:"aug 3"}],width:560},
+      kb:{start:60,octaves:0.3333,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Major/minor Sprint (45s)",
-      intro:"Intervals flash by — call the full name: M3? m6? Beat the clock!",
-      miaIntro:"Capital or small — eyes sharp! \u{1F3C3}",
-      spec:{gen:"interval-quality", params:{qualities:["M","m"],ask:"full",min:2,max:7}, seconds:45},
-      result:(score)=>score>=8?score+" in 45 seconds — Major and minor hold no secrets!":null },
-    { type:"gen-race", title:"Game 2 · Quality Judge (10 rounds)",
-      intro:"One interval at a time: is it Major or minor? Judge quickly!",
-      miaIntro:"Order in the court! \u{2696}",
-      spec:{gen:"interval-quality", params:{qualities:["M","m"],ask:"quality",min:2,max:7}, rounds:10},
-      result:(score)=>score>=8?"Verdicts flawless — the quality court is adjourned!":null },
-    { type:"key-climb", title:"Game 3 · Minor Ladder",
-      intro:"Climb the four minor intervals above C in order: m2, m3, m6, m7!",
-      miaIntro:"Dark stairs — watch your step! \u{1F313}",
-      spec:{seq:[61,63,68,70], names:["D♭ (m2)","E♭ (m3)","A♭ (m6)","B♭ (m7)"], start:60, octaves:1,
-        title:"Press D♭ → E♭ → A♭ → B♭: the minor intervals above C"},
-      result:(score)=>score!==null?"The minor ladder is yours — all black keys this time!":null },
-    { type:"term-race", title:"Game 4 · Minor Vocabulary Race",
-      intro:"Minor, half step, conversion rules — match at speed!",
-      miaIntro:"Last dash! \u{26A1}",
-      spec:{rounds:8, reverse:true, pool:[
-        ["Minor Interval","A Major interval lowered by one half step"],
-        ["m3","A minor 3rd — 3 half steps"],
-        ["M3","A Major 3rd — 4 half steps"],
-        ["Can become minor","Only 2nds, 3rds, 6ths, and 7ths"],
-        ["Can never be minor","Perfect intervals: 1, 4, 5, 8"],
-        ["Letter names","What stays the SAME when Major becomes minor"]]},
-      result:(score)=>score>=7?"Minor vocabulary: complete!":null }
+    { type:"gen-race", title:"Game 1 · Five-Quality Sprint (45s)",
+      intro:"All five qualities in play — P, M, m, A, d. Name them at speed!",
+      miaIntro:"The full alphabet of size — go! \u{1F3C3}",
+      spec:{gen:"interval-quality", params:{qualities:["P","M","m","A","d"],ask:"full"}, seconds:45},
+      result:(score)=>score>=7?score+" with ALL five qualities in play — outstanding!":null },
+    { type:"gen-race", title:"Game 2 · Quality Judge — expert bench (10 rounds)",
+      intro:"Perfect, Major, minor, Augmented or Diminished? Rule on each interval!",
+      miaIntro:"Supreme court is in session! \u{2696}",
+      spec:{gen:"interval-quality", params:{qualities:["P","M","m","A","d"],ask:"quality"}, rounds:10},
+      result:(score)=>score>=8?"Expert verdicts — the bench salutes you!":null },
+    { type:"key-climb", title:"Game 3 · Tension Ladder",
+      intro:"Climb the 5th through its three sizes: dim 5 → P5 → aug 5!",
+      miaIntro:"Shrunk, pure, stretched — in order! \u{1F3D7}",
+      spec:{seq:[66,67,68], names:["G♭ (dim 5)","G (P5)","G♯ (aug 5)"], start:60, octaves:1,
+        title:"Press G♭ → G → G♯: the 5th growing one half step at a time"},
+      result:(score)=>score!==null?"You walked the tension ladder without a wobble!":null },
+    { type:"order-tap", title:"Game 4 · Size Sorter",
+      intro:"Tap the four sizes of the 3rd from SMALLEST to LARGEST before the clock runs out!",
+      miaIntro:"Small to tall — line them up! \u{1F4CF}",
+      spec:{sequence:["dim 3","minor 3","Major 3","aug 3"], timer:20,
+        title:"Tap the 3rd family from SMALLEST to LARGEST — beat the 20-second clock!"},
+      result:(score)=>score!==null?"Both ladders in perfect order!":null }
   ],
-  practiceIntro:"20 practice questions — conversions, abbreviations, half-step sizes, staff and ear logic. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — stretching, shrinking, double accidentals, chromatic vs diatonic. Answer right and the next appears automatically!",
   practice:[
-    { gen:"interval-quality", params:{qualities:["M","m"],ask:"full",min:2,max:7}, count:6 },
-    { gen:"interval-quality", params:{qualities:["M","m"],ask:"quality",min:2,max:7}, count:3 },
-    { gen:"term-match", params:{subject:"term", pool:[["Minor Interval","a Major interval lowered by one half step"],["M3","a Major 3rd (4 half steps)"],["m3","a minor 3rd (3 half steps)"],["Perfect intervals","can never become minor"]], reverse:true}, count:3 },
-    { type:"mc", q:"C→E is a Major 3rd. What is C→E♭?", choices:["A minor 3rd","A Major 2nd","A Perfect 3rd"], answer:0,
-      explain:"Same letters, one half step smaller = minor 3rd." },
-    { type:"mc", q:"C→A is a Major 6th. What is C→A♭?", choices:["A minor 6th","A Major 5th","A minor 7th"], answer:0,
-      explain:"Lower the top by a half step, keep the letters: m6." },
-    { type:"mc", q:"C→B is a Major 7th. What is C→B♭?", choices:["A minor 7th","A Major 6th","A Perfect 7th"], answer:0,
-      explain:"M7 − half step = m7." },
-    { type:"mc", q:"C→D is a Major 2nd. What is C→D♭?", choices:["A minor 2nd","A unison","A Major 1st"], answer:0,
-      explain:"M2 (2 half steps) − 1 = m2 (1 half step)." },
-    { type:"truefalse", q:"A Perfect 5th can be lowered a half step to become a minor 5th.", answer:false,
-      explain:"Perfect intervals never become minor — 'minor 5th' doesn't exist." },
-    { type:"truefalse", q:"When a Major interval becomes minor, the interval number stays the same.", answer:true,
-      explain:"Letters unchanged → number unchanged. Only the size shrinks." },
-    { type:"mc", q:"A minor 6th spans how many half steps?", choices:["8","9","7"], answer:0,
-      explain:"M6 = 9, so m6 = 8." },
-    { type:"mc", q:"Which is written with a SMALL letter?", choices:["minor intervals","Major intervals","Perfect intervals"], answer:0,
-      explain:"m = minor; M = Major; P = Perfect." }
+    { gen:"interval-quality", params:{qualities:["P","M","m","A","d"],ask:"full"}, count:6 },
+    { gen:"interval-quality", params:{qualities:["P","M","m","A","d"],ask:"quality"}, count:3 },
+    { gen:"term-match", params:{subject:"term", pool:[["Augmented","one half step larger than Perfect or Major"],["Diminished","one half step smaller than Perfect or minor"],["Double sharp 𝄪","raises an already-sharp note"],["Double flat 𝄫","lowers an already-flat note"],["Chromatic interval","upper note NOT from the keynote's major scale"]], reverse:true}, count:3 },
+    { type:"mc", q:"A diminished interval occurs when a perfect or minor interval is made…", choices:["smaller","larger","louder"], answer:0,
+      explain:"Diminished = made smaller." },
+    { type:"mc", q:"An augmented interval occurs when a major or perfect interval is made…", choices:["larger","smaller","softer"], answer:0,
+      explain:"Augmented = made larger." },
+    { type:"mc", q:"Minor, diminished, and augmented intervals are called ____ intervals.", choices:["chromatic","diatonic","enharmonic"], answer:0,
+      explain:"Their upper notes leave the keynote's major scale." },
+    { type:"mc", q:"P5 raised one half step becomes…", choices:["aug 5","M5","P6"], answer:0,
+      explain:"Perfect + half step = augmented." },
+    { type:"mc", q:"P4 lowered one half step becomes…", choices:["dim 4","m4","M3"], answer:0,
+      explain:"Perfect − half step = diminished (never minor!)." },
+    { type:"mc", q:"M7 raised one half step becomes…", choices:["aug 7","P8","M8"], answer:0,
+      explain:"Major + half step = augmented — the letters stay, so it's still a 7th." },
+    { type:"mc", q:"m3 lowered one half step becomes…", choices:["dim 3","dim 2","M2"], answer:0,
+      explain:"minor − half step = diminished; E♭ drops to E𝄫." },
+    { type:"truefalse", q:"The perfect unison can be diminished.", answer:false,
+      explain:"Zero distance can't shrink — a unison can only be perfect or augmented." }
   ],
-  miaQuizIntro:"One half step down, letters locked in place — show me the shrink!",
+  miaQuizIntro:"Stretch, shrink, spell — the full size line is yours. Sprint!",
   quiz:[
-    { type:"mc", q:"A minor interval is created by:", choices:["Raising a Major interval by one half step","Lowering a Major interval by one half step","Raising a Perfect interval","Lowering a Perfect interval"], answer:1,
-      explain:"Major − 1 half step = minor, letters unchanged.", hint:"Minor is SMALLER." },
-    { type:"mc", q:"Which interval can become minor?", choices:["Perfect 5th","Major 6th","Perfect octave","Perfect 4th"], answer:1,
-      explain:"Only the Major family (2,3,6,7) can shrink to minor.", hint:"2-3-6-7 only." },
-    { type:"mc", q:"C→E is a Major 3rd. C→E♭ is a…", choices:["Major 2nd","minor 3rd","diminished 3rd","Perfect 3rd"], answer:1,
-      explain:"One half step smaller, same letters: m3.", hint:"Letters kept → still a 3rd." },
-    { type:"truefalse", q:"When converting Major to minor, the letter names must stay the same.", answer:true,
-      explain:"E becomes E♭ — never D♯ — so the count of letters is preserved.", hint:"Still C-to-E-something." },
-    { type:"truefalse", q:"Perfect intervals can become minor intervals.", answer:false,
-      explain:"1, 4, 5, 8 never take the minor label.", hint:"Which family owns minor?" },
-    { type:"mc", q:"What does m7 mean?", choices:["Major 7th","minor 7th","Middle 7th","Perfect 7th"], answer:1,
-      explain:"Small m = minor.", hint:"Check the letter case." },
-    { type:"mc", q:"A minor 3rd spans…", choices:["4 half steps","3 half steps","2 half steps","5 half steps"], answer:1,
-      explain:"M3 = 4, m3 = 3.", hint:"Major minus one." },
-    { type:"mc", q:"Which intervals can NEVER become minor?", choices:["2nds and 3rds","6ths and 7ths","Unisons, 4ths, 5ths, octaves","3rds and 6ths"], answer:2,
-      explain:"The Perfect family is minor-proof.", hint:"1-4-5-8." },
+    { type:"mc", q:"An augmented interval is:", choices:["One half step smaller than minor","One half step larger than a Major or Perfect interval","The same as a Major interval","Only possible for 5ths"], answer:1,
+      explain:"Augmented = 'made larger' by one half step.", hint:"Aug- = grow." },
+    { type:"mc", q:"A diminished interval is:", choices:["One half step smaller than a Perfect or minor interval","One half step larger than Major","A minor interval renamed","Only possible in bass clef"], answer:0,
+      explain:"Diminished = 'made smaller' by one half step.", hint:"Dim- = shrink." },
+    { type:"mc", q:"C–G♯ is an…", choices:["aug 5","M5","P6","m6"], answer:0,
+      explain:"P5 stretched a half step, letters kept.", hint:"G stayed G." },
+    { type:"mc", q:"C–G♭ is a…", choices:["dim 5","m5","P4","aug 4"], answer:0,
+      explain:"P5 shrunk a half step — and Perfect skips minor entirely.", hint:"No such thing as m5!" },
+    { type:"truefalse", q:"To make a diminished 3rd from C–E♭, you write C–E𝄫.", answer:true,
+      explain:"E must stay an E to keep the interval a 3rd — hence the double flat.", hint:"Letters lock the number." },
+    { type:"truefalse", q:"Lowering a Perfect 4th one half step makes a minor 4th.", answer:false,
+      explain:"Perfect intervals never become minor — P4 − 1 = dim 4.", hint:"Which family skips minor?" },
+    { type:"mc", q:"The order of qualities from smallest to largest (for 3rds) is:", choices:["dim → minor → Major → aug","minor → dim → aug → Major","dim → Major → minor → aug","aug → Major → minor → dim"], answer:0,
+      explain:"dim < m < M < aug, one half step per rung.", hint:"Shrunk…normal-small…normal-big…stretched." },
+    { type:"mc", q:"A double sharp (𝄪) is used to…", choices:["raise an already-sharp note one more half step","cancel a sharp","mark a repeated note","sharpen two different notes"], answer:0,
+      explain:"Needed when augmenting intervals whose top note is already sharp.", hint:"Double = twice raised." },
+    { type:"mc", q:"When the upper note of an interval is NOT in the keynote's major scale, the interval is…", choices:["chromatic","diatonic","perfect","inverted"], answer:0,
+      explain:"Chromatic = colored from outside the scale.", hint:"Diatonic's opposite." },
+    { type:"mc", q:"Which quality can a perfect unison NEVER be?", choices:["diminished","augmented","perfect"], answer:0,
+      explain:"Zero distance cannot shrink.", hint:"Can 0 get smaller?" },
     { type:"mc", q:"Name this interval.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Ab4",d:"w",chord:true}],width:200},
-      choices:["M6","m6","P6"], answer:1,
-      explain:"C→A = 6th; the flat shrinks it to minor: m6.", hint:"Count letters, then check the flat." },
+      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"F#4",d:"w",chord:true}],width:200},
+      choices:["aug 4","P4","dim 5"], answer:0,
+      explain:"C→F = 4th; the sharp stretches it: aug 4 (6 half steps).", hint:"Letters say 4th; the ♯ says stretched." },
     { type:"mc", q:"Name this interval.",
-      staff:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G4",d:"w",chord:true}],width:200},
-      choices:["M3","m3","P3"], answer:1,
-      explain:"E→G = 3 half steps = minor 3rd — no accidental needed!", hint:"Count half steps: E→F→F♯→G." },
-    { type:"mc", q:"To turn M6 into m6 on the staff, you…", choices:["flat the upper note","sharp the upper note","raise the lower note","rename the top note down a letter"], answer:0,
-      explain:"Lower the top one half step, letters untouched.", hint:"Smaller = lower the top." },
-    { type:"mc", q:"Which pair shows a Major interval and its correct minor twin?", choices:["M3 → m3","M4 → m4","P5 → m5","M8 → m8"], answer:0,
-      explain:"Only 2,3,6,7 have minor twins — and 3 is on that list.", hint:"Most of these pairs don't exist!" },
+      staff:{clef:"bass",notes:[{p:"C3",d:"w"},{p:"Gb3",d:"w",chord:true}],width:200},
+      choices:["dim 5","aug 4","m5"], answer:0,
+      explain:"C→G = 5th; the flat shrinks it: dim 5.", hint:"A 5th wearing a flat…" },
+    { type:"mc", q:"How many half steps in an augmented 5th?", choices:["8","7","6"], answer:0,
+      explain:"P5 = 7, so aug 5 = 8.", hint:"Perfect plus one." },
     /* generated */
-    { gen:"interval-quality", params:{qualities:["M","m"],ask:"full",min:2,max:7}, count:4 },
-    { gen:"interval-quality", params:{qualities:["M","m"],ask:"quality",min:2,max:7}, count:2 },
-    { gen:"term-match", params:{subject:"term", pool:[["Minor Interval","a Major interval lowered by one half step"],["m3","a minor 3rd (3 half steps)"],["Perfect intervals","can never become minor"],["Letter names","stay the same in a Major→minor conversion"]], reverse:true}, count:2 }
+    { gen:"interval-quality", params:{qualities:["P","M","m","A","d"],ask:"full"}, count:4 },
+    { gen:"interval-quality", params:{qualities:["P","M","m","A","d"],ask:"quality"}, count:2 },
+    { gen:"term-match", params:{subject:"term", pool:[["Augmented","one half step larger than Perfect or Major"],["Diminished","one half step smaller than Perfect or minor"],["Chromatic interval","upper note not from the keynote's major scale"],["Perfect unison","can be augmented but never diminished"]], reverse:true}, count:1 }
   ],
   vocabulary:[
-    {term:"Minor Interval", def:"A Major interval lowered by one half step, without changing the letter names. Only 2nds, 3rds, 6ths, and 7ths can be minor.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true}],width:130}},
-    {term:"Major Interval", def:"The standard 2nd, 3rd, 6th, or 7th found in a major scale — one half step larger than its minor twin.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true}],width:130}},
-    {term:"Half Step", def:"The smallest distance between two adjacent keys — the exact amount by which Major shrinks to minor."},
-    {term:"m vs M", def:"Small m = minor; capital M = Major. m3 is one half step smaller than M3."}
+    {term:"Augmented Interval", def:"An interval one half step larger than a Major or Perfect interval, with the same letter names. Abbreviated aug.",
+      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"G#4",d:"w",chord:true}],width:130}},
+    {term:"Diminished Interval", def:"An interval one half step smaller than a minor or Perfect interval, with the same letter names. Abbreviated dim.",
+      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Gb4",d:"w",chord:true}],width:130}},
+    {term:"Double Sharp", sym:'<span class="dbx" style="font-size:2.8em;line-height:1">𝄪</span>', def:"Raises an already-sharp note by another half step — used to spell augmented intervals correctly."},
+    {term:"Double Flat", sym:'<span class="dbf" style="font-size:1.3em">𝄫</span>', def:"Lowers an already-flat note by another half step — used to spell diminished intervals correctly."},
+    {term:"Chromatic Interval", def:"An interval whose keynote and upper note are NOT from the same major scale. Minor, diminished, and augmented intervals are always chromatic in major keys."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Minor = Major − one half step</b>, with the letter names kept the same.",
-    "✔ Only the Major family can shrink: <b>m2, m3, m6, m7</b> exist — 'minor 5th' does not.",
-    "✔ <b>Perfect intervals (1, 4, 5, 8) can never become minor.</b>",
-    "✔ Half-step sizes: m2 = 1 · m3 = 3 · m6 = 8 · m7 = 10 (each exactly one under its Major twin).",
-    "✔ Quality lives in the DISTANCE: E–G is minor with no accidental in sight!"
+    "✔ <b>Augmented = Major or Perfect + one half step</b>; <b>diminished = minor or Perfect − one half step</b>.",
+    "✔ Size lines: dim &lt; minor &lt; Major &lt; aug (2,3,6,7) · dim &lt; Perfect &lt; aug (1,4,5,8).",
+    "✔ <b>Letter names never change</b> — that's what double sharps (𝄪) and double flats (𝄫) are for.",
+    "✔ The <b>perfect unison</b> can never be diminished — zero distance can't shrink.",
+    "✔ <b>Diatonic</b> = both notes in the keynote's major scale; <b>chromatic</b> = the upper note escapes it (all m, dim, aug intervals)."
   ],
   tips:[
-    "Write the conversion, don't just think it: E→E♭ keeps three letters C-D-E in the count. E→D♯ would wreck the number.",
-    "Underline your handwritten small m — a smudged m3 that reads as M3 is a whole different sound.",
-    "Ear anchor: Major 3rd opens 'Oh When the Saints'; minor 3rd opens 'Greensleeves'.",
-    "Next lesson: what happens when intervals stretch LARGER than Major or shrink SMALLER than minor — augmented and diminished!"
+    "The dim 5 / aug 4 (6 half steps) is the famous TRITONE — 'The Simpsons' theme opens with one!",
+    "Spelling check: first count LETTERS for the number, then count half steps for the quality — always in that order.",
+    "Augmenting an already-sharp note? Reach for 𝄪. Diminishing an already-flat one? 𝄫. The letter must survive.",
+    "Next lesson gives your ears a naming system — solfège — and shows how melodies move between keys."
   ],
-  rewards:{ badge:"Shadow Shifter", icon:"\u{1F313}" },
+  rewards:{ badge:"Size Stretcher", icon:"\u{1F3D7}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect score on minor intervals — brilliantly dark work! \u{1F313}\u{1F389}",
-  miaPass:"Passed! Remember the whole rule in six words: Major minus half step equals minor.",
+  miaPerfect:"A perfect score — neither stretched nor shrunk, exactly right! \u{1F3D7}\u{1F389}",
+  miaPass:"Passed! Keep the size line handy: dim < minor < Major < aug.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Both were 3rds above C. The first was C–E (Major, bright); the second C–E♭ (minor, darker). One half step changed the whole mood.",
-      play:()=>{MFAudio.tone(60,.8,0,.4);MFAudio.tone(64,.8,0,.4);MFAudio.tone(60,.8,1.2,.4);MFAudio.tone(63,.8,1.2,.4);} },
-    learn:{ label:"minor intervals",
-      explain:"Lower a Major interval one half step (letters unchanged) → minor. Only 2,3,6,7 can do it; Perfect intervals can't. Small m = minor, capital M = Major.",
-      hint:"Major − 1 half step = minor.",
-      play:()=>{MFAudio.tone(60,.5,0,.4);MFAudio.tone(63,.5,0,.4);} },
+      explain:"5th number 1 was C–G (Perfect — calm); number 2 was C–G♭ (diminished — the tense 'devil in music'). One half step of shrinkage did all that.",
+      play:()=>{MFAudio.tone(60,.8,0,.4);MFAudio.tone(67,.8,0,.4);MFAudio.tone(60,1,1.2,.4);MFAudio.tone(66,1,1.2,.4);} },
+    learn:{ label:"augmented & diminished",
+      explain:"Raise M or P a half step → augmented. Lower P or m a half step → diminished. Letters never change (𝄪/𝄫 exist for exactly this). Unison can't be diminished.",
+      hint:"dim < m < M < aug.",
+      play:()=>{MFAudio.tone(60,.4,0,.4);MFAudio.tone(66,.4,0,.4);MFAudio.tone(60,.5,.6,.4);MFAudio.tone(68,.5,.6,.4);} },
     example:{ label:"the examples",
-      explain:"Example 1 pairs every Major interval with its minor twin; example 2 shows E–G — a minor 3rd with no accidental, because quality is distance, not decoration." },
+      explain:"Example 1 plays the 5th at three sizes; example 2 climbs the 3rd through all four — with E𝄫 sounding on the D key but spelled as an E." },
     game:{ label:"the games",
-      explain:"Sprint the full names, judge Major vs minor, climb the all-black-key minor ladder, then race the vocabulary.",
-      hint:"In the judge game: count half steps when your eye hesitates." },
+      explain:"Sprint all five qualities, judge like an expert, climb the tension ladder, then sort sizes.",
+      hint:"When stuck: letters give the number, half steps give the quality." },
     quiz:{ label:"this question",
-      explain:"Three anchors solve everything: Major − 1 = minor; letters never change; Perfect never goes minor.",
-      play:()=>{MFAudio.tone(60,.6,0,.4);MFAudio.tone(63,.6,0,.4);} }
+      explain:"Two moves cover everything: +1 half step from M/P = aug; −1 from m/P = dim. And the spelling (letters) never changes.",
+      play:()=>{MFAudio.tone(60,.6,0,.4);MFAudio.tone(66,.6,0,.4);} }
   }
 };

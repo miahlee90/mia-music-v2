@@ -1,4 +1,4 @@
-/* Lesson 1 — The Staff, Notes and Pitches (AEMT Book 1, Unit 1)
+/* Lesson 1 (1.1) — The Staff, Notes and Pitches (AEMT Book 1, Unit 1)
    v2 — built from the instructor's design document (drafts/Music Fundamental Website Unit 1 - Lesson 1.md)
    NOTE: edit by FULL-FILE REWRITE only. */
 LESSON_CONTENT[1]={

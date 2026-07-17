@@ -1,4 +1,4 @@
-/* Lesson 33 — Intervals (AEMT Book 2, Unit 8)
+/* Lesson 33 (5.1) — Intervals (AEMT Book 2, Unit 8)
    Built from drafts/UNIT 8 – Lesson 33.md; AEMT p.52 verified by render.
    QA notes honored: count BOTH notes (C–F = C1 D2 E3 F4) and never count spaces;
    melodic vs harmonic = HOW notes are played, not the size.

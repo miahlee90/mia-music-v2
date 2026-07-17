@@ -1,320 +1,288 @@
-/* Lesson 21 — D.C., D.S., Coda and Fine (AEMT Book 1, Unit 5)
-   Built from drafts/UNIT 5 – Lesson 21.md.
-   QA note honored: symbols introduced ONE at a time, then combined into complete
-   roadmaps with follow-the-path interaction and highlighted playback.
+/* Lesson 21 (3.1, formerly L18) — Dynamic Signs (AEMT Book 1, Unit 5)
+   Built from drafts/UNIT 5 – Lesson 18.md.
+   QA note honored: each symbol repeatedly paired with Italian term + English meaning,
+   with LISTENING activities for soft/loud/crescendo/decrescendo.
+   Draft Q12 implementation note followed: option B revised so only one answer is correct.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* where-do-you-go drill (unique L21 prefix) */
-function MF_L21_whereGo(container,fb){
-  const rounds=[
-    {see:"D.C. (Da Capo)",a:0,why:"Da Capo = “from the head” — back to the BEGINNING."},
-    {see:"D.S. (Dal Segno)",a:1,why:"Dal Segno = “from the sign” — back to the SEGNO \u{1D10B}-style symbol."},
-    {see:"Fine",a:2,why:"Fine = “the end” — STOP here."},
-    {see:"To Coda ➔",a:3,why:"Jump to the CODA — the special ending section."}];
-  const OPTS=["The beginning","The Segno sign","Stop — this is the end","The Coda section"];
-  let i=0;
-  container.innerHTML=`<div class="big-q wg-q" style="text-align:center;min-height:56px"></div>
-    <div class="choices wg-ch"></div>`;
-  const q=container.querySelector(".wg-q"), ch=container.querySelector(".wg-ch");
-  OPTS.forEach((o,oi)=>{ const b=document.createElement("button"); b.textContent=o;
-    b.onclick=()=>{
-      const cur=rounds[i];
-      if(oi===cur.a){ MFAudio.yay(); i++;
-        if(i>=rounds.length){ ch.style.display="none"; q.textContent="GPS calibrated!";
-          fb(true,"✓ Beginning, Sign, Stop, Special ending — all four destinations locked in!"); }
-        else { fb(true,"✓ "+cur.why+" Next sign…"); ask(); } }
-      else { MFAudio.tone(40,.25); fb(false,cur.why); }
-    };
-    ch.appendChild(b); });
-  function ask(){ q.innerHTML=`Sign ${i+1} of ${rounds.length}: you see <b>${rounds[i].see}</b>. Where do you go?`; }
+/* loud-or-soft listening drill (unique L18 prefix) */
+function MF_L21_loudSoft(container,fb,rounds){
+  const seq=[]; for(let i=0;i<rounds;i++) seq.push(i%2===0);
+  seq.sort(()=>Math.random()-.5);
+  let i=0,played=false;
+  container.innerHTML=`<div class="big-q lsd-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play lsd-play">▶ Listen</button></div>
+    <div class="choices lsd-ch" style="display:none"><button>\u{1F92B} piano (p) — soft</button><button>\u{1F4E2} forte (f) — loud</button></div>`;
+  const q=container.querySelector(".lsd-q"), ch=container.querySelector(".lsd-ch"), btn=container.querySelector(".lsd-play");
+  function ask(){ q.textContent=`Sound ${i+1} of ${seq.length}: p or f?`; played=false; ch.style.display="none"; }
+  btn.onclick=()=>{
+    const loud=seq[i];
+    [60,64,67].forEach((m,k)=>MFAudio.tone(m,.5,k*.45,loud?.8:.15));
+    played=true;
+    setTimeout(()=>{ ch.style.display=""; },1800);
+  };
+  [...ch.children].forEach((b,bi)=>b.onclick=()=>{
+    if(!played){ fb(false,"Listen first!"); return; }
+    const saidLoud=bi===1, ok=saidLoud===seq[i];
+    if(ok){ i++;
+      if(i>=seq.length){ ch.style.display="none"; btn.style.display="none"; q.textContent="Golden ears!";
+        fb(true,"✓ Every level identified — p is the whisper, f is the shout!"); }
+      else { fb(true,`✓ ${seq[i-1]?"FORTE — full volume!":"piano — soft and gentle."} Next…`); ask(); } }
+    else fb(false,"Compare it to your speaking voice: whisper = p, shout = f. Play it again!");
+  });
   ask();
 }
 
-/* four-roadmap-case player (instructor's design: measures lettered A-D, no notes) */
-function MF_L21_case(container,fb,cfg){
-  let played=false;
-  container.innerHTML=`<div class="c21-staff"></div>
-    <div style="text-align:center"><button class="play c21-play">▶ Follow the route</button></div>
-    <div class="big-q c21-q" style="text-align:center;min-height:30px"></div>
-    <div class="choices c21-ch" style="display:none"></div>`;
-  const api=Staff.render(container.querySelector(".c21-staff"),{clef:"treble",time:"4/4",notes:cfg.items,width:470});
-  const ch=container.querySelector(".c21-ch"), q=container.querySelector(".c21-q");
-  [cfg.answer,...cfg.wrong].sort(()=>Math.random()-.5).forEach(o2=>{
-    const b=document.createElement("button"); b.textContent=o2;
-    b.onclick=()=>{
-      if(!played){ fb(false,"Play the route first and follow the highlight!"); return; }
-      if(o2===cfg.answer) fb(true,"✓ "+cfg.explain);
-      else fb(false,"Follow the signs once more — "+cfg.explain);
-    };
-    ch.appendChild(b);
-  });
-  container.querySelector(".c21-play").onclick=()=>{
-    const LP={A:60,B:64,C:67,D:72}, step=1.0;
-    cfg.route.forEach((idx,k)=>{
-      const L=cfg.items[idx].letter;
-      MFAudio.tone(LP[L]||60,step*.9,k*step,.45);
-      setTimeout(()=>{ api.highlight(idx); q.textContent="Playing: "+cfg.route.slice(0,k+1).map(x=>cfg.items[x].letter).join("–"); },k*step*1000);
-    });
-    setTimeout(()=>{ api.highlight(null); played=true; ch.style.display="";
-      q.textContent="Now — what was the performance order?"; },cfg.route.length*step*1000+250);
-  };
-}
-
 LESSON_CONTENT[21]={
-  welcome:"Grab the map — music has GPS! \u{1F5FA}\u{FE0F}",
+  welcome:"Unit 5! Today music learns to whisper AND shout. \u{1F4E2}",
   hook:{
-    say:"Composers use <b>navigation signs</b> — special symbols that tell musicians <b>where to go next: when to repeat, and where to finish</b>. \u{1F447} <b>What would you guess “Fine” (FEE-neh) means?</b>",
+    say:"Have you ever whispered a secret… or shouted across a room? Music works the same way! Press play — the same melody, twice. <b>What's different?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div class="choices hk-ch"><button>\u{1F6D1} “The end” — stop here</button><button>“Play finely and delicately”</button><button>“Speed up”</button></div>`;
+        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ Twice</button></div>
+          <div class="choices hk-ch" style="display:none"><button>The VOLUME changed — soft, then loud</button><button>The speed changed</button><button>The notes changed</button></div>`;
         const ch=container.querySelector(".hk-ch");
+        container.querySelector(".hk-play").onclick=()=>{
+          [60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.45,k*.4,.15));
+          [60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.45,2.2+k*.4,.8));
+          setTimeout(()=>{ ch.style.display=""; },4400);
+        };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Fine is Italian for THE END — the stop sign of the musical map. Today you'll learn the whole GPS!");
-          else fb(false,"It's Italian, not English — think of “finish”…");
+          if(i===0) fb(true,"✓ Same notes, same speed — only the VOLUME changed. Those volume instructions are called DYNAMICS!");
+          else fb(false,"The notes and speed were identical — listen for how STRONG the sound is.");
         });
       } }
   },
   objectives:[
-    "Identify D.C., D.S., Fine and Coda",
-    "Explain what each roadmap marking means",
-    "Recognize the Segno and Coda symbols",
-    "Follow musical repeat directions correctly",
-    "Read simple musical roadmaps",
-    "Perform music in the correct order"
+    "Identify common dynamic markings",
+    "Explain the meanings of Italian dynamic terms",
+    "Recognize the symbols for crescendo and decrescendo",
+    "Describe gradual changes in volume",
+    "Order dynamics from softest to loudest",
+    "Read dynamic symbols in a musical score"
   ],
   steps:[
-    { say:"Four road signs run the musical map. \u{1F447} <b>Tap each block to reveal what it means:</b>",
+    { say:"Dynamics tell us <b>how loud or soft</b> to play — in Italian, music's official language for centuries. The two anchors: <b>p (piano) = soft</b> \u{1F92B} and <b>f (forte) = loud</b> \u{1F4E2}. \u{1F447} <b>Trust your ears:</b>",
       try:{ type:"custom",
-        hint:"Tap all four blocks.",
+        hint:"Whisper = p, shout = f.",
+        mount:(container,fb)=>MF_L21_loudSoft(container,fb,4) } },
+    { say:"Between soft and loud lives <b>mezzo = moderately</b>: <b>mp (mezzo piano)</b> = moderately soft, <b>mf (mezzo forte)</b> = moderately loud. Add the extremes — <b>pp (pianissimo)</b> very soft, <b>ff (fortissimo)</b> very loud — and you have the whole ladder. \u{1F447} <b>What does “mezzo” mean?</b>",
+      show:{ type:"html", html:"<div style='display:flex;gap:8px;justify-content:center;flex-wrap:wrap;font-family:Georgia,serif'>"+["pp","p","mp","mf","f","ff"].map((d,i)=>`<div style='padding:10px 14px;border:1.5px solid var(--primary);border-radius:10px;text-align:center'><div style='font-size:${15+i*3}px;font-weight:800;font-style:italic'>${d}</div><div style='font-size:11px'>${["very soft","soft","mod. soft","mod. loud","loud","very loud"][i]}</div></div>`).join("")+"</div>" },
+      try:{ type:"mc",
+        choices:["Moderately","Very","Suddenly"], answer:0,
+        success:"✓ Mezzo = moderately. mp and mf live in the comfortable middle of the ladder.",
+        fail:"Mezzo softens the extremes — it means MODERATELY.",
+        hint:"mp = moderately soft." } },
+    { say:"Volume can also change <b>gradually</b>, shown by a long wedge under the notes. <b>Crescendo ( &lt; )</b> = gradually LOUDER — the wedge opens wider. <b>Decrescendo ( &gt; )</b> = gradually SOFTER — the wedge closes. \u{1F447} <b>Listen and identify:</b>",
+      try:{ type:"custom",
+        hint:"Growing = crescendo, shrinking = decrescendo.",
         mount:(container,fb)=>{
-          const CODA_SVG='<svg viewBox="0 0 40 40" width="36" height="36" style="display:block;margin:0 auto"><circle cx="20" cy="20" r="9" fill="none" stroke="currentColor" stroke-width="2.2"/><line x1="20" y1="6" x2="20" y2="34" stroke="currentColor" stroke-width="2.2"/><line x1="6" y1="20" x2="34" y2="20" stroke="currentColor" stroke-width="2.2"/></svg>';
-          const SEGNO_SVG='<svg viewBox="0 0 40 40" width="24" height="24" style="vertical-align:-6px;margin-left:4px"><path d="M 27 9 C 17 4, 9 10, 14 17 C 17 21, 23 19, 26 23 C 31 30, 23 36, 13 31" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><line x1="9" y1="35" x2="31" y2="5" stroke="currentColor" stroke-width="2.2"/><circle cx="6" cy="25" r="2.6" fill="currentColor"/><circle cx="34" cy="15" r="2.6" fill="currentColor"/></svg>';
-          const DATA=[
-            ["D.C.","Da Capo","Repeat from the beginning"],
-            ["D.S.","Dal Segno","Repeat from the segno sign"+SEGNO_SVG],
-            ["Fine","Fine","The end"],
-            [CODA_SVG,"Coda","Skip to the coda, which is an added ending"]];
-          const opened=new Set();
-          container.innerHTML=`<div class="rb-grid" style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap"></div>
-            <div class="rb-out" style="margin-top:12px"></div>`;
-          const grid=container.querySelector(".rb-grid"), out=container.querySelector(".rb-out");
-          DATA.forEach(([sign,name,meaning],i)=>{
-            const b=document.createElement("button");
-            b.className="notecard";
-            b.style.cssText="border-radius:10px;padding:14px 10px;min-width:110px;min-height:76px";
-            b.innerHTML=`<div style="font-size:1.3rem;font-weight:800;font-style:italic">${sign}</div>`;
-            b.onclick=()=>{
-              if(opened.has(i)) return;
-              opened.add(i); MFAudio.tone(64+i*3,.3);
-              b.style.borderColor="var(--primary)";
-              const line=document.createElement("div");
-              line.className="explain"; line.style.display="block"; line.style.marginTop="8px";
-              line.innerHTML=`<b>${i+1}. ${i===3?"\u2295":sign.replace(/<[^>]+>/g,"")||"Coda"}</b> \u2014 <b>${name}</b> \u2014 ${meaning}`;
-              out.appendChild(line);
-              if(opened.size===DATA.length)
-                fb(true,"\u2713 All four signs revealed \u2014 now see each one in action below.");
-            };
-            grid.appendChild(b);
+          const seq=["c","d","c","d"].sort(()=>Math.random()-.5);
+          let i=0,played=false;
+          container.innerHTML=`<div class="big-q cd-q" style="text-align:center"></div>
+            <div class="cd-staff"></div>
+            <div style="text-align:center"><button class="play cd-play">▶ Listen</button></div>
+            <div class="choices cd-ch" style="display:none"><button>\u{1F4C8} Crescendo — growing louder</button><button>\u{1F4C9} Decrescendo — fading softer</button></div>`;
+          const q=container.querySelector(".cd-q"), ch=container.querySelector(".cd-ch"), st=container.querySelector(".cd-staff");
+          function ask(){
+            q.textContent=`Sound ${i+1} of ${seq.length}: which way is the volume moving?`;
+            const type=seq[i]==="c"?"cresc":"decresc";
+            Staff.render(st,{clef:"treble",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"}],hairpins:[{from:0,to:3,type}],width:320});
+            played=false; ch.style.display="none";
+          }
+          container.querySelector(".cd-play").onclick=()=>{
+            const c=seq[i]==="c";
+            for(let k=0;k<6;k++) MFAudio.tone(67,.35,k*.35, c? .1+k*.14 : .8-k*.13);
+            played=true;
+            setTimeout(()=>{ ch.style.display=""; },2400);
+          };
+          [...ch.children].forEach((b,bi)=>b.onclick=()=>{
+            if(!played){ fb(false,"Listen first!"); return; }
+            const saidC=bi===0, ok=saidC===(seq[i]==="c");
+            if(ok){ i++;
+              if(i>=seq.length){ ch.style.display="none"; q.textContent="Gradual changes mastered!";
+                fb(true,"✓ Opening wedge = crescendo (<), closing wedge = decrescendo (>) — and you HEARD both!"); }
+              else { fb(true,`✓ ${seq[i-1]==="c"?"Growing — crescendo!":"Fading — decrescendo!"} Next…`); ask(); } }
+            else fb(false,"Did it GROW or SHRINK? Match the arrow's opening to the volume.");
           });
+          ask();
         } } },
-    { say:"<b>Case 1 — D.C. al Fine.</b> Steps: \u2460 play through to the end \u2461 return to the BEGINNING \u2462 play to <b>Fine</b> and stop. Each measure below is lettered instead of notated. \u{1F447} <b>Follow the route, then name the order:</b>",
+    { say:"On the staff, dynamics sit <b>below the notes</b>, right where they take effect. \u{1F447} <b>Which dynamic starts this line?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:90,time:"4/4",notes:[{p:"C4",d:"q",dyn:"p"},{p:"E4",d:"q"},{p:"G4",d:"q",dyn:"f"},{p:"C5",d:"q"},{bar:"final"}],width:400} },
+      try:{ type:"mc",
+        choices:["p — it starts soft, then f makes it loud","f — it starts loud","mp all the way"], answer:0,
+        success:"✓ p under the first note = start soft; the f under note 3 flips it to loud. Dynamics act exactly where they're printed!",
+        fail:"Read the letters UNDER the notes, left to right.",
+        hint:"First marking wins first." } },
+    { say:"Put the whole ladder in order — softest to loudest. \u{1F447} <b>Tap them in order:</b>",
       try:{ type:"custom",
-        hint:"Through the whole line first — D.C. only acts when you reach it.",
-        mount:(container,fb)=>MF_L21_case(container,fb,{
-          items:[{letter:"A"},{bar:"single"},{letter:"B"},{mark:"fine"},{bar:"final"},{letter:"C"},{bar:"single"},{letter:"D"},{mark:"dc-fine"},{bar:"double"}],
-          route:[0,2,5,7,0,2], answer:"A–B–C–D–A–B",
-          wrong:["A–B–C–D","A–B–A–B–C–D"],
-          explain:"Play A-B-C-D, Da Capo to the beginning, and stop at Fine: A–B–C–D–A–B."}) } },
-    { say:"<b>Case 2 — D.S. al Fine.</b> Same idea, but return to the <b>Segno</b> \u{1D10B} instead of the beginning, then stop at Fine. \u{1F447} <b>Follow the route, then name the order:</b>",
-      try:{ type:"custom",
-        hint:"The Segno sits over B — that's where the return lands.",
-        mount:(container,fb)=>MF_L21_case(container,fb,{
-          items:[{letter:"A"},{bar:"single"},{mark:"segno"},{letter:"B"},{mark:"fine"},{bar:"final"},{letter:"C"},{bar:"single"},{letter:"D"},{mark:"ds-fine"},{bar:"double"}],
-          route:[0,3,6,8,3], answer:"A–B–C–D–B",
-          wrong:["A–B–C–D–A–B","A–B–C–D"],
-          explain:"Play A-B-C-D, return to the SEGNO (B), and stop at Fine: A–B–C–D–B."}) } },
-    { say:"<b>Case 3 — D.C. al Coda.</b> Return to the beginning, play until <b>To Coda</b> \u2295, then JUMP to the <b>Coda</b>. \u{1F447} <b>Follow the route, then name the order:</b>",
-      try:{ type:"custom",
-        hint:"On the second trip, A ends at the To-Coda sign — leap!",
-        mount:(container,fb)=>MF_L21_case(container,fb,{
-          items:[{letter:"A"},{mark:"tocoda"},{bar:"single"},{letter:"B"},{bar:"single"},{letter:"C"},{mark:"dc-coda"},{bar:"double"},{mark:"coda"},{letter:"D"},{bar:"final"}],
-          route:[0,3,5,0,9], answer:"A–B–C–A–D",
-          wrong:["A–B–C–D","A–B–C–A–B–D"],
-          explain:"Play A-B-C, Da Capo to A, jump at To-Coda to the Coda (D): A–B–C–A–D."}) } },
-    { say:"<b>Case 4 — D.S. al Coda.</b> Return to the <b>Segno</b>, play until <b>To Coda</b>, then jump to the <b>Coda</b>. \u{1F447} <b>Follow the route, then name the order:</b>",
-      try:{ type:"custom",
-        hint:"Return lands on B; B ends at the To-Coda sign.",
-        mount:(container,fb)=>MF_L21_case(container,fb,{
-          items:[{letter:"A"},{bar:"single"},{mark:"segno"},{letter:"B"},{mark:"tocoda"},{bar:"single"},{letter:"C"},{mark:"ds-coda"},{bar:"double"},{mark:"coda"},{letter:"D"},{bar:"final"}],
-          route:[0,3,6,3,10], answer:"A–B–C–B–D",
-          wrong:["A–B–C–A–D","A–B–C–D–B"],
-          explain:"Play A-B-C, Dal Segno to B, jump at To-Coda to the Coda (D): A–B–C–B–D."}) } },
-    { say:"Where do you go? Test every sign. \u{1F447}",
-      try:{ type:"custom",
-        hint:"Beginning \u00b7 Sign \u00b7 Stop \u00b7 Special ending.",
-        mount:(container,fb)=>MF_L21_whereGo(container,fb) } }
+        hint:"pp → p → mp → mf → f → ff.",
+        mount:(container,fb)=>{
+          const seq=["pp","p","mp","mf","f","ff"];
+          let next=0;
+          container.innerHTML=`<div class="big-q dl-q" style="text-align:center">Softest first!</div>
+            <div class="dl-done" style="text-align:center;font-weight:800;font-style:italic;min-height:30px;color:var(--primary);font-size:1.2rem"></div>
+            <div class="choices chips dl-ch"></div>`;
+          const done=container.querySelector(".dl-done"), ch=container.querySelector(".dl-ch");
+          [...seq].sort(()=>Math.random()-.5).forEach(s=>{
+            const b=document.createElement("button"); b.textContent=s; b.style.fontStyle="italic"; b.style.fontWeight="800";
+            b.onclick=()=>{
+              if(s===seq[next]){ next++; b.disabled=true;
+                MFAudio.tone(67,.35,0,.1+next*.13);
+                done.textContent=seq.slice(0,next).join(" → ");
+                if(next===seq.length){ ch.style.display="none";
+                  fb(true,"✓ pp → p → mp → mf → f → ff — the complete volume ladder, softest whisper to biggest shout!"); } }
+              else { MFAudio.tone(40,.25); fb(false,`Not yet — what's the ${next===0?"SOFTEST":"next louder"} level?`); }
+            };
+            ch.appendChild(b);
+          });
+        } } }
   ],
   examples:[
-    { caption:"D.C. al Fine — press play: A-B-C-D, back to the top, stop at Fine (A–B–C–D–A–B).",
-      staff:{clef:"treble",time:"4/4",tempo:150,notes:[{letter:"A"},{bar:"single"},{letter:"B"},{mark:"fine"},{bar:"final"},{letter:"C"},{bar:"single"},{letter:"D"},{mark:"dc-fine"},{bar:"double"}],
-        playOrder:[0,2,5,7,0,2],width:470} },
-    { caption:"D.S. al Coda — press play: A-B-C, back to the Segno (B), jump at To-Coda to the Coda (A–B–C–B–D).",
-      staff:{clef:"treble",time:"4/4",tempo:150,notes:[{letter:"A"},{bar:"single"},{mark:"segno"},{letter:"B"},{mark:"tocoda"},{bar:"single"},{letter:"C"},{mark:"ds-coda"},{bar:"double"},{mark:"coda"},{letter:"D"},{bar:"final"}],
-        playOrder:[0,3,6,3,10],width:470} }
+    { caption:"The same phrase at two volumes: p whispers it, f declares it. Listen to the marking take effect.",
+      staff:{clef:"treble",tempo:92,time:"4/4",notes:[{p:"C4",d:"q",dyn:"p",label:"soft…"},{p:"E4",d:"q"},{p:"G4",d:"h"},{bar:"single"},{p:"C4",d:"q",dyn:"f",label:"LOUD!"},{p:"E4",d:"q"},{p:"G4",d:"h"},{bar:"final"}],width:460} },
+    { caption:"A crescendo wedge: the notes grow from p to f as the wedge opens.",
+      staff:{clef:"treble",tempo:92,time:"4/4",notes:[{p:"E4",d:"q",dyn:"p"},{p:"E4",d:"q"},{p:"E4",d:"q"},{p:"E4",d:"q",dyn:"f"},{bar:"final"}],hairpins:[{from:0,to:3,type:"cresc"}],width:420} }
   ],
   games:[
-    { type:"term-race", title:"Game 1 · GPS Term Dash",
-      intro:"A sign flashes — where does it send you? All the roadmap vocabulary at speed!",
-      miaIntro:"Quick — read the road signs! \u{26A1}",
+    { type:"term-race", title:"Game 1 · Dynamic Dash",
+      intro:"A symbol flashes — pick its meaning fast! All six levels plus the wedges.",
+      miaIntro:"Speed round — whisper or shout?! \u{26A1}",
       spec:{rounds:8, pool:[
-        ["D.C. (Da Capo)","Return to the beginning"],
-        ["D.S. (Dal Segno)","Return to the Segno sign"],
-        ["Fine","The end — stop here"],
-        ["Coda","A special ending section"],
-        ["Segno","The bookmark symbol D.S. returns to"],
-        ["To Coda","The jump point — leap to the Coda"],
-        ["D.C. al Fine","From the beginning, stop at Fine"]]},
-      result:(score)=>score>=7?"Roadmap vocabulary — navigation ready!":null },
-    { type:"symbol-hunt", title:"Game 2 · Landmark Hunt",
-      intro:"Segno, Coda, Fine, repeat signs — click the landmark Mia names!",
-      miaIntro:"Find each landmark on the map! \u{1F50D}",
+        ["<i>p</i> (piano)","Soft"],["<i>f</i> (forte)","Loud"],
+        ["<i>mp</i> (mezzo piano)","Moderately soft"],["<i>mf</i> (mezzo forte)","Moderately loud"],
+        ["<i>pp</i> (pianissimo)","Very soft"],["<i>ff</i> (fortissimo)","Very loud"],
+        ["&lt; (crescendo)","Gradually louder"],["&gt; (decrescendo)","Gradually softer"]]},
+      result:(score)=>score>=7?"Every symbol matched — dynamic vocabulary complete!":null },
+    { type:"symbol-hunt", title:"Game 2 · Find the Marking",
+      intro:"Click the dynamic Mia names — p, f, mp, mf and the wedges, hiding among the cards!",
+      miaIntro:"Hunt the volume signs! \u{1F50D}",
       spec:{rounds:6, pool:[
-        {label:"Segno", spec:{clef:"treble",notes:[{mark:"segno"}]}},
-        {label:"Coda symbol", spec:{clef:"treble",notes:[{mark:"coda"}]}},
-        {label:"Fine", spec:{clef:"treble",notes:[{mark:"fine"}]}},
-        {label:"D.C. al Fine", spec:{clef:"treble",notes:[{mark:"dc-fine"}]}},
-        {label:"Repeat Sign", spec:{clef:"treble",notes:[{bar:"repeat-end"}]}}]},
-      result:(score)=>score>=5?"Every landmark spotted from a distance!":null },
-    { type:"order-tap", title:"Game 3 · The D.S. al Coda Run",
-      intro:"The trickiest route: tap the D.S. al Coda journey in perfect order!",
-      miaIntro:"Advanced navigation — sign to coda! \u{1F3C1}",
-      spec:{title:"Run the D.S. al Coda route in order!",
-        sequence:["Play A","Play B (the Segno sits here)","Play C — see “D.S. al Coda”","Return to the Segno: play B","At “To Coda” — jump!","Play the Coda: D"]},
-      result:(stars)=>stars>=3?"D.S. al Coda — the expert route, aced!":null },
-    { type:"term-race", title:"Game 4 · Reverse GPS (45s)",
-      intro:"Mia names the destination, YOU name the sign — 45 seconds on the clock!",
-      miaIntro:"Final sprint — destinations to signs! \u{23F1}",
+        {label:"piano (soft)", html:"<i>p</i>"},
+        {label:"forte (loud)", html:"<i>f</i>"},
+        {label:"mezzo piano (moderately soft)", html:"<i>mp</i>"},
+        {label:"mezzo forte (moderately loud)", html:"<i>mf</i>"},
+        {label:"Crescendo", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"}],hairpins:[{from:0,to:2,type:"cresc"}]}},
+        {label:"Decrescendo", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"},{p:"G4",d:"q"}],hairpins:[{from:0,to:2,type:"decresc"}]}}]},
+      result:(score)=>score>=5?"No marking escapes your eyes!":null },
+    { type:"order-tap", title:"Game 3 · Volume Ladder",
+      intro:"Tap the six dynamic levels from SOFTEST to LOUDEST — against the clock!",
+      miaIntro:"Climb the ladder — whisper to roar! \u{1FA9C}",
+      spec:{title:"Softest → loudest!", sequence:["pp","p","mp","mf","f","ff"], timer:20},
+      result:(stars)=>stars>=3?"The whole ladder in seconds — impressive!":null },
+    { type:"term-race", title:"Game 4 · Reverse Dash (45s)",
+      intro:"Now backwards: Mia names the MEANING, you pick the symbol. 45 seconds!",
+      miaIntro:"Final challenge — meanings to symbols, fast! \u{23F1}",
       spec:{seconds:45, reverse:true, pool:[
-        ["D.C.","Return to the beginning"],
-        ["D.S.","Return to the Segno sign"],
-        ["Fine","The end — stop here"],
-        ["Coda","A special ending section"],
-        ["To Coda","The jump point to the special ending"]]},
-      result:(score)=>score>=11?score+" — instant sign recall!":null }
+        ["<i>p</i>","Soft"],["<i>f</i>","Loud"],["<i>mp</i>","Moderately soft"],["<i>mf</i>","Moderately loud"],
+        ["<i>pp</i>","Very soft"],["<i>ff</i>","Very loud"],["&lt;","Gradually louder (crescendo)"],["&gt;","Gradually softer (decrescendo)"]]},
+      result:(score)=>score>=12?score+" matched — dynamic fluency achieved!":null }
   ],
-  practiceIntro:"20 practice questions — the four signs, the two symbols, and complete journeys. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — symbols, Italian terms, and gradual changes. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"roadmap marking", pool:[["D.C. (Da Capo)","Return to the beginning"],["D.S. (Dal Segno)","Return to the Segno sign"],["Fine","The end — stop here"],["Coda","A special ending section"],["Segno","The bookmark D.S. returns to"],["To Coda","Jump to the Coda"]], reverse:true}, count:8 },
+    { gen:"term-match", params:{subject:"dynamic marking", pool:[["p (piano)","Soft"],["f (forte)","Loud"],["mp (mezzo piano)","Moderately soft"],["mf (mezzo forte)","Moderately loud"],["pp (pianissimo)","Very soft"],["ff (fortissimo)","Very loud"],["< (crescendo)","Gradually louder"],["> (decrescendo)","Gradually softer"]], reverse:true}, count:8 },
     { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 },
     { gen:"note-name", params:{clef:"treble"}, count:2 },
-    { type:"mc", q:"Da Capo literally means…", choices:["“from the head” (the beginning)","“from the sign”","“the end”"], answer:0,
-      explain:"Capo = head — the top of the piece." },
-    { type:"mc", q:"Dal Segno means…", choices:["“from the sign”","“from the beginning”","“jump to the end”"], answer:0,
-      explain:"Segno = sign — return to the bookmark." },
-    { type:"truefalse", q:"Fine marks where the piece truly ends.", answer:true,
-      explain:"When directed there, you STOP at Fine." },
-    { type:"truefalse", q:"The Coda is a special ending section.", answer:true,
-      explain:"You JUMP to it when the map says so." },
-    { type:"mc", q:"D.C. al Fine means…", choices:["back to the beginning, stop at Fine","back to the Segno, jump to the Coda","repeat the last measure"], answer:0,
-      explain:"From the top, until the stop sign." },
-    { type:"mc", q:"D.C. al Coda means…", choices:["back to the start, play to “To Coda,” then jump to the Coda","stop immediately","play the Coda twice"], answer:0,
-      explain:"Restart, reach the jump point, leap to the special ending." },
-    { type:"truefalse", q:"The Segno symbol looks like an S with a slash and two dots.", answer:true,
-      explain:"S for Segno — your musical bookmark." },
-    { type:"truefalse", q:"These roadmap signs exist so composers don't have to write the same music twice.", answer:true,
-      explain:"Just like repeat signs — but with more powerful jumps." }
+    { type:"mc", q:"Dynamics tell musicians…", choices:["how loud or soft to play","how fast to play","which notes to play"], answer:0,
+      explain:"Volume instructions — music's expression dial." },
+    { type:"truefalse", q:"Dynamic terms are traditionally written in Italian.", answer:true,
+      explain:"Italian has been music's shared language for centuries." },
+    { type:"mc", q:"Mezzo means…", choices:["moderately","very","suddenly"], answer:0,
+      explain:"mp = moderately soft, mf = moderately loud." },
+    { type:"truefalse", q:"pp is softer than p.", answer:true,
+      explain:"Pianissimo — very soft, the extreme whisper." },
+    { type:"mc", q:"The crescendo symbol looks like…", choices:["an opening wedge <","a closing wedge >","two dots"], answer:0,
+      explain:"Opening = growing louder." },
+    { type:"truefalse", q:"A decrescendo means becoming gradually softer.", answer:true,
+      explain:"Also called diminuendo — the closing wedge." },
+    { type:"mc", q:"Softest to loudest:", choices:["pp p mp mf f ff","ff f mf mp p pp","p pp mp mf ff f"], answer:0,
+      explain:"The complete ladder in order." },
+    { type:"truefalse", q:"Dynamics change WHICH notes you play.", answer:false,
+      explain:"Same notes — different volume!" },
+    /* — from the unit review sheet — */
+    { type:"mc", q:"The Italian ending “-issimo” means…", choices:["very","moderately","gradually"], answer:0, explain:"pianISSIMO = VERY soft; fortISSIMO = VERY loud." },
+    { type:"mc", q:"Diminuendo (dim.) is another name for…", choices:["decrescendo — gradually softer","crescendo — gradually louder","fortissimo"], answer:0, explain:"Two words for the same fading wedge." }
   ],
-  miaQuizIntro:"Quiz time! Read every sign before you turn — GO!",
+  miaQuizIntro:"Quiz time! Whisper the p's, shout the f's — go!",
   quiz:[
-    { type:"mc", q:"What does Fine mean?", choices:["Repeat","Beginning","The end","Play louder"], answer:2,
-      explain:"Italian for “the end” — stop there when directed.", hint:"\u{1F6D1}" },
-    { type:"mc", q:"What does Da Capo (D.C.) tell you to do?", choices:["Go to the Coda","Go to the Segno","Return to the beginning","Stop playing"], answer:2,
-      explain:"From the head — the very start.", hint:"\u{1F3E0}" },
-    { type:"mc", q:"What does Dal Segno (D.S.) mean?", choices:["Go to the beginning","Go to the Segno sign","Repeat the last measure","Skip to the end"], answer:1,
-      explain:"Return to the bookmark symbol.", hint:"\u{1F516}" },
-    { type:"truefalse", q:"A Coda is a special ending section.", answer:true,
-      explain:"The finish-flag section you jump to.", hint:"\u{1F3C1}" },
-    { type:"truefalse", q:"Fine means to continue playing.", answer:false,
-      explain:"Fine = STOP — the end.", hint:"The stop sign." },
-    { type:"truefalse", q:"D.C. means to return to the beginning.", answer:true,
-      explain:"Da Capo — from the head.", hint:"Capo = head." },
-    { type:"mc", q:"Which marking sends you back to the SEGNO sign?", choices:["D.C.","D.S.","Fine","Coda"], answer:1,
-      explain:"Dal Segno — from the sign.", hint:"S for Segno." },
+    { type:"mc", q:"What does forte (f) mean?", choices:["Soft","Loud","Fast","Slow"], answer:1,
+      explain:"Forte = loud, full volume.", hint:"F = Full Volume." },
+    { type:"mc", q:"What does piano (p) mean?", choices:["Loud","Soft","Moderate","Very loud"], answer:1,
+      explain:"Piano = soft.", hint:"P = Peaceful." },
+    { type:"mc", q:"What does mezzo mean?", choices:["Very","Moderately","Slowly","Suddenly"], answer:1,
+      explain:"The comfortable middle.", hint:"mp, mf — the middle levels." },
+    { type:"truefalse", q:"mf means moderately loud.", answer:true,
+      explain:"Mezzo forte.", hint:"Mezzo + forte." },
+    { type:"truefalse", q:"A crescendo means to become gradually softer.", answer:false,
+      explain:"Crescendo = gradually LOUDER; decrescendo is the soft one.", hint:"Which way does < open?" },
+    { type:"truefalse", q:"Dynamics tell musicians how loud or soft to play.", answer:true,
+      explain:"Exactly their job.", hint:"The volume dial." },
+    { type:"mc", q:"Which symbol means moderately soft?", choices:["mp","mf","pp","f"], answer:0,
+      explain:"Mezzo piano.", hint:"m + p." },
     { type:"mc", q:"Which matching is correct?",
-      choices:["D.C. → beginning · D.S. → Segno · Fine → end · Coda → special ending",
-               "D.C. → Segno · D.S. → end · Fine → beginning · Coda → repeat",
-               "D.C. → Coda · D.S. → beginning · Fine → special ending · Coda → end"], answer:0,
-      explain:"Home, bookmark, stop sign, finish flag.", hint:"\u{1F3E0}\u{1F516}\u{1F6D1}\u{1F3C1}" },
-    { type:"mc", q:"The Italian word Fine means ____.", choices:["the end","the sign","again"], answer:0,
-      explain:"The end.", hint:"Finish." },
-    { type:"mc", q:"Da Capo tells you to return to the ____.", choices:["beginning","Segno","Coda"], answer:0,
-      explain:"The head of the piece.", hint:"\u{1F3E0}" },
-    { type:"mc", q:"Which symbol is the SEGNO?",
-      staff:{clef:"treble",notes:[{mark:"segno",label:"1"},{mark:"coda",label:"2"},{mark:"fine",label:"3"}],width:360},
-      choices:["1","2","3"], answer:0,
-      explain:"The slashed S with dots. (2 = Coda, 3 = Fine.)",
-      hint:"S shape." },
+      choices:["p → Soft · f → Loud · < → Crescendo · > → Decrescendo",
+               "p → Loud · f → Soft · < → Decrescendo · > → Crescendo",
+               "p → Moderate · f → Very soft · < → The end · > → Repeat"], answer:0,
+      explain:"The four essentials, correctly paired.", hint:"Whisper, shout, open, close." },
+    { type:"mc", q:"The Italian word forte means ____.", choices:["loud","soft","fast"], answer:0,
+      explain:"Loud!", hint:"Think F = Full volume." },
+    { type:"mc", q:"A crescendo means becoming gradually ____.", choices:["louder","softer","slower"], answer:0,
+      explain:"The opening wedge.", hint:"<" },
+    { type:"mc", q:"How many dynamic markings appear in this excerpt?",
+      staff:{clef:"treble",notes:[{p:"C4",d:"q",dyn:"p"},{p:"E4",d:"q"},{p:"G4",d:"q",dyn:"mf"},{p:"C5",d:"q",dyn:"f"}],width:380},
+      choices:["2","3","4"], answer:1,
+      explain:"Three: p, mf, f — under notes 1, 3 and 4.",
+      hint:"Count the italic letters under the staff." },
     { type:"mc", q:"Which statement is correct?",
-      choices:["Fine means repeat from the beginning","D.S. means return to the Segno sign","Coda means stop immediately","D.C. means play louder"], answer:1,
-      explain:"Dal Segno = from the sign.", hint:"Check each translation." },
-    { type:"mc", q:"Measures A B(Fine) C D(D.C. al Fine): the performance order is…",
-      choices:["A–B–C–D–A–B","A–B–C–D","A–B–A–B"], answer:0,
-      explain:"Through to the end, back to the beginning, stop at Fine.", hint:"Case 1." },
-    { type:"mc", q:"Measures A B(Segno…Fine) C D(D.S. al Fine): the performance order is…",
-      choices:["A–B–C–D–B","A–B–C–D–A–B","A–B–C–B–D"], answer:0,
-      explain:"Return to the Segno (B), stop at Fine.", hint:"Case 2." },
-    { type:"mc", q:"Measures A(To Coda) B C(D.C. al Coda) D(Coda): the performance order is…",
-      choices:["A–B–C–A–D","A–B–C–D","A–B–C–A–B–D"], answer:0,
-      explain:"Back to the top, jump at To-Coda into the Coda.", hint:"Case 3." },
-    { type:"mc", q:"Measures A B(Segno, To Coda) C(D.S. al Coda) D(Coda): the performance order is…",
-      choices:["A–B–C–B–D","A–B–C–A–D","A–B–C–D–B"], answer:0,
-      explain:"Back to the Segno (B), jump at To-Coda into the Coda.", hint:"Case 4." },
+      choices:["p means loud","mf means moderately soft","A crescendo means gradually becoming louder","A decrescendo means play suddenly loud"], answer:2,
+      explain:"Crescendo = gradual growth. (mf is moderately LOUD; p is soft.)",
+      hint:"One option matches its true meaning." },
     /* generated */
-    { gen:"term-match", params:{subject:"roadmap marking", pool:[["D.C.","Return to the beginning"],["D.S.","Return to the Segno sign"],["Fine","The end — stop here"],["Coda","A special ending section"],["To Coda","Jump to the Coda"]], reverse:true}, count:5 },
-    { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 },
-    { gen:"note-name", params:{clef:"treble"}, count:1 }
+    { gen:"term-match", params:{subject:"dynamic marking", pool:[["p (piano)","Soft"],["f (forte)","Loud"],["mp (mezzo piano)","Moderately soft"],["mf (mezzo forte)","Moderately loud"],["pp (pianissimo)","Very soft"],["ff (fortissimo)","Very loud"],["< (crescendo)","Gradually louder"],["> (decrescendo)","Gradually softer"]], reverse:true}, count:6 },
+    { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 }
   ],
   vocabulary:[
-    {def:"Repeat from the beginning.", term:"Da Capo (D.C.)"},
-    {def:"Repeat from the sign.", term:"Dal Segno (D.S.)"},
-    {def:"The sign that Dal Segno returns to.", term:"Segno", staff:{clef:"none",notes:[{mark:"segno"}],width:140}},
-    {def:"The end.", term:"Fine", staff:{clef:"none",notes:[{mark:"fine"}],width:140}},
-    {def:"An added ending.", term:"Coda", staff:{clef:"none",notes:[{mark:"coda"}],width:140}}
+    {def:"Dynamic signs indicate the volume — how soft or loud the music should be played.", term:"Dynamics"},
+    {def:"Soft.", term:"piano (p)", staff:{clef:"none",notes:[{p:"B4",d:"q",dyn:"p"}],width:140}},
+    {def:"Loud.", term:"forte (f)", staff:{clef:"none",notes:[{p:"B4",d:"q",dyn:"f"}],width:140}},
+    {def:"Moderately — mp is moderately soft, mf is moderately loud.", term:"mezzo (m)"},
+    {def:"Gradually louder.", term:"Crescendo"},
+    {def:"Gradually softer.", term:"Decrescendo"}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>D.C.</b> = from the <b>beginning</b> \u{1F3E0} · <b>D.S.</b> = from the <b>Segno</b> \u{1F516}.",
-    "✔ <b>Fine</b> = the end \u{1F6D1} · <b>Coda</b> = the special ending \u{1F3C1}.",
-    "✔ <b>D.C. al Fine</b>: restart, stop at Fine.",
-    "✔ <b>D.C./D.S. al Coda</b>: go back, play to “To Coda,” JUMP to the Coda.",
-    "✔ Trace the route with your finger BEFORE you play."
+    "✔ Dynamics = <b>volume</b> instructions, written in Italian.",
+    "✔ <b>p = soft</b> \u{1F92B} · <b>f = loud</b> \u{1F4E2} · <b>mezzo = moderately</b>.",
+    "✔ The ladder: <b>pp → p → mp → mf → f → ff</b>.",
+    "✔ <b>&lt; crescendo</b> = gradually louder · <b>&gt; decrescendo</b> = gradually softer.",
+    "✔ Dynamics sit <b>below the notes</b>, right where they take effect."
   ],
   tips:[
-    "Know each sign's destination: D.C. = the beginning, D.S. = the sign \u{1F516}, Fine = stop \u{1F6D1}, Coda = the ending \u{1F3C1}.",
-    "In real scores, mark your route with a pencil — every pro does it!",
-    "Meet the instruction at the END of the written music — it always sends you somewhere you've been.",
-    "\u{1F389} Unit 5 complete! Next: Unit 6 — accidentals! Flats make notes lower…"
+    "Sing any tune at pp, then at ff — feel how the ENERGY changes, not the notes.",
+    "P = Peaceful, F = Full volume — the two anchors of the whole system.",
+    "Wedges point at the soft end: the tip is always the quietest moment.",
+    "\u{1F422} Next lesson: Italian words for SPEED — tempo marks from Adagio to Vivace!"
   ],
-  rewards:{ badge:"Musical GPS Guide", icon:"\u{1F5FA}\u{FE0F}" },
+  rewards:{ badge:"Dynamics Director", icon:"\u{1F4E2}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT navigation — not one wrong turn on the whole map! Unit 6 awaits. \u{1F5FA}\u{FE0F}\u{1F389}",
-  miaPass:"You passed! The musical GPS is calibrated. Review below or run the route once more.",
+  miaPerfect:"PERFECT — from pianissimo to fortissimo, flawless! Tempo marks are next. \u{1F4E2}\u{1F389}",
+  miaPass:"You passed! The volume ladder is yours. Review below or climb again for a perfect run.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Four signs run music's GPS: D.C. (beginning), D.S. (the Segno sign), Fine (stop), Coda (special ending).",
-      play:()=>{[72,67,64,60].forEach((m,k)=>MFAudio.tone(m,.3,k*.3));} },
-    learn:{ label:"the roadmap signs",
-      explain:"D.C. = beginning; D.S. = Segno; Fine = stop; Coda = jump-to ending. Combined: D.C. al Fine, D.S. al Coda, etc.",
-      hint:"Home, bookmark, stop sign, finish flag.",
-      play:()=>{[60,64,67,72,67,64,60].forEach((m,k)=>MFAudio.tone(m,.25,k*.25));} },
+      explain:"Dynamics are volume instructions: p soft, f loud, and everything between. Same notes, different power.",
+      play:()=>{[60,64,67].forEach((m,k)=>MFAudio.tone(m,.4,k*.35,.15));[60,64,67].forEach((m,k)=>MFAudio.tone(m,.4,1.6+k*.35,.8));} },
+    learn:{ label:"the dynamics",
+      explain:"pp p mp mf f ff — softest to loudest; mezzo = moderately. Crescendo (<) grows, decrescendo (>) fades.",
+      hint:"P = Peaceful, F = Full volume.",
+      play:()=>{for(let k=0;k<6;k++) MFAudio.tone(67,.3,k*.32,.1+k*.14);} },
     example:{ label:"the examples",
-      explain:"Example 1 is a real D.C. al Fine — back to the top, stop at Fine. Example 2 is a D.S. al Coda — back to the Segno, then jump to the Coda. Trace each with your finger." },
+      explain:"Hear the p phrase whisper and the f phrase declare — then the crescendo grow underneath the wedge." },
     game:{ label:"the games",
-      explain:"Race the signs, hunt the landmarks, run the expert D.S. al Coda route, and reverse-match under time.",
-      hint:"Always know your destination BEFORE you move." },
+      explain:"Race the symbols, hunt the markings, climb the ladder in order, then reverse-match against the clock.",
+      hint:"Six levels, two wedges — that's the whole kit." },
     quiz:{ label:"this question",
-      explain:"Translate first: Capo = head/beginning, Segno = sign, Fine = end, Coda = tail/special ending.",
-      play:()=>{MFAudio.tone(60,.3,0);MFAudio.tone(72,.5,.4);} }
+      explain:"Anchor on p = soft and f = loud; mezzo = moderately; wedges = gradual change.",
+      play:()=>{MFAudio.tone(67,.4,0,.15);MFAudio.tone(67,.4,.5,.8);} }
   }
 };

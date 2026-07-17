@@ -1,4 +1,4 @@
-/* Lesson 3 — Bass Clef and Staff (AEMT Book 1, Unit 1)
+/* Lesson 3 (1.3) — Bass Clef and Staff (AEMT Book 1, Unit 1)
    v2 — rebuilt from the instructor's design document (drafts/UNIT 1 – Lesson 3.md)
    NOTE: edit by FULL-FILE REWRITE only. */
 

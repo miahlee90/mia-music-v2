@@ -1,260 +1,280 @@
-/* Lesson 22 — Flats (AEMT Book 1, Unit 6)
-   Built from drafts/UNIT 6 – Lessons 22, 23 & 24.md (combined draft — pages stay separate, DD-12).
-   QA notes honored: ♭ = one key to the LEFT (keyboard direction ↔ pitch direction),
-   and the ONE-MEASURE RULE introduced with highlighted affected notes.
+/* Lesson 22 (3.2, formerly L19) — Tempo Marks (AEMT Book 1, Unit 5)
+   Built from drafts/UNIT 5 – Lesson 19.md.
+   QA note honored: every Italian term paired with AUDIO examples and movement
+   (walking/running imagery + two tap games at slow and fast tempos).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* find-the-flat-key drill (unique L22 prefix) */
-function MF_L22_flatKey(container,fb){
-  const rounds=[{from:"B4",to:"Bb4",name:"B♭"},{from:"E4",to:"Eb4",name:"E♭"},{from:"A4",to:"Ab4",name:"A♭"},{from:"D4",to:"Db4",name:"D♭"}];
-  let i=0,api=null;
-  container.innerHTML=`<div class="big-q fk-q" style="text-align:center"></div><div class="fk-kb"></div>`;
-  const q=container.querySelector(".fk-q");
-  function ask(){
-    const cur=rounds[i];
-    q.innerHTML=`Key ${i+1} of ${rounds.length}: this is <b>${cur.from[0]}</b> — now click <b>${cur.name}</b> (one key to the LEFT).`;
-    api=Keyboard.create(container.querySelector(".fk-kb"),{start:60,octaves:2,labels:false,marks:[MFAudio.midi(cur.from)],
-      onKey:m=>{
-        const target=MFAudio.midi(cur.to);
-        if(m===target){ i++;
-          if(i>=rounds.length){ q.textContent="Flat finder!";
-            fb(true,"✓ Four flats found — always ONE key to the left, one half step LOWER. ⬇️"); }
-          else { fb(true,`✓ ${cur.name} — the black key just left of ${cur.from[0]}. Next…`); ask(); } }
-        else if(m===MFAudio.midi(cur.from)) fb(false,`That's plain ${cur.from[0]} — the flat lives one key to its LEFT.`);
-        else fb(false,"Count carefully: start on the marked key and move exactly ONE key left — black or white!");
-      }});
-  }
+/* listen-and-choose tempo drill (unique L19 prefix) */
+function MF_L22_tempoListen(container,fb){
+  const ROUNDS=[{bpm:56,a:"Adagio"},{bpm:132,a:"Allegro"},{bpm:88,a:"Andante"},{bpm:160,a:"Vivace"}].sort(()=>Math.random()-.5);
+  const OPTS=["Adagio","Andante","Allegro","Vivace"];
+  let i=0,played=false;
+  container.innerHTML=`<div class="big-q tl-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play tl-play">▶ Listen</button></div>
+    <div class="choices chips tl-ch" style="display:none"></div>`;
+  const q=container.querySelector(".tl-q"), ch=container.querySelector(".tl-ch");
+  OPTS.forEach(o=>{ const b=document.createElement("button"); b.textContent=o;
+    b.onclick=()=>{
+      if(!played){ fb(false,"Listen first!"); return; }
+      const cur=ROUNDS[i];
+      if(o===cur.a){ i++;
+        if(i>=ROUNDS.length){ ch.style.display="none"; container.querySelector(".tl-play").style.display="none"; q.textContent="Tempo ears unlocked!";
+          fb(true,"✓ Slow crawl, easy walk, cheerful run, lightning sprint — you heard them all correctly!"); }
+        else { fb(true,`✓ ${cur.a} it was! Next tempo…`); ask(); } }
+      else fb(false,`Feel the pulse in your body: could you WALK to it, RUN to it, or barely crawl? (It was ${cur.a}.)`);
+    };
+    ch.appendChild(b); });
+  function ask(){ q.textContent=`Tempo ${i+1} of ${ROUNDS.length}: which marking fits?`; played=false; ch.style.display="none"; }
+  container.querySelector(".tl-play").onclick=()=>{
+    const spb=60/ROUNDS[i].bpm;
+    [60,64,67,64,60,64,67,64].forEach((m,k)=>MFAudio.tone(m,spb*.8,k*spb,.4));
+    played=true;
+    setTimeout(()=>{ ch.style.display=""; },8*spb*1000+300);
+  };
   ask();
 }
 
 LESSON_CONTENT[22]={
-  welcome:"Unit 6! Today notes learn to duck DOWN. ⬇️",
+  welcome:"Slow like a turtle or fast like lightning — today we set the SPEED. \u{1F422}\u{26A1}",
   hook:{
-    say:"Have you ever wished you could make a note just a little <b>lower</b>? That's exactly what a <b>flat (♭)</b> does! Press play — B, then B-flat. <b>Which way did the pitch move?</b>",
+    say:"Have you ever walked slowly through a park… or raced across a playground? Music moves at different speeds too! Press play — the same melody, two speeds. <b>Which felt like a stroll and which like a sprint?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
-        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ B… then B♭</button></div>
-          <div class="choices hk-ch" style="display:none"><button>⬇️ DOWN — a little lower</button><button>⬆️ UP — a little higher</button><button>It stayed the same</button></div>`;
+        container.innerHTML=`<div style="text-align:center"><button class="play hk-play">▶ Stroll… then sprint</button></div>
+          <div class="choices hk-ch" style="display:none"><button>First slow (stroll), then fast (sprint)</button><button>First fast, then slow</button><button>Both the same speed</button></div>`;
         const ch=container.querySelector(".hk-ch");
         container.querySelector(".hk-play").onclick=()=>{
-          MFAudio.tone(71,.8,0); MFAudio.tone(70,.8,1.0);
-          setTimeout(()=>{ ch.style.display=""; },2100);
+          const mel=[60,64,67,72];
+          mel.forEach((m,k)=>MFAudio.tone(m,.6,k*.75,.4));
+          mel.forEach((m,k)=>MFAudio.tone(m,.25,3.6+k*.3,.4));
+          setTimeout(()=>{ ch.style.display=""; },5200);
         };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Down — by the smallest step in music, a HALF STEP. The flat is a pitch-lowering machine!");
-          else fb(false,"Listen again — the second note sinks just a little…");
+          if(i===0) fb(true,"✓ Same notes — different SPEED. That speed is called TEMPO, and Italian words tell musicians exactly how fast to go!");
+          else fb(false,"Listen again — which version could you stroll to?");
         });
       } }
   },
   objectives:[
-    "Identify the flat sign (♭)",
-    "Explain that a flat lowers a note by one half step",
-    "Find flat notes on the keyboard (one key to the LEFT)",
-    "Read flat notes on the staff",
-    "Apply the one-measure rule for accidentals",
-    "Play simple melodies containing flats"
+    "Define tempo",
+    "Identify common Italian tempo markings",
+    "Arrange tempos from slowest to fastest",
+    "Explain how tempo changes the mood of music",
+    "Recognize tempo markings by ear",
+    "Choose an appropriate tempo for different styles of music"
   ],
   steps:[
-    { say:"A <b>flat (♭)</b> is an <b>accidental</b> — a pitch changer. It <b>lowers</b> a note by <b>one half step</b>: on the keyboard, move <b>one key to the LEFT</b> (black or white!). \u{1F447} <b>What does a flat do to a note?</b>",
-      show:{ type:"staff", spec:{clef:"treble",notes:[{p:"B4",d:"q",label:"B"},{p:"Bb4",d:"q",label:"B♭ — a half step lower"}],width:340} },
+    { say:"<b>Tempo</b> = the speed of the music — its heartbeat. Like dynamics, tempo words are <b>Italian</b>. The big five: \u{1F422} <b>Adagio</b> (slow) · \u{1F6B6} <b>Andante</b> (walking pace) · \u{1F642} <b>Moderato</b> (moderate) · \u{1F3C3} <b>Allegro</b> (fast & cheerful) · \u{26A1} <b>Vivace</b> (very lively). \u{1F447} <b>What does tempo tell musicians?</b>",
       try:{ type:"mc",
-        choices:["Lowers it by one half step","Raises it by one half step","Makes it louder"], answer:0,
-        success:"✓ Down one half step — the very next key to the left.",
-        fail:"Flat = LOWER. Think of a flat tire sinking down…",
-        hint:"⬇️ left and lower." } },
-    { say:"On the staff, the flat sign sits just <b>before the notehead</b>, on the same line or space. On the keyboard, B♭ is the black key just <b>left</b> of B. \u{1F447} <b>Find the flats:</b>",
+        choices:["The speed of the music","The volume of the music","The names of the notes"], answer:0,
+        success:"✓ Tempo = speed, the heartbeat that everything else rides on.",
+        fail:"Volume was LAST lesson (dynamics) — tempo is about…?",
+        hint:"Stroll vs sprint." } },
+    { say:"Hear each word come to life! \u{1F447} <b>Press each tempo and FEEL the difference:</b>",
       try:{ type:"custom",
-        hint:"Start on the marked key, slide ONE key left.",
-        mount:(container,fb)=>MF_L22_flatKey(container,fb) } },
-    { say:"THE BIG RULE: an accidental affects <b>every note of the same letter on the same line or space</b> for the <b>rest of the measure</b> — then the <b>bar line cancels it</b>. \u{1F447} <b>Look at this measure — which notes does the printed ♭ affect?</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"4/4",notes:[{p:"Bb4",d:"q",label:"B♭ (flat sign!)"},{p:"G4",d:"q",label:"G"},{p:"B4",d:"q",sound:"Bb4",label:"still B♭!"},{p:"B4",d:"q",sound:"Bb4",label:"still B♭!"},{bar:"single"},{p:"B4",d:"w",label:"B natural (new measure)"},{bar:"final"}],width:470} },
-      try:{ type:"mc",
-        choices:["Every B until the bar line","Only the note it's printed on","Every B in the whole piece"], answer:0,
-        success:"✓ The flat stays “switched on” for all matching notes until the bar line resets everything.",
-        fail:"The bar line is the OFF switch — until then, the flat rules every matching note.",
-        hint:"One-measure rule!" } },
-    { say:"Practice the rule. \u{1F447} <b>Does the flat still apply?</b>",
-      try:{ type:"custom",
-        hint:"Same letter + same measure = still flat. Past the bar line = reset.",
+        hint:"Same melody every time — only the heartbeat changes.",
         mount:(container,fb)=>{
-          const rounds=[
-            {q:"A B♭ appears on beat 1. Beat 3 has another B in the SAME measure. Is it flat?",a:true,why:"Same measure, same letter — the flat still applies."},
-            {q:"A B♭ appears in measure 1. Measure 2 has a B (no sign). Is it flat?",a:false,why:"The bar line canceled it — B natural again."},
-            {q:"An E♭ appears on beat 2. Beat 4 has another E, same measure. Is it flat?",a:true,why:"Still inside the measure — still E♭."},
-            {q:"An E♭ appears in one measure. THREE measures later there's an E. Is it flat?",a:false,why:"Long gone — each bar line resets accidentals."}];
-          let i=0;
-          container.innerHTML=`<div class="big-q ra-q" style="text-align:center;min-height:56px"></div>
-            <div class="choices ra-ch"><button>Yes — still flat</button><button>No — the bar line reset it</button></div>`;
-          const q=container.querySelector(".ra-q"), ch=container.querySelector(".ra-ch");
-          function ask(){ q.textContent=`Case ${i+1} of ${rounds.length}: `+rounds[i].q; }
-          [...ch.children].forEach((b,bi)=>b.onclick=()=>{
-            const cur=rounds[i], saidYes=bi===0, ok=saidYes===cur.a;
-            if(ok){ MFAudio.yay(); i++;
-              if(i>=rounds.length){ ch.style.display="none"; q.textContent="Rule mastered!";
-                fb(true,"✓ Four for four — the flat lives until the bar line, and not a beat longer!"); }
-              else { fb(true,"✓ "+cur.why+" Next case…"); ask(); } }
-            else { MFAudio.tone(40,.25); fb(false,cur.why); }
+          const T=[["Adagio",56,"\u{1F422}"],["Andante",88,"\u{1F6B6}"],["Moderato",104,"\u{1F642}"],["Allegro",132,"\u{1F3C3}"],["Vivace",160,"\u{26A1}"]];
+          const heard=new Set();
+          container.innerHTML=`<div class="choices tp-ch" style="justify-content:center"></div>`;
+          const ch=container.querySelector(".tp-ch");
+          T.forEach(([name,bpm,emo])=>{
+            const b=document.createElement("button"); b.innerHTML=`${emo} ${name}`;
+            b.onclick=()=>{
+              const spb=60/bpm;
+              [60,64,67,72,67,64,60].forEach((m,k)=>MFAudio.tone(m,spb*.8,k*spb,.4));
+              heard.add(name);
+              if(heard.size===5) fb(true,"✓ All five heard — from turtle to lightning. Notice: the notes never changed, only the heartbeat!");
+              else fb(true,`✓ ${name} — ${{"Adagio":"slow and expressive","Andante":"a comfortable walk","Moderato":"right in the middle","Allegro":"fast and cheerful","Vivace":"very lively!"}[name]} (${heard.size} of 5 heard)`);
+            };
+            ch.appendChild(b);
           });
-          ask();
         } } },
-    { say:"Read a melody WITH flats — listen for the gentle “sigh” each flat adds. \u{1F447}",
+    { say:"Line them up! From slowest to fastest — the full spectrum even includes <b>Largo</b> (very slow) and <b>Presto</b> (very fast) at the edges. \u{1F447} <b>Tap the big five in order, slowest first:</b>",
       try:{ type:"custom",
-        hint:"Both B's in measure 1 are flat — the sign carries through the measure.",
+        hint:"Turtle → walker → middle → runner → lightning.",
         mount:(container,fb)=>{
-          const spec={clef:"treble",time:"4/4",tempo:92,
-            notes:[{p:"C4",d:"q",label:"C"},{p:"Bb4",d:"q",label:"B♭"},{p:"B4",d:"q",label:"(B♭)"},{p:"G4",d:"q",label:"G"},{bar:"single"},{p:"F4",d:"w",label:"F"},{bar:"final"}],width:460};
-          /* NOTE: item 3 is written B4 but sounds Bb per the one-measure rule — play override below */
-          container.innerHTML=`<div class="rf-staff"></div><div style="text-align:center"><button class="play rf-play">▶ Play & listen</button></div>`;
-          const api=Staff.render(container.querySelector(".rf-staff"),spec);
-          container.querySelector(".rf-play").onclick=()=>{
-            const spb=60/92;
-            const seq=[[60,0,1],[70,1,1],[70,2,1],[67,3,1],[65,4,4]];
-            seq.forEach(([m,b,len],idx)=>{ MFAudio.tone(m,len*spb*.9,b*spb);
-              setTimeout(()=>api.highlight([0,1,2,3,5][idx]<5?[0,1,2,3][idx]:5), b*spb*1000); });
-            setTimeout(()=>api.highlight(5),4*spb*1000);
-            setTimeout(()=>{ api.highlight(null);
-              fb(true,"✓ Both B's sounded FLAT — the accidental carried through the whole measure, exactly as the rule says!"); },8*spb*1000+300);
-          };
+          const seq=["Adagio","Andante","Moderato","Allegro","Vivace"];
+          let next=0;
+          container.innerHTML=`<div class="tl-done" style="text-align:center;font-weight:800;min-height:30px;color:var(--primary)"></div>
+            <div class="choices tl2-ch"></div>`;
+          const done=container.querySelector(".tl-done"), ch=container.querySelector(".tl2-ch");
+          [...seq].sort(()=>Math.random()-.5).forEach(s=>{
+            const b=document.createElement("button"); b.textContent=s;
+            b.onclick=()=>{
+              if(s===seq[next]){ next++; b.disabled=true; MFAudio.tone(55+next*4,.3);
+                done.textContent=seq.slice(0,next).join(" → ");
+                if(next===seq.length){ ch.style.display="none";
+                  fb(true,"✓ Adagio → Andante → Moderato → Allegro → Vivace — the tempo line, slow to fast!"); } }
+              else { MFAudio.tone(40,.25); fb(false,`Not yet — what comes ${next===0?"SLOWEST":"after "+seq[next-1]}?`); }
+            };
+            ch.appendChild(b);
+          });
+        } } },
+    { say:"Now trust your EARS alone. \u{1F447} <b>Hear a tempo, name it:</b>",
+      try:{ type:"custom",
+        hint:"Could you walk to it? Run? Barely crawl?",
+        mount:(container,fb)=>MF_L22_tempoListen(container,fb) } },
+    { say:"Tempo sets the <b>mood</b>: the same tune can be a lullaby at Adagio or a dance at Vivace. \u{1F447} <b>Pick the best tempo for each scene:</b>",
+      try:{ type:"custom",
+        hint:"Match the energy of the scene to the speed of the music.",
+        mount:(container,fb)=>{
+          const rounds=[{scene:"\u{1F634} A gentle lullaby",a:"Adagio"},{scene:"\u{1F6B6} A relaxed afternoon stroll",a:"Andante"},{scene:"\u{1F389} A joyful birthday dance",a:"Allegro"},{scene:"\u{26A1} A wild chase scene",a:"Vivace"}];
+          const OPTS=["Adagio","Andante","Allegro","Vivace"];
+          let i=0;
+          container.innerHTML=`<div class="big-q sc-q" style="text-align:center"></div><div class="choices chips sc-ch"></div>`;
+          const q=container.querySelector(".sc-q"), ch=container.querySelector(".sc-ch");
+          OPTS.forEach(o=>{ const b=document.createElement("button"); b.textContent=o;
+            b.onclick=()=>{
+              const cur=rounds[i];
+              if(o===cur.a){ MFAudio.yay(); i++;
+                if(i>=rounds.length){ ch.style.display="none"; q.textContent="Perfect casting!";
+                  fb(true,"✓ Every scene got the right heartbeat — that's how composers set a mood before a single melody is heard!"); }
+                else { fb(true,`✓ ${cur.a} fits perfectly! Next scene…`); ask(); } }
+              else { MFAudio.tone(40,.25); fb(false,"Feel the scene's energy — is it sleepy, strolling, dancing, or racing?"); }
+            };
+            ch.appendChild(b); });
+          function ask(){ q.textContent=`Scene ${i+1} of ${rounds.length}: ${rounds[i].scene} — which tempo?`; }
+          ask();
         } } }
   ],
   examples:[
-    { caption:"B and B♭ side by side — the flat sign sits before the notehead and pulls the pitch a half step down.",
-      staff:{clef:"treble",tempo:80,notes:[{p:"B4",d:"h",label:"B"},{p:"Bb4",d:"h",label:"B♭"},{p:"E4",d:"h",label:"E"},{p:"Eb4",d:"h",label:"E♭"}],width:440} },
-    { caption:"The one-measure rule in action: one printed ♭, TWO flat B's — then the bar line resets everything.",
-      staff:{clef:"treble",tempo:92,time:"4/4",notes:[{p:"Bb4",d:"h",label:"B♭"},{p:"B4",d:"h",sound:"Bb4",label:"(still B♭)"},{bar:"single"},{p:"B4",d:"w",label:"B natural again"},{bar:"final"}],width:440} }
+    { caption:"The same four notes at Andante — a comfortable walking pace. (Press play and stroll along.)",
+      staff:{clef:"treble",tempo:88,time:"4/4",notes:[{p:"C4",d:"q",label:"walk"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"E4",d:"q"},{bar:"final"}],width:400} },
+    { caption:"Exactly the same notes at Vivace — suddenly it's a dance! Tempo IS the mood.",
+      staff:{clef:"treble",tempo:160,time:"4/4",notes:[{p:"C4",d:"q",label:"run!"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"E4",d:"q"},{bar:"final"}],width:400} }
   ],
   games:[
-    { type:"symbol-hunt", title:"Game 1 · Spot the Flat",
-      intro:"Flats hide among other signs — click the ♭ (or the flat NOTE) Mia names!",
-      miaIntro:"Hunt the pitch-lowering machine! \u{1F50D}",
-      spec:{rounds:6, pool:[
-        {label:"Flat sign (B♭)", spec:{clef:"treble",notes:[{p:"Bb4",d:"q"}]}},
-        {label:"Plain B (no accidental)", spec:{clef:"treble",notes:[{p:"B4",d:"q"}]}},
-        {label:"E♭", spec:{clef:"treble",notes:[{p:"Eb4",d:"q"}]}},
-        {label:"Quarter Rest", spec:{clef:"treble",notes:[{rest:"q"}]}},
-        {label:"Repeat Sign", spec:{clef:"treble",notes:[{bar:"repeat-end"}]}}]},
-      result:(score)=>score>=5?"No flat escapes your eyes!":null },
-    { type:"term-race", title:"Game 2 · Accidental Basics Dash",
-      intro:"Quick vocabulary — what does each sign do to the pitch?",
-      miaIntro:"Speed round — up, down, or cancel? \u{26A1}",
+    { type:"term-race", title:"Game 1 · Tempo Term Dash",
+      intro:"Italian flashes — pick the meaning fast! The big five plus the extremes.",
+      miaIntro:"Speed quiz about… speed! \u{26A1}",
       spec:{rounds:8, pool:[
-        ["Flat (♭)","Lowers a note by one half step"],
-        ["Half Step","The smallest distance — the very next key"],
-        ["Accidental","A sign that changes a note's pitch"],
-        ["Bar Line","Cancels accidentals at the end of the measure"],
-        ["One-Measure Rule","An accidental lasts until the next bar line"],
-        ["B♭ on the keyboard","The black key just LEFT of B"]]},
-      result:(score)=>score>=7?"Flat facts — locked in!":null },
-    { type:"rhythm-tap", title:"Game 3 · Tap Review",
-      intro:"Keep those rhythm skills sharp while your brain digests flats — tap it back!",
-      miaIntro:"Rhythm never rests — tap! \u{1F44F}",
-      spec:{tempo:92, rounds:3, patterns:[["q","q","h"],["q.","8","h"],["8","8","q","h"]]},
-      result:(score)=>score>=8?"Rhythm AND pitch — growing together!":null },
-    { type:"value-race", title:"Game 4 · Value Sprint (45s)",
-      intro:"45 seconds of note values — everything from eighths to dotted halves. Go!",
-      miaIntro:"Sprint! Keep every value fresh! \u{23F1}",
-      spec:{seconds:45, ask:"beats", values:["8","q","q.","h","h."]},
-      result:(score)=>score>=13?score+" — value fluency maintained!":null }
+        ["Adagio","Slow"],["Andante","Walking pace"],["Moderato","Moderate speed"],
+        ["Allegro","Fast and cheerful"],["Vivace","Very lively and fast"],
+        ["Largo","Very slow"],["Presto","Very fast"],["Tempo","The speed of the music"]]},
+      result:(score)=>score>=7?"Tempo vocabulary — fluent!":null },
+    { type:"order-tap", title:"Game 2 · The Tempo Line",
+      intro:"Tap all SEVEN tempo words from slowest to fastest — Largo to Presto, against the clock!",
+      miaIntro:"The full spectrum — line them up! \u{1F3C1}",
+      spec:{title:"Slowest → fastest!", sequence:["Largo","Adagio","Andante","Moderato","Allegro","Vivace","Presto"], timer:25},
+      result:(stars)=>stars>=3?"Seven tempos, perfect order — conductor material!":null },
+    { type:"rhythm-tap", title:"Game 3 · Adagio Tap",
+      intro:"Tap rhythms at a TRUE Adagio — slow is harder than it sounds. Keep the pulse steady!",
+      miaIntro:"The turtle challenge — steady and slow! \u{1F422}",
+      spec:{tempo:56, rounds:2, patterns:[["q","q","h"],["h","q","q"],["w"]]},
+      result:(score)=>score>=5?"Rock-steady at turtle speed — true control!":null },
+    { type:"rhythm-tap", title:"Game 4 · Vivace Tap",
+      intro:"Same idea at VIVACE — hold on tight! Quick taps, steady heart.",
+      miaIntro:"Now the lightning round! \u{26A1}",
+      spec:{tempo:160, rounds:2, patterns:[["q","q","q","q"],["q","q","h"],["h","h"]]},
+      result:(score)=>score>=6?"Lightning-fast AND accurate — Vivace mastered!":null }
   ],
-  practiceIntro:"20 practice questions — the flat's job, keyboard direction, and the one-measure rule. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — Italian terms, the tempo line, and matching moods. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"sign", pool:[["Flat (♭)","Lowers a note by one half step"],["Accidental","A sign that changes a note's pitch"],["Half Step","The distance to the very next key"],["Bar Line","Cancels accidentals when the measure ends"]], reverse:true}, count:5 },
-    { gen:"click-key", params:{letters:["B","E","A"], octaves:[4]}, count:3 },
+    { gen:"term-match", params:{subject:"tempo marking", pool:[["Adagio","Slow"],["Andante","Walking pace"],["Moderato","Moderate speed"],["Allegro","Fast and cheerful"],["Vivace","Very lively and fast"],["Largo","Very slow"],["Presto","Very fast"]], reverse:true}, count:8 },
     { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 },
     { gen:"note-name", params:{clef:"treble"}, count:2 },
-    { type:"mc", q:"A flat (♭) makes a note…", choices:["one half step LOWER","one half step higher","twice as long"], answer:0,
-      explain:"Down — one key to the left." },
-    { type:"mc", q:"On the keyboard, B♭ is…", choices:["one key LEFT of B","one key RIGHT of B","the same key as B"], answer:0,
-      explain:"Flats always move left/lower." },
-    { type:"truefalse", q:"A flat affects every same-letter note on that line/space for the rest of the measure.", answer:true,
-      explain:"The one-measure rule." },
-    { type:"truefalse", q:"An accidental carries into the next measure automatically.", answer:false,
-      explain:"The bar line cancels it." },
-    { type:"mc", q:"The flat sign is written…", choices:["just BEFORE the notehead","just after the notehead","above the staff"], answer:0,
-      explain:"Before the note, on its line or space." },
-    { type:"truefalse", q:"A half step is the smallest distance in Western music.", answer:true,
-      explain:"The very next key — no keys skipped." },
-    { type:"mc", q:"B♭ is what color key on the piano?", choices:["black","white","either — depends on the piano"], answer:0,
-      explain:"The black key left of B. (But careful: some flats, like C♭, land on white keys — later!)" },
-    { type:"truefalse", q:"Flats make music sound a little lower and often warmer or sadder.", answer:true,
-      explain:"That gentle sigh downward is a classic expressive color." }
+    { type:"mc", q:"Tempo is…", choices:["the speed of the music","the volume of the music","the shape of the melody"], answer:0,
+      explain:"The heartbeat — how fast the beats go by." },
+    { type:"truefalse", q:"Allegro is faster than Adagio.", answer:true,
+      explain:"Cheerful run vs slow crawl." },
+    { type:"truefalse", q:"Andante means “at a walking pace.”", answer:true,
+      explain:"From the Italian andare — to walk." },
+    { type:"mc", q:"Which is the FASTEST of the big five?", choices:["Vivace","Moderato","Andante"], answer:0,
+      explain:"Very lively and fast — the lightning bolt." },
+    { type:"truefalse", q:"Changing the tempo changes the mood, even with the same notes.", answer:true,
+      explain:"Lullaby at Adagio, dance at Vivace." },
+    { type:"mc", q:"Which tempo suits a calm, expressive piece?", choices:["Adagio","Presto","Vivace"], answer:0,
+      explain:"Slow and expressive." },
+    { type:"truefalse", q:"Tempo markings tell you how LOUD to play.", answer:false,
+      explain:"That's dynamics! Tempo = speed." },
+    { type:"mc", q:"Largo and Presto are…", choices:["the extreme ends of the tempo line","dynamic markings","kinds of rests"], answer:0,
+      explain:"Very slow and very fast — the outer edges." },
+    /* — from the unit review sheet — */
+    { type:"mc", q:"Ritardando (ritard. or rit.) means…", choices:["gradually slowing down","gradually speeding up","suddenly loud"], answer:0, explain:"The tempo relaxes gradually." },
+    { type:"mc", q:"Accelerando (accel.) means…", choices:["gradually speeding up","gradually slowing down","moderately soft"], answer:0, explain:"The tempo pushes forward gradually." },
+    { type:"truefalse", q:"Allegro moderato is slightly slower than Allegro but quicker than Moderato.", answer:true, explain:"A blended marking sitting between the two." }
   ],
-  miaQuizIntro:"Quiz time! Remember: flat = LEFT and LOWER, and the bar line is the reset button!",
+  miaQuizIntro:"Quiz time! Walk, run, crawl or fly — pick the right Italian every time!",
   quiz:[
-    { type:"mc", q:"What does a flat (♭) do?", choices:["Raises the pitch","Lowers the pitch by one half step","Cancels a sharp","Holds the note longer"], answer:1,
-      explain:"Down one half step — one key left.", hint:"⬇️" },
-    { type:"mc", q:"On the keyboard, a flat moves you…", choices:["one key to the LEFT","one key to the RIGHT","up an octave"], answer:0,
-      explain:"Left = lower.", hint:"Flat tire sinks down…" },
-    { type:"truefalse", q:"A flat raises the pitch.", answer:false,
-      explain:"Flats LOWER; sharps (next lesson!) raise.", hint:"Which way does a flat tire go?" },
-    { type:"truefalse", q:"An accidental remains in effect for the rest of the measure.", answer:true,
-      explain:"Until the bar line switches it off.", hint:"The one-measure rule." },
-    { type:"mc", q:"What cancels an accidental automatically?", choices:["The next bar line","The next note","The end of the line"], answer:0,
-      explain:"Bar line = reset button.", hint:"The measure's wall." },
-    { type:"mc", q:"Which note is B♭?",
-      staff:{clef:"treble",notes:[{p:"B4",d:"q",label:"1"},{p:"Bb4",d:"q",label:"2"}],width:300},
-      choices:["1","2"], answer:1,
-      explain:"Note 2 has the ♭ sign before its head.", hint:"Find the little b." },
-    { type:"mc", q:"A flat lowers a note by one ____ step.", choices:["half","whole","quarter"], answer:0,
-      explain:"Half step — the smallest move.", hint:"The very next key." },
-    { type:"mc", q:"An accidental remains in effect until the next ____ line.", choices:["bar","ledger","staff"], answer:0,
-      explain:"The bar line resets accidentals.", hint:"The measure's boundary." },
-    { type:"truefalse", q:"In this measure, BOTH B's sound flat.",
-      staff:{clef:"treble",time:"4/4",notes:[{p:"Bb4",d:"h"},{p:"B4",d:"h"},{bar:"final"}],width:340},
-      answer:true,
-      explain:"The printed ♭ rules every B until the bar line.", hint:"Same measure, same letter." },
-    { type:"mc", q:"Where does the flat sign sit?", choices:["Before the notehead, on the same line or space","After the notehead","Under the staff"], answer:0,
-      explain:"Before the note it changes.", hint:"You read it BEFORE you play." },
-    { type:"mc", q:"The flat's little symbol looks most like…", choices:["a lowercase b","the number 7","a hashtag"], answer:0,
-      explain:"♭ — a pointed lowercase b.", hint:"b for… below!" },
+    { type:"mc", q:"What does tempo tell musicians?", choices:["How loud to play","The speed of the music","Which notes to play","Which instrument to use"], answer:1,
+      explain:"Tempo = speed, the music's heartbeat.", hint:"Stroll or sprint?" },
+    { type:"mc", q:"Which tempo marking means walking pace?", choices:["Adagio","Andante","Vivace","Allegro"], answer:1,
+      explain:"Andante — the comfortable walk.", hint:"\u{1F6B6}" },
+    { type:"mc", q:"Which tempo marking means fast and cheerful?", choices:["Moderato","Adagio","Allegro","Largo"], answer:2,
+      explain:"Allegro — the happy run.", hint:"\u{1F3C3}" },
+    { type:"truefalse", q:"Allegro is faster than Adagio.", answer:true,
+      explain:"Run beats crawl.", hint:"Order the line." },
+    { type:"truefalse", q:"Vivace is usually faster than Moderato.", answer:true,
+      explain:"Very lively beats moderate.", hint:"\u{26A1} vs \u{1F642}" },
+    { type:"truefalse", q:"Tempo tells musicians how loudly to play.", answer:false,
+      explain:"Volume is dynamics — tempo is SPEED.", hint:"Last lesson vs this lesson." },
+    { type:"mc", q:"Which tempo marking means slow?", choices:["Adagio","Allegro","Vivace","Presto"], answer:0,
+      explain:"Adagio — slow and expressive.", hint:"\u{1F422}" },
+    { type:"mc", q:"Which matching is correct?",
+      choices:["Adagio → Slow · Andante → Walking · Moderato → Moderate · Allegro → Fast · Vivace → Very fast",
+               "Adagio → Fast · Andante → Very fast · Moderato → Slow · Allegro → Walking · Vivace → Moderate",
+               "Adagio → Moderate · Andante → Fast · Moderato → Very fast · Allegro → Slow · Vivace → Walking"], answer:0,
+      explain:"The big five, correctly lined up.", hint:"Turtle to lightning." },
+    { type:"mc", q:"The Italian word for walking pace is ____.", choices:["Andante","Adagio","Allegro"], answer:0,
+      explain:"Andante!", hint:"From andare, to walk." },
+    { type:"mc", q:"The speed of music is called ____.", choices:["tempo","dynamics","pitch"], answer:0,
+      explain:"Tempo.", hint:"Today's whole topic." },
+    { type:"mc", q:"Slowest to fastest:",
+      choices:["Adagio → Andante → Moderato → Allegro → Vivace",
+               "Vivace → Allegro → Moderato → Andante → Adagio",
+               "Andante → Adagio → Vivace → Moderato → Allegro"], answer:0,
+      explain:"The tempo line, left to right.", hint:"Start with the turtle." },
     { type:"mc", q:"Which statement is correct?",
-      choices:["A flat raises a note","A flat affects every same-letter note until the bar line","A flat lasts the whole piece","A flat makes the note louder"], answer:1,
-      explain:"Lower by a half step + one-measure rule.", hint:"Two facts in one." },
+      choices:["Tempo tells musicians how loudly to play","Andante is usually faster than Vivace","Allegro is generally faster than Andante","Adagio is the fastest tempo marking"], answer:2,
+      explain:"Cheerful run beats comfortable walk.", hint:"Compare their spots on the line." },
     /* generated */
-    { gen:"term-match", params:{subject:"sign", pool:[["Flat (♭)","Lowers a note by one half step"],["Accidental","A sign that changes a note's pitch"],["Bar Line","Cancels accidentals when the measure ends"],["Half Step","The distance to the very next key"]], reverse:true}, count:4 },
-    { gen:"click-key", params:{letters:["B","E"], octaves:[4]}, count:2 },
-    { gen:"note-name", params:{clef:"treble"}, count:2 }
+    { gen:"term-match", params:{subject:"tempo marking", pool:[["Adagio","Slow"],["Andante","Walking pace"],["Moderato","Moderate speed"],["Allegro","Fast and cheerful"],["Vivace","Very lively and fast"],["Largo","Very slow"],["Presto","Very fast"]], reverse:true}, count:5 },
+    { gen:"note-value", params:{values:["q","q.","8","h"], ask:"beats"}, count:2 },
+    { gen:"note-name", params:{clef:"treble"}, count:1 }
   ],
   vocabulary:[
-    {def:"A flat, sharp or natural sign that appears within a piece of music.", term:"Accidental"},
-    {def:"Lowers the pitch by one half step.", term:"Flat (♭)", staff:{clef:"none",notes:[{p:"Bb4",d:"q"}],width:140}},
-    {def:"The distance from any key on the keyboard to the very next key above or below, whether black or white.", term:"Half Step"},
-    {def:"An accidental affects the notes on the same line or space following it, for that measure only.", term:"One-Measure Rule"}
+    {def:"A word meaning “rate of speed.” It tells how fast or slow to play the music.", term:"Tempo"},
+    {def:"Slow.", term:"Adagio"},
+    {def:"Moving along (walking speed).", term:"Andante"},
+    {def:"Moderately.", term:"Moderato"},
+    {def:"Quickly, cheerfully.", term:"Allegro"},
+    {def:"Lively and fast.", term:"Vivace"}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Flat (♭)</b> = one half step <b>LOWER</b> — one key to the <b>left</b>. ⬇️",
-    "✔ The sign sits <b>before the notehead</b> on its line or space.",
-    "✔ <b>One-measure rule</b>: the flat rules every matching note until the <b>bar line</b>.",
-    "✔ The bar line is the automatic <b>reset button</b>.",
-    "✔ A <b>half step</b> = the very next key, black or white."
+    "✔ <b>Tempo</b> = the speed of the music, written in Italian.",
+    "✔ The line: <b>Largo → Adagio → Andante → Moderato → Allegro → Vivace → Presto</b>.",
+    "✔ <b>Andante</b> = walking \u{1F6B6} · <b>Allegro</b> = cheerful running \u{1F3C3}.",
+    "✔ Same notes + different tempo = <b>completely different mood</b>.",
+    "✔ Tempo is speed; dynamics are volume — different dials!"
   ],
   tips:[
-    "Say it while you play: “B… and B-flat, one key left.” The hand remembers directions.",
-    "Careful reading: the ♭ comes BEFORE the note in print, but you say the letter first: “B-flat.”",
-    "Spot a flat? Immediately scan the REST of the measure for more of that letter.",
-    "⬆️ Next lesson: the flat's opposite — the SHARP raises notes a half step!"
+    "Attach each word to your body: crawl for Adagio, stroll for Andante, jog for Allegro, sprint for Vivace.",
+    "When you hear music, guess the tempo word FIRST — then check how it makes you move.",
+    "Adagio is the hardest tempo to keep steady — slow takes the most control!",
+    "\u{1F3A8} Next lesson: HOW to play each note — staccato, accents, and the bird's-eye fermata!"
   ],
-  rewards:{ badge:"Flat Expert", icon:"⬇️" },
+  rewards:{ badge:"Tempo Navigator", icon:"\u{1F680}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT — every flat found, every rule applied! The sharp is waiting to lift you UP. ⬇️\u{1F389}",
-  miaPass:"You passed! Left and lower — locked in. Review below or retry for the perfect run.",
+  miaPerfect:"PERFECT — from Largo to Presto without missing a step! Articulation is next. \u{1F680}\u{1F389}",
+  miaPass:"You passed! The tempo line is drawn in your memory. Review below or race again for perfection.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"The flat is a pitch-lowering machine: one half step down, one key to the left.",
-      play:()=>{MFAudio.tone(71,.6,0);MFAudio.tone(70,.9,.7);} },
-    learn:{ label:"the flat",
-      explain:"♭ = down a half step (one key left). Sign sits before the notehead. It rules every matching note until the bar line resets it.",
-      hint:"⬇️ left, lower, until the bar line.",
-      play:()=>{[71,70,67,65].forEach((m,k)=>MFAudio.tone(m,.45,k*.45));} },
+      explain:"Tempo is the music's speed. Italian words — Adagio, Andante, Allegro and friends — tell you exactly how fast the heartbeat goes.",
+      play:()=>{[60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.5,k*.7,.4));[60,64,67,72].forEach((m,k)=>MFAudio.tone(m,.22,3.4+k*.28,.4));} },
+    learn:{ label:"tempo marks",
+      explain:"The big five, slow to fast: Adagio, Andante, Moderato, Allegro, Vivace — with Largo and Presto at the edges.",
+      hint:"Turtle, walker, middle, runner, lightning.",
+      play:()=>{const bpms=[56,88,132];bpms.forEach((b,r)=>{const s=60/b;[60,64,67].forEach((m,k)=>MFAudio.tone(m,s*.7,r*2+k*s,.4));});} },
     example:{ label:"the examples",
-      explain:"Hear B sink to B♭, then watch one printed flat control two notes before the bar line resets." },
+      explain:"The SAME four notes at Andante then Vivace — proof that tempo alone rewrites the mood." },
     game:{ label:"the games",
-      explain:"Hunt flats on the staff, race the vocabulary, and keep rhythm/value skills warm.",
-      hint:"On any flat question, think: LEFT and LOWER." },
+      explain:"Race the terms, order the full line, then tap at turtle speed AND lightning speed.",
+      hint:"Slow taps need the most patience — don't rush Adagio!" },
     quiz:{ label:"this question",
-      explain:"Two facts answer nearly everything: flat = half step down (left), and accidentals last until the bar line.",
-      play:()=>{MFAudio.tone(70,.8,0);} }
+      explain:"Picture the line: Largo-Adagio-Andante-Moderato-Allegro-Vivace-Presto. Every answer sits somewhere on it.",
+      play:()=>{const s=.45;[60,64,67,72].forEach((m,k)=>MFAudio.tone(m,s*.7,k*s,.4));} }
   }
 };

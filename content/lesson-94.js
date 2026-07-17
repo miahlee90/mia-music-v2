@@ -1,271 +1,334 @@
-/* Lesson 94 — Seventh-Chord Inversions (Book 4, Unit 23 — SELF-AUTHORED)
-   L51-54 covered triad inversions + V7 inversions + figured bass — reviewed
-   in ONE step. New: ALL five seventh types invert the same way; figures
-   7 / 6-5 / 4-3 / 4-2 apply to every seventh chord; bass-line reading;
-   lead-sheet slash equivalents. NOTE: edit by FULL-FILE REWRITE only. */
+/* Lesson 94 (14.5, formerly L73) — Binary Form (AB) — FULL REWRITE (instructor 2026-07-13)
+   Core: BINARY FORM = two main sections, A -> B, usually contrasting.
+   Repeats (|: A :| |: B :|) do NOT add sections. Section A begins in the
+   tonic and may stay (SECTIONAL) or leave toward the dominant/relative
+   major (CONTINUOUS); Section B returns to the tonic. If opening A material
+   returns near the end of B it is ROUNDED binary (A | B A'), else SIMPLE.
+   Binary is distinct from TERNARY (A B A) and from VERSE-CHORUS form.
+   Deliberately avoids "A rises / B falls" and "A must end on V7" as rules.
+   NOTE: edit by FULL-FILE REWRITE only. */
 
-/* position detective for any seventh chord */
-function MF_L94_pos(container,fb){
-  const ROUNDS=[
-    {name:"Cmaj7, C in the bass", notes:[48,64,67,71], pos:0, expl:"Root in the bass = root position — figure 7."},
-    {name:"C7, E in the bass", notes:[52,60,67,70], pos:1, expl:"3rd (E) in the bass = 1st inversion — figure 6/5."},
-    {name:"Cm7, G in the bass", notes:[55,60,63,70], pos:2, expl:"5th (G) in the bass = 2nd inversion — figure 4/3."},
-    {name:"Cm7♭5, B♭ in the bass", notes:[58,60,63,66], pos:3, expl:"7th (B♭) in the bass = 3rd inversion — figure 4/2."},
-    {name:"C°7, G♭ in the bass", notes:[54,60,63,69], pos:2, expl:"5th (G♭) in the bass = 2nd inversion — figure 4/3."}];
-  let r=0, played=false;
-  container.innerHTML=`<div class="big-q l94p-q" style="text-align:center"></div>
-    <div style="text-align:center"><button class="play l94p-play">▶ Hear the voicing</button></div>
-    <div class="choices l94p-ch" style="display:none"><button>Root position (7)</button><button>1st inversion (6/5)</button><button>2nd inversion (4/3)</button><button>3rd inversion (4/2)</button></div>`;
-  const q=container.querySelector(".l94p-q"), pl=container.querySelector(".l94p-play"), ch=container.querySelector(".l94p-ch");
-  pl.onclick=()=>{ const R=ROUNDS[r]; if(!R) return; R.notes.forEach(m=>MFAudio.tone(m,1.0,.05,.28)); played=true; setTimeout(()=>ch.style.display="",1400); };
-  [...ch.children].forEach((b,i)=>b.onclick=()=>{
-    const R=ROUNDS[r]; if(!R||!played) return;
-    if(i===R.pos){ fb(true,"✓ "+R.expl); r++; played=false; ch.style.display="none";
-      if(r>=ROUNDS.length){ q.textContent="Excellent! Positions read from any bass note."; pl.style.display="none"; } else ask();
-    } else { MFAudio.tone(40,.2); fb(false,"Which chord member is LOWEST — root, 3rd, 5th or 7th?"); }
-  });
-  function ask(){ q.innerHTML=`Voicing ${r+1} of ${ROUNDS.length}: <b>${ROUNDS[r].name}</b>. Which position?`; }
+/* tonal-journey builder: complete the continuous-binary plan */
+function MF_L94_journey(container,fb){
+  const STEPS=[
+    {q:"A major-key <b>continuous</b> binary begins in the TONIC. Where does Section A lean by its end?",
+      opts:["Dominant","Subdominant","Tonic (it never leaves)"], ans:0, expl:"Tonic → Dominant."},
+    {q:"Section B then carries the music from the dominant back to…",
+      opts:["Tonic","Dominant (it stays)","An unrelated key"], ans:0, expl:"Dominant → Tonic — home at last."}];
+  let k=0; const chosen=[];
+  container.innerHTML=`<div class="big-q l73j-q" style="text-align:center"></div>
+    <div class="l73j-map" style="text-align:center;font-weight:800;font-size:16px;margin:10px 0;letter-spacing:.5px;color:var(--ink,#333)"></div>
+    <div class="choices chips l73j-ch"></div>`;
+  const q=container.querySelector(".l73j-q"), map=container.querySelector(".l73j-map"), ch=container.querySelector(".l73j-ch");
+  function drawMap(){ map.innerHTML=`Section A: Tonic → <b>${chosen[0]||"?"}</b> &nbsp;|&nbsp; Section B: Dominant → <b>${chosen[1]||"?"}</b>`; }
+  function ask(){ drawMap();
+    if(k>=STEPS.length){ q.innerHTML="✓ <b>Tonic → Dominant | Dominant → Tonic</b> — the continuous-binary journey."; ch.innerHTML=""; return; }
+    q.innerHTML=STEPS[k].q; ch.innerHTML="";
+    STEPS[k].opts.forEach((o,i)=>{ const b=document.createElement("button"); b.textContent=o;
+      b.onclick=()=>{ if(i===STEPS[k].ans){ MFAudio.yay(); chosen[k]=o; fb(true,"✓ "+STEPS[k].expl); k++; setTimeout(ask,900); }
+        else { MFAudio.tone(40,.2); fb(false,"Think about where the harmony needs to travel next."); } };
+      ch.appendChild(b); });
+  }
   ask();
 }
 
-LESSON_CONTENT[94]={stackFigures:true,
-  welcome:"A seventh chord has four chord members, so it has four possible bass positions.",
+/* form sorter: binary vs ternary vs rounded binary */
+function MF_L94_types(container,fb){
+  const R=[
+    {pat:"|: A :|  |: B :|", opts:["Binary","Ternary","Rounded binary"], ans:0, expl:"Two repeated sections — plain BINARY."},
+    {pat:"A → B → A", opts:["Ternary","Binary","Rounded binary"], ans:0, expl:"Three large sections, a full A return — TERNARY."},
+    {pat:"|: A :|  |: B A′ :|", opts:["Rounded binary","Ternary","Simple binary"], ans:0, expl:"A returns INSIDE the second section — ROUNDED binary."}];
+  let k=0;
+  container.innerHTML=`<div class="big-q l73t-q" style="text-align:center"></div>
+    <div class="l73t-pat" style="text-align:center;font-size:22px;font-weight:800;letter-spacing:1px;margin:12px 0;color:var(--ink,#333)"></div>
+    <div class="choices chips l73t-ch"></div>`;
+  const q=container.querySelector(".l73t-q"), pat=container.querySelector(".l73t-pat"), ch=container.querySelector(".l73t-ch");
+  function ask(){ if(k>=R.length){ q.textContent="✓ You can tell binary, ternary and rounded binary apart!"; pat.textContent=""; ch.innerHTML=""; return; }
+    q.innerHTML=`Round ${k+1} of ${R.length}: name this form.`; pat.textContent=R[k].pat; ch.innerHTML="";
+    R[k].opts.forEach((o,i)=>{ const b=document.createElement("button"); b.textContent=o;
+      b.onclick=()=>{ if(i===R[k].ans){ MFAudio.yay(); fb(true,"✓ "+R[k].expl); k++; setTimeout(ask,1000); }
+        else { MFAudio.tone(40,.2); fb(false,"Count the LARGE sections — and check whether A returns inside B."); } };
+      ch.appendChild(b); });
+  }
+  ask();
+}
+
+/* example 1 — a continuous binary demonstration (form diagram + notation + audio) */
+function MF_L94_ex1(host){
+  host.innerHTML=`<div style="text-align:center;font-weight:800;font-size:18px;letter-spacing:1px;color:var(--ink,#333)">|: A :| &nbsp; |: B :|</div>
+    <div style="text-align:center;font-size:14px;color:var(--muted,#667);margin:2px 0 10px">Tonic → Dominant &nbsp;|&nbsp; Dominant → Tonic</div>
+    <div id="l73ex1st"></div>
+    <div style="text-align:center;margin-top:12px"><button class="play" id="l73ex1btn">▶ Play the complete binary example</button></div>`;
+  Staff.render(host.querySelector("#l73ex1st"),{clef:"treble",tempo:96,time:"4/4",notes:[
+    {p:"C4",d:"q",label:"A"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{bar:"single"},
+    {p:"A4",d:"q"},{p:"G4",d:"q"},{p:"D4",d:"h",label:"→ V"},{bar:"repeat-end"},
+    {bar:"repeat-start"},
+    {p:"D4",d:"q",label:"B"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{bar:"single"},
+    {p:"E4",d:"q"},{p:"D4",d:"q"},{p:"C4",d:"h",label:"→ I"},{bar:"repeat-end"}],width:720});
+  host.querySelector("#l73ex1btn").onclick=()=>{
+    const beat=.5;
+    /* play the melody exactly as written: even quarters, held half at each cadence */
+    const A=[[60,1],[62,1],[64,1],[67,1],[69,1],[67,1],[62,2]];
+    const B=[[62,1],[64,1],[65,1],[67,1],[64,1],[62,1],[60,2]];
+    let t=0; A.forEach(([m,b])=>{ MFAudio.tone(m,beat*b*.92,t,.4); t+=beat*b; });
+    [55,59,62].forEach(m=>MFAudio.tone(m,beat*2*.9,t-beat*2,.14));  /* soft V under A's held note */
+    B.forEach(([m,b])=>{ MFAudio.tone(m,beat*b*.92,t,.4); t+=beat*b; });
+    [48,55,64].forEach(m=>MFAudio.tone(m,beat*2*.9,t-beat*2,.14));  /* soft I under B's held note */
+  };
+}
+
+/* example 2 — a rounded binary demonstration (A returns near the end of B) */
+function MF_L94_ex2(host){
+  host.innerHTML=`<div style="text-align:center;font-weight:800;font-size:18px;letter-spacing:1px;margin-bottom:10px;color:var(--ink,#333)">|: A :| &nbsp; |: B A′ :|</div>
+    <div id="l73ex2st"></div>
+    <div style="text-align:center;margin-top:12px"><button class="play" id="l73ex2btn">▶ Listen for the return of A</button></div>`;
+  Staff.render(host.querySelector("#l73ex2st"),{clef:"treble",tempo:100,time:"4/4",notes:[
+    {p:"G4",d:"q",label:"A"},{p:"E4",d:"q"},{p:"C4",d:"q"},{p:"E4",d:"q"},{bar:"repeat-end"},
+    {bar:"repeat-start"},
+    {p:"F4",d:"q",label:"B"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{bar:"single"},
+    {p:"G4",d:"q",label:"A′"},{p:"E4",d:"q"},{p:"C4",d:"h"},{bar:"repeat-end"}],width:680});
+  host.querySelector("#l73ex2btn").onclick=()=>{
+    /* play the melody exactly as written: ten even quarters, then a held half */
+    const MEL=[67,64,60,64, 65,67,69,71, 67,64]; const beat=.5;
+    MEL.forEach((m,i)=>MFAudio.tone(m,beat*.92,i*beat,.4));
+    const tEnd=MEL.length*beat;
+    MFAudio.tone(60,beat*2*.95,tEnd,.42);                       /* final C4 held (half note) */
+    [48,55,64].forEach(m=>MFAudio.tone(m,beat*2*.9,tEnd,.14));  /* soft tonic close */
+  };
+}
+
+LESSON_CONTENT[94]={
+  welcome:"Binary form: two sections, one complete journey — A → B. \u{1F1E6}",
   hook:{
-    say:"<b>A complete seventh chord has four chord members, and each one can appear in the bass.</b> Listen to Cmaj7 in root position and three inversions. \u{1F447} <b>Which chord member changes in the bass?</b>",
+    say:"<b>Listen to two contrasting sections.</b> The first moves away from the home key; the second brings the music back home. \u{1F447} <b>What makes this music binary?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play the four positions</button></div>
-          <div class="choices hk-ch" style="display:none"><button>The root, third, fifth, and seventh take turns appearing in the bass</button><button>The chord root changes each time</button><button>The chord gains an additional chord member each time</button></div>`;
-        const ROWS=[[48,64,67,71],[52,60,67,71],[55,60,64,71],[59,60,64,67]];
+          <button class="play hk-a">▶ Section A</button>
+          <button class="play hk-b">▶ Section B</button></div>
+          <div class="choices hk-ch" style="display:none"><button>It has two main sections</button><button>It has three main sections</button><button>The same section repeats without contrast</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{ ROWS.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.26))); setTimeout(()=>ch.style.display="",ROWS.length*900+300); };
+        let hA=false,hB=false;
+        container.querySelector(".hk-a").onclick=()=>{ [60,64,67,69,67].forEach((m,i)=>MFAudio.tone(m,.42,i*.44,.42)); [55,59,62].forEach(m=>MFAudio.tone(m,1.2,5*.44,.2)); hA=true; if(hB) setTimeout(()=>ch.style.display="",2800); };
+        container.querySelector(".hk-b").onclick=()=>{ [74,72,71,69,67,64,60].forEach((m,i)=>MFAudio.tone(m,.4,i*.42,.42)); [48,64,67].forEach(m=>MFAudio.tone(m,1.4,7*.42,.2)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2800); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. The underlying chord remains Cmaj7, but a different chord member appears in the bass: the root, third, fifth, or seventh. These produce root position and three inversions.");
-          else fb(false,"The chord root and quality remain the same. Listen to the lowest pitch in each example.");
+          if(i===0) fb(true,"✓ Binary form contains two main sections: A and B. Section A leaned away from home; Section B brought it back. Today: how binary form works — and how it differs from ternary and verse-chorus.");
+          else fb(false,"Binary means “two.” Listen for two main musical sections — a statement, then a contrasting answer.");
         });
       } }
   },
   objectives:[
-    "Extend triad inversion concepts to seventh chords",
-    "Identify the four positions of a seventh chord",
-    "Read the figured-bass symbols: 7, 6/5, 4/3, 4/2",
-    "Identify the bass note in each inversion",
-    "Connect figured bass with modern slash-chord notation",
-    "Understand why inversions improve bass motion and voice leading"
+    "Identify the two main sections of binary form: A → B",
+    "Recognize the common A–B pattern and its repeats",
+    "Understand why each section is often repeated",
+    "Distinguish SECTIONAL from CONTINUOUS binary form",
+    "Recognize SIMPLE and ROUNDED binary form",
+    "Tell binary form apart from ternary and verse–chorus form"
   ],
   steps:[
-    { say:"<b>From triads to sevenths:</b> you already know triads have <b>three positions</b> (root, 1st, 2nd inversion). A seventh chord extends the same idea by adding <b>one more inversion</b> — because it has <b>four</b> chord members instead of three. Figured-bass numbers still measure intervals above the bass. \u{1F447} <b>In figured bass, intervals are measured above which note?</b>",
-      try:{ type:"mc", choices:["The bass note","The chord root","The soprano note"], answer:0,
-        success:"✓ Correct. Figured-bass numbers identify intervals above the notated or sounding bass pitch.",
-        fail:"Recall the reference note used for figured-bass intervals.",
-        hint:"Measure each interval upward from the lowest voice." } },
-    { say:"<b>Four Positions of a Seventh Chord:</b> any of the four chord members can sit in the bass — that gives root position plus three inversions. The bass note determines the figure. \u{1F447} <b>How many inversions does a seventh chord have?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:300px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Bass note</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Position</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Figured bass</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">Root</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">root position</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">7</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">3rd</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">1st inversion</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">6\u{2085} (6/5)</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">5th</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">2nd inversion</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">4\u{2083} (4/3)</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">7th</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">3rd inversion</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">4\u{2082} (4/2)</td></tr></table>` },
-      try:{ type:"mc", choices:["Three inversions, in addition to root position","One inversion","Seven inversions"], answer:0,
-        success:"✓ Correct. A seventh chord has four possible bass positions: root position and three inversions.",
-        fail:"Count the four chord members that can appear in the bass.",
-        hint:"Four bass positions minus root position equals three inversions." } },
-    { say:"<b>One Chord, Two Notations:</b> take <b>G7 (G–B–D–F)</b> in C major. Change only the bass note and you move through all four positions. Lead sheets write the bass after a slash; Roman-numeral analysis writes the figured-bass number. <b>Both describe the same inversion.</b> \u{1F447} <b>In C major, G7 has F in the bass. How is the chord labeled?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:320px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Lead sheet</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Roman / figured</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Bass</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;text-align:center">G7</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">V7</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">G (root)</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;text-align:center">G7/B</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">V6/5</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">B (3rd)</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;text-align:center">G7/D</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">V4/3</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">D (5th)</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px;font-weight:800;text-align:center">G7/F</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center;font-weight:800">V4/2</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px;text-align:center">F (7th)</td></tr></table>` },
-      try:{ type:"mc", choices:["Third inversion — V\u{2074}\u{2082}","First inversion — V\u{2076}\u{2085}","Root position — V\u{2077}"], answer:0,
-        success:"✓ Correct. F is the seventh of G–B–D–F. A seventh chord with its seventh in the bass is in third inversion and carries the figure 4/2.",
-        fail:"Identify F's chord-member role within G–B–D–F.",
-        hint:"F is a minor seventh above the root G." } },
-    { say:"<b>Same Figures for Every Quality:</b> the inversion depends <b>only on the bass note</b> — the chord quality does not matter. The same figures (7 · 6/5 · 4/3 · 4/2) apply to <b>Cmaj7, C7, Cm7, Cm7♭5, and C°7</b> alike. The figure names the position; the chord symbol or Roman numeral names the root and quality. \u{1F447} <b>Am7 has G in the bass. Which inversion figure applies?</b>",
-      try:{ type:"mc", choices:["4/2 — G is the seventh","6/5 — G is the third","7 — G is the root"], answer:0,
-        success:"✓ Correct. G is the seventh of A–C–E–G, so Am7/G is in third inversion and carries the figure 4/2.",
-        fail:"Spell Am7 in thirds: A–C–E–G. Identify G's relationship to the root.",
-        hint:"G is the seventh above A." } },
-    { say:"<b>Slash Chords and Figured-Bass Symbols:</b> Lead-sheet notation specifies the bass pitch after a slash. In C major, <b>G7/B</b> represents a G dominant seventh chord with B in the bass. Roman-numeral analysis labels the same chord and inversion <b>V\u{2076}\u{2085}</b>. These symbols identify the same chord and bass position, but they do not necessarily prescribe an identical upper-voice voicing. \u{1F447} <b>Which figured-bass inversion corresponds to Dm7/C?</b>",
-      try:{ type:"mc", choices:["4/2 — C is the seventh","6/5 — F is the bass","7 — D is the bass"], answer:0,
-        success:"✓ Correct. C is the seventh of D–F–A–C, so Dm7/C is a third-inversion seventh chord with the figure 4/2.",
-        fail:"Spell Dm7 in root position: D–F–A–C.",
-        hint:"Identify C's chord-member role." } },
-    { say:"Identify each inversion from the chord spelling and bass pitch, then compare its sound with the other positions. \u{1F447}",
+    { say:"<b>What Does “Binary” Mean?</b> Binary means “made of two parts.” In music, binary form has <b>two main sections</b>, A then B. The letters describe whole sections, not single phrases. \u{1F447} <b>Which pattern represents binary form?</b>",
+      show:{ type:"html", html:`<div style="max-width:280px;margin:0 auto;font-size:22px;font-weight:800;letter-spacing:2px;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:14px 18px;text-align:center;color:#243244">A → B</div>` },
+      try:{ type:"mc", choices:["A–B","A–B–A","A–B–A–C–A"], answer:0,
+        success:"✓ Binary form has two main sections: A and B.",
+        fail:"Binary means two — count the section letters.",
+        hint:"Two parts, two letters." } },
+    { say:"<b>Repeats Do Not Create New Sections.</b> Many binary pieces repeat each section, so a performance may sound like A A B B. That is still <b>two</b> structural sections. \u{1F447} <b>How many main sections does |: A :| |: B :| contain?</b>",
+      show:{ type:"html", html:`<div style="max-width:320px;margin:0 auto;font-size:20px;font-weight:800;letter-spacing:1px;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:14px 16px;text-align:center;color:#243244">|: A :| &nbsp; |: B :|<br><span style="font-weight:400;font-size:13px;color:#667">sounds like A A B B — still two sections</span></div>` },
+      try:{ type:"mc", choices:["Two","Three","Four"], answer:0,
+        success:"✓ Each section repeats, but the large-scale form is still A–B.",
+        fail:"Repeats replay a section; they don't add new ones.",
+        hint:"Count the different letters, not the repeats." } },
+    { say:"<b>What Happens in Section A?</b> Section A begins in the tonic. It may stay there or move to a related key. In a major-key piece it often moves toward the <b>dominant</b> (I → V). This is a common possibility, not a rule for every piece. \u{1F447} <b>In a major-key binary piece, where does Section A often move?</b>",
+      show:{ type:"html", html:`<div style="max-width:260px;margin:0 auto;font-size:20px;font-weight:800;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:12px 18px;text-align:center;color:#243244">I → V<br><span style="font-weight:400;font-size:13px;color:#667">tonic toward dominant</span></div>` },
+      try:{ type:"mc", choices:["Toward the dominant","Always toward the subdominant","It never leaves the tonic"], answer:0,
+        success:"✓ Many major-key binary pieces move from tonic toward dominant during Section A.",
+        fail:"Think of the most common destination a half-step short of home.",
+        hint:"Scale degree 5." } },
+    { say:"<b>What Happens in Section B?</b> Section B usually begins in the key area A reached. It may develop motives, add contrast, or pass through new harmonies — but its most important job is to <b>bring the music back home</b>. \u{1F447} <b>What commonly happens near the end of Section B?</b>",
+      try:{ type:"mc", choices:["The music returns to the tonic","The piece changes permanently to a new key","Section A is repeated note for note"], answer:0,
+        success:"✓ Section B normally restores the tonic and completes the form.",
+        fail:"What would make the piece sound finished?",
+        hint:"Home key." } },
+    { say:"<b>Sectional vs Continuous (harmony).</b> In <b>sectional</b> binary, Section A ends with a strong cadence in the TONIC, so it sounds fairly complete. In <b>continuous</b> binary, Section A ends OUTSIDE the tonic (often the dominant), so it leans onward. \u{1F447} <b>Which statement describes sectional binary?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:13.5px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 12px">Sectional</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 12px">Continuous</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:6px 12px;text-align:center">A ends in the TONIC</td><td style="border:1.5px solid #cdd5e1;padding:6px 12px;text-align:center">A ends OUTSIDE the tonic (often V)</td></tr></table>` },
+      try:{ type:"mc", choices:["Section A ends strongly in the tonic","Section A must end on V7","Section B never returns to the tonic"], answer:0,
+        success:"✓ Sectional binary closes Section A in the home key, so it sounds relatively complete.",
+        fail:"Sectional = A comes to rest at home.",
+        hint:"Where does A cadence?" } },
+    { say:"<b>Follow the Continuous Journey.</b> A common continuous-binary plan in a major key is tonic → dominant, then dominant → tonic. Complete it below. \u{1F447}",
       try:{ type:"custom",
-        hint:"Spell the chord in root position and identify which chord member appears in the bass.",
-        mount:(container,fb)=>MF_L94_pos(container,fb) } },
-    { say:"<b>Why Use Inversions? Smoother Bass Motion.</b> Compare two versions of the same chords:<br><b>C → G7 → Am</b> — bass leaps C → G → A.<br><b>C → G7/B → Am</b> — bass steps C → B → A.<br>The inversion turns a leaping bass into a smooth, stepwise line — better voice leading with the same harmony. \u{1F447} <b>Which is an important musical use of chord inversions?</b>",
-      show:{ type:"html", html:`<div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;font-size:13.5px">
-        <div style="border:2px solid #999;border-radius:10px;padding:8px 14px;text-align:center"><b>C → G7 → Am</b><br><span style="color:#C05A21">bass C – G – A</span><br><span style="font-size:12px;color:#555">leaps</span></div>
-        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 14px;text-align:center"><b>C → G7/B → Am</b><br><span style="color:#2F6DA8">bass C – B – A</span><br><span style="font-size:12px;color:#555">stepwise ✓</span></div></div>` },
-      try:{ type:"mc", choices:["Creating smoother bass motion and more efficient voice leading","Automatically increasing the dynamic level","Automatically increasing the tempo"], answer:0,
-        success:"✓ Correct. An appropriate inversion can reduce bass leaps and connect adjacent chords more smoothly.",
-        fail:"Compare the bass intervals in the root-position and inverted versions.",
-        hint:"Look for the version with smaller bass intervals." } },
-    { say:"<b>Review:</b> \u{1F447} <b>In C major, which slash chord matches V4/3?</b>",
-      try:{ type:"mc", choices:["G7/D","G7/B","G7/F"], answer:0,
-        success:"✓ Correct. V4/3 puts the 5th in the bass; G7's 5th is D, so V4/3 = G7/D.",
-        fail:"4/3 = second inversion = the 5th in the bass. What is the 5th of G7?",
-        hint:"G–B–D–F: the 5th is D." } }
+        hint:"A leans to the dominant; B travels home to the tonic.",
+        mount:(container,fb)=>MF_L94_journey(container,fb) } },
+    { say:"<b>Simple Binary (theme).</b> In <b>simple</b> binary, Section B may borrow motives from A, but there is <b>no clear return of the opening theme</b> near the end. The shape is just A | B. \u{1F447} <b>In simple binary, what does Section B do with the opening theme?</b>",
+      show:{ type:"html", html:`<div style="max-width:220px;margin:0 auto;font-size:22px;font-weight:800;letter-spacing:3px;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:12px 18px;text-align:center;color:#243244">A | B</div>` },
+      try:{ type:"mc", choices:["It does not clearly bring the opening theme back","It always repeats A exactly","It always changes the time signature"], answer:0,
+        success:"✓ Simple binary never gives a clear return of the opening material near the end.",
+        fail:"“Simple” = no clear return of the opening theme.",
+        hint:"Does the opening come back? No." } },
+    { say:"<b>Rounded Binary (theme).</b> In <b>rounded</b> binary, material from the start of A returns near the end of B — a brief homecoming, usually shorter than the original A. The label is A | B A′. \u{1F447} <b>Near the end of Section B, the opening theme returns briefly in the tonic. What type is this?</b>",
+      show:{ type:"html", html:`<div style="max-width:260px;margin:0 auto;font-size:22px;font-weight:800;letter-spacing:2px;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:12px 18px;text-align:center;color:#243244">A | B A′</div>` },
+      try:{ type:"mc", choices:["Rounded binary","Simple binary","Rondo form"], answer:0,
+        success:"✓ Rounded binary brings opening material back near the end of the B section.",
+        fail:"A brief return of A inside B has a special name.",
+        hint:"“Rounded” off by the opening's return." } },
+    { say:"<b>Binary vs Ternary.</b> Rounded binary keeps <b>two</b> repeated sections — the A return lives INSIDE the second section (|: A :| |: B A′ :|). Ternary form has <b>three</b> large sections, A B A, where the last A is a full, standalone return. Sort a few forms. \u{1F447}",
+      try:{ type:"custom",
+        hint:"Count the LARGE sections; check whether A returns inside B or as its own third section.",
+        mount:(container,fb)=>MF_L94_types(container,fb) } },
+    { say:"<b>Binary vs Verse–Chorus.</b> A modern song may alternate verse → chorus → verse → chorus (A–B–A–B). Both forms use the letters A and B, but their structures differ, so letters alone don't decide the form. \u{1F447} <b>Does every song containing an A section and a B section use binary form?</b>",
+      try:{ type:"mc", choices:["No — you must examine the whole structure, not just the letters","Yes — any A and B means binary form","Only if it is fast"], answer:0,
+        success:"✓ Letter labels alone don't determine the form. Verse–chorus repeatedly alternates two song functions; classical binary is two large structural sections.",
+        fail:"Letters can be reused by very different forms.",
+        hint:"Structure decides, not letters." } }
   ],
   examples:[
-    { caption:"G7 in all four positions: 7 → 6/5 → 4/3 → 4/2. Same four notes; the bass rotates through root, 3rd, 5th, 7th.",
-      staff:{clef:"treble",tempo:66,notes:[
-        {p:"G3",d:"w",label:"7"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
-        {p:"B3",d:"w",label:"6/5"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"4/3"},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
-        {p:"F4",d:"w",label:"4/2"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{bar:"final"}],width:640},
-      kb:{start:53,octaves:1.9167,labels:true} },
-    { caption:"Inversions building the bass line: I → V4/2 → I6 → ii6/5 → V7 → I. The bass moves C-F-E-F-G-C — the 4/2 and 6/5 keep the middle stepwise.",
-      staff:{clef:"treble",tempo:72,notes:[
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"F4",d:"w",label:"V4/2"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"E4",d:"w",label:"I6"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"F4",d:"w",label:"ii6/5"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"G3",d:"w",label:"V7"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:680},
-      kb:{start:53,octaves:1.9167,labels:true} }
+    { caption:"Continuous binary: Section A begins in the tonic and ends in the DOMINANT (unfinished); Section B develops the material and returns to the TONIC. The form diagram sits above the notes.",
+      mount:(host)=>MF_L94_ex1(host) },
+    { caption:"Rounded binary: after the contrasting B material, the opening motive of A returns briefly (A′) to close in the tonic. Listen for that return.",
+      mount:(host)=>MF_L94_ex2(host) }
   ],
+  exampleHeading:"Listen to a binary example",
   games:[
-    { type:"gen-race", title:"Game 1 · Inversion-Figure Sprint (45s)",
-      intro:"Match each bass chord member with its seventh-chord inversion figure.",
-      miaIntro:"Root position, first, second, and third inversion.",
+    { type:"gen-race", title:"Game 1 · Binary Form Sprint (45s)",
+      intro:"Sections, repeats, harmony and theme types — race the binary facts!",
+      miaIntro:"Two sections, many labels! \u{26A1}",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Root in the bass","7 (root position)"],
-        ["3rd in the bass","6/5 (1st inversion)"],
-        ["5th in the bass","4/3 (2nd inversion)"],
-        ["7th in the bass","4/2 (3rd inversion)"],
-        ["The figures apply to","any seventh-chord quality"],
-        ["G7/B in figures","V6/5"],
-        ["Dm7/C in figures","ii4/2 (in C)"],
-        ["A common use of inversions","smooth bass lines"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Inversion figures identified!":null },
-    { type:"key-climb", title:"Game 2 · Rotate the Bass",
-      intro:"Play G7 in all four positions, placing G, B, D, and F in the bass in turn.",
-      miaIntro:"Keep the G7 chord identity while changing the bass chord member.",
-      spec:{seq:[55,59,62,65],
-        names:["G (root — 7)","B (3rd — 6/5)","D (5th — 4/3)","F (7th — 4/2)"],
-        start:53, octaves:1, title:"One chord, four bass notes"},
-      result:(score)=>score!==null?"You performed all four bass positions of G7.":null },
-    { type:"symbol-hunt", title:"Game 3 · Identify the Position",
-      intro:"Examine each G7 voicing and identify its bass position.",
-      miaIntro:"Identify the lowest note and its role in G7.",
+        ["Binary form","two main sections: A → B"],
+        ["Repeat signs","replay a section — they add no new sections"],
+        ["Sectional binary","Section A ends in the tonic"],
+        ["Continuous binary","Section A ends outside the tonic"],
+        ["Simple binary","no clear return of the opening theme"],
+        ["Rounded binary","opening material returns near the end of B"],
+        ["Ternary form","three large sections: A B A"],
+        ["Tonic","the home key / tonal center"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — binary brilliance!":null },
+    { type:"order-tap", title:"Game 2 · Assemble the Repeated Form",
+      intro:"Tap the four parts of |: A :| |: B :| in performance order!",
+      miaIntro:"A, A, B, B — still two sections! \u{1F3C1}",
+      spec:{sequence:["A","A (repeat)","B","B (repeat)"],
+        title:"Repeated binary, as performed"},
+      result:(stars)=>stars>=2?"Repeats mastered — still two sections!":null },
+    { type:"symbol-hunt", title:"Game 3 · Tonic or Dominant?",
+      intro:"Section A of continuous binary leans to the dominant — spot each chord when called!",
+      miaIntro:"Home chord vs the away chord! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"Root position (7)", spec:{clef:"treble",notes:[{p:"G3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}},
-        {label:"1st inversion (6/5)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"2nd inversion (4/3)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:150}},
-        {label:"3rd inversion (4/2)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"You identified the inversions correctly.":null },
-    { type:"term-race", title:"Game 4 · Slash Symbol and Figure",
-      intro:"Translate between slash-chord symbols and Roman-numeral inversion figures.",
-      miaIntro:"Match the chord root, quality, and bass pitch.",
-      spec:{rounds:8, reverse:true, pool:[
-        ["G7/B","V6/5 in C"],
-        ["G7/D","V4/3 in C"],
-        ["G7/F","V4/2 in C"],
-        ["Cmaj7/E","Imaj 6/5 in C"],
-        ["Root position slash","no slash needed"],
-        ["6/5's bass member","the 3rd"],
-        ["4/3's bass member","the 5th"],
-        ["4/2's bass member","the 7th"]]},
-      result:(score)=>score>=6?"You translated both notation systems correctly.":null }
+        {label:"Tonic (I) — the home chord", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"Dominant (V) — scale degree 5", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
+        {label:"Subdominant (IV)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
+        {label:"Dominant 7th (V7)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"Tonic and dominant, spotted on sight!":null },
+    { type:"order-tap", title:"Game 4 · Build Rounded Binary",
+      intro:"Tap the sections of a rounded binary form in order!",
+      miaIntro:"Statement, contrast, and a homecoming! \u{1F3C1}",
+      spec:{sequence:["A (opening)","B (contrast)","A′ (opening returns)"],
+        title:"Rounded binary: A | B A′"},
+      result:(stars)=>stars>=2?"Rounded binary, built!":null }
   ],
-  practiceIntro:"Complete 20 practice questions on seventh-chord positions, figured-bass symbols, and slash chords. The next question will appear after each correct answer.",
+  practiceIntro:"20 practice questions — sections, repeats, sectional/continuous and simple/rounded. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Root bass","7"],["3rd bass","6/5"],["5th bass","4/3"],["7th bass","4/2"],["G7/F","4/2"],["Figures count from","the bass"]], reverse:true}, count:6 },
-    { gen:"inversion-id", params:{subject:"v7", ask:"both"}, count:4 },
-    { type:"mc", q:"A seventh chord has how many positions (including root)?", choices:["4","3","2"], answer:0,
-      explain:"A complete seventh chord has four bass positions: root position and three inversions." },
-    { type:"mc", q:"The figure 6/5 means the bass is the chord's…", choices:["3rd","root","7th"], answer:0,
-      explain:"The figure 6/5 indicates first inversion, with the chordal third in the bass." },
-    { type:"mc", q:"The figure 4/2 means the bass is the chord's…", choices:["7th","5th","3rd"], answer:0,
-      explain:"The figure 4/2 indicates third inversion, with the chordal seventh in the bass." },
-    { type:"mc", q:"Cm7 with G in the bass is…", choices:["2nd inversion (4/3)","1st inversion","root position"], answer:0,
-      explain:"Cm7/G is in second inversion because G is the fifth of C–E♭–G–B♭." },
-    { type:"truefalse", q:"The inversion figures 7, 6/5, 4/3, and 4/2 can be applied to different seventh-chord qualities.", answer:true,
-      explain:"They apply to seventh chords of any quality." },
-    { type:"truefalse", q:"In C major, G7/B and V\u{2076}\u{2085} identify the same chord and bass position.", answer:true,
-      explain:"Both identify G7 with B, the chordal third, in the bass. The upper voices may be arranged in different ways." },
-    { type:"truefalse", q:"Chord inversions can create smoother bass lines and more efficient voice leading.", answer:true,
-      explain:"They can also provide harmonic prolongation, retain common tones, and create different sonorities." },
-    { gen:"inversion-id", params:{subject:"v7", ask:"figure"}, count:3 },
-    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["Binary","two sections (A→B)"],["Sectional","A ends in the tonic"],["Continuous","A ends outside the tonic"],["Simple","no return of the opening"],["Rounded","opening returns in B"],["Ternary","A B A (three sections)"]], reverse:true}, count:6 },
+    { type:"mc", q:"What does “binary” mean?", choices:["Two-part","Three-part","Five-part"], answer:0,
+      explain:"Bi = two." },
+    { type:"mc", q:"What is the basic pattern of binary form?", choices:["A–B","A–B–A","A–B–A–C–A"], answer:0,
+      explain:"Two main sections." },
+    { type:"mc", q:"How is repeated binary form commonly written?", choices:["|: A :| |: B :|","A–B–A","A–A–A"], answer:0,
+      explain:"Each section repeats; the form is still A–B." },
+    { type:"mc", q:"In continuous binary, Section A ends…", choices:["outside the tonic","always in the tonic","without any cadence"], answer:0,
+      explain:"Often on the dominant." },
+    { type:"mc", q:"In sectional binary, Section A ends…", choices:["in the tonic","always in the dominant","in an unrelated key"], answer:0,
+      explain:"A comes to rest at home." },
+    { type:"mc", q:"What defines rounded binary form?", choices:["Opening material returns near the end of B","Both sections share one rhythm","Section B is always shorter than A"], answer:0,
+      explain:"A brief return of A inside B." },
+    { type:"mc", q:"The tonic is…", choices:["the home key or tonal center","the fifth scale degree's chord","a fast tempo"], answer:0,
+      explain:"Home base." },
+    { type:"truefalse", q:"A A B B means the piece has four main sections.", answer:false,
+      explain:"Two sections, each repeated." },
+    { type:"truefalse", q:"Section A must always end on V7.", answer:false,
+      explain:"A may end in the tonic, dominant, relative major, or another related key." },
+    { type:"truefalse", q:"Rounded binary and ternary form are identical.", answer:false,
+      explain:"Rounded binary has two sections; ternary has three." },
+    { type:"truefalse", q:"Verse–chorus form is always the same as classical binary form.", answer:false,
+      explain:"They may share letters but are different designs." }
+  ],
+  miaQuizIntro:"Quiz! Two sections — then sectional/continuous and simple/rounded.",
+  quiz:[
+    { type:"mc", q:"What does “binary” mean?", choices:["Two-part","Three-part","Five-part"], answer:0,
+      explain:"Bi = two.", hint:"Bi-cycle." },
+    { type:"mc", q:"What is the basic pattern of binary form?", choices:["A–B","A–B–A","A–B–A–C–A"], answer:0,
+      explain:"Two main sections.", hint:"Two letters." },
+    { type:"mc", q:"How is repeated binary form commonly written?", choices:["|: A :| |: B :|","A–B–A","A–A–A"], answer:0,
+      explain:"Each section repeats; still A–B.", hint:"Repeat signs around each section." },
+    { type:"mc", q:"In continuous binary form, where does Section A end?", choices:["Outside the tonic","Always in the tonic","Without any cadence"], answer:0,
+      explain:"Often on the dominant.", hint:"It leans onward." },
+    { type:"mc", q:"In sectional binary form, where does Section A end?", choices:["In the tonic","Always in the dominant","In an unrelated key"], answer:0,
+      explain:"A comes to rest at home.", hint:"It sounds relatively complete." },
+    { type:"mc", q:"What defines rounded binary form?", choices:["Opening material returns near the end of B","Both sections use the same rhythm","Section B is shorter than A"], answer:0,
+      explain:"A brief return of A inside B.", hint:"The opening comes back." },
+    { type:"mc", q:"Principal difference between rounded binary and ternary form?", choices:["Rounded binary has two main sections; ternary has three","Rounded binary has no tonic","Ternary never repeats material"], answer:0,
+      explain:"Two repeated sections vs three large sections.", hint:"Count the LARGE sections." },
+    { type:"mc", q:"A piece is |: A :| |: B A′ :|; A begins in D and ends in A; B returns to D and restates the opening. Binary or ternary?", choices:["Binary — two repeated structural sections","Ternary — three large sections","Neither"], answer:0,
+      explain:"Two structural sections (the A return lives inside B).", hint:"Where does A return — inside B, or as its own section?" },
+    { type:"mc", q:"…and is that piece sectional or continuous?", choices:["Continuous — Section A ends outside the tonic","Sectional — Section A ends in the tonic","Cannot tell"], answer:0,
+      explain:"A ends in A major (the dominant of D), outside the tonic.", hint:"Where does A cadence?" },
+    { type:"mc", q:"…and is that piece simple or rounded?", choices:["Rounded — opening material returns near the end of B","Simple — no return of the opening","Ternary"], answer:0,
+      explain:"The opening theme returns near the end of B.", hint:"Does the opening come back?" },
+    { type:"truefalse", q:"Letter labels A and B, by themselves, always mean classical binary form.", answer:false,
+      explain:"We must examine the complete structure.", hint:"Verse–chorus also uses A and B." },
+    { type:"mc", q:"A verse→chorus→verse→chorus song labeled A–B–A–B…", choices:["is not automatically classical binary form","must be classical binary form","has no form at all"], answer:0,
+      explain:"Verse–chorus alternates two song functions; binary is two large sections.", hint:"Same letters, different design." },
+    /* generated */
+    { gen:"term-match", params:{subject:"term", pool:[["Sectional","A ends in the tonic"],["Continuous","A ends outside the tonic"],["Simple","no return of A"],["Rounded","A returns in B"]], reverse:true}, count:3 }
   ],
   vocabulary:[
-    {term:"Four Positions", def:"Root in bass → 3rd in bass → 5th in bass → 7th in bass."},
-    {term:"Figured Bass", def:"7 · 6/5 · 4/3 · 4/2 — one figure per bass position."},
-    {term:"Slash Chords", def:"G7 · G7/B · G7/D · G7/F — same harmony, different bass note."},
-    {term:"Important Rule", def:"Changing inversion changes only the bass note. Chord quality never changes."}
+    {term:"Binary Form", def:"A form made of two main sections that usually contrast in melody, harmony, key area, rhythm or texture.", sym:"A → B"},
+    {term:"Repeat Signs", def:"Binary pieces often repeat each section (heard as A A B B), but the form still has only two sections, A and B.", sym:"|: A :|  |: B :|"},
+    {term:"Sectional Binary", def:"Section A ends with a strong cadence in the TONIC, so it sounds relatively complete.", sym:"A: I → I"},
+    {term:"Continuous Binary", def:"Section A ends OUTSIDE the tonic (often the dominant, or the relative major in minor); Section B carries the journey home.", sym:"A: I → V"},
+    {term:"Simple Binary", def:"Section B has no clear return of the opening theme near the end.", sym:"A | B"},
+    {term:"Rounded Binary", def:"Material from the start of A returns near the end of B — shorter than the original A, so it is still two sections, not ternary.", sym:"A | B A′"}
   ],
-  mistakes:[],
+  mistakes:[
+    "<b>“Section A must always end on V7.”</b> Not so — A may end in the tonic, the dominant, the relative major, or another related key. V or V7 is common, but not mandatory.",
+    "<b>“A always rises and B always falls.”</b> Melodic direction does not define form — the organization of the sections does.",
+    "<b>“A A B B has four sections.”</b> It contains two sections, each repeated.",
+    "<b>“Rounded binary and ternary are identical.”</b> Rounded binary has two repeated sections; ternary has three large sections.",
+    "<b>“Verse–chorus form is always binary.”</b> They may both use contrasting material, but they are different formal designs."
+  ],
   summary:[
-    "✔ Seventh chords have <b>FOUR positions</b>.",
-    "✔ Root in bass = <b>7</b>.",
-    "✔ 3rd in bass = <b>6/5</b>.",
-    "✔ 5th in bass = <b>4/3</b>.",
-    "✔ 7th in bass = <b>4/2</b>.",
-    "✔ Inversion changes only the <b>bass note</b>.",
-    "✔ Chord <b>quality never changes</b>.",
-    "✔ Slash chords and figured bass describe the same bass position in different notation systems.",
-    "✔ Inversions often create <b>smoother bass motion</b> and better voice leading."
+    "✔ Binary form = two main sections: <b>A → B</b>.",
+    "✔ Sections often repeat: <b>|: A :| |: B :|</b> — still only two sections.",
+    "✔ <b>Sectional</b>: A ends in the tonic · <b>Continuous</b>: A ends outside the tonic.",
+    "✔ <b>Simple</b>: no clear return of the opening · <b>Rounded</b>: opening returns near the end of B (A | B A′).",
+    "✔ Binary is not ternary (A B A) and not verse–chorus — letters alone don't decide the form."
   ],
   tips:[
-    "Memory aid: the figures COUNT DOWN as the bass climbs — 7, 65, 43, 42.",
-    "In conventional tonal voice leading, 4/2 chords often resolve to 6 chords: the bass 7th steps down to the next chord's 3rd.",
-    "At the keyboard, rotate one seventh chord through all four positions daily — pick a new type each day.",
-    "Next lesson: chaining chords into the progressions everyone plays."
+    "Say it in one breath: “Binary is two — A then B.” Everything else (sectional, continuous, simple, rounded) just describes HOW those two sections behave.",
+    "Sectional vs continuous asks one question: does Section A come to rest at home (sectional) or lean away to the dominant (continuous)?",
+    "Rounded binary is the sneaky one — the opening peeks back at the end of B. Because that return is brief and lives inside section two, it is still binary, not ternary.",
+    "Next lesson: ternary form — when the whole A section returns as a full third section (A B A)."
   ],
-  rewards:{ badge:"Position Master", icon:"\u{1F504}" },
+  rewards:{ badge:"Binary Navigator", icon:"\u{1F1E6}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Spell the chord, identify the bass chord member, and select the inversion figure.",
-  quiz:[
-    { type:"mc", q:"How many inversions does a seventh chord have?", choices:["Three","Two","Four"], answer:0,
-      explain:"A seventh chord has three inversions plus root position, for four total positions.", hint:"Four notes, minus the root." },
-    { type:"mc", q:"Which abbreviated figure identifies a root-position seventh chord?", choices:["7","6/5","4/2"], answer:0,
-      explain:"The full intervals above the bass are 7/5/3, conventionally abbreviated as 7.", hint:"Simplest figure." },
-    { type:"mc", q:"1st inversion (3rd in the bass) takes…", choices:["6/5","4/3","7"], answer:0,
-      explain:"The 6/5 chord.", hint:"After 7 comes…" },
-    { type:"mc", q:"2nd inversion (5th in the bass) takes…", choices:["4/3","6/5","4/2"], answer:0,
-      explain:"The 4/3 chord.", hint:"The middle figure." },
-    { type:"mc", q:"3rd inversion (7th in the bass) takes…", choices:["4/2","4/3","6/5"], answer:0,
-      explain:"The 4/2 chord — unique to sevenths.", hint:"The last figure." },
-    { type:"mc", q:"Identify the position.",
-      staff:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:160},
-      choices:["G7 in first inversion: G7/B or V\u{2076}\u{2085} in C major","G7 in root position","G7 in third inversion"], answer:0,
-      explain:"B, the third of G7, appears in the bass.", hint:"Name the bass member." },
-    { type:"mc", q:"Fmaj7/E is in…", choices:["third inversion: 4/2","first inversion: 6/5","root position: 7"], answer:0,
-      explain:"E is Fmaj7's 7th (F-A-C-E).", hint:"Spell it first." },
-    { type:"mc", q:"Which lead-sheet symbol corresponds to ii\u{2076}\u{2085} in C major?", choices:["Dm7/F","Dm7/C","Dm7"], answer:0,
-      explain:"3rd (F) in the bass.", hint:"6/5 = 3rd downstairs." },
-    { type:"truefalse", q:"The figure 4/2 can identify third inversion of a minor seventh chord.", answer:true,
-      explain:"The inversion figure identifies intervals above the bass and chord position; the Roman numeral or chord symbol identifies root and quality.", hint:"Universal figures." },
-    { type:"truefalse", q:"A triad can appear in third inversion.", answer:false,
-      explain:"A triad has only three chord members and therefore has root position and two inversions.", hint:"Count the notes." },
-    { type:"mc", q:"In conventional tonal voice leading, why does a third-inversion seventh chord often move to a first-inversion chord?", choices:["The chordal seventh in the bass normally resolves downward by step","The first chord must be performed more loudly","The progression eliminates dominant function"], answer:0,
-      explain:"For example, D7/C may resolve to G/B as the bass moves downward from C to B.", hint:"Where does a 7th want to go?" },
-    { type:"mc", q:"Which is an important purpose of chord inversions?", choices:["Shaping bass lines and improving voice leading","Changing the chord root","Increasing the tempo"], answer:0,
-      explain:"Inversions allow the bass and upper voices to connect chords in varied and efficient ways.", hint:"Lesson 55's principle." }
-  ],
-  miaPerfect:"Perfect score! You accurately identified all positions and inversion figures of seventh chords.",
-  miaPass:"You passed! Next, you will study common chord progressions.",
+  miaPerfect:"PERFECT! Sectional or continuous, simple or rounded — binary form holds no secrets. \u{1F1E6}\u{1F389}",
+  miaPass:"Passed! Two sections, four flavors. Next: what if the whole A section returns?",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Cmaj7 four ways: the bass rotated root → 3rd → 5th → 7th while the chord stayed itself — four positions.",
-      play:()=>{const ROWS=[[48,64,67,71],[52,60,67,71],[55,60,64,71],[59,60,64,67]];ROWS.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.26)));} },
-    learn:{ label:"seventh inversions",
-      explain:"Four positions: 7, 6/5, 4/3, 4/2 by bass member (root/3rd/5th/7th) — the same for any seventh-chord quality; slashes say it in lead-sheet.",
-      hint:"Find the bass, name its role.",
-      play:()=>{[50,55,59,65].forEach(m=>MFAudio.tone(m,.9,.05,.28));} },
+      explain:"Two contrasting sections: A leaned away toward the dominant, and B brought the music home. Two sections = binary form.",
+      play:()=>{[60,64,67,69,67].forEach((m,i)=>MFAudio.tone(m,.4,i*.42,.42));let t=2.4;[74,72,71,69,67,64,60].forEach((m,i)=>MFAudio.tone(m,.38,t+i*.4,.42));} },
+    learn:{ label:"binary form",
+      explain:"Two sections, A → B, often repeated. A may stay home (sectional) or leave to the dominant (continuous). If A's opening returns near the end of B it is rounded; otherwise simple.",
+      hint:"Two sections — then sectional/continuous and simple/rounded.",
+      play:()=>{[60,62,64,67].forEach((m,i)=>MFAudio.tone(m,.4,i*.42,.42));[55,59,62].forEach(m=>MFAudio.tone(m,1.2,1.8,.2));} },
     example:{ label:"the examples",
-      explain:"Example 1 rotates G7 through all four positions; example 2 builds a stepwise bass from inversions." },
+      explain:"Example 1 is continuous binary (A ends on the dominant, B returns to the tonic); example 2 is rounded binary (the opening returns as A′ near the end of B)." },
     game:{ label:"the games",
-      explain:"Sprint the figures, rotate a bass by hand, spot positions on cards, then translate slash ↔ figure.",
-      hint:"7-65-43-42." },
+      explain:"Sprint the facts, assemble the repeated form, spot tonic vs dominant, then build a rounded binary.",
+      hint:"Two sections; watch how they behave." },
     quiz:{ label:"this question",
-      explain:"One question always works: which chord member is in the BASS? Root=7, 3rd=6/5, 5th=4/3, 7th=4/2.",
-      play:()=>{[52,60,67,71].forEach(m=>MFAudio.tone(m,.9,.05,.28));} }
+      explain:"A few ideas cover it: binary is two sections; sectional/continuous is about where A ends; simple/rounded is about whether A returns inside B; and letters alone don't decide the form.",
+      play:()=>{[67,64,60,64].forEach((m,i)=>MFAudio.tone(m,.42,i*.44,.42));} }
   }
 };

@@ -1,270 +1,263 @@
-/* Lesson 47 — Triads (AEMT Book 2, Unit 12)
-   Built from drafts/UNIT 12 – Lesson 47.md; AEMT p.74 verified by render.
-   Core: chord = 3+ notes together; TRIAD = root + 3rd + 5th; root position =
-   all lines or all spaces (snowman); triads can be built on every scale note.
-   Uses staff.js chord:true chains (3-note stacks) + quiz.js v5.5 triad-id.
+/* Lesson 47 (6.10, formerly L78) — Syncopation (Book 4, Unit 19 — SELF-AUTHORED)
+   Core: SYNCOPATION = accent shifted to a weak beat or off-beat. Made by
+   off-beat accents, by TIES holding through strong beats, and by RHYTHMIC
+   ANTICIPATION (a note arriving just before the beat). The 3+3+2 pattern.
+   (A melodic non-harmonic tone also called "anticipation" appears later in
+   the harmony lessons — this lesson's anticipation is purely rhythmic.)
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* triad builder: press root, third, fifth on the keyboard to stack the snowman */
-function MF_L47_build(container,fb){
-  const ROUNDS=[
-    {root:"C",m:[60,64,67],letters:["C","E","G"]},
-    {root:"F",m:[65,69,72],letters:["F","A","C"]},
-    {root:"G",m:[67,71,74],letters:["G","B","D"]},
-    {root:"D",m:[62,65,69],letters:["D","F","A"]}];
-  const PART=["root","3rd","5th"];
-  let r=0,k=0,kb=null,got=[],off=0;
-  container.innerHTML=`<div class="big-q l47-q" style="text-align:center"></div>
-    <div class="l47-staff"></div><div class="l47-kb"></div>
-    <p style="text-align:center;font-size:13.5px;color:var(--primary);font-weight:700;margin:6px 0 0">Root → skip a letter → 3rd → skip a letter → 5th. Every other white key!</p>`;
-  const q=container.querySelector(".l47-q"), holder=container.querySelector(".l47-staff"), kbHolder=container.querySelector(".l47-kb");
-  function drawStaff(){
-    const cur=ROUNDS[r];
-    const notes=got.map((L2,ix)=>{ const o=String(Math.floor((cur.m[ix]+off)/12)-1); return ix===0?{p:L2+o,d:"w"}:{p:L2+o,d:"w",chord:true}; });
-    if(notes.length) Staff.render(holder,{clef:"treble",notes,width:180}); else holder.innerHTML="";
-  }
-  function ask(){
-    const cur=ROUNDS[r]; k=0; got=[]; off=0; drawStaff();
-    q.innerHTML=`Build ${r+1} of ${ROUNDS.length}: stack the <b>${cur.root} triad</b> — press its <b>root</b> first.`;
-    kbHolder.innerHTML="";
-    kb=Keyboard.create(kbHolder,{start:60,octaves:2,labels:true,
-      onKey:m=>{
-        const c=ROUNDS[r];
-        if(k===0 && (m-c.m[0])%12===0 && m+(c.m[2]-c.m[0])<=84) off=m-c.m[0];
-        if(m===c.m[k]+off && !(k===0 && (m-c.m[0])%12!==0)){
-          got.push(c.letters[k]); kb.mark(c.m.slice(0,k+1).map(x=>x+off)); MFAudio.tone(m,.5,0,.5); drawStaff(); k++;
-          if(k>=3){ MFAudio.tone(c.m[0]+off,.9,.15,.4); MFAudio.tone(c.m[1]+off,.9,.15,.4); MFAudio.tone(c.m[2]+off,.9,.15,.4); r++;
-            if(r>=ROUNDS.length){ q.textContent="Four snowmen built!";
-              fb(true,`✓ ${c.letters.join("-")} — root, 3rd, 5th. Every triad is the same recipe: a note, skip one, another, skip one, one more.`); }
-            else { fb(true,`✓ The ${c.root} triad: ${c.letters.join("-")}! Hear it ring. Next…`); setTimeout(ask,1600); } }
-          else { q.innerHTML=`Good — now the <b>${PART[k]}</b> of the ${c.root} triad.`; } }
-        else { MFAudio.tone(40,.2); fb(false, k===0? `The root IS the name: press ${c.root}.` : `Skip exactly one letter from ${c.letters[k-1]} — land on ${c.letters[k]}.`); }
-      }});
-  }
-  ask();
+/* ear lab: straight rhythm vs syncopated rhythm */
+function MF_L47_ear(container,fb){
+  const ROUNDS=[1,0,1,0].sort(()=>Math.random()-.5); /* 1 = syncopated */
+  let r=0, played=false;
+  container.innerHTML=`<div class="big-q l78e-q" style="text-align:center"></div>
+    <div style="text-align:center"><button class="play l78e-play">▶ Play the rhythm</button></div>
+    <div class="choices l78e-ch" style="display:none"><button>On the beat — no syncopation</button><button>Syncopated — accents between the beats</button></div>`;
+  const q=container.querySelector(".l78e-q"), pl=container.querySelector(".l78e-play"), ch=container.querySelector(".l78e-ch");
+  pl.onclick=()=>{
+    if(r>=ROUNDS.length) return;
+    const sync=ROUNDS[r]===1;
+    for(let b=0;b<4;b++) MFAudio.tone(48,.22,b*.5,.34);
+    if(sync){ [0,.75,1.25,1.75].forEach(t=>MFAudio.tone(76,.16,t,.3)); }
+    else { [0,.5,1,1.5].forEach(t=>MFAudio.tone(76,.15,t,.28)); }
+    played=true; setTimeout(()=>ch.style.display="",2500);
+  };
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    if(!played) return;
+    const sync=ROUNDS[r]===1;
+    if((i===1)===sync){ fb(true,sync?"✓ The melody notes landed BETWEEN the low beats — syncopation.":"✓ Every melody note landed ON a beat — no syncopation."); r++; played=false; ch.style.display="none";
+      if(r>=ROUNDS.length){ q.textContent="Excellent! You hear syncopation instantly."; pl.style.display="none"; } else q.innerHTML=`Round ${r+1} of ${ROUNDS.length}: listen, then decide.`;
+    } else { MFAudio.tone(40,.2); fb(false,"Compare the high notes with the low beats — do they line up or land between?"); }
+  });
+  q.innerHTML="Round 1 of 4: listen, then decide.";
 }
 
 LESSON_CONTENT[47]={
-  welcome:"Until today, notes took turns. Now they sound together: welcome to CHORDS. \u{1F3B6}",
+  welcome:"Syncopation shifts emphasis away from the expected strong beats.",
   hook:{
-    say:"One note… two notes… THREE. Press the buttons in order. <b>When does it start sounding like harmony?</b>",
+    say:"<b>Listen to two versions of the same rhythm.</b> The first emphasizes the beats; the second shifts the emphasis away from them. \u{1F447} <b>Which version shifts the accent away from the beat?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-1">▶ One note</button>
-          <button class="play hk-2">▶ Two notes</button>
-          <button class="play hk-3">▶ Three notes</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Three — a full, rich CHORD appeared</button><button>One — a single note is harmony</button></div>`;
+          <button class="play hk-a">▶ Version A</button>
+          <button class="play hk-b">▶ Version B</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Version B — its accents fall between the beats</button><button>Version A — its notes emphasize the beats</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        let h3=false;
-        container.querySelector(".hk-1").onclick=()=>MFAudio.tone(60,.9,0,.5);
-        container.querySelector(".hk-2").onclick=()=>{MFAudio.tone(60,.9,0,.42);MFAudio.tone(64,.9,0,.42);};
-        container.querySelector(".hk-3").onclick=()=>{MFAudio.tone(60,1.1,0,.4);MFAudio.tone(64,1.1,0,.4);MFAudio.tone(67,1.1,0,.4); h3=true; setTimeout(()=>ch.style.display="",1300);};
+        let hA=false,hB=false;
+        container.querySelector(".hk-a").onclick=()=>{ for(let b=0;b<4;b++){ MFAudio.tone(48,.22,b*.5,.34); MFAudio.tone(76,.15,b*.5,.28); } hA=true; if(hB) setTimeout(()=>ch.style.display="",2300); };
+        container.querySelector(".hk-b").onclick=()=>{ for(let b=0;b<4;b++) MFAudio.tone(48,.22,b*.5,.34); [0,.75,1.25,1.75].forEach(t=>MFAudio.tone(76,.16,t,.3)); hB=true; if(hA) setTimeout(()=>ch.style.display="",2300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(!h3){ fb(false,"Press all three buttons first!"); return; }
-          if(i===0) fb(true,"✓ Three notes sounding together = a CHORD — and this one (C-E-G: root, 3rd, 5th) is the most important chord shape in music: the TRIAD.");
-          else fb(false,"One note is a melody's atom — harmony needs company.");
+          if(i===0) fb(true,"✓ Correct. Version B emphasizes the offbeats between the main beats. Shifting emphasis away from the expected strong beats creates syncopation.");
+          else fb(false,"Version A emphasizes the main beats. Listen again for the version whose accents fall between the steady pulse beats.");
         });
       } }
   },
   objectives:[
-    "Define a chord (3+ notes together)",
-    "Define a triad: root + 3rd + 5th",
-    "Name the root of any root-position triad",
-    "Spot the all-lines / all-spaces triad shape",
-    "Build triads on any scale note",
-    "Read triads in treble and bass clef"
+    "Define syncopation: accents shifted to weak beats or off-beats",
+    "Accent the off-beat (the '&') on purpose",
+    "Create syncopation using ties that hold through a strong beat",
+    "Define rhythmic anticipation: arriving just before the beat",
+    "Read and clap the 3+3+2 pattern",
+    "Recognize the difference between syncopated and on-the-beat rhythms"
   ],
   steps:[
-    { say:"Definitions first. <b>Three or more notes sounded together = a CHORD.</b> The star chord of all music: a 3-note chord built of a <b>ROOT, a 3rd, and a 5th</b> — the <b>TRIAD</b>. \u{1F447} <b>A triad consists of…?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"C4",d:"w",label:"root"},{p:"E4",d:"w",label:"3rd"},{p:"G4",d:"w",label:"5th"},{bar:"double"},
-        {p:"C4",d:"w",label:"the triad"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:440} },
-      try:{ type:"mc", choices:["Root + 3rd + 5th","Root + 2nd + 4th","Any three random notes"], answer:0,
-        success:"✓ Root, then a 3rd above, then a 5th above the root — the triad recipe never changes.",
-        fail:"Measure both intervals UP from the bottom note…",
-        hint:"The two intervals you mastered in Unit 8-9." } },
-    { say:"The <b>ROOT</b> gives the triad its <b>name</b>. Build up from C → C triad. From G → G triad. Measure a 3rd and a 5th upward from the root and you're done. \u{1F447} <b>A triad built on F is called…?</b>",
-      try:{ type:"mc", choices:["The F triad","The C triad","A root triad"], answer:0,
-        success:"✓ Root = name. F-A-C is the F triad, wherever it appears.",
-        fail:"Which note did the triad grow from?",
-        hint:"Bottom note of the stack (in root position)." } },
-    { say:"Now the reading shortcut. In <b>ROOT POSITION</b> a triad takes <b>every other note</b> (C-E-G, D-F-A, E-G-B…) — so on the staff it's <b>ALL LINES or ALL SPACES</b> — a neat stack! \u{1F447} <b>A root-position triad on the staff looks like…?</b>",
-      show:{ type:"staff", spec:{clef:"bass",tempo:60,notes:[
-        {p:"G2",d:"w",x:160,label:"lines"},{p:"B2",d:"w",chord:true},{p:"D3",d:"w",chord:true},
-        {p:"A2",d:"w",x:360,label:"spaces"},{p:"C3",d:"w",chord:true},{p:"E3",d:"w",chord:true}],width:480} },
-      try:{ type:"mc", choices:["All lines, or all spaces — a neat stack","One line, one space, one line","Notes side by side"], answer:0,
-        success:"✓ Skip-a-letter spacing = matching staff positions. If the stack mixes lines AND spaces, it's not in root position!",
-        fail:"Skip-one-letter notes land on matching positions…",
-        hint:"Remember the odd-interval rule from L33." } },
-    { say:"Hands on — stack some triads. \u{1F447} <b>Build each triad on the keyboard, bottom to top:</b>",
+    { say:"<b>Syncopation</b> occurs when musical emphasis shifts away from an expected strong beat. The emphasis may fall on a weak beat or an offbeat, or a note may be tied across a strong beat. Although the accents shift, the underlying pulse remains steady. \u{1F447} <b>What is syncopation?</b>",
+      try:{ type:"mc", choices:["A shift of emphasis away from an expected strong beat","An increase in tempo","The complete removal of the pulse"], answer:0,
+        success:"✓ Correct. The pulse remains steady, but the musical emphasis shifts away from its expected location.",
+        fail:"Syncopation changes the placement of emphasis, not the tempo.",
+        hint:"Where does the musical emphasis occur?" } },
+    { say:"<b>Offbeat Accents:</b> One common type of syncopation emphasizes the <b>\u{201C}and\u{201D}</b>, or the second half of each beat. Count <b>\u{201C}1-and-2-and-3-and-4-and\u{201D}</b>, placing the emphasis on each <b>\u{201C}and\u{201D}</b>. \u{1F447} <b>In \u{201C}1-and-2-and-3-and-4-and\u{201D}, which syllables represent the offbeats?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"4/4",tempo:88,notes:[
+        {rest:"8"},{p:"G4",d:"8",artic:"accent"},{rest:"8"},{p:"G4",d:"8",artic:"accent"},
+        {rest:"8"},{p:"G4",d:"8",artic:"accent"},{rest:"8"},{p:"G4",d:"8",artic:"accent"},{bar:"final"}],width:460} },
+      try:{ type:"mc", choices:["The \u{201C}ands\u{201D} between the numbered beats","Beats 1 and 3","Beat 4 only"], answer:0,
+        success:"✓ Correct. The \u{201C}ands\u{201D} occur halfway between the numbered beats. Emphasizing them creates offbeat syncopation.",
+        fail:"The numbers represent the main beats. Look for the syllables between them.",
+        hint:"Look between the numbered beats." } },
+    { say:"<b>Ties and Syncopation:</b> A note may begin on an offbeat and be <b>tied across the following strong beat</b>. Because no new note begins on the strong beat, the accent is heard on the earlier offbeat instead. \u{1F447} <b>Why does this measure sound syncopated?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"4/4",tempo:84,notes:[
+        {p:"E4",d:"8"},{p:"G4",d:"8"},{p:"G4",d:"q"},{p:"G4",d:"8"},{p:"C5",d:"8"},{p:"C5",d:"q"},{bar:"final"}],
+        beams:[[0,1],[3,4]],arcs:[{from:1,to:2,type:"tie"},{from:4,to:5,type:"tie"}],width:460} },
+      try:{ type:"mc", choices:["A note begins on an offbeat and continues through the following strong beat","Every note begins on a strong beat","The tie makes the note shorter"], answer:0,
+        success:"✓ Correct. The notes begin on offbeats and continue through beats 2 and 4, so no new attack occurs on those beats.",
+        fail:"Identify where each tied note begins.",
+        hint:"The note begins on an \u{201C}and\u{201D} and continues through the following beat." } },
+    { say:"<b>Rhythmic Anticipation:</b> A rhythmic anticipation <b>begins shortly before an expected beat</b> and often continues across it. This technique is common in many popular, jazz, and dance-music styles. \u{1F447} <b>A rhythmic anticipation begins…</b>",
+      try:{ type:"mc", choices:["shortly before the expected beat","exactly on the expected beat","one full measure after the expected beat"], answer:0,
+        success:"✓ Correct. A rhythmic anticipation begins before the expected beat and often continues across it.",
+        fail:"An anticipation arrives earlier than expected.",
+        hint:"It begins before the expected beat." } },
+    { say:"<b>The 3 + 3 + 2 Pattern:</b> In 4/4, eight eighth notes can be grouped <b>3 + 3 + 2</b> and counted:<div style='text-align:center;font-family:monospace;font-weight:800;font-size:16px;letter-spacing:1px;margin:6px 0'>1 2 3 | 4 5 6 | 7 8</div>When the first note of each group is emphasized, the accents fall on eighth notes <b>1, 4, and 7</b> — which correspond to beat 1, the \u{201C}and\u{201D} of beat 2, and beat 4. This grouping creates a syncopated pattern found in many musical traditions and contemporary styles. \u{1F447} <b>When a 3 + 3 + 2 pattern is counted as eight eighth notes, where do the group beginnings occur?</b>",
+      show:{ type:"staff", spec:{clef:"treble",time:"4/4",tempo:92,notes:[
+        {p:"C5",d:"8",artic:"accent"},{p:"G4",d:"8"},{p:"G4",d:"8"},
+        {p:"C5",d:"8",artic:"accent"},{p:"G4",d:"8"},{p:"G4",d:"8"},
+        {p:"C5",d:"8",artic:"accent"},{p:"G4",d:"8"},{bar:"final"}],
+        beams:[[0,2],[3,5],[6,7]],width:480} },
+      try:{ type:"mc", choices:["On eighth notes 1, 4, and 7","On every eighth note","Only on the final eighth note"], answer:0,
+        success:"✓ Correct. Eighth notes 1, 4, and 7 begin the three groups. Emphasizing those notes produces the 3 + 3 + 2 accent pattern.",
+        fail:"Identify the first note of each group.",
+        hint:"Count the group beginnings: 1–2–3, 4–5–6, 7–8." } },
+    { say:"Listen and decide whether the rhythm emphasizes the beats or creates syncopation. \u{1F447}",
       try:{ type:"custom",
-        hint:"Press the root, skip a white key, press the 3rd, skip again, the 5th.",
-        mount:(container,fb)=>MF_L47_build(container,fb) } },
-    { say:"Triads grow on <b>every</b> note of the scale. Here are all the root-position triads of C major — one per scale note, C through C. Press play and hear the whole neighborhood. \u{1F447} <b>How many different triads live in one octave of a major scale?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
-        {p:"C4",d:"w",label:"C"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"D"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"E"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
-        {p:"F4",d:"w",label:"F"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
-        {p:"G4",d:"w",label:"G"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
-        {p:"A4",d:"w",label:"A"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},
-        {p:"B4",d:"w",label:"B"},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:640} },
-      try:{ type:"mc", choices:["Seven — one per letter name","Three","Twelve"], answer:0,
-        success:"✓ C D E F G A B — seven roots, seven triads (the octave C repeats the first).",
-        fail:"One triad per scale letter…",
-        hint:"How many letters in the musical alphabet?" } },
-    { say:"Root-spotting drill — the skill every chord reader needs. \u{1F447} <b>In root position, the root is the BOTTOM note. Name it:</b>",
-      try:{ type:"mc",
-        staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:200},
-        choices:["G — so this is the G triad","D — the top note names it","B — the middle note"], answer:0,
-        success:"✓ Bottom note G → the G triad (G-B-D). Read triads from the bottom up!",
-        fail:"Root position: the name lives at the BOTTOM.",
-        hint:"Which note is at the bottom of the stack?" } }
+        hint:"Compare the melody's attacks with the steady pulse.",
+        mount:(container,fb)=>MF_L47_ear(container,fb) } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which example creates syncopation?</b>",
+      try:{ type:"mc", choices:["A note that begins on an offbeat and is tied through the following strong beat","A whole note that begins on beat 1","A rest that follows the final beat of a measure"], answer:0,
+        success:"✓ Correct. The note attacks on an offbeat and continues through the following strong beat, shifting the expected emphasis.",
+        fail:"Which option shifts the expected emphasis away from a strong beat?",
+        hint:"Think about the tied-note example in Step 3." } }
   ],
   examples:[
-    { caption:"The C major scale (the ingredients) followed by the C triad (the recipe): scale notes 1, 3, and 5 stacked into one sound.",
-      staff:{clef:"treble",tempo:110,notes:[
-        {p:"C4",d:"q",label:"1"},{p:"D4",d:"q",label:"2"},{p:"E4",d:"q",label:"3"},{p:"F4",d:"q",label:"4"},{p:"G4",d:"q",label:"5"},{p:"A4",d:"q",label:"6"},{p:"B4",d:"q",label:"7"},{p:"C5",d:"q",label:"8"},{bar:"double"},
-        {p:"C4",d:"w",label:"C triad"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:660},
+    { caption:"On-the-beat, then syncopated: the same melody twice — first plain, then with tied off-beat attacks. Listen for the accents sliding between the beats.",
+      staff:{clef:"treble",time:"4/4",tempo:88,notes:[
+        {p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"E4",d:"q"},{bar:"single"},
+        {p:"C4",d:"8"},{p:"E4",d:"8"},{p:"E4",d:"q"},{p:"G4",d:"8"},{p:"E4",d:"8"},{p:"E4",d:"q"},{bar:"final"}],
+        beams:[[5,6],[8,9]],arcs:[{from:6,to:7,type:"tie"},{from:9,to:10,type:"tie"}],width:640},
       kb:{start:60,octaves:1,labels:true} },
-    { caption:"The same C triad in bass clef and treble clef — all lines in one, all spaces in the other, root C at the bottom of both.",
-      staff:{clef:"grand",tempo:60,notes:[
-        {p:"C4",d:"w",clef:"treble"},{p:"E4",d:"w",chord:true,clef:"treble"},{p:"G4",d:"w",chord:true,clef:"treble"},
-        {p:"C3",d:"w",clef:"bass"},{p:"E3",d:"w",chord:true,clef:"bass"},{p:"G3",d:"w",chord:true,clef:"bass"}],width:380} }
+    { caption:"The 3+3+2 pattern over a steady bass: three, three, then two — the tempo stays the same, but the changing accents create a different rhythmic feel.",
+      staff:{clef:"treble",time:"4/4",tempo:96,notes:[
+        {p:"E4",d:"8",artic:"accent"},{p:"E4",d:"8"},{p:"E4",d:"8"},
+        {p:"G4",d:"8",artic:"accent"},{p:"G4",d:"8"},{p:"G4",d:"8"},
+        {p:"C5",d:"8",artic:"accent"},{p:"C5",d:"8"},{bar:"single"},
+        {p:"C4",d:"h"},{p:"C4",d:"h"},{bar:"final"}],
+        beams:[[0,2],[3,5],[6,7]],width:640},
+      kb:{start:60,octaves:1,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Root Hunter Sprint (45s)",
-      intro:"Triads flash on the staff — name each root before time runs out!",
-      miaIntro:"Read the bottom of every stack!",
-      spec:{gen:"triad-id", params:{}, seconds:45},
-      result:(score)=>score>=8?score+" roots hunted — chord reader unlocked!":null },
-    { type:"key-climb", title:"Game 2 · Triad Ladder",
-      intro:"Climb C-E-G-C: the triad plus its octave, in order, fast!",
-      miaIntro:"Root, 3rd, 5th, roof! \u{1FA9C}",
-      spec:{seq:[60,64,67,72], names:["C (root)","E (3rd)","G (5th)","C (octave)"], start:60, octaves:1,
-        title:"Press C → E → G → C: the triad and its octave"},
-      result:(score)=>score!==null?"The triad lives in your fingers!":null },
-    { type:"symbol-hunt", title:"Game 3 · Triad Hunt",
-      intro:"Four stacked shapes — click the triad the round names!",
-      miaIntro:"Spot the right triad! \u{1F50D}",
+    { type:"gen-race", title:"Game 1 · Syncopation Sprint (45s)",
+      intro:"Identify offbeats, tied syncopations, and rhythmic anticipations before time runs out.",
+      miaIntro:"Listen for emphasis on the \u{201C}and.\u{201D}",
+      spec:{gen:"term-match", params:{subject:"term", pool:[
+        ["Syncopation","an accent shifted off the strong beat"],
+        ["The off-beat","the '&' between beats"],
+        ["Tie syncopation","attack early, hold through the beat"],
+        ["Rhythmic anticipation","arriving just before the beat"],
+        ["3+3+2","a built-in syncopated grouping"],
+        ["The pulse during syncopation","stays steady"],
+        ["Off-beat accent count","1 & 2 & — stress the &"],
+        ["Syncopation's home styles","jazz, pop, Latin, rock"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Syncopation challenge completed!":null },
+    { type:"symbol-hunt", title:"Game 2 · Spot the Syncopation",
+      intro:"Select the rhythm that demonstrates the named type of syncopation.",
+      miaIntro:"Look for offbeat attacks and ties across strong beats.",
       spec:{rounds:6, pool:[
-        {label:"C triad", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
-        {label:"F triad", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
-        {label:"G triad", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}},
-        {label:"D triad", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"No triad escapes you!":null },
-    { type:"term-race", title:"Game 4 · Chord Vocabulary Race",
-      intro:"Chord, triad, root, root position — match the new words at speed!",
-      miaIntro:"Stack the vocabulary too! \u{1F3C1}",
+        {label:"On-the-beat quarters", spec:{clef:"treble",time:"2/4",notes:[{p:"G4",d:"q"},{p:"G4",d:"q"}],width:150}},
+        {label:"Tie syncopation", spec:{clef:"treble",time:"2/4",notes:[{p:"G4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"q"}],beams:[[0,1]],arcs:[{from:1,to:2,type:"tie"}],width:170}},
+        {label:"Off-beat accents", spec:{clef:"treble",time:"2/4",notes:[{rest:"8"},{p:"G4",d:"8",artic:"accent"},{rest:"8"},{p:"G4",d:"8",artic:"accent"}],width:170}},
+        {label:"3+3+2 grouping", spec:{clef:"treble",time:"4/4",notes:[{p:"B4",d:"8",artic:"accent"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8",artic:"accent"},{p:"B4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"8",artic:"accent"},{p:"B4",d:"8"}],beams:[[0,2],[3,5],[6,7]],width:240}}]},
+      result:(score)=>score>=5?"You identified the syncopated rhythms correctly.":null },
+    { type:"order-tap", title:"Game 3 · Build the Definition",
+      intro:"Arrange the elements of syncopation in the correct order.",
+      miaIntro:"Begin with a steady pulse, then shift the emphasis.",
+      spec:{sequence:["Keep the pulse steady","Attack on an off-beat","Hold through the strong beat","The accent has shifted — syncopation"],
+        title:"How syncopation happens"},
+      result:(stars)=>stars>=2?"You completed the definition of syncopation.":null },
+    { type:"term-race", title:"Game 4 · Where's the Accent?",
+      intro:"Identify where each rhythm places its emphasis before time runs out.",
+      miaIntro:"Locate each note attack or accent.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Chord","three or more notes sounded together"],
-        ["Triad","a 3-note chord: root, 3rd, and 5th"],
-        ["Root","the note a triad is named after"],
-        ["Root position","root on the bottom — all lines or all spaces"],
-        ["All lines or all spaces","how a root-position triad looks on the staff"],
-        ["C triad","C-E-G"]]},
-      result:(score)=>score>=7?"Chord vocabulary: stacked!":null }
+        ["Off-beat accent","on the '&'"],
+        ["Tie through beat 3","accent arrives before beat 3"],
+        ["Rhythmic anticipation","half a beat early"],
+        ["3+3+2 accents","on eighths 1, 4 and 7"],
+        ["Unsyncopated rhythm","accents on the numbered beats"],
+        ["The backbeat (pop drums)","beats 2 and 4"],
+        ["Syncopation needs","a steady pulse underneath"],
+        ["Strong beats in 4/4","1 and 3"]]},
+      result:(score)=>score>=6?"You located each rhythmic emphasis correctly.":null }
   ],
-  practiceIntro:"19 practice questions — spelling, roots, triad shapes and clefs. Answer right and the next appears automatically!",
+  practiceIntro:"Complete 20 practice questions on offbeats, tied syncopations, and rhythmic anticipations. The next question will appear after each correct answer.",
   practice:[
-    { gen:"triad-id", params:{}, count:5 },
-    { gen:"triad-id", params:{clef:"bass"}, count:3 },
-    { gen:"term-match", params:{subject:"term", pool:[["Chord","three or more notes sounded together"],["Triad","root + 3rd + 5th"],["Root","the naming note of a triad"],["Root position","all lines or all spaces"]], reverse:true}, count:3 },
-    { type:"mc", q:"Spell the C triad.", choices:["C-E-G","C-D-E","C-F-A"], answer:0,
-      explain:"Root C, 3rd E, 5th G — every other letter." },
-    { type:"mc", q:"Spell the D triad.", choices:["D-F-A","D-E-F","D-G-B"], answer:0,
-      explain:"Skip a letter twice: D-F-A." },
-    { type:"mc", q:"Spell the E triad.", choices:["E-G-B","E-F-G","E-A-C"], answer:0,
-      explain:"E-G-B — every other letter from E." },
-    { type:"mc", q:"A chord is defined as…", choices:["three or more notes sounded together","two notes in a row","any loud note"], answer:0,
-      explain:"Three-plus, together." },
-    { type:"truefalse", q:"In root position, all notes are on lines or all are in spaces.", answer:true,
-      explain:"All lines or all spaces — skip-a-letter spacing." },
-    { type:"truefalse", q:"The root of a root-position triad is the top note.", answer:false,
-      explain:"The BOTTOM note names it." },
-    { type:"mc", q:"Triads may be built on…", choices:["any note of the scale","only the keynote","only lines"], answer:0,
-      explain:"Seven scale notes, seven triads." },
-    { type:"mc", q:"To build a triad, you measure ____ upward from the root.", choices:["a 3rd and a 5th","a 2nd and a 4th","two octaves"], answer:0,
-      explain:"Root + 3rd + 5th." }
-  ],
-  miaQuizIntro:"Stack 'em up — root, third, fifth! Final quiz!",
-  quiz:[
-    { type:"mc", q:"When three or more notes are sounded together, the combination is called a…", choices:["chord","interval","scale","cluster"], answer:0,
-      explain:"The definition of a chord.", hint:"Three-plus, together." },
-    { type:"mc", q:"A triad consists of a…", choices:["root, 3rd, and 5th","root, 2nd, and 4th","root, 4th, and 6th","root and two octaves"], answer:0,
-      explain:"The eternal triad recipe.", hint:"Skip-a-letter twice." },
-    { type:"mc", q:"The triad gets its NAME from its…", choices:["root","3rd","5th","key signature"], answer:0,
-      explain:"Root = name.", hint:"The note it grew from." },
-    { type:"truefalse", q:"In root position, a triad's notes are all on lines or all in spaces.", answer:true,
-      explain:"A neat stack — all lines or all spaces.", hint:"Every-other-letter spacing." },
-    { type:"truefalse", q:"A triad can only be built on the first note of a scale.", answer:false,
-      explain:"Every scale note grows one.", hint:"Seven letters, seven triads." },
-    { type:"mc", q:"Name this triad.",
-      staff:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:200},
-      choices:["F triad","A triad","C triad"], answer:0,
-      explain:"Bottom note F → F-A-C.", hint:"Root position: read the bottom." },
-    { type:"mc", q:"Name this triad.",
-      staff:{clef:"bass",notes:[{p:"G2",d:"w"},{p:"B2",d:"w",chord:true},{p:"D3",d:"w",chord:true}],width:200},
-      choices:["G triad","B triad","D triad"], answer:0,
-      explain:"G-B-D from the bass clef's G line.", hint:"Same rule, lower clef." },
-    { type:"mc", q:"The E triad is spelled…", choices:["E-G-B","E-F-G","E-A-B","E-G-A"], answer:0,
-      explain:"Every other letter from E.", hint:"Skip F, skip A." },
-    { type:"mc", q:"Which is NOT part of the C triad?", choices:["D","C","E","G"], answer:0,
-      explain:"C-E-G — D is skipped.", hint:"Spell it: C, skip, skip." },
-    { type:"mc", q:"A root-position triad never looks like…", choices:["a mix of lines AND spaces","all lines","all spaces"], answer:0,
-      explain:"Mixed positions mean it's NOT root position.", hint:"Snowmen match their floors." },
-    { type:"mc", q:"In the C major scale, how many root-position triads can be built (one octave)?", choices:["7","3","12"], answer:0,
-      explain:"One per scale letter.", hint:"Count the letters." },
-    { type:"mc", q:"The intervals from the root UP to the other triad notes are…", choices:["a 3rd and a 5th","a 2nd and a 3rd","a 4th and a 6th"], answer:0,
-      explain:"Root→3rd, root→5th.", hint:"The triad recipe." },
-    /* generated */
-    { gen:"triad-id", params:{}, count:4 },
-    { gen:"triad-id", params:{clef:"bass"}, count:2 },
-    { gen:"term-match", params:{subject:"term", pool:[["Chord","three or more notes sounded together"],["Triad","root + 3rd + 5th"],["Root","the naming note"],["Root position","all lines or all spaces"]], reverse:true}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["Syncopation","shifted accent"],["Off-beat","the '&'"],["Tie syncopation","hold through the strong beat"],["Anticipation","arrive early"],["3+3+2","syncopated grouping"]], reverse:true}, count:6 },
+    { gen:"rhythm-count", params:{}, count:2 },
+    { type:"mc", q:"Syncopation shifts musical emphasis toward…", choices:["a weak beat or offbeat","an expected strong beat only","the bar line"], answer:0,
+      explain:"Syncopation shifts emphasis away from its expected metrical position." },
+    { type:"mc", q:"In \u{201C}1 and 2 and 3 and 4 and,\u{201D} which syllables represent the offbeats?", choices:["the \u{201C}ands\u{201D}","the odd-numbered beats","the even-numbered beats"], answer:0,
+      explain:"Between the numbered beats." },
+    { type:"mc", q:"A tie can create syncopation when it…", choices:["connects an offbeat note across the following strong beat","connects notes that both begin on downbeats","shortens a note"], answer:0,
+      explain:"The note continues through the strong beat without a new attack on that beat." },
+    { type:"mc", q:"A rhythmic anticipation begins…", choices:["shortly before the expected beat","exactly on the expected beat","after the expected beat"], answer:0,
+      explain:"It begins early and often continues across the expected beat." },
+    { type:"truefalse", q:"During syncopation, the underlying pulse can remain steady.", answer:true,
+      explain:"Syncopation changes the expected placement of rhythmic emphasis without requiring a tempo change." },
+    { type:"truefalse", q:"When the beginning of each group is emphasized, a 3 + 3 + 2 pattern accents eighth notes 1, 4, and 7.", answer:true,
+      explain:"The start of each group." },
+    { type:"truefalse", q:"Accenting only the expected strong beats 1 and 3 in 4/4 creates syncopation.", answer:false,
+      explain:"Beats 1 and 3 are the primary and secondary strong beats in 4/4, so emphasizing them does not shift the expected metrical accents." },
+    { gen:"term-match", params:{subject:"term", pool:[["Strong beats (4/4)","1 and 3"],["Backbeat","2 and 4"],["The '&'","the off-beat"],["Steady pulse","syncopation's foundation"]], reverse:true}, count:3 },
+    { gen:"note-value", params:{}, count:2 }
   ],
   vocabulary:[
-    {term:"Chord", def:"Three or more notes sounded together."},
-    {term:"Triad", def:"A 3-note chord consisting of a root, a 3rd, and a 5th.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:130}},
-    {term:"Root", def:"The note from which the triad gets its name — the bottom note in root position."},
-    {term:"Root Position", def:"A triad arranged root-3rd-5th from the bottom: all notes on lines, or all in spaces.",
-      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:130}}
+    {term:"Syncopation", def:"An accent shifted to a weak beat or off-beat while the pulse stays steady.",
+      staff:{clef:"none",bare:true,notes:[{p:"B4",d:"8"},{p:"B4",d:"q"},{p:"B4",d:"8"}],width:220}},
+    {term:"Off-beat", def:"The space between beats — the '&' when counting '1 & 2 &'.",
+      staff:{clef:"none",bare:true,notes:[{rest:"8"},{p:"B4",d:"8"},{rest:"8"},{p:"B4",d:"8"}],width:260}},
+    {term:"Rhythmic Anticipation", def:"A note that arrives just before the beat it belongs to and holds through it."}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Chord</b> = 3+ notes together; <b>triad</b> = the 3-note chord of <b>root + 3rd + 5th</b>.",
-    "✔ The <b>root names the triad</b> — C-E-G is the C triad.",
-    "✔ Root position on the staff = <b>all lines or all spaces</b> — a neat stack.",
-    "✔ Triads grow on <b>every</b> scale note: seven letters, seven triads.",
-    "✔ Spelling shortcut: start at the root and take every other letter."
+    "✔ <b>Syncopation</b> = accent on a <b>weak beat or off-beat</b>; the pulse never moves.",
+    "✔ Three tools: <b>off-beat accents</b>, <b>ties through strong beats</b>, <b>rhythmic anticipation</b>.",
+    "✔ <b>Anticipation</b> arrives just <b>before</b> its beat and holds.",
+    "✔ <b>3+3+2</b>: accents on eighths 1, 4, 7 — groove by grouping.",
+    "✔ Jazz, pop, Latin and rock are built on these shifts.",
+    "<div style='margin-top:4px;padding:10px 14px;border-left:4px solid var(--accent,#4f7cff);background:rgba(79,124,255,.08);border-radius:8px'><b>Remember</b><br>\u{2022} The pulse stays steady.<br>\u{2022} The accents move.<br>\u{2022} That shift of accents is called <b>syncopation</b>.</div>"
   ],
   tips:[
-    "Practice spelling triads from any letter out loud: 'B-D-F! A-C-E! F-A-C!' — speed comes fast.",
-    "At the piano, root-position triads are every-other-white-key — one hand position, seven chords.",
-    "If a stack mixes a line note with space notes, suspect an inversion (that story comes later).",
-    "Next lesson: the three VIP triads of every key — I, IV, and V, the primary chords."
+    "Practice trick: tap the pulse with your foot and clap only the &'s — when it stops feeling wrong, you own the off-beat.",
+    "In pop vocals, almost every phrase-ending note anticipates the barline. Listen for it tonight.",
+    "Write four measures of quarter notes, then tie each off-beat eighth into the next beat — instant syncopated version.",
+    "Next lesson: meters that are THEMSELVES uneven — 5/4, 7/8 and changing meter."
   ],
-  rewards:{ badge:"Chord Stacker", icon:"\u{1F9F1}" },
+  rewards:{ badge:"Off-Beat Operator", icon:"\u{1F941}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect score, stacked clean — root, 3rd, 5th! \u{1F389}",
-  miaPass:"Passed! Keep chanting the recipe: root, 3rd, 5th.",
+  miaQuizIntro:"Keep the pulse steady and identify where the rhythmic emphasis shifts.",
+  quiz:[
+    { type:"mc", q:"What is syncopation?", choices:["A shift of musical emphasis away from an expected strong beat","An increase in tempo","A missing measure"], answer:0,
+      explain:"The underlying pulse remains steady while the expected rhythmic emphasis shifts.", hint:"Where does the accent land?" },
+    { type:"mc", q:"In \u{201C}1 and 2 and 3 and 4 and,\u{201D} which syllables represent the offbeats?", choices:["The \u{201C}ands\u{201D}","Beats 1 and 3","The bar lines"], answer:0,
+      explain:"'1 & 2 &' — the &'s sit between beats.", hint:"Between the numbers." },
+    { type:"mc", q:"How can a tie create syncopation?", choices:["A note begins on an offbeat and continues through the following strong beat","Two notes both begin on downbeats","The tied note becomes quieter"], answer:0,
+      explain:"No new attack occurs on the strong beat because the earlier note continues through it.", hint:"The note attacks early and continues across the beat." },
+    { type:"mc", q:"A rhythmic anticipation…", choices:["begins shortly before the expected beat and often continues across it","begins exactly on the expected beat","omits the beat completely"], answer:0,
+      explain:"A rhythmic anticipation begins earlier than expected.", hint:"An anticipation arrives before the expected moment." },
+    { type:"mc", q:"How many eighth notes are included in a 3 + 3 + 2 grouping?", choices:["8","6","12"], answer:0,
+      explain:"3 + 3 + 2 = 8 eighth notes, equal to one measure of 4/4.", hint:"Add the groups." },
+    { type:"mc", q:"When the beginning of each group is emphasized, which eighth notes receive the accents in a 3 + 3 + 2 pattern?", choices:["Eighth notes 1, 4, and 7","Every eighth note","Eighth notes 2, 4, and 6"], answer:0,
+      explain:"The first note of each group.", hint:"Group starts." },
+    { type:"mc", q:"Identify the rhythm.",
+      staff:{clef:"treble",time:"2/4",notes:[{p:"G4",d:"8"},{p:"B4",d:"8"},{p:"B4",d:"q"}],beams:[[0,1]],arcs:[{from:1,to:2,type:"tie"}],width:200},
+      choices:["Tied syncopation — the attack occurs on an offbeat","Quarter notes beginning on each beat","An eighth-note triplet"], answer:0,
+      explain:"The note B begins on the \u{201C}and\u{201D} and continues through beat 2.", hint:"Follow the tie." },
+    { type:"truefalse", q:"Syncopation requires a change in tempo.", answer:false,
+      explain:"Syncopation shifts rhythmic emphasis without requiring a tempo change.", hint:"Pulse vs accent." },
+    { type:"truefalse", q:"In a traditional 4/4 metrical hierarchy, emphasizing beats 2 and 4 shifts emphasis away from beats 1 and 3.", answer:true,
+      explain:"Beats 1 and 3 carry the expected metrical accents, while a backbeat emphasizes beats 2 and 4.", hint:"Strong beats are 1 and 3." },
+    { type:"mc", q:"In which group of musical styles is syncopation especially common?", choices:["Jazz, pop, many Latin American styles, and rock","Unmetered chant only","Basic metronome exercises"], answer:0,
+      explain:"Syncopation is an important rhythmic feature in many jazz, popular, Latin American, and rock styles.", hint:"Think of dancing." },
+    { type:"mc", q:"You hear melodic attacks consistently occurring between the steady pulse beats. The rhythm is…", choices:["syncopated","entirely on the beat","in free time"], answer:0,
+      explain:"Between the beats = off-beat attacks.", hint:"The ear test." },
+    { type:"mc", q:"Which statement best describes rhythmic anticipation?", choices:["A note begins earlier than its expected rhythmic placement","A neighboring tone moves away from and returns to the same pitch","The music gradually becomes softer"], answer:0,
+      explain:"Rhythmic anticipation concerns the early timing of a note's attack.", hint:"Rhythm = time." }
+  ],
+  miaPerfect:"Perfect score! You accurately identified offbeats, tied syncopations, and rhythmic anticipations.",
+  miaPass:"You passed! Next, you will explore asymmetrical and changing meters.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"One note was melody; two made an interval; THREE made a chord — specifically the C triad: root C, 3rd E, 5th G.",
-      play:()=>{MFAudio.tone(60,.5,0,.5);MFAudio.tone(60,.5,.7,.4);MFAudio.tone(64,.5,.7,.4);MFAudio.tone(60,.9,1.5,.38);MFAudio.tone(64,.9,1.5,.38);MFAudio.tone(67,.9,1.5,.38);} },
-    learn:{ label:"triads",
-      explain:"Chord = 3+ together. Triad = root + 3rd + 5th; the root names it; root position stacks all-lines or all-spaces; one triad grows on every scale note.",
-      hint:"Every other letter, three times.",
-      play:()=>{MFAudio.tone(60,.8,0,.4);MFAudio.tone(64,.8,0,.4);MFAudio.tone(67,.8,0,.4);} },
+      explain:"Version A attacked on every beat; version B attacked between them — syncopation: a steady pulse with shifted accents.",
+      play:()=>{for(let b=0;b<4;b++) MFAudio.tone(48,.22,b*.5,.34); [0,.75,1.25,1.75].forEach(t=>MFAudio.tone(76,.16,t,.3));} },
+    learn:{ label:"syncopation",
+      explain:"Accent shifted to weak beats/off-beats; made by off-beat accents, ties through strong beats, and rhythmic anticipation; 3+3+2 = built-in syncopation.",
+      hint:"Steady pulse + shifted accent.",
+      play:()=>{for(let b=0;b<2;b++) MFAudio.tone(48,.22,b*.5,.34); [0,.75].forEach(t=>MFAudio.tone(76,.16,t,.3));} },
     example:{ label:"the examples",
-      explain:"Example 1 pulls scale notes 1-3-5 into the C triad; example 2 shows the same triad wearing both clefs." },
+      explain:"Example 1 plays a melody plain, then with tied off-beat attacks; example 2 grooves the 3+3+2 pattern over a steady bass." },
     game:{ label:"the games",
-      explain:"Hunt roots at speed, climb the triad ladder, spot snowmen, then race the vocabulary.",
-      hint:"Root position: the name is always at the bottom." },
+      explain:"Sprint the facts, spot syncopation on cards, build the definition chain, then race the accent landing spots.",
+      hint:"Ties + off-beats = shifted accents." },
     quiz:{ label:"this question",
-      explain:"Root + 3rd + 5th, named from the bottom, all-lines-or-all-spaces — three facts cover the whole quiz.",
-      play:()=>{MFAudio.tone(65,.7,0,.4);MFAudio.tone(69,.7,0,.4);MFAudio.tone(72,.7,0,.4);} }
+      explain:"Ask one thing: did the accent move off the strong beat while the pulse stayed steady? If yes — syncopation.",
+      play:()=>{for(let b=0;b<2;b++) MFAudio.tone(48,.22,b*.5,.34); MFAudio.tone(76,.16,.25,.3); MFAudio.tone(76,.16,.75,.3);} }
   }
 };

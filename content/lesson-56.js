@@ -1,275 +1,347 @@
-/* Lesson 56 — Minor Scales (Relative Minor) (AEMT Book 3, Unit 14)
-   Built from drafts/UNIT 14 – Lesson 56.md; AEMT3 p.90 verified by render.
-   Core: every major key has a RELATIVE MINOR with the SAME key signature;
-   the relative minor begins on the 6TH note of the relative major scale;
-   shortcut: a minor 3rd DOWN from the major keynote (m3 UP to return).
+/* Lesson 56 (7.8, formerly L52) — Triads: 2nd Inversion (AEMT Book 3, Unit 13)
+   Built from drafts/UNIT 13 – Lesson 52.md; AEMT3 p.84 verified by render.
+   Core: invert a 1st-inversion triad again (bass 3rd moves up an octave) =
+   2nd INVERSION — the 5th is ALWAYS the bottom note; the "6/4 chord";
+   close-position trick: in BOTH inversions the root is the UPPER note of the 4th.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* find-the-6th: click the 6th degree of a rendered major scale */
-function MF_L56_sixth(container,fb){
+/* flip-again lab: start from 1st inversion, tap the bass to flip once more */
+function MF_L56_flip(container,fb){
   const ROUNDS=[
-    {maj:"C major", ps:["C4","D4","E4","F4","G4","A4","B4","C5"], keysig:undefined, minor:"A"},
-    {maj:"G major", ps:["G4","A4","B4","C5","D5","E5","F#5","G5"], keysig:"G", minor:"E"},
-    {maj:"F major", ps:["F4","G4","A4","Bb4","C5","D5","E5","F5"], keysig:"F", minor:"D"}];
+    {name:"C major", first:["E4","G4","C5"], second:["G4","C5","E5"]},
+    {name:"G major", first:["B3","D4","G4"], second:["D4","G4","B4"]}];
   let r=0;
-  container.innerHTML=`<div class="big-q l56s-q" style="text-align:center"></div>
-    <div class="l56s-staff"></div>`;
-  const q=container.querySelector(".l56s-q"), holder=container.querySelector(".l56s-staff");
-  function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Great! You found the relative minor keys."; holder.innerHTML=""; return; }
-    const R=ROUNDS[r];
-    q.innerHTML=`${R.maj} scale: tap the <b>6th scale degree</b>.`;
-    Staff.render(holder,{clef:"treble",keysig:R.keysig,
-      notes:R.ps.map((p,i)=>({p, d:"q", acc:R.keysig?"none":undefined, label:String(i+1)})),
-      width:520, clickNotes:true,
-      onNote:(i,p)=>{
-        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
-        if(i===5){ MFAudio.yay();
-          fb(true,`✓ Great! Degree 6 of ${R.maj} is ${R.minor} — the relative minor is ${R.minor} minor, with the same key signature.`);
-          r++; setTimeout(ask,1500);
-        } else fb(false,`That's degree ${i+1}. Count up to SIX.`);
-      }});
+  container.innerHTML=`<div class="big-q l52-q" style="text-align:center"></div>
+    <div class="l52-staff"></div>
+    <div style="text-align:center"><button class="play l52-next" style="display:none">▶ Next chord</button></div>`;
+  const q=container.querySelector(".l52-q"), holder=container.querySelector(".l52-staff"), nxt=container.querySelector(".l52-next");
+  function draw(ps,label,clickable){
+    Staff.render(holder,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w",label}:{p,d:"w",chord:true}),
+      width:250, clickNotes:clickable,
+      onNote: clickable? (i)=>{
+        const R=ROUNDS[r];
+        if(i===0){
+          draw(R.second,"2nd inversion",false);
+          R.second.forEach(p=>MFAudio.tone(MFAudio.midi(p),1.0,.1,.32));
+          fb(true,`✓ ${R.first.map(p=>p[0]).join("-")} became ${R.second.map(p=>p[0]).join("-")} — now the 5TH is the bottom note. That's 2nd inversion!`);
+          r++;
+          if(r<ROUNDS.length) nxt.style.display="inline-block";
+          else q.textContent="Great! The chord name stayed the same — only the order changed.";
+        } else { MFAudio.tone(40,.2); fb(false,"Tap the LOWEST note — that's the one that jumps up an octave."); }
+      } : undefined});
   }
+  function ask(){
+    const R=ROUNDS[r]; nxt.style.display="none";
+    q.innerHTML=`${R.name} in <b>1st inversion</b>: ${R.first.map(p=>p[0]).join("-")}. Tap the <b>lowest note</b> to move it up one octave.`;
+    draw(R.first,"1st inversion",true);
+  }
+  nxt.onclick=()=>ask();
   ask();
 }
 
-/* minor-3rd-down shortcut on the keyboard */
-function MF_L56_down3(container,fb){
+/* three-way detective: bass first, then position (root / 1st / 2nd) */
+function MF_L56_detect(container,fb){
   const ROUNDS=[
-    {maj:"C", start:72, target:69, minor:"A"},
-    {maj:"G", start:67, target:64, minor:"E"},
-    {maj:"F", start:65, target:62, minor:"D"},
-    {maj:"D", start:74, target:71, minor:"B"}];
-  let r=0,kb=null;
-  container.innerHTML=`<div class="big-q l56k-q" style="text-align:center"></div><div class="l56k-kb"></div>`;
-  const q=container.querySelector(".l56k-q"), kh=container.querySelector(".l56k-kb");
+    {ps:["G4","C5","E5"], name:"C major", pos:2},
+    {ps:["E4","G4","C5"], name:"C major", pos:1},
+    {ps:["C4","F4","A4"], name:"F major", pos:2},
+    {ps:["G4","B4","D5"], name:"G major", pos:0},
+    {ps:["D4","G4","B4"], name:"G major", pos:2}];
+  const POS=["Root position","1st inversion","2nd inversion"];
+  let r=0, found=false, score=0;
+  container.innerHTML=`<div class="big-q l52d-q" style="text-align:center"></div>
+    <div class="l52d-staff"></div>
+    <div class="choices chips l52d-ch" style="display:none"><button>Root position</button><button>1st inversion</button><button>2nd inversion</button></div>`;
+  const q=container.querySelector(".l52d-q"), holder=container.querySelector(".l52d-staff"), ch=container.querySelector(".l52d-ch");
   function ask(){
-    if(r>=ROUNDS.length){ q.textContent="Great! You found the relative key of each major key."; kb.point(null); return; }
-    const R=ROUNDS[r];
-    kb.point(R.start);
-    q.innerHTML=`Press the major tonic <b>${R.maj}</b> (red arrow), then count <b>three half steps down</b> to the relative minor.`;
+    if(r>=ROUNDS.length){ q.textContent="Great job! You identified every chord position."; holder.innerHTML=""; ch.style.display="none"; return; }
+    const R=ROUNDS[r]; found=false; ch.style.display="none";
+    q.innerHTML=`Tap the <b>lowest note</b> first. (Chord ${r+1} of ${ROUNDS.length})`;
+    Staff.render(holder,{clef:"treble",notes:R.ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:220,clickNotes:true,
+      onNote:(i,p)=>{
+        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
+        if(found) return;
+        if(i===0){ found=true; q.innerHTML=`✓ The lowest note is <b>${R.ps[0][0]}</b>. Now identify the chord position.`; ch.style.display=""; }
+        else fb(false,"Go lower — the BOTTOM note runs this show.");
+      }});
   }
-  let armed=false;
-  kb=Keyboard.create(kh,{start:60,octaves:2,labels:true,
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    const R=ROUNDS[r];
+    if(i===R.pos){ score++; MFAudio.yay();
+      fb(true,`✓ ${R.ps[0][0]} is the ${["root","3rd","5th"][R.pos]} of ${R.name} → ${POS[R.pos]}.`);
+      r++; setTimeout(ask,1200); }
+    else { MFAudio.tone(40,.2); fb(false,`Spell ${R.name} in 3rds and find ${R.ps[0][0]}'s job: root, 3rd or 5th?`); }
+  });
+  ask();
+}
+
+/* keyboard builder: 2nd inversions — 5th, root, 3rd upward */
+function MF_L56_build(container,fb){
+  const ROUNDS=[
+    {name:"C major", pcs:[7,0,4], letters:["G (the 5th — in the bass!)","C (the root)","E (the 3rd on top)"]},
+    {name:"F major", pcs:[0,5,9], letters:["C (the 5th — in the bass!)","F (the root)","A (the 3rd on top)"]},
+    {name:"G major", pcs:[2,7,11], letters:["D (the 5th — in the bass!)","G (the root)","B (the 3rd on top)"]}];
+  let r=0,k=0,last=null,got=[];
+  container.innerHTML=`<div class="big-q l52b-q" style="text-align:center"></div>
+    <div class="l52b-staff"></div><div class="l52b-kb"></div>`;
+  const q=container.querySelector(".l52b-q"), sh=container.querySelector(".l52b-staff"), kh=container.querySelector(".l52b-kb");
+  function drawStaff(){
+    if(!got.length){ sh.innerHTML=""; return; }
+    const NAMES={0:"C",2:"D",4:"E",5:"F",7:"G",9:"A",11:"B"};
+    const ps=got.map(m=>NAMES[m%12]+(Math.floor(m/12)-1));
+    Staff.render(sh,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:190});
+  }
+  function ask(){
+    if(r>=ROUNDS.length){ q.textContent="Excellent! You built all three 2nd inversion triads."; return; }
+    k=0; last=null; got=[]; drawStaff();
+    q.innerHTML=`Build <b>${ROUNDS[r].name}</b> in <b>2nd inversion</b>. Press <b>${ROUNDS[r].letters[0]}</b> first.`;
+  }
+  Keyboard.create(kh,{start:60,octaves:2,labels:true,
     onKey:m=>{
       const R=ROUNDS[r]; if(!R) return;
-      if(m===R.start){ armed=true; kb.point(null); q.innerHTML=`Excellent! Now count down three half steps.`; return; }
-      if(!armed){ fb(false,"Start from the red arrow — the MAJOR keynote."); return; }
-      if(m===R.target){ MFAudio.yay();
-        fb(true,`✓ Great! You found the relative key: ${R.minor} minor.`);
-        armed=false; r++; setTimeout(ask,1400); }
-      else { MFAudio.tone(40,.2); fb(false,"Count key by key — 3 half steps below the major keynote (black keys count!)."); }
+      const want=R.pcs[k];
+      if(m%12===want && (last===null || m>last)){
+        last=m; got.push(m); k++; drawStaff();
+        if(k>=3){ got.forEach(x=>MFAudio.tone(x,1.0,.1,.32));
+          fb(true,`✓ ${R.name}, 2nd inversion — 5th in the bass, root in the middle, 3rd on top.`);
+          r++; setTimeout(ask,1400); }
+        else q.innerHTML=`Now play <b>${R.letters[k]}</b> above the note you just played.`;
+      } else if(m%12===want){ MFAudio.tone(40,.2); fb(false,"Right letter — but stack UPWARD from the bass."); }
+      else { MFAudio.tone(40,.2); fb(false,k===0? `Which note is the 5TH of ${R.name}? That one goes in the bass.` : "Follow the recipe: 5th, then root, then 3rd."); }
     }});
   ask();
 }
 
-LESSON_CONTENT[56]={
-  welcome:"Unit 14 begins — welcome to the minor world. Every major key has a relative minor. \u{1F3E0}",
+LESSON_CONTENT[56]={stackFigures:true,
+  welcome:"Lesson 51 flipped the chord once. Today… we flip it AGAIN! \u{2696}\u{FE0F}",
   hook:{
-    say:"<b>These two scales use the same notes and the same key signature.</b> <b>Why do they sound different?</b>",
+    say:"<b>Three C major chords — same notes, different positions.</b> Listen carefully. <b>Which chord has the 5th as the lowest note?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Scale 1</button>
-          <button class="play hk-b">▶ Scale 2</button></div>
-          <div class="choices hk-ch" style="display:none"><button>They start on different notes — the tonic is different</button><button>Scale 2 secretly added flats</button><button>Scale 2 was played more quietly</button></div>`;
+          <button class="play hk-a">▶ Chord A</button>
+          <button class="play hk-b">▶ Chord B</button>
+          <button class="play hk-c">▶ Chord C</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Chord C — G, the 5th, is the lowest note</button><button>Chord A — the 5th is on the bottom</button><button>Chord B — E is the 5th</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        let hA=false,hB=false;
-        container.querySelector(".hk-a").onclick=()=>{ [60,62,64,65,67,69,71,72].forEach((m,i)=>MFAudio.tone(m,.45,i*.32,.4)); hA=true; if(hB) setTimeout(()=>ch.style.display="",3000); };
-        container.querySelector(".hk-b").onclick=()=>{ [57,59,60,62,64,65,67,69].forEach((m,i)=>MFAudio.tone(m,.45,i*.32,.4)); hB=true; if(hA) setTimeout(()=>ch.style.display="",3000); };
+        let heard=new Set();
+        const show=()=>{ if(heard.size>=3) setTimeout(()=>ch.style.display="",1200); };
+        container.querySelector(".hk-a").onclick=()=>{ [60,64,67].forEach(m=>MFAudio.tone(m,1.1,0,.33)); heard.add("a"); show(); };
+        container.querySelector(".hk-b").onclick=()=>{ [64,67,72].forEach(m=>MFAudio.tone(m,1.1,0,.33)); heard.add("b"); show(); };
+        container.querySelector(".hk-c").onclick=()=>{ [67,72,76].forEach(m=>MFAudio.tone(m,1.1,0,.33)); heard.add("c"); show(); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Scale 1 was C major (C to C); scale 2 used the same notes from A to A — the RELATIVE MINOR. Same key signature, different tonic. Today's lesson!");
-          else fb(false,"Both scales use exactly the same notes. Listen for the note each scale treats as home — the tonic.");
+          if(i===0) fb(true,"✓ Chord C was G-C-E — the 5th (G) is the lowest note. That's 2ND INVERSION, today's lesson!");
+          else fb(false,"Name each chord's bottom note, then ask: is it the root, the 3rd, or the 5th of C-E-G?");
         });
       } }
   },
   objectives:[
-    "Define relative minor and relative major",
-    "Find the relative minor: the 6TH degree of the major scale",
-    "Use the shortcut: a minor 3rd DOWN from the major keynote",
-    "Go the other way: a minor 3rd UP from minor to major",
-    "Explain why relatives share one key signature",
-    "Name relative pairs for the keys you know"
+    "Create a 2nd inversion by inverting a 1st-inversion triad again",
+    "Recognize 2nd inversion: the 5th is ALWAYS the bottom note",
+    "Say the full bass ladder: root → 3rd → 5th",
+    "Explain the nickname 6/4 chord",
+    "Use the close-position trick: the root sits on TOP of the interval of a 4th",
+    "Build 2nd-inversion triads on the staff and keyboard"
   ],
   steps:[
-    { say:"<b>Relative Major and Minor:</b> Every <b>major key</b> has a <b>relative minor</b>. Relative keys share the <b>same key signature</b>, but they have different tonic notes. \u{1F447} <b>What do relative keys share?</b>",
-      try:{ type:"mc", choices:["The same key signature","The same tonic","The same tempo"], answer:0,
-        success:"✓ One key signature, two keys — a major key and a minor key. The difference is the tonic.",
-        fail:"Look at the sharps and flats at the start of the staff…",
-        hint:"Think of the sharps and flats at the start of the staff." } },
-    { say:"<b>Finding the Relative Minor:</b> The relative minor begins on the <b>6th degree</b> of the major scale. That note becomes the tonic of the minor key. \u{1F447} <b>Tap the 6th scale degree:</b>",
+    { say:"<b>Quick Review:</b> In <b>root position</b>, the root is the lowest note. In <b>1st inversion</b>, the 3rd is the lowest note. \u{1F447} <b>If we invert the chord one more time, which chord tone becomes the lowest note?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"C4",d:"w",label:"root position"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"E4",d:"w",label:"1st inversion"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",label:"…and next?"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:480} },
+      try:{ type:"mc", choices:["The 5th","The 7th","The root again"], answer:0,
+        success:"✓ Root, 3rd… 5th! The bass climbs through the chord tones one flip at a time.",
+        fail:"Follow the ladder: root position → 3rd in the bass → next chord tone up…",
+        hint:"A triad only owns three tones: root, 3rd, 5th." } },
+    { say:"Move the <b>lowest note</b> up one octave. The <b>5th</b> becomes the lowest note, creating <b>2nd INVERSION</b>. \u{1F447}",
       try:{ type:"custom",
-        hint:"Count the scale notes 1-2-3-4-5-6 from the keynote.",
-        mount:(container,fb)=>MF_L56_sixth(container,fb) } },
-    { say:"<b>Shortcut:</b> The relative minor is a <b>minor 3rd (3 half steps)</b> below the major tonic. \u{1F447} <b>Find four relative minor keys:</b>",
+        hint:"Tap the LOWEST note of the 1st-inversion stack.",
+        mount:(container,fb)=>MF_L56_flip(container,fb) } },
+    { say:"<b>2nd Inversion Rule:</b> In <b>2nd inversion</b>, the <b>5th</b> is the lowest note. The chord name does <b>not</b> change. \u{1F447} <b>G–C–E is…?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"G4",d:"w",label:"C: G-C-E"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},
+        {p:"C4",d:"w",label:"F: C-F-A"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"G: D-G-B"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:480} },
+      try:{ type:"mc", choices:["C major, 2nd inversion","G major, root position","C major, 1st inversion"], answer:0,
+        success:"✓ Rearranged into thirds: C-E-G. The bass G is the 5th → 2nd inversion. (G major would be G-B-D — the B gives it away.)",
+        fail:"Rearrange G-C-E into thirds. What root do you get?",
+        hint:"Rearrange the notes into thirds to name the chord, THEN check the lowest note." } },
+    { say:"<b>Why is it called a 6/4 chord?</b> Figured bass measures intervals <b>above the bass note</b>. In <b>G–C–E</b>, C is a <b>4th</b> above G, and E is a <b>6th</b> above G. That's why this inversion is called a <b>6/4 chord</b> — the 6 written above the 4. \u{1F447} <b>The numbers in 6/4 are measured from which note?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"G4",d:"w",label:"6/4"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:200} },
+      try:{ type:"mc", choices:["The bass (lowest) note","The root","The top note"], answer:0,
+        success:"✓ Always from the BASS. This idea grows into a whole system next lesson — figured bass!",
+        fail:"6 what and 4 what? Sixth and fourth ABOVE something…",
+        hint:"The same note that decides the inversion." } },
+    { say:"<b>Finding the Root in Close Position:</b> In close-position inversions, look for the <b>4th</b> inside the chord. The <b>upper note of the 4th</b> is always the <b>root</b>. In E-G-C the 4th is G→C; in G-C-E it's G→C again — and C is the root both times! \u{1F447} <b>In close position, where is the root?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
+        {p:"G4",d:"w",label:"the 4th"},{p:"C5",d:"w"},
+        {p:"E4",d:"w",label:"1st inv."},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",label:"2nd inv."},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],
+        steps:[{from:0,to:1,label:"4th"}],width:640} },
+      try:{ type:"mc", choices:["on TOP of the 4th","below the 4th","outside the chord"], answer:0,
+        success:"✓ Find the 4th, take its top note — that's your root and your chord name. Instant identification!",
+        fail:"G up to C… which of those two is the root of C major?",
+        hint:"4th = G→C here. The root is C." } },
+    { say:"<b>Identify the inversion.</b> Find the <b>lowest note</b> first, then name the chord position. \u{1F447}",
       try:{ type:"custom",
-        hint:"3 half steps down — count every key, black ones included.",
-        mount:(container,fb)=>MF_L56_down3(container,fb) } },
-    { say:"<b>Example:</b> C major and A minor use the <b>same seven notes</b>. They sound different because <b>A</b> becomes the tonic instead of <b>C</b>. <b>Remember: relative major and minor keys have the same key signature, but they are different keys because they have different tonics.</b> \u{1F447} <b>Why do C major and A minor have the same key signature?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:100,notes:[
-        {p:"C4",d:"q",label:"C major"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q",label:"6 = A!"},{p:"B4",d:"q"},{p:"C5",d:"q"},{bar:"double"},
-        {p:"A3",d:"q",label:"A minor"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{bar:"final"}],width:640} },
-      try:{ type:"mc", choices:["They use exactly the same seven tones","A minor secretly uses flats","Minor keys never have signatures"], answer:0,
-        success:"✓ Same seven letters, same accidentals (none here) — so the signature can't tell them apart. Only the TONIC can.",
-        fail:"Compare the letters of both scales…",
-        hint:"A-B-C-D-E-F-G vs C-D-E-F-G-A-B." } },
-    { say:"<b>Finding the Relative Major:</b> To find the relative major, move <b>up a minor 3rd</b> from the minor tonic. \u{1F447} <b>What is the relative major of E minor?</b>",
-      try:{ type:"mc", choices:["G major","C major","E major"], answer:0,
-        success:"✓ E up a minor 3rd = G. E minor and G major share one sharp (F♯).",
-        fail:"Count 3 half steps UP from E: F, F♯, G.",
-        hint:"Minor → major = climb a m3." } },
-    { say:"<b>Reading Key Signatures:</b> Every key signature represents <b>one major key</b> and <b>one relative minor key</b>. \u{1F447} <b>One flat belongs to F major and…</b>",
-      show:{ type:"staff", spec:{clef:"treble",keysig:"F",notes:[],width:220} },
-      try:{ type:"mc", choices:["D minor","A minor","B♭ minor"], answer:0,
-        success:"✓ The 6th degree of F major is D → D minor. From now on, every signature you see is a duo.",
-        fail:"Walk up the F major scale to degree 6: F-G-A-B♭-C-D…",
-        hint:"Or drop a m3 from F." } }
+        hint:"Tap the bass, spell the chord in 3rds, match the bass to root/3rd/5th.",
+        mount:(container,fb)=>MF_L56_detect(container,fb) } },
+    { say:"<b>Build these chords in 2nd inversion.</b> \u{1F447}",
+      try:{ type:"custom",
+        hint:"5th in the bass, root in the middle, 3rd on top.",
+        mount:(container,fb)=>MF_L56_build(container,fb) } },
+    { say:"<b>How is 2nd inversion used?</b> A <b>2nd inversion</b> chord sounds less stable than root position or 1st inversion. It is often used as a <b>passing chord</b> between stronger chords. \u{1F447} <b>A composer would most likely use a 6/4 chord to…</b>",
+      try:{ type:"mc", choices:["pass smoothly between two stronger chords","end a piece with a big final chord","replace the tonic forever"], answer:0,
+        success:"✓ It's a mover, not a settler. You'll hear exactly this in Lesson 55's smooth progressions.",
+        fail:"Would you END a piece on a chord that feels off-balance?",
+        hint:"Balancing on its 5th, the chord wants to keep walking." } }
   ],
   examples:[
-    { caption:"C major, then its relative A minor — the same white-key family around two different homes. Watch the keyboard: identical keys, different gravity.",
-      staff:{clef:"treble",tempo:110,notes:[
-        {p:"C4",d:"q",label:"C major"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"h"},{bar:"double"},
-        {p:"A3",d:"q",label:"A minor"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"h"},{bar:"final"}],width:640},
-      kb:{start:57,octaves:1.25,labels:true} },
-    { caption:"The relative pair with one sharp: G major and E minor. The F♯ from the signature colors both scales — one signature, two personalities.",
-      staff:{clef:"treble",keysig:"G",tempo:110,notes:[
-        {p:"G4",d:"q",label:"G major"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"},{p:"D5",d:"q"},{p:"E5",d:"q",label:"6 = E"},{p:"F#5",d:"q",acc:"none"},{p:"G5",d:"h"},{bar:"double"},
-        {p:"E4",d:"q",label:"E minor"},{p:"F#4",d:"q",acc:"none"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"B4",d:"q"},{p:"C5",d:"q"},{p:"D5",d:"q"},{p:"E5",d:"h"},{bar:"final"}],width:640},
-      kb:{start:60,octaves:2,labels:true} }
+    { caption:"The complete journey of one chord: C major in root position, 1st inversion, 2nd inversion — and home again an octave up. Same three letters the whole way.",
+      staff:{clef:"treble",tempo:60,notes:[
+        {p:"C4",d:"w",label:"root"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"E4",d:"w",label:"1st inv."},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},
+        {p:"G4",d:"w",label:"2nd inv."},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true},
+        {p:"C5",d:"w",label:"root (8va)"},{p:"E5",d:"w",chord:true},{p:"G5",d:"w",chord:true}],width:560},
+      kb:{start:60,octaves:2,labels:true} },
+    { caption:"The 6/4 chord at work: I, then IV in 2nd inversion, then I. The bass never moves off C — the F chord visits while the floor stays still. (Lesson 55 builds on exactly this!)",
+      staff:{clef:"treble",tempo:70,notes:[
+        {p:"C4",d:"w",label:"C (I)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"F/C (IV 6/4)"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
+        {p:"C4",d:"w",label:"C (I)"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:480},
+      kb:{start:60,octaves:1,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Relative Race (45s)",
-      intro:"Majors to minors, minors to majors, signatures to keys — how many pairs can you match?",
-      miaIntro:"Count to 6 — or drop a m3! \u{26A1}",
-      spec:{gen:"rel-key", params:{ask:"both"}, seconds:45},
-      result:(score)=>score>=8?score+" relatives united — family reunion complete!":null },
-    { type:"key-climb", title:"Game 2 · Minor-3rd Elevator",
-      intro:"Press each major keynote, then ride 3 half steps down to its relative minor!",
-      miaIntro:"Going down! \u{1F6D7}",
-      spec:{seq:[72,69, 67,64, 65,62, 74,71],
-        names:["C (major keynote)","A — relative minor!","G (major keynote)","E — relative minor!","F (major keynote)","D — relative minor!","D (major keynote)","B — relative minor!"],
-        start:60, octaves:1.3333, title:"C→Am, G→Em, F→Dm, D→Bm — majors and their relatives"},
-      result:(score)=>score!==null?"Elevator operator certified — every floor a minor 3rd!":null },
-    { type:"sig-match", title:"Game 3 · Key Signature Match",
-      intro:"Drag each MINOR key name onto the key signature it shares with its relative major!",
-      miaIntro:"Same key signature, minor key! \u{1F3E0}",
-      spec:{rounds:2, perRound:4, clefs:["treble","bass"], pool:[
-        {key:"C",label:"A minor"},
-        {key:"G",label:"E minor"},
-        {key:"D",label:"B minor"},
-        {key:"F",label:"D minor"},
-        {key:"Bb",label:"G minor"},
-        {key:"Eb",label:"C minor"}]},
-      result:(stars)=>stars>=2?"Every signature now has two names in your head!":null },
-    { type:"term-race", title:"Game 4 · Relative-Pairs Sprint",
-      intro:"Match majors with their relative minors at top speed!",
-      miaIntro:"Family matching time! \u{1F3C1}",
-      spec:{rounds:9, reverse:true, pool:[
-        ["C major","A minor"],
-        ["G major","E minor"],
-        ["D major","B minor"],
-        ["A major","F♯ minor"],
-        ["F major","D minor"],
-        ["B♭ major","G minor"],
-        ["E♭ major","C minor"],
-        ["Relative minor","starts on the major scale's 6th degree"],
-        ["Relative major","a minor 3rd above the minor keynote"]]},
-      result:(score)=>score>=7?"The whole family tree memorized!":null }
+    { type:"gen-race", title:"Game 1 · Three-Position Sprint (45s)",
+      intro:"Root, 1st or 2nd? All three positions in the mix now — read that bass note!",
+      miaIntro:"The full lineup this time! \u{1F50D}",
+      spec:{gen:"inversion-id", params:{subject:"triad", ask:"position"}, seconds:45},
+      result:(score)=>score>=8?score+" chords placed — three-position mastery!":null },
+    { type:"key-climb", title:"Game 2 · 6/4 Ladder",
+      intro:"Climb C, F and G major — each in 2nd inversion: 5th, root, 3rd!",
+      miaIntro:"Nine keys, three 6/4 chords! \u{1FA9C}",
+      spec:{seq:[67,72,76, 60,65,69, 62,67,71],
+        names:["G (5th of C)","C (root)","E (3rd)","C (5th of F)","F (root)","A (3rd)","D (5th of G)","G (root)","B (3rd)"],
+        start:60, octaves:1.3333, title:"C → F → G major, all in 2nd inversion"},
+      result:(score)=>score!==null?"Three 6/4 chords climbed clean!":null },
+    { type:"symbol-hunt", title:"Game 3 · Position Spotter II",
+      intro:"Root, 1st and 2nd inversions on cards — click what each round names!",
+      miaIntro:"Bottom note, bottom note, bottom note! \u{1F440}",
+      spec:{rounds:6, pool:[
+        {label:"Root position (C-E-G)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"1st inversion (E-G-C)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
+        {label:"2nd inversion (G-C-E)", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:150}},
+        {label:"2nd inversion (C-F-A)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"Spotter supreme — nothing slips by!":null },
+    { type:"order-tap", title:"Game 4 · Bass-Ladder Order",
+      intro:"Tap the positions of C major, then F major, in flip order — root, 1st, 2nd!",
+      miaIntro:"Climb the ladder in order! \u{1FA9C}",
+      spec:{sequence:["C-E-G (root)","E-G-C (1st)","G-C-E (2nd)","F-A-C (root)","A-C-F (1st)","C-F-A (2nd)"],
+        title:"Tap each chord in flip order: C major first, then F major"},
+      result:(stars)=>stars>=2?"The bass ladder is second nature now!":null }
   ],
-  practiceIntro:"20 practice questions — pairs, signatures, shortcuts. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — all three positions, spellings, the 6/4 nickname and the 4th trick. Answer right and the next appears automatically!",
   practice:[
-    { gen:"rel-key", params:{ask:"both"}, count:8 },
-    { gen:"term-match", params:{subject:"term", pool:[["Relative minor","same signature, tonic on the major's 6th degree"],["Relative major","same signature, a m3 above the minor tonic"],["Tonic","the home note of a scale"],["Key signature","the sharps or flats at the start of the staff"]], reverse:true}, count:4 },
-    { type:"mc", q:"The relative minor begins on which degree of the major scale?", choices:["6th","5th","3rd"], answer:0,
-      explain:"Degree 6 becomes the minor keynote." },
-    { type:"mc", q:"How can you quickly find the relative minor?", choices:["a minor 3rd down","a whole step down","a perfect 5th up"], answer:0,
-      explain:"3 half steps below — C down to A." },
-    { type:"mc", q:"The relative minor of D major is…", choices:["B minor","D minor","F# minor"], answer:0,
-      explain:"6th degree of D major = B." },
-    { type:"mc", q:"What is the relative major of C minor?", choices:["E♭ major","C major","G major"], answer:0,
-      explain:"A minor 3rd up from C = E♭; both carry 3 flats." },
-    { type:"truefalse", q:"Relative keys have the same key signature.", answer:true,
-      explain:"That's what makes them relatives." },
-    { type:"truefalse", q:"Relative keys have the same tonic.", answer:false,
-      explain:"Different tonics — that's the whole difference!" },
-    { type:"truefalse", q:"A minor uses only the tones of C major.", answer:true,
-      explain:"Same seven notes, reordered around A." },
-    { type:"truefalse", q:"There is one major key that has no relative minor.", answer:false,
-      explain:"EVERY major key has one — 15 majors, 15 relative minors." }
+    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:6 },
+    { gen:"term-match", params:{subject:"term", pool:[["2nd inversion","the 5th is the lowest note"],["6/4 chord","another name for 2nd inversion"],["1st inversion","the 3rd is the lowest note"],["Root position","the root is the lowest note"],["The 4th trick","the root is the UPPER note of the 4th"]], reverse:true}, count:4 },
+    { type:"mc", q:"To create a 2nd inversion from a 1st-inversion triad, move the ____ up one octave.", choices:["bass note (the 3rd)","top note (the root)","middle note (the 5th)"], answer:0,
+      explain:"E-G-C → G-C-E: the lowest note keeps jumping." },
+    { type:"mc", q:"G-C-E is which chord, in which position?", choices:["C major, 2nd inversion","G major, root position","E minor, 1st inversion"], answer:0,
+      explain:"Rearrange: C-E-G — with the 5th (G) in the bass." },
+    { type:"mc", q:"C-F-A is F major in…", choices:["2nd inversion","root position","1st inversion"], answer:0,
+      explain:"C is the 5th of F-A-C → 2nd inversion." },
+    { type:"mc", q:"Which chord tone is the lowest note in each position?", choices:["root → 3rd → 5th","root → 5th → 3rd","3rd → root → 5th"], answer:0,
+      explain:"Each flip promotes the next chord tone into the bass." },
+    { type:"mc", q:"In close position, the ROOT of an inverted triad is always…", choices:["the upper note of the 4th","the lower note of the 4th","the middle note"], answer:0,
+      explain:"Find the 4th, take its top note — works for 1st AND 2nd inversions." },
+    { type:"mc", q:"Which inversion is usually the least stable?", choices:["2nd inversion","root position","they sound identical"], answer:0,
+      explain:"The 6/4 chord usually passes through rather than resting." },
+    { type:"truefalse", q:"A 2nd-inversion triad has the root in the bass.", answer:false,
+      explain:"The 5TH is in the bass — the root moved to the middle." },
+    { type:"truefalse", q:"Changing the inversion changes the chord name.", answer:false,
+      explain:"Still the same letters, still the same chord." },
+    { type:"truefalse", q:"The figured-bass nickname for 2nd inversion is 6/4.", answer:true,
+      explain:"A 6th and a 4th above the bass — full story in Lesson 54." },
+    { type:"truefalse", q:"Every 2nd-inversion chord must be in close position.", answer:false,
+      explain:"Open-position 2nd inversions exist too — the bass note still rules." }
   ],
-  miaQuizIntro:"Quiz time! Count to 6, or ride the minor-3rd elevator — both roads lead home.",
+  miaQuizIntro:"Final quiz! Three positions, one rule: the bass note tells all.",
   quiz:[
-    { type:"mc", q:"What do relative major and minor keys share?", choices:["The same key signature","The same tonic","The same starting note","The same tempo"], answer:0,
-      explain:"One signature, two keys.", hint:"Look at the start of the staff." },
-    { type:"mc", q:"The relative minor scale begins on which note of the major scale?", choices:["The 6th","The 5th","The 2nd","The 7th"], answer:0,
-      explain:"Degree 6 = the minor keynote and its name.", hint:"Think '6 = relative minor'." },
-    { type:"mc", q:"The relative minor of C major is…", choices:["A minor","E minor","C minor","D minor"], answer:0,
-      explain:"C-D-E-F-G-A: the 6th note is A.", hint:"Count to 6." },
-    { type:"mc", q:"The relative minor of G major is…", choices:["E minor","B minor","G minor","D minor"], answer:0,
-      explain:"6th degree of G major = E; both have 1 sharp.", hint:"G-A-B-C-D-…" },
-    { type:"mc", q:"How can you find the relative minor from a major key?", choices:["down a minor 3rd from the major keynote","up a perfect 4th","down a whole step"], answer:0,
-      explain:"C down 3 half steps = A.", hint:"The elevator game." },
-    { type:"mc", q:"How can you find the relative major from a minor key?", choices:["up a minor 3rd","down a minor 3rd","up a perfect 5th"], answer:0,
-      explain:"The same elevator, ridden upward.", hint:"Opposite direction from before." },
-    { type:"truefalse", q:"Relative major and minor scales use the same tones.", answer:true,
-      explain:"Identical notes, different home base.", hint:"Why the signature matches." },
-    { type:"truefalse", q:"The relative minor of F major is F minor.", answer:false,
-      explain:"It's D minor — count to F major's 6th degree. F minor is a DIFFERENT relationship (parallel).", hint:"Same LETTER doesn't mean relative." },
-    { type:"mc", q:"This key signature belongs to which relative PAIR?",
-      staff:{clef:"treble",keysig:"D",notes:[],width:200},
-      choices:["D major & B minor","D major & D minor","G major & E minor"], answer:0,
-      explain:"2 sharps = D major; its 6th degree is B → B minor.", hint:"Name the major first, then count to 6." },
-    { type:"mc", q:"A melody uses only the white keys and ends on A. What is the most likely key?", choices:["A minor","C major","A major"], answer:0,
-      explain:"Home base decides: white keys + tonic A = A minor.", hint:"Where does it feel finished?" },
-    { type:"mc", q:"How many relative minor keys are there?", choices:["15 — one for every major key","12","7"], answer:0,
-      explain:"Every one of the 15 major key signatures has a relative minor.", hint:"Same count as major keys." },
-    { type:"mc", q:"B♭ major (2 flats) has which relative minor?", choices:["G minor","B♭ minor","D minor"], answer:0,
-      explain:"6th degree of B♭ major = G.", hint:"B♭-C-D-E♭-F-G…" },
+    { type:"mc", q:"Which chord tone is the LOWEST note of a 2nd-inversion triad?", choices:["The 5th","The root","The 3rd","The 7th"], answer:0,
+      explain:"5th in the bass = 2nd inversion, always.", hint:"Root → 3rd → … what's next on the ladder?" },
+    { type:"mc", q:"Another name for a 2nd-inversion triad is the…", choices:["6/4 chord","5/3 chord","6 chord","7 chord"], answer:0,
+      explain:"6th + 4th above the bass give the nickname.", hint:"Two numbers, counted up from the bass." },
+    { type:"mc", q:"Which of these is the 2nd inversion of C major?", choices:["G-C-E","C-E-G","E-G-C","C-G-E"], answer:0,
+      explain:"5th (G) in the bass, root and 3rd stacked above.", hint:"Which spelling starts on the 5th?" },
+    { type:"truefalse", q:"A 2nd-inversion triad has the root in the bass.", answer:false,
+      explain:"That's root position. 2nd inversion floats on its 5th.", hint:"Check the ladder." },
+    { type:"truefalse", q:"Changing the inversion changes the chord name.", answer:false,
+      explain:"G-C-E, E-G-C, C-E-G — all C major.", hint:"Same letters, same family." },
+    { type:"mc", q:"A 2nd inversion is made from a 1st inversion by…", choices:["moving the lowest note (the 3rd) up an octave","moving the highest note down an octave","adding a 4th note"], answer:0,
+      explain:"The bass keeps leaping to the top, one flip at a time.", hint:"Same move as Lesson 51, applied again." },
+    { type:"mc", q:"Name this chord and its position.",
+      staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:200},
+      choices:["F major, 2nd inversion","C major, root position","F major, 1st inversion"], answer:0,
+      explain:"Rearrange: F-A-C; the bass C is the 5th → 2nd inversion.", hint:"The 4th (C→F) has the root on top." },
+    { type:"mc", q:"Name this chord and its position.",
+      staff:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:200},
+      choices:["G major, 2nd inversion","D major, root position","G major, 1st inversion"], answer:0,
+      explain:"G-B-D with the 5th (D) in the bass.", hint:"D→G is a 4th — root on top of it." },
+    { type:"mc", q:"A student says, \u{201C}G–C–E is a G major chord because G is the lowest note.\u{201D} Why is the student incorrect?", choices:["It's C major in 2nd inversion. The bass note shows the inversion, not the chord name.","The student is right","It's E minor"], answer:0,
+      explain:"Rearrange in 3rds: C-E-G. G is merely the bass on duty.", hint:"Same trap as Lesson 51 — rearrange first!" },
+    { type:"mc", q:"In close position, where does the ROOT sit relative to the interval of a 4th?", choices:["It is the upper note of the 4th","It is the lower note of the 4th","It never touches the 4th"], answer:0,
+      explain:"The shortcut for BOTH inversions: spot the 4th interval, grab its upper note — that's the root.", hint:"G→C in our examples… and C is the root." },
+    { type:"mc", q:"Which statement is correct?", choices:["Second inversion places the 5th in the bass","Second inversion places the 3rd in the bass","Second inversion changes a major chord into minor","Every 2nd inversion is in open position"], answer:0,
+      explain:"5th in the bass — the other options mix up the rules.", hint:"Today's rule, verbatim." },
+    { type:"mc", q:"Why is IV in 2nd inversion used in this progression? (C → F/C → C)", choices:["So the bass could stay on C while the harmony changed","To make the chord louder","To turn F major into F minor"], answer:0,
+      explain:"A still bass + moving harmony = the classic 6/4 move.", hint:"What did the bass do — or rather, NOT do?" },
     /* generated */
-    { gen:"rel-key", params:{ask:"both"}, count:5 },
-    { gen:"term-match", params:{subject:"term", pool:[["Relative minor","6th degree of the major scale"],["Relative major","m3 above the minor keynote"],["Same signature","what relative keys share"],["Different tonic","what makes relatives differ"]], reverse:true}, count:2 },
-    { gen:"keysig-id", params:{}, count:1 }
+    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:4 },
+    { gen:"term-match", params:{subject:"term", pool:[["2nd inversion","5th in the bass"],["6/4 chord","2nd inversion's nickname"],["1st inversion","3rd in the bass"],["Root position","root in the bass"]], reverse:true}, count:2 },
+    { gen:"triad-id", params:{ask:"root"}, count:2 }
   ],
   vocabulary:[
-    {term:"Relative Minor", def:"The minor key sharing a major key's signature. Its keynote is the 6th degree of the major scale."},
-    {term:"Relative Major", def:"The major key sharing a minor key's signature — a minor 3rd above the minor keynote."},
-    {term:"Tonic (Keynote)", def:"The home note a scale starts from, ends on, and is named after."},
-    {term:"C major ↔ A minor", def:"The simplest relative pair: no sharps, no flats, two different homes."}
+    {term:"2nd Inversion", def:"A triad with its 5th as the lowest note — made by inverting a 1st-inversion chord once more.",
+      staff:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"C5",d:"w",chord:true},{p:"E5",d:"w",chord:true}],width:130}},
+    {term:"6/4 Chord", def:"The nickname for 2nd inversion: the intervals above the bass are a 6th and a 4th."},
+    {term:"Bass Note", def:"The lowest note of a chord. It decides the POSITION — never the chord's name."},
+    {term:"The 4th Trick", def:"In close position, both inversions contain an interval of a 4th — and the ROOT is always its upper note."}
   ],
   mistakes:[],
   summary:[
-    "✔ Every major key has a <b>relative minor with the SAME key signature</b>.",
-    "✔ The relative minor starts on the <b>6th degree</b> of the major scale — that note names the key.",
-    "✔ Shortcut: <b>minor 3rd DOWN</b> from major keynote; <b>minor 3rd UP</b> to come back.",
-    "✔ Relatives share <b>all seven tones</b> — only the tonic (home) differs.",
-    "✔ Every signature now has <b>two names</b>: G major/E minor, F major/D minor…"
+    "✔ Flip a 1st-inversion triad again and you get <b>2nd inversion: the 5th is ALWAYS the bottom note</b> (C-E-G → E-G-C → G-C-E).",
+    "✔ The bass ladder: <b>root → 3rd → 5th</b>. Three tones, three positions.",
+    "✔ 2nd inversion's nickname is the <b>6/4 chord</b> — a 6th and a 4th above the bass.",
+    "✔ Close-position shortcut: <b>the root is the upper note of the 4th</b> in BOTH inversions.",
+    "✔ The 6/4 chord is a <b>passing, less-stable</b> sound — it moves on rather than settling."
   ],
   tips:[
-    "Songs in minor keys often visit their relative major mid-song (and vice versa) — the shared signature makes the door frictionless.",
-    "Quick check when reading music: look at the LAST note of the piece. Ending on the signature's major tonic? Major key. Ending a m3 below it? Probably the relative minor.",
-    "Memorize the white-key trio: C↔Am, G↔Em, F↔Dm. Every other pair follows the same 6th-degree logic.",
-    "Next lesson: the minor scale turns out to have THREE different forms — and each one has a job."
+    "Fast ID at a glance: root position = even stack; 1st inversion = gap on top; 2nd inversion = gap at the BOTTOM (the 4th sits between the two lowest notes).",
+    "Piano drill: play C-E-G → E-G-C → G-C-E → C-E-G an octave up. Do it in F and G too — you just played every triad position that exists.",
+    "Hear it: 2nd inversion sounds unstable — beautiful, but ready to move on.",
+    "Lesson 53 asks the big question: a V7 chord has FOUR notes… so how many inversions can IT have?"
   ],
-  rewards:{ badge:"Relative Finder", icon:"\u{1F3E0}" },
+  rewards:{ badge:"6/4 Master", icon:"\u{2696}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! You can find any key's relative in your sleep now. \u{1F3E0}\u{1F389}",
-  miaPass:"Passed! The 6th-degree secret is yours. Next: minor scales that shape-shift…",
+  miaPerfect:"PERFECT! Root, 1st, 2nd — you own every position of the triad! \u{2696}\u{FE0F}\u{1F389}",
+  miaPass:"Passed! The 5th-in-the-bass rule is locked in. Lesson 53 inverts a FOUR-note chord…",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Both scales used only white keys. Scale 1 ran C to C (C major); scale 2 ran A to A — the relative minor, darker because its home moved.",
-      play:()=>{[57,59,60,62,64,65,67,69].forEach((m,i)=>MFAudio.tone(m,.42,i*.3,.4));} },
-    learn:{ label:"relative keys",
-      explain:"Same signature, different tonic. Find the relative minor on the major scale's 6th degree, or a minor 3rd below the keynote. Reverse: m3 up.",
-      hint:"6 = relative minor.",
-      play:()=>{MFAudio.tone(72,.5,0,.4);MFAudio.tone(69,.8,.5,.4);} },
+      explain:"Chord A = C-E-G (root), B = E-G-C (1st inversion), C = G-C-E — the 5th in the bass: 2nd inversion.",
+      play:()=>{[67,72,76].forEach(m=>MFAudio.tone(m,1,0,.33));} },
+    learn:{ label:"2nd inversion",
+      explain:"Flip a 1st inversion again: the 3rd leaves the bass and the 5th takes over. Nickname: 6/4 chord. Close-position trick: the root tops the interval of a 4th.",
+      hint:"Bass ladder: root → 3rd → 5th.",
+      play:()=>{[67,72,76].forEach(m=>MFAudio.tone(m,1,.1,.33));} },
     example:{ label:"the examples",
-      explain:"Example 1 pairs C major with A minor on white keys; example 2 shows G major and E minor sharing their F♯." },
+      explain:"Example 1 walks one chord through all three positions; example 2 parks the bass on C while IV visits in 2nd inversion." },
     game:{ label:"the games",
-      explain:"Race the pairs, ride the minor-3rd elevator, drag minors onto signatures, then sprint the family tree.",
-      hint:"Count to 6 or drop 3 half steps — same answer." },
+      explain:"Sprint all three positions, climb the 6/4 ladder, spot positions on cards, then tap the flip order.",
+      hint:"The gap in the stack tells you where the 4th is." },
     quiz:{ label:"this question",
-      explain:"Two tools solve everything: the 6th degree of the major scale, and the minor-3rd elevator between keynotes.",
-      play:()=>{MFAudio.tone(67,.5,0,.4);MFAudio.tone(64,.8,.5,.4);} }
+      explain:"Rearrange the letters in 3rds for the NAME; match the bass to root/3rd/5th for the POSITION. The 4th trick speeds everything up.",
+      play:()=>{[60,64,67].forEach(m=>MFAudio.tone(m,.7,0,.33));[64,67,72].forEach(m=>MFAudio.tone(m,.7,.8,.33));[67,72,76].forEach(m=>MFAudio.tone(m,.9,1.6,.33));} }
   }
 };

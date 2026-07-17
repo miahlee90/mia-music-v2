@@ -20,7 +20,7 @@
   if(interactions<2) warns.push("fewer than 2 hands-on interactions before the quiz");
 
   /* ---------- build sections ---------- */
-  document.title=`Lesson ${n} · Music Fundamentals`;
+  document.title=`Lesson ${Nav.label(n)} · Music Fundamentals`;
   const S={};
 
   if(C.hook) S.secHook=`<section class="card" id="secHook"><span class="tag">Welcome</span>
@@ -259,7 +259,7 @@
 
   /* ---------- welcome (proactive #1) ---------- */
   window.addEventListener("load",()=>setTimeout(()=>{
-    Teacher.say(C.welcome||`Welcome to Lesson ${n}! Let's go!`,{pose:"wave",chime:false,proactive:true});
+    Teacher.say(C.welcome||`Welcome to Lesson ${Nav.label(n)}! Let's go!`,{pose:"wave",chime:false,proactive:true});
   },600));
 })();
 

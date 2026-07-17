@@ -1,254 +1,333 @@
-/* Lesson 82 — Whole-Tone & Chromatic Scales (Book 4, Unit 20 — SELF-AUTHORED)
-   Core: WHOLE-TONE = six pitch classes, all whole steps, two distinct
-   collections; CHROMATIC = all twelve half steps; both have EQUAL-INTERVAL
-   symmetry — one repeating interval, so only a weak internal tonic
-   hierarchy. NOTE: edit by FULL-FILE REWRITE only. */
+/* Lesson 82 (11.7, formerly L69) — Composing a Melody in a Minor Key (AEMT Book 3, Unit 17)
+   Built from drafts/UNIT 17 – Lesson 69.md; AEMT3 p.109 verified by render.
+   Core: same method as major — melody from CHORD TONES of the progression,
+   decorated with passing/neighboring tones. First and last note tends to be
+   the root of the i chord; V(7) precedes the last chord. The book's model
+   (Pat-A-Pan, D minor) labels notes R / 3 / 5 / U / L / P.
+   NOTE: edit by FULL-FILE REWRITE only. */
 
-/* ear lab: three short examples (A=major, B=whole-tone, C=chromatic) — which is which? */
-function MF_L82_compare(container,fb){
-  const VER={ A:[60,62,64,65,67,69,71,72], B:[60,62,64,66,68,70,72], C:[60,61,62,63,64,65,66,67] };
+/* compose in D minor: pick chord tones over i - iv - i - V7 - i */
+function MF_L82_compose(container,fb){
+  const MEAS=[
+    {label:"i", sym:"Dm", tones:{D:62,F:65,A:69}, chord:[50,62,65,69], must:"D",
+      note:"Rule: begin on the root of i."},
+    {label:"iv", sym:"Gm", tones:{G:67,"B♭":70,D:74}, chord:[43,58,62,67],
+      note:"Any tone of G-B♭-D fits here."},
+    {label:"i", sym:"Dm", tones:{D:74,F:77,A:69}, chord:[50,62,65,69],
+      note:"Home again — any D-minor tone."},
+    {label:"V7", sym:"A7", tones:{A:69,"C♯":73,E:76,G:79}, chord:[45,61,64,67],
+      note:"The dominant — C♯ (the raised 7th of D minor!) creates the strongest pull."},
+    {label:"i", sym:"Dm", tones:{D:74}, chord:[50,62,65,69], must:"D",
+      note:"Rule: end on the root of the final i."}];
+  let k=0; const picked=[];
+  container.innerHTML=`<div class="big-q l69c-q" style="text-align:center"></div>
+    <div class="l69c-map" style="text-align:center;margin:10px 0;letter-spacing:normal"></div>
+    <div class="choices chips l69c-ch"></div>
+    <div style="text-align:center"><button class="play l69c-play" style="display:none">▶ Play YOUR minor composition</button></div>`;
+  const q=container.querySelector(".l69c-q"), map=container.querySelector(".l69c-map"), ch=container.querySelector(".l69c-ch"), pl=container.querySelector(".l69c-play");
+  function drawMap(){
+    map.innerHTML=MEAS.map((m,i)=>{
+      const done=i<picked.length, cur=(i===k && k<MEAS.length);
+      const note=done?picked[i].name:"?";
+      const bg=cur?"var(--accent,#4f7cff)":done?"#e6efff":"#f2f4f8";
+      const fg=cur?"#fff":done?"#1f4bd8":"#8a93a3";
+      const bd=cur?"var(--accent,#4f7cff)":done?"#bcd2ff":"#dde2ea";
+      return `<span style="display:inline-block;min-width:56px;margin:3px;padding:6px 6px;border-radius:10px;border:1.5px solid ${bd};background:${bg};color:${fg};text-align:center;vertical-align:top">
+        <span style="display:block;font-size:10.5px;font-weight:600;opacity:.85">m.${i+1}</span>
+        <span style="display:block;font-size:15px;font-weight:800;line-height:1.35">${m.sym}</span>
+        <span style="display:block;font-size:13px;font-weight:700">${note}</span></span>`;
+    }).join("");
+  }
+  function ask(){
+    drawMap();
+    if(k>=MEAS.length){ q.textContent="Excellent! Your melody is complete. Press play!"; ch.innerHTML=""; pl.style.display="inline-block"; return; }
+    const M=MEAS[k];
+    q.innerHTML=`Measure ${k+1} — chord: <b>${M.sym} (${M.label})</b>. ${M.must?`<b>Required: ${M.must}</b> — `:""}pick your melody note. <i>${M.note}</i>`;
+    ch.innerHTML="";
+    const opts=Object.keys(M.tones);
+    if(!M.must) opts.push(k===1?"E":"B♮");
+    opts.sort(()=>Math.random()-.5).forEach(name=>{
+      const b=document.createElement("button"); b.textContent=name;
+      b.onclick=()=>{
+        const M2=MEAS[k];
+        if(M2.must && name!==M2.must){ MFAudio.tone(40,.2); fb(false,`The ${k===0?"first":"last"} note tends to be the root of i — that's ${M2.must}.`); return; }
+        if(M2.tones[name]===undefined){ MFAudio.tone(40,.2); fb(false,`${name} is not a tone of ${M2.sym}. Start with a chord tone — non-harmonic tones come later!`); return; }
+        MFAudio.tone(M2.tones[name],.7,.05,.44);
+        M2.chord.forEach(m=>MFAudio.tone(m,.8,.05,.2));
+        picked.push({name, midi:M2.tones[name]}); k++;
+        fb(true,`✓ Great! ${name} is a chord tone of ${M2.sym} — your melody fits the chords.`);
+        setTimeout(ask,1000);
+      };
+      ch.appendChild(b);
+    });
+  }
+  pl.onclick=()=>{
+    picked.forEach((p,i)=>{
+      MFAudio.tone(p.midi,.8,i*.88,.46);
+      MEAS[i].chord.forEach(m=>MFAudio.tone(m,.85,i*.88,.2));
+    });
+    setTimeout(()=>fb(true,"✓ Root of i at both ends, A7 setting up the close — your own minor melody."),4900);
+  };
+  ask();
+}
+
+/* label detective: decode R/3/5/U/L/P on a D-minor phrase */
+function MF_L82_labels(container,fb){
   const ROUNDS=[
-    {q:"Which one is the <b>Whole-tone</b> scale (all whole steps)?", ans:"B", expl:"B moved by equal whole steps — the whole-tone scale."},
-    {q:"Which one is the <b>Chromatic</b> scale (all half steps)?", ans:"C", expl:"C moved by half steps the whole way — the chromatic scale."},
-    {q:"Which one is the <b>Major</b> scale (a mix, with a clear home)?", ans:"A", expl:"A mixed whole and half steps and pulled home — the major scale."}];
+    {ps:["D4","D4","A4"], chord:"Dm (D-F-A)", target:null, labels:["R","R","5"], ask:2, answer:"5",
+      expl:"D is the root (R, twice); A is the chord's 5th → label 5."},
+    {ps:["A4","G4","A4"], chord:"Dm (D-F-A)", ask:1, answer:"L",
+      expl:"A…G…A — leaves the 5th, goes BELOW, returns: G is a Lower neighboring tone (L)."},
+    {ps:["F4","E4","D4"], chord:"Dm (D-F-A)", ask:1, answer:"P",
+      expl:"F (3) down to D (R) through E: a Passing tone (P)."}];
+  const OPTS=["R","3","5","P","U","L"];
   let r=0;
-  container.innerHTML=`<div class="big-q l82c-q" style="text-align:center"></div>
-    <div style="text-align:center">
-      <button class="play" data-v="A">▶ Example A</button>
-      <button class="play" data-v="B">▶ Example B</button>
-      <button class="play" data-v="C">▶ Example C</button></div>
-    <div class="choices chips l82c-ch"><button>A</button><button>B</button><button>C</button></div>`;
-  const q=container.querySelector(".l82c-q"), ch=container.querySelector(".l82c-ch");
-  container.querySelectorAll("[data-v]").forEach(btn=>btn.onclick=()=>VER[btn.dataset.v].forEach((m,i)=>MFAudio.tone(m,.34,i*.3,.42)));
-  function ask(){ if(r>=ROUNDS.length){ q.textContent="✓ You can hear all three scales apart."; ch.style.display="none"; return; }
-    q.innerHTML=`${ROUNDS[r].q}<br><span style="font-weight:400;font-size:13px">Play A, B and C and compare their step sizes.</span>`; }
-  [...ch.children].forEach(b=>b.onclick=()=>{ const R=ROUNDS[r]; if(!R) return;
-    if(b.textContent===R.ans){ fb(true,"✓ "+R.expl); r++; setTimeout(ask,1200); }
-    else { MFAudio.tone(40,.2); fb(false,"Listen to the step sizes: all whole (whole-tone), all half (chromatic), or a mixture (major)?"); } });
+  container.innerHTML=`<div class="big-q l69l-q" style="text-align:center"></div>
+    <div class="l69l-staff"></div>
+    <div class="choices chips l69l-ch"></div>`;
+  const q=container.querySelector(".l69l-q"), holder=container.querySelector(".l69l-staff"), ch=container.querySelector(".l69l-ch");
+  function ask(){
+    if(r>=ROUNDS.length){ q.textContent="Excellent! You identified all the labels."; holder.innerHTML=""; ch.innerHTML=""; return; }
+    const R=ROUNDS[r];
+    q.innerHTML=`Harmony: <b>${R.chord}</b>. What label belongs under the <b>${["first","second","third"][R.ask]}</b> note?`;
+    Staff.render(holder,{clef:"treble",notes:R.ps.map((p,i)=>({p,d:"q",label:i===R.ask?"?":undefined})),width:300});
+    ch.innerHTML="";
+    OPTS.forEach(o=>{
+      const b=document.createElement("button"); b.textContent=o;
+      b.onclick=()=>{
+        const R2=ROUNDS[r];
+        if(o===R2.answer){
+          R2.ps.forEach((p,ix)=>MFAudio.tone(MFAudio.midi(p),.45,.05+ix*.4,.42));
+          fb(true,`✓ ${R2.expl}`);
+          r++; setTimeout(ask,1500); }
+        else { MFAudio.tone(40,.2); fb(false,"Is the note IN D-F-A (then R/3/5) or outside it (then P/U/L by its journey)?"); }
+      };
+      ch.appendChild(b);
+    });
+  }
   ask();
 }
 
 LESSON_CONTENT[82]={
-  welcome:"Whole-tone and chromatic scales are built from equal intervals.",
+  welcome:"Composing a melody in a minor key. \u{1F58B}\u{FE0F}",
   hook:{
-    say:"Listen to the scale. \u{1F447} <b>What is unusual about the interval between each pair of adjacent notes?</b>",
+    say:"<b>Here is a simple chord progression in a minor key:</b> i - iv - V7 - i. Listen to the chords alone, then with a composed melody. <b>How can you create a melody that fits these chords?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play the scale</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Every step is the same size — a whole step</button><button>The steps gradually become faster</button><button>It follows the major-scale pattern</button></div>`;
+          <button class="play hk-a">▶ Chords alone</button>
+          <button class="play hk-b">▶ Chords + melody</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Build it from each chord's own tones</button><button>Play it more slowly</button><button>Use a special clef</button></div>`;
+        const chords=[[50,62,65,69],[43,58,62,67],[45,61,64,67],[50,62,65,69]];
+        const mel=[74,70,73,74];
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{ [60,62,64,66,68,70,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.34,.42)); setTimeout(()=>ch.style.display="",7*340+300); };
+        let hA=false,hB=false;
+        container.querySelector(".hk-a").onclick=()=>{ chords.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.25))); hA=true; if(hB) setTimeout(()=>ch.style.display="",3900); };
+        container.querySelector(".hk-b").onclick=()=>{ chords.forEach((row,i)=>{ row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2)); MFAudio.tone(mel[i],.8,i*.9,.46); }); hB=true; if(hA) setTimeout(()=>ch.style.display="",3900); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. The whole-tone scale contains six different pitch classes, with a whole step between each adjacent pair. Its equal-interval pattern does not produce the half-step relationships found in major and minor scales.");
-          else fb(false,"The tempo remains steady. Listen again to the pitch distance between each pair of adjacent notes.");
+          if(i===0) fb(true,"✓ D from Dm, B♭ from Gm, C♯ from A7 — the melody is built from each chord's own tones, so it inherits the minor mood automatically. Same method as Lesson 67, new mode. Today: composing in minor!");
+          else fb(false,"Tempo and clef don't create the fit. Listen to WHICH notes were chosen…");
         });
       } }
   },
   objectives:[
-    "Build the whole-tone scale: six pitch classes, all whole steps",
-    "Know there are two distinct whole-tone pitch collections",
-    "Review the chromatic scale: all twelve half steps",
-    "Define equal-interval symmetry: one repeating interval, weak internal tonic hierarchy",
-    "Hear major vs whole-tone vs chromatic",
-    "Explore musical applications of whole-tone and chromatic scales"
+    "Compose a minor melody the same way as a major one",
+    "Analyze first: numerals below, symbols above",
+    "Build the melody from chord tones — including the raised 7th in V(7)",
+    "Add passing and neighboring tones",
+    "Begin and end on the root of i; V(7) precedes the last chord",
+    "Read the model's labels: R / 3 / 5 / U / L / P"
   ],
   steps:[
-    { say:"<b>The Whole-Tone Scale:</b> A whole-tone scale contains six different pitch classes within an octave. Every adjacent pitch is separated by a whole step. One whole-tone collection is C–D–E–F♯–G♯–A♯, followed by the return to C at the octave. \u{1F447} <b>How many different pitch classes does a whole-tone scale contain?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
-        {p:"C4",d:"q",label:"W"},{p:"D4",d:"q",label:"W"},{p:"E4",d:"q",label:"W"},
-        {p:"F#4",d:"q",label:"W"},{p:"G#4",d:"q",label:"W"},{p:"A#4",d:"q",label:"W"},{p:"C5",d:"q"},{bar:"final"}],width:520} },
-      try:{ type:"mc", choices:["Six","Seven","Twelve"], answer:0,
-        success:"✓ Correct. Six whole steps fill an octave: 6 × 2 half steps = 12 half steps.",
-        fail:"Count the different pitches before the opening pitch class returns at the octave.",
-        hint:"Divide the octave's 12 half steps by 2." } },
-    { say:"<b>Two Distinct Collections:</b> There are only <b>two</b> different whole-tone collections. One of them is <b>C–D–E–F♯–G♯–A♯</b> (the other simply uses the six remaining notes). You don't need to memorize every note — just remember there are only two. \u{1F447} <b>How many distinct whole-tone collections are there?</b>",
-      try:{ type:"mc", choices:["Two","Twelve","Seven"], answer:0,
-        success:"✓ Correct. Every whole-tone scale is one of just two collections — no need to memorize both.",
-        fail:"The heading gives the number.",
-        hint:"Only two." } },
-    { say:"<b>The Chromatic Scale — Review:</b> The chromatic scale contains all twelve pitch classes within the octave and moves entirely by half steps. On the piano, it uses every key within the octave. Its enharmonic spelling depends on melodic direction, tonal context, and notational clarity. \u{1F447} <b>What is the interval pattern of the chromatic scale?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:140,notes:[
-        {p:"C4",d:"8"},{p:"C#4",d:"8"},{p:"D4",d:"8"},{p:"D#4",d:"8"},{p:"E4",d:"8"},{p:"F4",d:"8"},
-        {p:"F#4",d:"8"},{p:"G4",d:"8"},{p:"G#4",d:"8"},{p:"A4",d:"8"},{p:"A#4",d:"8"},{p:"B4",d:"8"},{p:"C5",d:"8"},{bar:"final"}],width:620} },
-      try:{ type:"mc", choices:["A continuous series of half steps","A continuous series of whole steps","A repeating whole–whole–half pattern"], answer:0,
-        success:"✓ Correct. The chromatic scale moves by half step and includes all twelve pitch classes.",
-        fail:"On the piano, each adjacent key is included.",
-        hint:"It uses the smallest interval in the twelve-tone system." } },
-    { say:"<b>Equal-Interval Symmetry:</b> Whole-tone and chromatic scales <b>repeat the same interval</b> throughout the octave. Because every note has a similar role, neither scale naturally creates a strong feeling of <b>“home”</b> the way a major or minor scale does. \u{1F447} <b>Why does an equal-interval scale give a weaker sense of “home” than a major scale?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14px;min-width:300px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Scale</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Pattern</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Notes</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 12px">Feeling of “home”</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#2F6DA8">Major</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">W W H W W W H</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">7</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">strong</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#C05A21">Whole-tone</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">W W W W W W</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">6</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">weak</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;font-weight:800;color:#C05A21">Chromatic</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">H ×12</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">12</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;font-weight:800">weak</td></tr></table>` },
-      try:{ type:"mc", choices:["Every note has a similar role, so none stands out as “home”","Its notes must be played quietly","It contains too few pitches"], answer:0,
-        success:"✓ Correct. A major scale's uneven steps make some notes feel more important; equal steps make every note feel the same.",
-        fail:"Compare the repeated interval with the uneven whole/half-step pattern of a major scale.",
-        hint:"Same interval everywhere → every note feels alike." } },
-    { say:"<b>Ear Training — Compare the Three:</b> Play the three short examples and tell them apart by their step size. \u{1F447}",
+    { say:"<b>Composing a Melody in a Minor Key:</b> Composing in a minor key follows the same process as composing in a major key. Build the melody from the tones of the chord progression. \u{1F447} <b>What changes when composing in a minor key?</b>",
+      try:{ type:"mc", choices:["Only the chords — the method stays identical","Everything about the method","You may not use passing tones"], answer:0,
+        success:"✓ Only the chords change — the process stays the same.",
+        fail:"Compare with Lesson 67's checklist…",
+        hint:"Method vs materials." } },
+    { say:"<b>Analyze the Chords:</b> Before writing the melody, identify the Roman numerals and chord symbols. In D minor: i = Dm · iv = Gm · V7 = A7. \u{1F447} <b>Why does A7 contain C♯?</b>",
+      try:{ type:"mc", choices:["D minor's harmonic scale raises its 7th, which is A7's 3rd","A7 always has sharps","It's borrowed from D major"], answer:0,
+        success:"✓ Lesson 60's logic rides along: the raised 7th (C♯) lives inside V7 and pulls to D.",
+        fail:"What note is a half step below D — and which chord owns it?",
+        hint:"The leading tone of D minor." } },
+    { say:"<b>Beginning and Ending:</b> Most minor melodies begin and end on the <b>root of the i chord</b>. A <b>V (or V7)</b> chord usually comes before the final i chord. \u{1F447} <b>Which note is the best opening note in D minor?</b>",
+      try:{ type:"mc", choices:["D","A","F"], answer:0,
+        success:"✓ D — the root of i, at both ends. The same rule as major.",
+        fail:"The root of the i chord in D minor is…",
+        hint:"The key's own name." } },
+    { say:"<b>Reading the Labels:</b> R = root · 3 = third · 5 = fifth · U = upper neighbor · L = lower neighbor · P = passing tone. Identify the labels. \u{1F447}",
       try:{ type:"custom",
-        hint:"All whole steps = whole-tone; all half steps = chromatic; a mixture = major.",
-        mount:(container,fb)=>MF_L82_compare(container,fb) } },
-    { say:"<b>Musical Applications:</b><br>• <b>Whole-tone:</b> a floating, dreamy, or ambiguous sound.<br>• <b>Chromatic:</b> creates tension and smoothly connects notes. \u{1F447} <b>Which scale is built entirely from whole steps and avoids the half-step pulls of major and minor?</b>",
-      try:{ type:"mc", choices:["The whole-tone scale","The chromatic scale","The major scale"], answer:0,
-        success:"✓ Correct. The whole-tone scale repeats one whole step throughout the octave.",
-        fail:"The chromatic scale moves by half steps, and the major scale mixes whole and half steps…",
-        hint:"Identify the equal-interval scale with six pitch classes." } },
-    { say:"<b>Review:</b> \u{1F447} <b>Which scale contains all twelve pitch classes?</b>",
-      try:{ type:"mc", choices:["The chromatic scale","The whole-tone scale","A pentatonic scale"], answer:0,
-        success:"✓ Correct. The chromatic scale contains all twelve pitch classes. A whole-tone scale contains six, and a pentatonic scale contains five.",
-        fail:"Count the different pitch classes before the octave repeats.",
-        hint:"This scale includes every pitch class in the twelve-tone system." } }
+        hint:"In the chord → R/3/5. Outside it → P (passing), U (above), L (below).",
+        mount:(container,fb)=>MF_L82_labels(container,fb) } },
+    { say:"Compose a five-measure melody using the given progression: <b>i - iv - i - V7 - i</b> in D minor. \u{1F447}",
+      try:{ type:"custom",
+        hint:"Start with chord tones; D at both ends; try the C♯ over A7 for the strongest pull.",
+        mount:(container,fb)=>MF_L82_compose(container,fb) } },
+    { say:"<b>Adding Non-Harmonic Tones:</b> After building the melody with chord tones, add passing and neighboring tones. <b>Remember: start with chord tones. Add non-harmonic tones to make the melody smoother and more interesting.</b> \u{1F447} <b>Where do these tones usually appear?</b>",
+      try:{ type:"mc", choices:["On weak beats, between chord tones","On every strong beat","Only in the bass"], answer:0,
+        success:"✓ On weak beats, between chord tones — the same rule as in major.",
+        fail:"Same rule as in major…",
+        hint:"Chord tones on strong beats; decorations on weak beats." } },
+    { say:"<b>Try Another Key:</b> Apply the same process in E minor (Em - Am - B7 - Em). \u{1F447} <b>Which melody note creates the strongest pull to the tonic?</b>",
+      try:{ type:"mc", choices:["D♯ — the raised 7th, a half step under E","B — the root","A — the 7th"], answer:0,
+        success:"✓ D♯ — the leading tone, a half step below E. Place it near the end of the phrase.",
+        fail:"Which note of B-D♯-F♯-A is a half step from the tonic E?",
+        hint:"The raised 7th, always." } }
   ],
   examples:[
-    { caption:"A whole-tone phrase: six equal steps up, then back down — no single pitch receives strong structural emphasis.",
-      staff:{clef:"treble",tempo:100,notes:[
-        {p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},
-        {p:"G#4",d:"q"},{p:"A#4",d:"q"},{p:"C5",d:"h"},{bar:"single"},
-        {p:"A#4",d:"q"},{p:"F#4",d:"q"},{p:"D4",d:"q"},{p:"C4",d:"h"},{bar:"final"}],width:620},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"A chromatic climb: consecutive half steps rising to a release, spelled here with sharps — every key on the way.",
-      staff:{clef:"treble",tempo:120,notes:[
-        {p:"G4",d:"8"},{p:"G#4",d:"8"},{p:"A4",d:"8"},{p:"A#4",d:"8"},
-        {p:"B4",d:"8"},{p:"C5",d:"8"},{p:"C#5",d:"8"},{p:"D5",d:"8"},
-        {p:"E5",d:"h",label:"release!"},{bar:"final"}],
-        beams:[[0,3],[4,7]],width:560},
-      kb:{start:65,octaves:0.9167,labels:true} }
+    { caption:"A composed D-minor melody with labels: chord tones (R, 3, 5) on the strong beats; a lower neighbor (L) decorates a weak one.",
+      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
+        {p:"D4",d:"q",label:"R"},{p:"F4",d:"q",label:"3"},{p:"A4",d:"q",label:"5"},{p:"G4",d:"q",label:"L"},{bar:"single"},
+        {p:"A4",d:"q",label:"5"},{p:"Bb4",d:"q",label:"3/iv"},{p:"G4",d:"h",label:"R/iv"},{bar:"single"},
+        {p:"A4",d:"q",label:"R/V7"},{p:"C#5",d:"q",label:"3/V7"},{p:"E5",d:"h",label:"5/V7"},{bar:"single"},
+        {p:"D5",d:"w",label:"R/i — home"},{bar:"final"}],width:800},
+      kb:{start:60,octaves:1.3333,labels:true} },
+    { caption:"The same melody twice: chord tones only, then with a passing tone and an upper neighbor added.",
+      staff:{clef:"treble",tempo:100,time:"4/4",notes:[
+        {p:"D4",d:"h",label:"chord tones"},{p:"F4",d:"h"},{bar:"single"},{p:"A4",d:"h"},{p:"D5",d:"h"},{bar:"double"},
+        {p:"D4",d:"q",label:"+ P & U"},{p:"E4",d:"q",label:"P"},{p:"F4",d:"q"},{p:"G4",d:"q",label:"P"},{bar:"single"},{p:"A4",d:"q"},{p:"Bb4",d:"q",label:"U"},{p:"A4",d:"q"},{p:"D5",d:"q"},{bar:"final"}],width:800},
+      kb:{start:60,octaves:1.3333,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Equal-Interval Sprint (45s)",
-      intro:"Identify interval patterns and pitch-class counts before time runs out.",
-      miaIntro:"Compare the repeated whole-step and half-step patterns.",
+    { type:"gen-race", title:"Game 1 · Label Sprint (45s)",
+      intro:"R, 3, 5, U, L, P — race the labels!",
+      miaIntro:"Six little letters! \u{26A1}",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Whole-tone scale","six pitch classes, all whole steps"],
-        ["Chromatic scale","all twelve half steps"],
-        ["Equal-interval scale","one repeating interval"],
-        ["Whole-tone pitch collections","two"],
-        ["Tonic hierarchy in equal-interval scales","weak"],
-        ["Interval between adjacent whole-tone notes","whole step"],
-        ["Interval between adjacent chromatic notes","half step"],
-        ["Major scale (for contrast)","unequal whole- and half-step pattern"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — Equal-interval patterns identified!":null },
-    { type:"key-climb", title:"Game 2 · Climb the Whole-Tone Scale",
-      intro:"Play the C whole-tone scale ascending through six whole steps to the octave.",
-      miaIntro:"Maintain one whole step between each pair of adjacent notes.",
-      spec:{seq:[60,62,64,66,68,70,72],
-        names:["C","D","E","F♯","G♯","A♯","C (octave)"],
-        start:60, octaves:1, title:"The C whole-tone scale"},
-      result:(score)=>score!==null?"You performed all six whole steps correctly.":null },
-    { type:"symbol-hunt", title:"Game 3 · Which Scale Is It?",
-      intro:"Examine each notated scale and select its correct name.",
-      miaIntro:"Examine the interval between each pair of adjacent notes.",
+        ["R","the melody note is the chord's root"],
+        ["3","the melody note is the chord's 3rd"],
+        ["5","the melody note is the chord's 5th"],
+        ["P","a passing tone between two chord tones"],
+        ["U","an upper neighboring tone"],
+        ["L","a lower neighboring tone"],
+        ["First & last note (minor)","the root of the i chord"],
+        ["Before the final chord","V or V7"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — label-literate!":null },
+    { type:"key-climb", title:"Game 2 · Play a Model Phrase",
+      intro:"Perform a labeled minor phrase: R-R-5-5-L-5-3-R in D minor!",
+      miaIntro:"Composer's fingers on! \u{1FA9C}",
+      spec:{seq:[62,62,69,69,67,69, 65,62],
+        names:["D (R)","D (R)","A (5)","A (5)","G (L — the lower neighbor!)","A (5)","F (3)","D (R — home)"],
+        start:57, octaves:1.1667, title:"A Pat-A-Pan-style phrase in D minor"},
+      result:(score)=>score!==null?"Model phrase performed!":null },
+    { type:"symbol-hunt", title:"Game 3 · Minor Safe-Note Spotter",
+      intro:"A D-minor chord is called — click the melody fragment that fits inside it!",
+      miaIntro:"Chord-tone check! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"Whole-tone (6 notes)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A#4",d:"q"}],width:210}},
-        {label:"Chromatic (half steps)", spec:{clef:"treble",notes:[{p:"C4",d:"8"},{p:"C#4",d:"8"},{p:"D4",d:"8"},{p:"D#4",d:"8"},{p:"E4",d:"8"},{p:"F4",d:"8"}],width:210}},
-        {label:"Major (W-W-H mix)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"}],width:190}},
-        {label:"Pentatonic (gapped)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"}],width:190}}]},
-      result:(score)=>score>=5?"You identified the scales correctly.":null },
-    { type:"term-race", title:"Game 4 · Count and Compare",
-      intro:"Compare the pitch-class counts and interval patterns of the scales studied so far.",
-      miaIntro:"Pentatonic 5, whole-tone 6, diatonic 7, chromatic 12.",
+        {label:"Fits Dm (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"q"},{p:"F4",d:"q"},{p:"A4",d:"q"},{p:"F4",d:"q"}],width:170}},
+        {label:"Fits Gm (G-B♭-D)", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"Bb4",d:"q"},{p:"D5",d:"q"},{p:"Bb4",d:"q"}],width:170}},
+        {label:"Fits A7 (A-C♯-E-G)", spec:{clef:"treble",notes:[{p:"A4",d:"q"},{p:"C#5",d:"q"},{p:"E5",d:"q"},{p:"G5",d:"q"}],width:170}},
+        {label:"Fits NO single chord", spec:{clef:"treble",notes:[{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"}],width:170}}]},
+      result:(score)=>score>=5?"Chord tones spotted on sight!":null },
+    { type:"term-race", title:"Game 4 · Minor Composer's Race",
+      intro:"The method, the frame, the raised 7th — everything from Lessons 68-69!",
+      miaIntro:"Compose at speed! \u{1F3C1}",
       spec:{rounds:8, reverse:true, pool:[
-        ["Pentatonic","5 notes"],
-        ["Whole-tone","6 notes"],
-        ["Major / minor","7 notes"],
-        ["Chromatic","12 notes"],
-        ["All whole steps","whole-tone"],
-        ["All half steps","chromatic"],
-        ["No half steps, 5 notes","pentatonic"],
-        ["W-W-H-W-W-W-H","major"]]},
-      result:(score)=>score>=6?"You compared the scale collections correctly.":null }
+        ["Composing in minor","same method as major, minor chords"],
+        ["The melody's source","each measure's chord tones"],
+        ["The decorations","passing & neighboring tones (weak beats)"],
+        ["First & last note","root of i"],
+        ["The pre-final chord","V or V7"],
+        ["C♯ over A7 in D minor","the raised 7th — maximum pull"],
+        ["V7 of D minor","A7 (A-C♯-E-G)"],
+        ["V7 of E minor","B7 (B-D♯-F♯-A)"]]},
+      result:(score)=>score>=6?"Minor composing: mastered!":null }
   ],
-  practiceIntro:"Complete 20 practice questions on whole-tone scales, chromatic scales, and equal-interval patterns. The next question will appear after each correct answer.",
+  practiceIntro:"20 practice questions — method, labels and the minor frame. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Whole-tone","all whole steps"],["Chromatic","all half steps"],["Equal-interval","one repeating interval"],["Six pitch classes","whole-tone"],["Twelve pitch classes","chromatic"]], reverse:true}, count:6 },
-    { gen:"step-type", params:{}, count:2 },
-    { type:"mc", q:"How many different pitch classes does a whole-tone scale contain?", choices:["6","7","12"], answer:0,
-      explain:"Six whole steps fill the octave." },
-    { type:"mc", q:"How many distinct whole-tone pitch collections exist in twelve-tone equal temperament?", choices:["2","12","6"], answer:0,
-      explain:"The C collection and the C♯ collection." },
-    { type:"mc", q:"The chromatic scale moves entirely by…", choices:["half steps","whole steps","thirds"], answer:0,
-      explain:"All twelve keys in a row." },
-    { type:"mc", q:"Compared with a major scale, an equal-interval scale provides less internal support for…", choices:["a strong tonic hierarchy","identifiable pitches","a steady rhythm"], answer:0,
-      explain:"Repeating the same interval gives each pitch a similar structural position, although musical context can still establish a tonal center." },
-    { type:"truefalse", q:"A whole-tone scale contains no half steps between adjacent scale tones.", answer:true,
-      explain:"W-W-W-W-W-W." },
-    { type:"truefalse", q:"The spelling of a chromatic scale may depend on its direction and tonal or harmonic context.", answer:true,
-      explain:"Ascending-sharp and descending-flat spellings are useful introductory conventions, but context determines the most appropriate notation." },
-    { type:"truefalse", q:"The major scale repeats one identical interval throughout the octave.", answer:false,
-      explain:"The major scale contains an unequal pattern of whole and half steps rather than one continuously repeated interval." },
-    { gen:"term-match", params:{subject:"term", pool:[["All whole steps","whole-tone"],["All half steps","chromatic"],["Strong tonic hierarchy","major"],["Two distinct collections","whole-tone"]], reverse:true}, count:3 },
-    { gen:"enharmonic", params:{}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["R","chord root in the melody"],["3","chord 3rd in the melody"],["5","chord 5th in the melody"],["P","passing tone"],["U","upper neighbor"],["L","lower neighbor"]], reverse:true}, count:6 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 },
+    { type:"mc", q:"Composing a melody in a minor key is…", choices:["similar to composing in a major key","entirely different","not possible with three chords"], answer:0,
+      explain:"Same process, different chords." },
+    { type:"mc", q:"What is the melody based on?", choices:["The tones in the chord accompaniment","Random chromatic notes","The drum part"], answer:0,
+      explain:"Chord tones are the source." },
+    { type:"mc", q:"The first and last note of a minor melody tends to be…", choices:["the root of the i chord","the 5th of V","the raised 7th"], answer:0,
+      explain:"Home at both ends — minor edition." },
+    { type:"mc", q:"In D minor, the V7 chord is…", choices:["A7 (A-C♯-E-G)","A minor 7","G7"], answer:0,
+      explain:"The raised C♯ makes it major-with-a-7th." },
+    { type:"mc", q:"Which note is a chord tone over G minor (G-B♭-D)?", choices:["B♭","C","E"], answer:0,
+      explain:"Only chord tones form the framework." },
+    { type:"mc", q:"The label 'U' under a melody note means…", choices:["upper neighboring tone","unison","up-bow"], answer:0,
+      explain:"A visit from above, then home." },
+    { type:"truefalse", q:"Non-harmonic tones make a composed minor melody more interesting.", answer:true,
+      explain:"They add smoothness and interest in both modes." },
+    { type:"truefalse", q:"A V or V7 usually precedes the final chord in a minor composition.", answer:true,
+      explain:"The frame rule survives the mode change." },
+    { type:"truefalse", q:"The labels under the melody notes name their chord-member roles.", answer:true,
+      explain:"Each names its note's chord-member role." },
+    { type:"truefalse", q:"The raised 7th should be avoided in a minor melody.", answer:false,
+      explain:"No — it is the leading tone inside V7, pulling to the tonic." }
+  ],
+  miaQuizIntro:"Quiz! Same checklist, minor palette — and let the C♯ do its magic.",
+  quiz:[
+    { type:"mc", q:"What is the basic process for composing a melody in a minor key?", choices:["The same as major: analyze, chord tones, non-harmonic tones, beginning and ending","A special minor-only method","Free improvisation with no rules"], answer:0,
+      explain:"One process, both modes.", hint:"Lesson 67's four steps." },
+    { type:"mc", q:"What should most melody notes come from?", choices:["The tones of the chord accompaniment","The chromatic scale","A different key"], answer:0,
+      explain:"Each measure's chord provides the notes that fit.", hint:"The hook's discovery." },
+    { type:"mc", q:"Begin by analyzing the progression and writing…", choices:["Roman numerals under the chords, symbols above the staff","the melody first","the tempo marking"], answer:0,
+      explain:"Analysis shows which notes fit each harmony.", hint:"Numerals below, symbols above." },
+    { type:"mc", q:"The first and last note of the melody tends to be…", choices:["the root of the i chord","any chord tone","the leading tone"], answer:0,
+      explain:"D to D in D minor.", hint:"The root of i." },
+    { type:"truefalse", q:"A V (or V7) usually precedes the last chord.", answer:true,
+      explain:"The universal cadence rule.", hint:"Fourth lesson in a row!" },
+    { type:"truefalse", q:"The labels U and L mark upper and lower neighboring tones.", answer:true,
+      explain:"The model's decoration marks.", hint:"Lesson 66 vocabulary." },
+    { type:"mc", q:"Which note is not part of the A7 chord?", choices:["D","A","C♯","E"], answer:0,
+      explain:"A7 = A-C♯-E-G; D is not a chord tone.", hint:"Spell A7." },
+    { type:"mc", q:"A melody measure over Dm reads A-G-A. The G is labeled…", choices:["L — lower neighboring tone","P — passing tone","5 — a chord tone"], answer:0,
+      explain:"A…A — same tone, from below → L.", hint:"Same landing = neighbor." },
+    { type:"mc", q:"A melody measure over Dm reads F-E-D. The E is labeled…", choices:["P — passing tone","U — upper neighbor","3 — a chord tone"], answer:0,
+      explain:"3 down to R through E → P.", hint:"Different landing = passing." },
+    { type:"mc", q:"Why does C♯ create a strong pull to D?", choices:["It is the leading tone, one half step below the tonic","It is the loudest available note","It cancels the minor key"], answer:0,
+      explain:"Leading tone → tonic.", hint:"What is a half step above C♯?" },
+    { type:"mc", q:"Composing over Em - Am - B7 - Em, your last note should be…", choices:["E","B","D♯"], answer:0,
+      explain:"Root of the final i.", hint:"The frame rule, transposed." },
+    { type:"mc", q:"Can two different melodies fit the same chord progression?", choices:["Yes — different melodies can use the same progression successfully","No — only one melody is correct","Only in major keys"], answer:0,
+      explain:"Chord tones offer many valid paths.", hint:"Uniqueness is the point." },
+    /* generated */
+    { gen:"term-match", params:{subject:"term", pool:[["R/3/5","chord-member labels"],["P","passing tone"],["U/L","the neighboring tones"],["The frame","root of i at both ends"]], reverse:true}, count:3 },
+    { gen:"rel-key", params:{ask:"both"}, count:2 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:1 }
   ],
   vocabulary:[
-    {term:"Whole-Tone Scale", def:"Six pitch classes per octave, every step a whole step. Two distinct collections exist."},
-    {term:"Chromatic Scale", def:"All twelve pitch classes, moving by half steps. Its enharmonic spelling depends on direction, tonal context, and notational clarity."},
-    {term:"Equal-Interval (Symmetrical) Scale", def:"A scale built from one repeating interval, giving each pitch a similar structural position."},
-    {term:"Tonal Center", def:"The note that sounds like “home.” Equal-interval scales weaken this feeling because every step is the same."}
+    {term:"Composing in Minor", def:"Creating a melody for a minor-key progression — same steps as major: analyze, chord tones, non-harmonic tones, beginning and ending."},
+    {term:"R / 3 / 5 / U / L / P", def:"The full label set: chord members (root/3rd/5th) plus the non-harmonic tones (upper, lower, passing)."},
+    {term:"The Minor Frame", def:"Begin and end on the ROOT of i; V(7) — with its raised 7th — precedes the final chord."},
+    {term:"The C♯ Effect", def:"In D minor, the raised 7th inside A7 pulls straight to D — put it late in the phrase and the ending writes itself.",
+      staff:{clef:"treble",notes:[{p:"C#5",d:"h"},{p:"D5",d:"h"}],width:260}}
   ],
   mistakes:[],
   summary:[
-    "✔ <b>Whole-tone</b>: 6 pitch classes, all whole steps; <b>two</b> distinct collections exist.",
-    "✔ <b>Chromatic</b>: all <b>12</b> pitch classes; spelling depends on direction and context.",
-    "✔ Both have <b>equal-interval symmetry</b> — one repeating interval, so only a <b>weak internal tonic hierarchy</b>.",
-    "✔ Major's uneven pattern distinguishes scale degrees; equal intervals do not — though context can still create a tonal center.",
-    "✔ Applications: whole-tone = ambiguous, floating harmonic color; chromatic = connecting pitches and intensifying motion."
+    "✔ Minor composing = <b>major composing with minor chords</b>: analyze → chord tones → non-harmonic tones → beginning and ending.",
+    "✔ Build from <b>chord tones</b>; add P/U/L on <b>weak beats</b>.",
+    "✔ Begin and end on the <b>root of i</b>; <b>V(7)</b> before the close.",
+    "✔ The labels: <b>R, 3, 5, U, L, P</b> — read them, then write with them.",
+    "✔ The <b>raised 7th</b> (C♯ in D minor) is your strongest melodic magnet."
   ],
   tips:[
-    "Whole-tone at the keyboard: C-D-E, then F♯-G♯-A♯ — three whites, three blacks.",
-    "Play any note against a whole-tone scale — resolutions are weak. That is part of its color.",
-    "Chromatic passages are about the DESTINATION: hear where the slide finally lands.",
-    "Next lesson: flip intervals upside down — inversions and compounds."
+    "Give your minor melody ONE C♯ moment near the end — listeners will feel the homecoming without knowing why.",
+    "The 3rd of i (F in D minor) is the single most 'minor-sounding' melody note. Lean on it when you want maximum mood.",
+    "Label everything you write for a week — R/3/5/P/U/L. Analysis and composition are the same muscle.",
+    "Next lesson, something completely different: a 12-bar progression born in America's south — the BLUES."
   ],
-  rewards:{ badge:"Symmetry Explorer", icon:"\u{1F32B}\u{FE0F}" },
+  rewards:{ badge:"Minor Composer", icon:"\u{1F58B}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Identify equal-interval patterns and compare their pitch collections.",
-  quiz:[
-    { type:"mc", q:"The whole-tone scale is built entirely from…", choices:["whole steps","half steps","minor thirds"], answer:0,
-      explain:"W six times fills the octave.", hint:"The name says it." },
-    { type:"mc", q:"How many different pitch classes are in a whole-tone scale?", choices:["6","7","5"], answer:0,
-      explain:"12 half steps ÷ 2 = 6 whole steps.", hint:"Divide the octave." },
-    { type:"mc", q:"How many distinct whole-tone pitch collections exist in twelve-tone equal temperament?", choices:["Two","Seven","Twelve"], answer:0,
-      explain:"The two collections can be represented by scales beginning on C and C♯. Other starting notes reorder one of these collections.", hint:"Very few." },
-    { type:"mc", q:"The chromatic scale contains…", choices:["all twelve pitch classes","only the white-key pitch classes","six pitch classes"], answer:0,
-      explain:"Every half step in the octave.", hint:"Complete set." },
-    { type:"mc", q:"What gives the whole-tone and chromatic scales their equal-interval symmetry?", choices:["Each scale repeats one interval throughout the octave","Loud and soft notes alternate","Each scale contains an odd number of notes"], answer:0,
-      explain:"Whole-tone (all whole steps) and chromatic (all half steps).", hint:"The step pattern." },
-    { type:"mc", q:"Why do equal-interval scales provide less internal support for a tonic hierarchy than major scales?", choices:["Their repeated interval patterns give each pitch a similar structural position","They must be performed quickly","They do not reach the octave"], answer:0,
-      explain:"Major scales contain unequal interval patterns that distinguish scale degrees. Equal-interval scales lack those internal distinctions.", hint:"Compare identical steps with the major scale's unequal step pattern." },
-    { type:"mc", q:"Identify the scale.",
-      staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A#4",d:"q"},{p:"C5",d:"q"}],width:340},
-      choices:["Whole-tone scale","Major scale","Chromatic scale"], answer:0,
-      explain:"The scale contains six different pitch classes separated by whole steps, followed by the octave repetition.", hint:"Measure the steps." },
-    { type:"truefalse", q:"The direction of a chromatic line is the only factor that determines its enharmonic spelling.", answer:false,
-      explain:"Direction may influence spelling, but tonal context, harmony, and voice leading must also be considered.", hint:"Consider tonal context, harmony, and voice leading as well." },
-    { type:"truefalse", q:"The whole-tone scale contains a leading tone a half step below its starting pitch.", answer:false,
-      explain:"A whole-tone collection contains no pitch a half step below another member, so it does not contain a diatonic leading tone to the starting pitch.", hint:"What makes a leading tone?" },
-    { type:"mc", q:"Which scale would best demonstrate a continuous series of equal whole steps?", choices:["The whole-tone scale","The major scale","The minor pentatonic scale"], answer:0,
-      explain:"The whole-tone scale repeats a whole step throughout the octave.", hint:"Identify the scale built from one repeated interval." },
-    { type:"mc", q:"Which device creates a continuous ascending line by half steps?", choices:["A chromatic ascent","A whole-tone ascent","A major arpeggio"], answer:0,
-      explain:"A chromatic ascent moves through consecutive half steps. Whether it creates tension depends on its musical context.", hint:"The smallest interval in the twelve-tone system." },
-    { type:"mc", q:"Which sequence orders these scales by number of pitch classes, from fewest to most?", choices:["pentatonic (5) → whole-tone (6) → major (7) → chromatic (12)","major (7) → chromatic (12) → pentatonic (5) → whole-tone (6)","all four scales contain seven pitch classes"], answer:0,
-      explain:"5, 6, 7, 12.", hint:"Count each." }
-  ],
-  miaPerfect:"Perfect score! You accurately identified whole-tone, chromatic, and major-scale interval patterns.",
-  miaPass:"You passed! Next, you will study interval inversions and compound intervals.",
+  miaPerfect:"PERFECT! You can compose minor melodies with confidence. \u{1F58B}\u{FE0F}\u{1F389}",
+  miaPass:"Passed! Two modes of composing conquered. Now — the blues is calling…",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Every step was a whole step — the whole-tone scale: six pitch classes, perfectly even, with no half steps between adjacent notes.",
-      play:()=>{[60,62,64,66,68,70,72].forEach((m,i)=>MFAudio.tone(m,.4,i*.34,.42));} },
-    learn:{ label:"whole-tone & chromatic",
-      explain:"Whole-tone: 6 pitch classes, all whole steps, two collections. Chromatic: 12 half steps. Both repeat one interval, so they give only weak internal support for a tonic.",
-      hint:"Equal steps give each pitch a similar position.",
-      play:()=>{[60,61,62,63,64,65,66].forEach((m,i)=>MFAudio.tone(m,.3,i*.24,.38));} },
+      explain:"The melody drew from each chord's own tones — D from Dm, B♭ from Gm, C♯ from A7 — inheriting the minor mood note by note.",
+      play:()=>{const chords=[[50,62,65,69],[43,58,62,67],[45,61,64,67],[50,62,65,69]],mel=[74,70,73,74];chords.forEach((row,i)=>{row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2));MFAudio.tone(mel[i],.8,i*.9,.46);});} },
+    learn:{ label:"minor composing",
+      explain:"Same process as major. i=Dm, iv=Gm, V7=A7 (with the raised C♯). Begin and end on the root of i; add P/U/L on weak beats.",
+      hint:"Analyze → chord tones → non-harmonic tones → beginning and ending.",
+      play:()=>{[62,65,69,67,69].forEach((m,i)=>MFAudio.tone(m,.5,i*.42,.42));} },
     example:{ label:"the examples",
-      explain:"Example 1 uses the whole-tone scale; example 2 climbs chromatically into a release." },
+      explain:"Example 1 is a fully labeled minor melody; example 2 shows the same melody before and after adding non-harmonic tones." },
     game:{ label:"the games",
-      explain:"Sprint the facts, climb the whole-tone scale, sort scales on cards, then race the note counts.",
-      hint:"5-6-7-12." },
+      explain:"Sprint the labels, perform a model phrase, spot chord tones, then race the composer facts.",
+      hint:"R/3/5 inside the chord; P/U/L outside it." },
     quiz:{ label:"this question",
-      explain:"Check the step sizes: all whole steps = whole-tone (6 pitch classes), all half steps = chromatic (12), mixed = major.",
-      play:()=>{[60,62,64,66,68,70,72].forEach((m,i)=>MFAudio.tone(m,.36,i*.3,.4));} }
+      explain:"Everything reduces to the four steps — and in minor, the raised 7th inside V7 pulls to the tonic.",
+      play:()=>{[45,61,64,67].forEach(m=>MFAudio.tone(m,.8,0,.3));[50,62,65,69].forEach(m=>MFAudio.tone(m,1,.9,.3));} }
   }
 };

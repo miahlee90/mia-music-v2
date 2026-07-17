@@ -1,197 +1,303 @@
-/* Lesson 104 — Leading-Tone Chords (Book 4, Unit 26 — SELF-AUTHORED)
-   Core: vii° (dim triad) and vii°7 / viiø7 as DOMINANT-FUNCTION chords —
-   V7 without its root. vii°7 (fully dim, from harmonic minor) works in
-   major too; resolves to I with the leading tone rising. Augmented triad's
-   function (III+) gets one step. NOTE: edit by FULL-FILE REWRITE only. */
+/* Lesson 104 (15.4, formerly L107) — Modal Mixture and Borrowed Chords (Book 4, Unit 26 — SELF-AUTHORED)
+   Core: PARALLEL keys (C major / C minor) share a tonic; MODAL MIXTURE
+   borrows pitches/chords from the parallel mode (color, not modulation);
+   the Picardy third ends a minor section on a major tonic.
+   Interactive score+audio examples live INSIDE Learn by Doing.
+   NOTE: edit by FULL-FILE REWRITE only. */
 
-LESSON_CONTENT[104]={stackFigures:true,
-  welcome:"Leading-tone chords provide dominant function without the dominant root.",
+/* interactive: heading + staff + play (score & keyboard highlight in sync) + keyboard + a question */
+function MF_L104_prog(container,fb,cfg){
+  container.innerHTML=`<div style="text-align:center;font-weight:800;font-size:12.5px;color:#5a4a12;margin-bottom:2px">${cfg.heading}</div>
+    <div class="l107-st"></div>
+    <div style="text-align:center;margin-top:6px"><button class="play l107-pl">${cfg.playLabel}</button></div>
+    <div class="l107-kb" style="margin-top:8px"></div>
+    <div class="choices l107-ch" style="margin-top:10px"></div>`;
+  const api=Staff.render(container.querySelector(".l107-st"),cfg.staff);
+  let kbApi=null;
+  if(cfg.kb) kbApi=Keyboard.create(container.querySelector(".l107-kb"),cfg.kb);
+  const pApi=kbApi?{svg:api.svg,highlight:(ix,keep)=>{ api.highlight(ix,keep);
+    if(ix!=null){ const n=cfg.staff.notes[ix]; if(n&&n.rest===undefined&&n.bar===undefined&&(n.p||n.sound)) kbApi.press(MFAudio.midi(n.sound||n.p),true); } }}:api;
+  container.querySelector(".l107-pl").onclick=()=>Staff.play(cfg.staff,pApi);
+  const ch=container.querySelector(".l107-ch");
+  cfg.choices.forEach((c,i)=>{ const b=document.createElement("button"); b.textContent=c;
+    b.onclick=()=>{ if(i===cfg.answer) fb(true,cfg.ok); else { MFAudio.tone(40,.2); fb(false,cfg.no); } };
+    ch.appendChild(b); });
+}
+/* interactive comparison: two small staves, two play buttons, one question */
+function MF_L104_compare(container,fb,cfg){
+  container.innerHTML=`<div style="text-align:center;font-weight:800;font-size:12.5px;color:#5a4a12;margin-bottom:4px">${cfg.heading}</div>
+    <div style="display:flex;flex-direction:column;gap:12px;align-items:center">
+      <div style="text-align:center"><div class="l107-sa"></div><button class="play l107-pa" style="margin-top:4px">${cfg.labelA}</button></div>
+      <div style="text-align:center"><div class="l107-sb"></div><button class="play l107-pb" style="margin-top:4px">${cfg.labelB}</button></div>
+    </div>
+    <div class="choices l107-ch" style="margin-top:10px"></div>`;
+  const aA=Staff.render(container.querySelector(".l107-sa"),cfg.staffA);
+  const aB=Staff.render(container.querySelector(".l107-sb"),cfg.staffB);
+  container.querySelector(".l107-pa").onclick=()=>Staff.play(cfg.staffA,aA);
+  container.querySelector(".l107-pb").onclick=()=>Staff.play(cfg.staffB,aB);
+  const ch=container.querySelector(".l107-ch");
+  cfg.choices.forEach((c,i)=>{ const b=document.createElement("button"); b.textContent=c;
+    b.onclick=()=>{ if(i===cfg.answer) fb(true,cfg.ok); else { MFAudio.tone(40,.2); fb(false,cfg.no); } };
+    ch.appendChild(b); });
+}
+/* final listening panel: three buttons + one self-contained question */
+function MF_L104_panel(host){
+  host.innerHTML=`<div style="text-align:center">
+    <div style="font-weight:800;color:#5a4a12;margin-bottom:8px">Compare the three borrowed progressions</div>
+    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+      <button class="play" id="l107a">▶ IV–iv–I</button>
+      <button class="play" id="l107b">▶ ♭VI–♭VII–I</button>
+      <button class="play" id="l107c">▶ Picardy ending</button></div>
+    <div class="big-q" style="margin-top:12px;font-weight:700">Which example begins in a minor key and ends on a borrowed major tonic?</div>
+    <div class="choices" id="l107pch" style="margin-top:6px"><button>The Picardy ending</button><button>IV–iv–I</button><button>♭VI–♭VII–I</button></div>
+    <div id="l107pfb" style="margin-top:8px;font-weight:700;min-height:20px"></div></div>`;
+  const seq=(arr,g)=>{ let t=0; g=g||.9; arr.forEach(row=>{ row.forEach(m=>MFAudio.tone(m,g*.9,t,.27)); t+=g; }); };
+  host.querySelector("#l107a").onclick=()=>seq([[53,60,65,69],[53,60,65,68],[48,60,64,67]]);
+  host.querySelector("#l107b").onclick=()=>seq([[56,60,63],[58,62,65],[60,64,67]]);
+  host.querySelector("#l107c").onclick=()=>{ let t=0,g=.55;      // Scarborough Fair — last three bars, Picardy
+    [68,66,68].forEach(m=>{ MFAudio.tone(m,.8,t,.45); t+=g; });   // G#4 F#4 G#4
+    [61,64,69].forEach(m=>MFAudio.tone(m,.8,t,.9)); t+=1.0;       // A major (C#-E-A)
+    [61,64,69].forEach(m=>MFAudio.tone(m,.8,t,1.5)); };           // A major, held to close
+  const fbd=host.querySelector("#l107pfb");
+  [...host.querySelectorAll("#l107pch button")].forEach((b,i)=>b.onclick=()=>{
+    if(i===0){ fbd.textContent="✓ Correct. The Picardy ending starts in A minor and closes on a major A tonic."; fbd.style.color="#2e7d32"; }
+    else{ MFAudio.tone(40,.2); fbd.textContent="Not quite — which one begins minor and ends major?"; fbd.style.color="#c05a21"; }
+  });
+}
+
+LESSON_CONTENT[104]={
+  welcome:"Modal mixture introduces pitches and chords from the parallel mode.",
   hook:{
-    say:"<b>Listen to a diminished triad built on the leading tone. Its tendency tones resolve toward the tonic chord.</b> \u{1F447} <b>Where does the chord resolve?</b>",
+    say:"A phrase in C major includes an F minor chord drawn from the parallel minor mode before returning to C major. \u{1F447} <b>Which chord demonstrates modal mixture?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play vii°–I</button></div>
-          <div class="choices hk-ch" style="display:none"><button>To I — it provides dominant function</button><button>To IV — it provides predominant function</button><button>It remains unresolved</button></div>`;
+          <button class="play hk-a">▶ Play IV–iv–I in C major</button></div>
+          <div class="choices hk-ch" style="display:none"><button>F minor, iv — drawn from the parallel minor mode</button><button>C major, I — the diatonic tonic chord</button><button>The passage permanently modulates to C minor</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{ [59,62,65].forEach(m=>MFAudio.tone(m,.9,.05,.3)); [60,64,67].forEach(m=>MFAudio.tone(m,1.1,1.0,.3)); setTimeout(()=>ch.style.display="",2300); };
+        container.querySelector(".hk-a").onclick=()=>{ [[65,69,72],[65,68,72],[64,67,72]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.27))); setTimeout(()=>ch.style.display="",3*900+300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. In C major, B–D–F resolves to the tonic harmony. The chord shares its three pitches with the upper three members of G7 and commonly provides dominant function without the dominant root G.");
-          else fb(false,"Follow the tendency tones: B resolves upward to C, and F resolves downward to E.");
+          if(i===0) fb(true,"✓ Correct. F minor is borrowed from the parallel key, C minor. The tonic remains C, so this is modal mixture rather than modulation.");
+          else fb(false,"Listen for A♭, the pitch that changes the diatonic F-major triad into F minor.");
         });
       } }
   },
   objectives:[
-    "Recall vii°: the diminished triad on the leading tone",
-    "Relate vii° to the upper three notes of V7 — both commonly have dominant function",
-    "Distinguish viiø7 in major from vii°7 in minor and chromatic contexts",
-    "Resolve leading-tone chords to I or i",
-    "Use vii°7 symmetry through enharmonic respelling",
-    "Introduce secondary leading-tone chords such as vii°/V"
+    "Define parallel keys: the same tonic in different modes",
+    "Define modal mixture: borrowing pitches or chords from the parallel mode",
+    "Recognize common borrowed chords in major",
+    "Hear the change of harmonic color produced by mixture",
+    "Distinguish modal mixture from tonicization and modulation",
+    "Recognize the Picardy third in a minor-key ending",
+    "Read chromatic accidentals associated with borrowed chords"
   ],
   steps:[
-    { say:"<b>The Leading-Tone Triad:</b> In C major, vii° is <b>B–D–F</b>. These are the upper three chord members of G7, G–B–D–F. Both chords contain the tritone B–F and commonly provide dominant function, although they are distinct chords with different roots. \u{1F447} <b>How many pitches does vii° share with V7 in the same major key?</b>",
-      try:{ type:"mc", choices:["Three—the third, fifth, and seventh of V7","One","None"], answer:0,
-        success:"✓ Correct. In C major, B, D, and F belong to both vii° and V7.",
-        fail:"Compare G–B–D–F with B–D–F.",
-        hint:"Remove the dominant root G from G7." } },
-    { say:"<b>Leading-Tone Seventh Chords:</b> In a major key, the diatonic seventh chord on the leading tone is half-diminished. In C major, <b>viiø7</b> is B–D–F–A. Lowering scale degree 6 from A to A♭ produces the fully diminished leading-tone seventh chord <b>vii°7</b>, B–D–F–A♭. This chromatic form may be understood as drawing scale degree ♭6 from the parallel minor. In minor keys, the raised leading tone and the minor-mode sixth scale degree naturally produce a fully diminished leading-tone seventh chord; in C minor, B–D–F–A♭ is vii°7. \u{1F447} <b>Which pitches form vii°7 in C?</b>",
-      show:{ type:"staff", spec:{clef:"treble",tempo:70,notes:[
-        {p:"B3",d:"w",label:"vii\u{00F8}7"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},
-        {p:"B3",d:"w",label:"vii\u{00B0}7"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Ab4",d:"w",chord:true},{bar:"final"}],width:440} },
-      try:{ type:"mc", choices:["B–D–F–A♭","B–D–F–A","B–D–F–G"], answer:0,
-        success:"✓ Correct. B–D–F–A♭ consists of three stacked minor thirds and forms a fully diminished seventh chord on the leading tone.",
-        fail:"Compare the seventh above B: A is minor, while A♭ is diminished.",
-        hint:"Use A♭ rather than A♮." } },
-    { say:"<b>Resolution:</b> Leading-tone chords normally resolve toward <b>I</b> or <b>i</b>. The leading tone typically rises by half step to the tonic, while the diminished fifth above the root normally resolves downward by step. In a leading-tone seventh chord, the chordal seventh also normally resolves downward by step. The leading-tone triad frequently appears in <b>first inversion</b>, vii°6; one common passing progression is I–vii°6–I6, in which the bass moves by step from scale degree 1 through 2 to 3. \u{1F447} <b>In a conventional vii°–I resolution, how does the leading tone normally move?</b>",
-      try:{ type:"mc", choices:["Up by half step to the tonic","Down by fifth","It must remain on the same pitch"], answer:0,
-        success:"✓ Correct. In C major or minor, B normally resolves upward by half step to C.",
-        fail:"Identify the tonic a half step above the leading tone.",
-        hint:"The leading tone normally resolves upward by half step." } },
-    { say:"<b>Enharmonic Flexibility of vii°7:</b> A fully diminished seventh chord divides the octave into four equal minor thirds. Through enharmonic respelling, any one of its four pitch classes can be interpreted as the root of a leading-tone seventh chord, so each spelling can point toward a different tonic. For example, B–D–F–A♭ may be enharmonically respelled to function as leading-tone seventh chords resolving toward C, E♭, G♭, or A, allowing the chord to connect distantly related keys. \u{1F447} <b>Why can a fully diminished seventh chord lead toward several different tonics?</b>",
-      try:{ type:"mc", choices:["Its symmetrical pitch structure allows enharmonic respelling with different chord members interpreted as the leading-tone root","It contains five chord members","It must be performed loudly"], answer:0,
-        success:"✓ Correct. Enharmonic respelling allows the same sounding pitch collection to assume different leading-tone functions.",
-        fail:"Examine the equal minor-third divisions of the chord.",
-        hint:"Three stacked minor thirds create a symmetrical pitch collection." } },
-    { say:"<b>Secondary Leading-Tone Chords:</b> Just as a secondary dominant tonicizes a nontonic chord, a secondary leading-tone chord may provide dominant function to a temporary target. Its Roman numeral may be written <b>vii°/X</b>, <b>viiø7/X</b>, or <b>vii°7/X</b>, depending on the chord type. In C major, F♯–A–C is vii°/V because F♯ is the temporary leading tone to G, and the chord normally resolves to G major, the V chord. \u{1F447} <b>In C major, F♯–A–C resolving to G major is labeled…</b>",
-      try:{ type:"mc", choices:["vii°/V","vii°/I","ii"], answer:0,
-        success:"✓ Correct. F♯ is the temporary leading tone to G, so the chord is the leading-tone triad of V.",
-        fail:"Look at the chord after the slash — F♯ leads to G.",
-        hint:"Identify the target chord after the slash." } },
-    { say:"<b>Review:</b> \u{1F447} <b>In the progression I–vii°6–I6, what role does vii°6 commonly serve?</b>",
-      try:{ type:"mc", choices:["A passing chord connecting two tonic positions","A final cadence by itself","A modulation by itself"], answer:0,
-        success:"✓ Correct. In C major, the bass moves C–D–E while vii°6 connects root-position I with first-inversion I.",
-        fail:"Follow the stepwise bass motion between the two tonic positions.",
-        hint:"I → vii°6 → I6." } }
+    { say:"<b>Parallel and Relative Keys:</b> Parallel keys share the same tonic but use different modes and key signatures. C major and C minor are parallel keys. Relative major and minor keys share a key signature but have different tonics; C major and A minor are relative keys. Modal mixture draws pitches or chords from the parallel mode. \u{1F447} <b>What is the parallel minor of C major?</b>",
+      try:{ type:"mc", choices:["C minor — the same tonic in a different mode","A minor — the relative minor","G minor"], answer:0,
+        success:"✓ Correct. C major and C minor share the tonic C but use different modal collections.",
+        fail:"Identify the minor key that shares the tonic C.",
+        hint:"Parallel keys share a tonic; relative keys share a key signature." } },
+    { say:"<b>Modal Mixture:</b> Modal mixture occurs when music in a major or minor key uses pitches or chords associated with its parallel mode. Major-key passages frequently use chords from the parallel minor, while minor-key passages may use chords or scale degrees associated with the parallel major. Modal mixture changes the harmonic color but does not by itself establish a new tonic. \u{1F447} <b>Modal mixture draws material from…</b>",
+      try:{ type:"mc", choices:["The parallel mode","The dominant key by definition","A key with an unrelated tonic by definition"], answer:0,
+        success:"✓ Correct. Modal mixture combines material from parallel major and minor modes, which share the same tonic.",
+        fail:"Identify the mode that shares the current tonic.",
+        hint:"Parallel modes share the same tonic pitch." } },
+    { say:"<b>Common Mixture Chords in Major:</b> A passage in C major may draw chords from the parallel minor collection. These chords commonly introduce scale degrees <b>♭3, ♭6, and ♭7</b>; their function must be determined from context. \u{1F447} <b>How is ♭VI spelled in C major?</b>",
+      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14px;min-width:320px">
+        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 10px">Borrowed chord</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 10px">Pitches in C major</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:5px 10px">Imported pitch or pitches</th></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#C05A21">iv</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">F\u{2013}A\u{266D}\u{2013}C</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">\u{266D}6</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#C05A21">ii\u{00B0}</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">D\u{2013}F\u{2013}A\u{266D}</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">\u{266D}6</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#C05A21">ii\u{00F8}7</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">D\u{2013}F\u{2013}A\u{266D}\u{2013}C</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">\u{266D}6</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#C05A21">\u{266D}III</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">E\u{266D}\u{2013}G\u{2013}B\u{266D}</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">\u{266D}3, \u{266D}7</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#C05A21">\u{266D}VI</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">A\u{266D}\u{2013}C\u{2013}E\u{266D}</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">\u{266D}6, \u{266D}3</td></tr>
+        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center;font-weight:800;color:#C05A21">\u{266D}VII</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">B\u{266D}\u{2013}D\u{2013}F</td><td style="border:1.5px solid #cdd5e1;padding:4px 10px;text-align:center">\u{266D}7</td></tr></table>` },
+      try:{ type:"mc", choices:["A♭–C–E♭","A–C–E","A♭–C♭–E♭"], answer:0,
+        success:"✓ Correct. A♭–C–E♭ is an A♭ major triad rooted on scale degree ♭6.",
+        fail:"Lower scale degree 6 from A to A♭ and build a major triad.",
+        hint:"♭VI in C major is A♭ major." } },
+    { say:"<b>Borrowed Chords in a Progression:</b> In C major, ♭VI and ♭VII may rise by whole step to the tonic. This borrowed-chord progression is common in rock, film, and game music, where it is sometimes informally called the \u{201C}Mario cadence.\u{201D} \u{1F447} <b>From which parallel mode are ♭VI and ♭VII borrowed in C major?</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L104_prog(c,fb,{
+        heading:"Key: C major",
+        staff:{clef:"grand",time:"4/4",tempo:96,notes:[
+          {p:"Ab3",d:"w",clef:"bass",label:"\u{266D}VI"},{p:"C4",d:"w",chord:true},{p:"Eb4",d:"w",chord:true},{bar:"single"},
+          {p:"Bb3",d:"w",clef:"bass",label:"\u{266D}VII"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{bar:"single"},
+          {p:"C4",d:"w",clef:"bass",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:560},
+        kb:{start:53,octaves:1.5,labels:true},
+        playLabel:"▶ Play \u{266D}VI → \u{266D}VII → I",
+        choices:["C minor","G major","A minor"], answer:0,
+        ok:"✓ Correct. A♭ major and B♭ major are associated with C minor but are used here while C remains the tonic.",
+        no:"Both borrowed chords come from the parallel mode of C major." }) } },
+    { say:"<b>Modal Mixture and Tonal Center:</b> Modal mixture changes the available pitch and chord collection while the prevailing tonic remains in control. IV–iv–I in major is a common example: the diatonic IV moves to a borrowed minor iv before resolving to I. At a phrase ending, iv–I may produce minor plagal motion. \u{1F447} <b>Which statement best describes modal mixture?</b>",
+      try:{ type:"mc", choices:["It introduces material from the parallel mode without necessarily establishing a new tonic","It must permanently change the tonic","It changes the meter"], answer:0,
+        success:"✓ Correct. A borrowed chord can alter the harmonic collection while the prevailing tonic remains active.",
+        fail:"Determine whether another tonic receives structural confirmation.",
+        hint:"Identify the tonal center before and after the mixture chord." } },
+    { say:"<b>Minor Plagal Motion in C Major:</b> In IV–iv–I, one pitch changes chromatically: A descends to A♭ and then to G. The borrowed iv adds modal color while C remains the tonic. This progression is sometimes informally called the \u{201C}sad plagal.\u{201D} \u{1F447} <b>Which chromatic pitch changes IV into the borrowed minor iv?</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L104_prog(c,fb,{
+        heading:"Key: C major",
+        staff:{clef:"grand",time:"4/4",tempo:96,notes:[
+          {p:"F3",d:"w",clef:"bass",label:"IV"},{p:"C4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"single"},
+          {p:"F3",d:"w",clef:"bass",label:"iv"},{p:"C4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Ab4",d:"w",chord:true},{bar:"single"},
+          {p:"C3",d:"w",clef:"bass",label:"I"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:560},
+        kb:{start:48,octaves:1.9167,labels:true},
+        playLabel:"▶ Play IV → iv → I",
+        choices:["A♭","A♯","E♭"], answer:0,
+        ok:"✓ Correct. Lowering A to A♭ changes F major into F minor, the borrowed iv chord in C major.",
+        no:"Follow the inner voice A → A♭ → G — the lowered pitch makes IV minor." }) } },
+    { say:"<b>The Picardy Third:</b> A Picardy third occurs when a composition or substantial section in a minor key ends with a major tonic triad. The third of the tonic chord is raised by half step, changing i to I at the final cadence. The Picardy third is often discussed alongside modal mixture, although it may also be understood as a conventional alteration of the final tonic chord. Mixture in minor is not limited to the Picardy third; minor-key passages may also use chords or pitches associated with the parallel major. \u{1F447} <b>What is a Picardy third?</b>",
+      try:{ type:"mc", choices:["A raised third that creates a major tonic at the end of a minor-key composition or section","A minor iv chord in a major key","A melodic ornament"], answer:0,
+        success:"✓ Correct. Raising the tonic triad's third changes the final chord from minor to major.",
+        fail:"Compare the final tonic triad with the parallel major tonic.",
+        hint:"The final i chord becomes I." } },
+    { say:"<b>Hear the Picardy Third:</b> The folk tune <i>Scarborough Fair</i> ends in A minor. Compare an ordinary minor ending with a Picardy ending — only the third of the final tonic chord changes, C♮ rising to C♯. \u{1F447} <b>What changes in the Picardy ending?</b>",
+      try:{ type:"custom", mount:(c,fb)=>MF_L104_compare(c,fb,{
+        heading:"Scarborough Fair (A minor) — final chord: A minor vs A major",
+        staffA:{clef:"treble",time:"3/4",tempo:100,notes:[
+          {p:"C5",d:"q."},{p:"B4",d:"8"},{p:"A4",d:"q"},{bar:"single"},
+          {p:"G#4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{bar:"single"},
+          {p:"C4",d:"h.",label:"i"},{p:"E4",d:"h.",chord:true},{p:"A4",d:"h.",chord:true},{bar:"single"},
+          {p:"C4",d:"h."},{p:"E4",d:"h.",chord:true},{p:"A4",d:"h.",chord:true},{bar:"final"}],width:580},
+        staffB:{clef:"treble",time:"3/4",tempo:100,notes:[
+          {p:"C5",d:"q."},{p:"B4",d:"8"},{p:"A4",d:"q"},{bar:"single"},
+          {p:"G#4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{bar:"single"},
+          {p:"C#4",d:"h.",label:"I"},{p:"E4",d:"h.",chord:true},{p:"A4",d:"h.",chord:true},{bar:"single"},
+          {p:"C#4",d:"h."},{p:"E4",d:"h.",chord:true},{p:"A4",d:"h.",chord:true},{bar:"final"}],width:580},
+        labelA:"▶ Play the minor ending (…A minor)", labelB:"▶ Play the Picardy ending (…A major)",
+        choices:["The final tonic chord's third rises from C♮ to C♯","The tonic changes from A to E","The meter changes"], answer:0,
+        ok:"✓ Correct. Raising C♮ to C♯ changes the final A-minor tonic into A major — the Picardy third.",
+        no:"Listen to the last chord of each: only its third differs (C♮ vs C♯)." }) } },
+    { say:"<b>Identifying Modal Mixture:</b> First, identify the prevailing tonic and mode. Next, spell the chromatic chord and determine whether its pitches correspond to a chord associated with the parallel mode. Finally, analyze its function and decide whether the surrounding passage continues to support the original tonic. One altered pitch by itself is not sufficient evidence of modulation. If the original tonic remains primary and no new tonic is established, analyze the chromatic chord as modal mixture; a confirmed new tonic, supported by harmonic preparation and continuation, may indicate tonicization or modulation. \u{1F447} <b>In C major, an F–A♭–C chord functions as iv and resolves to C major without establishing another tonic. How should it be analyzed?</b>",
+      try:{ type:"mc", choices:["Modal mixture from the parallel minor","Modulation to A♭ major","A notation error"], answer:0,
+        success:"✓ Correct. F minor is iv in the parallel minor mode and functions here within C major.",
+        fail:"Identify the chord and determine whether another tonic is structurally established.",
+        hint:"F–A♭–C is iv in C minor." } },
+    { say:"<b>Review:</b> \u{1F447} <b>In C major, how is IV–iv–I best described?</b>",
+      try:{ type:"mc", choices:["A mixture progression using minor iv before tonic","A descending-fifths progression","A half cadence"], answer:0,
+        success:"✓ Correct. The minor iv is drawn from the parallel minor and resolves to I. At a phrase ending, the iv–I motion may form minor plagal motion.",
+        fail:"Identify the chord containing A♭.",
+        hint:"F minor is iv in C minor." } }
   ],
   examples:[
-    { caption:"I–vii°6–I6: the leading-tone chord serves as a passing chord while the bass moves C–D–E between two positions of the tonic harmony.",
-      staff:{clef:"treble",tempo:76,notes:[
-        {p:"C4",d:"w",label:"I"},{p:"E4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
-        {p:"D4",d:"w",label:"vii\u{00B0}6"},{p:"F4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
-        {p:"E4",d:"w",label:"I6"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:480},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"vii°7 resolving to i in C minor: every tendency tone obeys — B rises, the dissonances fall — maximum tension into calm.",
-      staff:{clef:"treble",tempo:70,notes:[
-        {p:"B3",d:"w",label:"vii\u{00B0}7"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Ab4",d:"w",chord:true},
-        {p:"C4",d:"w",label:"i"},{p:"Eb4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{bar:"final"}],width:420},
-      kb:{start:57,octaves:1.25,labels:true} }
+    { mount:(host)=>MF_L104_panel(host) }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Leading-Tone Chord Identification",
-      intro:"Identify leading-tone chord spellings, qualities, functions, and resolutions.",
-      miaIntro:"Find the leading tone and its expected tonic.",
+    { type:"gen-race", title:"Game 1 · Modal-Mixture Identification",
+      intro:"Identify parallel modes and common borrowed-chord spellings.",
+      miaIntro:"Same tonic, parallel mode.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["vii° in C","B-D-F"],
-        ["vii° contains","the upper three notes of V7"],
-        ["viiø7","half-diminished (B-D-F-A)"],
-        ["vii°7","fully diminished (B-D-F-A\u{266D})"],
-        ["The leading tone resolves","up to the tonic"],
-        ["Leading-tone chords' function","dominant"],
-        ["vii°7's structure","all minor 3rds — symmetrical"],
-        ["Classic usage","vii°6 passing between I and I6"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?"Leading-tone chords identified!":null },
-    { type:"key-climb", title:"Game 2 · Resolve vii°7",
-      intro:"Play B–D–F–A♭ and resolve it smoothly to a C-minor or C-major tonic voicing. Follow B upward to C, F downward to E♭ or E, and A♭ downward to G.",
-      miaIntro:"Resolve each tendency tone by step.",
-      spec:{seq:[59,62,65,68,60],
-        names:["B (leading tone)","D","F","A♭ (the °7)","C — resolution!"],
-        start:59, octaves:1, title:"vii°7 into the tonic"},
-      result:(score)=>score!==null?"You performed the leading-tone resolution.":null },
-    { type:"symbol-hunt", title:"Game 3 · Identify the Chord",
-      intro:"Examine each leading-tone chord and identify its triad or seventh-chord quality.",
-      miaIntro:"Spell the chord and check its seventh.",
+        ["Parallel keys","same tonic, different mode"],
+        ["Modal mixture","borrowing from the parallel mode"],
+        ["iv in C major","F-A\u{266D}-C (borrowed)"],
+        ["\u{266D}VI in C major","A\u{266D}-C-E\u{266D}"],
+        ["\u{266D}VII in C major","B\u{266D}-D-F"],
+        ["The imported notes","\u{266D}6, \u{266D}3, \u{266D}7"],
+        ["Picardy third","minor ending on major I"],
+        ["Mixture vs modulation","color change vs new tonic"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — modal-mixture chords identified!":null },
+    { type:"key-climb", title:"Game 2 · Perform the Minor Plagal Progression",
+      intro:"Play the complete progression F major → F minor → C major. Listen to the inner line A–A♭–G.",
+      miaIntro:"Follow the chromatic inner voice A–A♭–G.",
+      spec:{seq:[65,69,72,65,68,72,60,64,67],
+        names:["F (root of IV)","A (3rd of IV)","C (5th of IV)","F (root of iv)","A♭ (borrowed 3rd of iv)","C (5th of iv)","C (root of I)","E (3rd of I)","G (5th of I)"],
+        start:60, octaves:1, title:"Play each complete chord: IV → iv → I"},
+      result:(score)=>score!==null?"You performed the mixture progression.":null },
+    { type:"symbol-hunt", title:"Game 3 · Borrowed or Diatonic?",
+      intro:"Examine each chord in a C-major context and determine whether it is diatonic or drawn from the parallel minor.",
+      miaIntro:"Spell the complete chord and identify its function.",
       spec:{rounds:6, pool:[
-        {label:"vii° (B-D-F)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}},
-        {label:"viiø7 (B-D-F-A)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}},
-        {label:"vii°7 (B-D-F-A♭)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Ab4",d:"w",chord:true}],width:150}},
-        {label:"V7 (G-B-D-F)", spec:{clef:"treble",notes:[{p:"G3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}}]},
-      result:(score)=>score>=5?"You identified the leading-tone chords correctly.":null },
-    { type:"term-race", title:"Game 4 · Function and Resolution",
-      intro:"Identify the expected target and tendency-tone resolutions of each leading-tone chord.",
-      miaIntro:"Read the Roman numeral and follow the tendency tones.",
+        {label:"Borrowed iv (F-A♭-C)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"Ab4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
+        {label:"Diatonic IV (F-A-C)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"A4",d:"w",chord:true},{p:"C5",d:"w",chord:true}],width:150}},
+        {label:"♭VI (A♭-C-E♭)", spec:{clef:"treble",notes:[{p:"Ab4",d:"w"},{p:"C5",d:"w",chord:true},{p:"Eb5",d:"w",chord:true}],width:150}},
+        {label:"♭VII (B♭-D-F)", spec:{clef:"treble",notes:[{p:"Bb3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"You classified the chords correctly.":null },
+    { type:"term-race", title:"Game 4 · Identify the Mixture Device",
+      intro:"Match each musical description with the appropriate mixture technique.",
+      miaIntro:"Parallel minor borrowing or parallel major inflection?",
       spec:{rounds:8, reverse:true, pool:[
-        ["vii° resolves to","I (or i)"],
-        ["vii°7 resolves to","I (or i)"],
-        ["The leading tone moves","up a half step"],
-        ["The chord's dissonances","fall by step"],
-        ["vii° shares its tritone with","V7"],
-        ["vii°7 as a pivot","opens distant keys"],
-        ["vii°/V resolves to","V"],
-        ["D-function chords","V, V7, vii°, viiø7, vii°7"]]},
-      result:(score)=>score>=6?"You identified the expected resolutions correctly.":null }
+        ["IV \u{2192} iv \u{2192} I","minor iv borrowed from the parallel minor"],
+        ["\u{266D}VI \u{2192} \u{266D}VII \u{2192} I","the borrowed climb"],
+        ["Minor ending on major I","Picardy third"],
+        ["A\u{266D} in one C major chord","mixture, not modulation"],
+        ["Mixture's effect","color change while the tonic holds"],
+        ["Parallel of G major","G minor"],
+        ["Parallel of A minor","A major"],
+        ["Relative vs parallel","signature-share vs tonic-share"]]},
+      result:(score)=>score>=6?"You identified the mixture techniques correctly.":null }
   ],
-  practiceIntro:"Complete 20 practice questions on leading-tone chord spellings, qualities, functions, and resolutions.",
+  practiceIntro:"Complete 20 practice questions on parallel keys, borrowed chords, modal mixture, and the Picardy third.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["vii°","B-D-F in C"],["viiø7","+A"],["vii°7","+A\u{266D}"],["Function","dominant"],["Resolution","to I"]], reverse:true}, count:6 },
-    { gen:"triad-quality", params:{}, count:2 },
-    { type:"mc", q:"vii° in C major is spelled…", choices:["B-D-F","B-D-F♯","G-B-D"], answer:0, explain:"In C major, vii° is B–D–F." },
-    { type:"mc", q:"vii° functions as…", choices:["a dominant","a tonic","a predominant"], answer:0, explain:"The leading-tone triad commonly serves dominant function." },
-    { type:"mc", q:"vii°7 adds which 7th above B (in C)?", choices:["A♭","A","G"], answer:0, explain:"In C, vii°7 contains A♭, a diminished seventh above B." },
-    { type:"mc", q:"In vii° → I, the leading tone…", choices:["rises by half step to the tonic","falls to the dominant","disappears"], answer:0, explain:"The leading tone normally resolves upward by half step to the tonic." },
-    { type:"truefalse", q:"vii° shares its tritone (B-F) with V7.", answer:true, explain:"Both vii° and V7 contain the tritone B–F in C major." },
-    { type:"truefalse", q:"Through enharmonic respelling, any pitch class of a fully diminished seventh chord may be reinterpreted as the root of a leading-tone chord.", answer:true, explain:"Enharmonic respelling reinterprets each pitch class as a leading tone." },
-    { type:"truefalse", q:"viiø7 and vii°7 have different seventh qualities.", answer:true, explain:"In C, viiø7 contains A♮, while vii°7 contains A♭." },
-    { gen:"term-match", params:{subject:"term", pool:[["I - vii°6 - I6","the passing use"],["Symmetry","distant-key pivot"],["vii°/V","tonicizes V"],["Tritone","B-F"]], reverse:true}, count:3 },
-    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:2 }
+    { gen:"term-match", params:{subject:"term", pool:[["Parallel keys","same tonic"],["Mixture","parallel borrowing"],["iv in major","borrowed"],["\u{266D}VI","A\u{266D} major in C"],["Picardy","major I ending a minor piece"]], reverse:true}, count:6 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 },
+    { type:"mc", q:"C major's parallel minor is…", choices:["C minor","A minor","G major"], answer:0, explain:"The same tonic in a different mode." },
+    { type:"mc", q:"Modal mixture draws material from…", choices:["the parallel mode","the relative mode","no other key"], answer:0, explain:"The tonic-sharing parallel mode." },
+    { type:"mc", q:"The borrowed iv in C major is…", choices:["F-A♭-C","F-A-C","F♯-A-C"], answer:0, explain:"Contains ♭6 (A♭)." },
+    { type:"mc", q:"♭VII in C major is…", choices:["B♭-D-F","B-D-F","B♭-D♭-F"], answer:0, explain:"B♭–D–F; context determines whether it functions as mixture or broader modal harmony." },
+    { type:"truefalse", q:"Modal mixture necessarily establishes a new tonic.", answer:false, explain:"Mixture may occur while the prevailing tonic remains active, although borrowed chords can participate in a larger modulation." },
+    { type:"truefalse", q:"A Picardy third creates a major final tonic in a minor-key composition or section.", answer:true, explain:"The tonic triad's third is raised at the final cadence." },
+    { type:"truefalse", q:"Common mixture chords in a major key often introduce ♭3, ♭6, or ♭7.", answer:true, explain:"These characteristic altered scale degrees still require context to confirm function." },
+    { gen:"term-match", params:{subject:"term", pool:[["IV\u{2192}iv\u{2192}I","minor plagal motion"],["\u{266D}VI-\u{266D}VII-I","borrowed climb"],["G major's parallel","G minor"],["New tonic not confirmed","analyze as mixture"]], reverse:true}, count:3 },
+    { gen:"rel-key", params:{ask:"both"}, count:2 }
   ],
   vocabulary:[
-    {term:"vii° (Leading-Tone Triad)", def:"A diminished triad on scale degree 7 with dominant function."},
-    {term:"viiø7 / vii°7", def:"Major: viiø7 is diatonic. Minor: vii°7 uses the raised leading tone."},
-    {term:"Resolution Rule", def:"7̂ rises to 1̂; the diminished fifth and chordal seventh usually descend."},
-    {term:"°7 Symmetry", def:"Stacked minor thirds allow four enharmonic interpretations."}
+    {term:"Parallel Keys", def:"Same tonic, different mode: C major and C minor."},
+    {term:"Modal Mixture", def:"Borrowing pitches or chords from the parallel mode."},
+    {term:"Minor Plagal Motion (IV\u{2013}iv\u{2013}I)", def:"Borrowed iv adds color before the tonic."},
+    {term:"Picardy Third", def:"A minor-key ending on a major tonic chord."}
   ],
   mistakes:[],
   summary:[
-    "✔ vii° shares the <b>upper three notes of V7</b> and commonly has dominant function.",
-    "✔ Major: <b>viiø7 is diatonic</b>; minor: <b>vii°7</b> results from the raised leading tone.",
-    "✔ Resolution: <b>7̂ rises to 1̂</b>; the diminished fifth and chordal seventh usually descend.",
-    "✔ Classic use: <b>I–vii°6–I6</b> passing motion.",
-    "✔ °7 symmetry allows <b>four enharmonic interpretations</b> leading toward four possible tonics."
+    "✔ Parallel keys share the same tonic but use different modes.",
+    "✔ <b>Modal mixture</b> borrows pitches or chords from the parallel mode.",
+    "✔ Major commonly borrows <b>iv, ii°, iiø7, ♭III, ♭VI, and ♭VII</b> from the parallel minor.",
+    "✔ Mixture changes harmonic color while the prevailing tonic remains in control.",
+    "✔ <b>IV–iv–I</b> creates minor plagal motion in a major key.",
+    "✔ A <b>Picardy third</b> changes the final minor tonic into a major tonic.",
+    "✔ If a new tonic is not established, the chromatic chord may be modal mixture rather than modulation."
   ],
   tips:[
-    "Hear vii° as 'V7 lite' — softer bass, same push.",
-    "vii°7 loves dramatic moments: diminished-seventh tension is opera's favorite chord.",
-    "Spell any vii°7 fast: leading tone + minor 3rds all the way up.",
-    "Next lesson: a chromatic predominant from the flat side — the Neapolitan."
+    "Songwriters: try iv in place of your last IV for a sudden change of color.",
+    "♭VI–♭VII–I powers countless game and film finales — the borrowed climb home.",
+    "Every mixture chord still resolves within C — treat the flats as visitors, not settlers.",
+    "Unit 26 complete! Next unit: extended chords — 9ths, 11ths, 13ths and beyond."
   ],
-  rewards:{ badge:"Key Holder", icon:"\u{1F511}" },
+  rewards:{ badge:"Color Borrower", icon:"\u{1F3A8}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Identify leading-tone chords, their qualities, targets, and tendency-tone resolutions.",
+  miaQuizIntro:"Quiz: Identify material drawn from parallel major and minor modes.",
   quiz:[
-    { type:"mc", q:"vii° in C major is…", choices:["B-D-F","B♭-D-F","B-D♯-F♯"], answer:0, explain:"Diminished, on the leading tone.", hint:"Two m3s." },
-    { type:"mc", q:"vii° relates to V7 as…", choices:["V7 without its root","V7 with an added root","no relation"], answer:0, explain:"The leading-tone triad contains the upper three chord members of V7 but has its own root and Roman numeral.", hint:"Remove G." },
-    { type:"mc", q:"Which function do leading-tone chords most commonly provide?", choices:["Dominant","Tonic","Predominant"], answer:0, explain:"They contain tendency tones that normally resolve toward tonic.", hint:"They push home." },
-    { type:"mc", q:"vii°7 in C is spelled…", choices:["B-D-F-A♭","B-D-F-A","B-D-F-G♯"], answer:0, explain:"All minor 3rds.", hint:"Lowered 7th." },
-    { type:"mc", q:"viiø7 differs from vii°7 by…", choices:["its 7th: A vs A♭","its root","its 3rd"], answer:0, explain:"Half vs fully diminished.", hint:"Top note." },
-    { type:"mc", q:"In its standard dominant-function use, vii° normally resolves to…", choices:["I or i","IV","vi"], answer:0, explain:"Dominant home.", hint:"Where V goes." },
-    { type:"mc", q:"In a standard leading-tone-chord resolution, the leading tone normally…", choices:["Rises by half step to tonic","Falls by whole step","Leaps by octave"], answer:0, explain:"For example, B normally resolves upward to C.", hint:"Its name says so." },
-    { type:"mc", q:"Identify the chord in C.",
-      staff:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Ab4",d:"w",chord:true}],width:160},
-      choices:["vii°7","viiø7","V7"], answer:0, explain:"B–D–F–A♭ forms a fully diminished seventh chord on the leading tone.", hint:"Check the top note." },
-    { type:"truefalse", q:"vii°6 commonly appears as a passing chord between I and I6.", answer:true, explain:"Bass walks 1-2-3.", hint:"The passing use." },
-    { type:"truefalse", q:"A fully diminished leading-tone seventh chord can appear in both major- and minor-key contexts.", answer:true, explain:"In major, it may be created by lowering scale degree 6 through mixture with the parallel minor.", hint:"Both modes." },
-    { type:"mc", q:"Why can a fully diminished seventh chord connect several possible keys?", choices:["Its symmetrical structure permits multiple enharmonic spellings and leading-tone interpretations","Its dynamic level is always high","It contains a major third"], answer:0, explain:"Enharmonic respelling lets different chord members act as the leading tone.", hint:"m3 stack." },
-    { type:"mc", q:"Which list contains the principal dominant-function chord types introduced in this course?", choices:["V, V7, vii°, viiø7, and vii°7","I and vi","ii and IV"], answer:0, explain:"V and leading-tone chords contain tendency tones that commonly resolve toward tonic. Their exact function still depends on musical context.", hint:"The pushers." }
+    { type:"mc", q:"Parallel keys share…", choices:["the same tonic","the same signature","nothing"], answer:0, explain:"C major / C minor.", hint:"Not relatives." },
+    { type:"mc", q:"Modal mixture means…", choices:["using material associated with the parallel mode","changing meter","adding trills"], answer:0, explain:"Parallel major and minor share the tonic.", hint:"The parallel mode." },
+    { type:"mc", q:"The borrowed iv of C major is spelled…", choices:["F-A♭-C","F-A-C","D-F-A"], answer:0, explain:"♭6 recolors the IV.", hint:"One flat." },
+    { type:"mc", q:"♭VI in C major is…", choices:["A♭ major","A minor","A♭ minor"], answer:0, explain:"A♭-C-E♭.", hint:"Major on ♭6." },
+    { type:"mc", q:"Which altered scale degrees commonly appear in mixture chords borrowed from the parallel minor?", choices:["♭3, ♭6, and ♭7","♯4 and ♯5 only","the unchanged leading tone only"], answer:0, explain:"The characteristic scale degrees of the parallel minor.", hint:"The lowered degrees." },
+    { type:"mc", q:"In C major, IV–iv–I demonstrates…", choices:["Modal mixture through the minor iv chord","A circle-of-fifths sequence","A Picardy third"], answer:0, explain:"F minor is drawn from the parallel minor mode.", hint:"The minor iv is borrowed." },
+    { type:"mc", q:"Identify the chord in C major.",
+      staff:{clef:"treble",notes:[{p:"Ab4",d:"w"},{p:"C5",d:"w",chord:true},{p:"Eb5",d:"w",chord:true}],width:160},
+      choices:["♭VI — A♭ major","vi — A minor","IV — F major"], answer:0, explain:"A♭–C–E♭ is a major triad rooted on scale degree ♭6.", hint:"Root on ♭6." },
+    { type:"mc", q:"What is a Picardy third?", choices:["A raised third that creates a major final tonic in a minor-key work or section","A minor tonic ending a major-key work","An augmented-sixth chord"], answer:0, explain:"The tonic triad's third is raised at the final cadence.", hint:"i becomes I at the end." },
+    { type:"truefalse", q:"Modal mixture by itself requires the establishment of a new tonic.", answer:false, explain:"Mixture may occur while the prevailing tonic remains active, though borrowed chords can also participate in a modulation.", hint:"Mixture vs modulation." },
+    { type:"truefalse", q:"In a clearly established C-major context, B♭ major may function as ♭VII drawn from the parallel minor collection.", answer:true, explain:"In other contexts, ♭VII may be better understood as part of Mixolydian or other modal harmony.", hint:"The ♭7 chord." },
+    { type:"mc", q:"What is the parallel minor of G major?", choices:["G minor","E minor","B minor"], answer:0, explain:"Same tonic G, different mode.", hint:"Not the relative." },
+    { type:"mc", q:"Which statement best distinguishes modal mixture from modulation?", choices:["Mixture may introduce parallel-mode material while the prevailing tonic remains active","Mixture always establishes a permanent new tonic","Mixture changes only the tempo"], answer:0, explain:"Determine whether another tonic receives structural confirmation before labeling a modulation.", hint:"Is a new tonic confirmed?" }
   ],
-  miaPerfect:"Perfect score! You accurately identified leading-tone chords and their expected resolutions.",
-  miaPass:"You passed! Next, you will study the Neapolitan chord.",
+  miaPerfect:"Perfect score! You accurately identified common borrowed chords and modal-mixture procedures.",
+  miaPass:"You passed and completed unit 26. Next, you will study extended chords.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"B-D-F resolved into C-E-G — vii°, sharing V7's upper three notes, doing dominant work.",
-      play:()=>{[59,62,65].forEach(m=>MFAudio.tone(m,.9,.05,.3));[60,64,67].forEach(m=>MFAudio.tone(m,1.1,1.0,.3));} },
-    learn:{ label:"leading-tone chords",
-      explain:"vii° shares V7's upper three notes (dominant function); viiø7 major, vii°7 minor/chromatic; resolve to I with the leading tone rising; °7 symmetry pivots far.",
-      hint:"B rises to C.",
-      play:()=>{[59,62,65,68].forEach(m=>MFAudio.tone(m,.9,.05,.28));[60,63,67].forEach(m=>MFAudio.tone(m,1.0,1.0,.3));} },
+      explain:"F-A♭-C inside C major — the borrowed iv from C minor: modal mixture without modulation.",
+      play:()=>{[[60,64,67],[53,56,60],[55,59,62],[60,64,67]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.27)));} },
+    learn:{ label:"modal mixture",
+      explain:"Parallel keys share a tonic; major borrows iv, ii°, iiø7, ♭III, ♭VI, ♭VII from the minor; the Picardy third ends minor on major I. Color, not modulation.",
+      hint:"Flats as visitors.",
+      play:()=>{[53,56,60].forEach(m=>MFAudio.tone(m,.9,.05,.28));[60,64,67].forEach(m=>MFAudio.tone(m,1.0,1.0,.28));} },
     example:{ label:"the examples",
-      explain:"Example 1 passes vii°6 between two positions of the tonic; example 2 resolves vii°7 into C minor." },
+      explain:"The Learn-by-Doing steps let you hear ♭VI–♭VII–I, IV–iv–I, and the Picardy third; this panel compares them side by side.",
+      play:()=>{const b=document.getElementById("l107a"); if(b)b.click();} },
     game:{ label:"the games",
-      explain:"Sprint the spellings, resolve by hand, spot the chords, then race the resolutions.",
-      hint:"Count the minor 3rds." },
+      explain:"Sprint the borrowings, play the changing half step, spot flats on cards, then race the devices.",
+      hint:"Find ♭6, ♭3, ♭7." },
     quiz:{ label:"this question",
-      explain:"Spell from the leading tone in minor 3rds; assign dominant function; resolve leading tone UP into I.",
-      play:()=>{[59,62,65].forEach(m=>MFAudio.tone(m,.9,.05,.3));} }
+      explain:"Ask: does the chord import ♭6, ♭3 or ♭7 while the tonic holds? Then it is mixture — name it by its minor-key numeral.",
+      play:()=>{[56,60,63].forEach(m=>MFAudio.tone(m,.9,.05,.28));} }
   }
 };

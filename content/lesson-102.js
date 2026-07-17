@@ -1,253 +1,203 @@
-/* Lesson 102 — Sonata Form (Book 4, Unit 25 — SELF-AUTHORED)
-   Core: EXPOSITION (theme 1 in tonic, theme 2 in a new key — usually V or
-   relative major) → DEVELOPMENT (themes fragmented, sequenced, modulating)
-   → RECAPITULATION (both themes home in the tonic) → optional CODA.
-   Built on: periods, sequence, modulation.
+/* Lesson 102 (15.2, formerly L105) — The Neapolitan Chord (Book 4, Unit 26 — SELF-AUTHORED)
+   Core: ♭II — a MAJOR triad on the lowered 2nd degree; usually FIRST
+   INVERSION (N⁶); PREDOMINANT function → V; darkest in minor keys.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-function MF_L102_playAll(){
-  let t=0; const q=0.45, g=0.30;
-  const play=(seq)=>{ seq.forEach(([m,b])=>{ MFAudio.tone(m,Math.max(0.18,b*q*0.9),t,0.32); t+=b*q; }); };
-  /* exposition (C -> F# -> G) */
-  play([[60,1],[67,1],[64,.5],[62,.5],[60,1],[62,1],[64,1],[66,1],[67,1],[67,1],[74,1],[71,.5],[69,.5],[67,1]]); t+=g;
-  /* development (fragments, F#, unstable) */
-  play([[60,.5],[67,.5],[64,1],[62,.5],[69,.5],[66,1],[67,.5],[74,.5],[71,.5],[69,.5],[67,2]]); t+=g;
-  /* recapitulation (same opening, F-natural, stays home) */
-  play([[60,1],[67,1],[64,.5],[62,.5],[60,1],[62,1],[64,1],[65,1],[67,1],[67,.5],[74,.5],[72,.5],[71,.5],[72,2]]); t+=g;
-  /* coda (C-major scale to tonic) */
-  play([[67,.5],[69,.5],[71,.5],[72,.5],[74,.5],[76,.5],[77,.5],[74,.5],[72,4]]);
-}
-function MF_L102_diagram(host){
-  host.innerHTML=`<div style="border:1px dashed #b9a86a;border-radius:8px;padding:10px 12px;background:#FBF9F1">
-    <div style="text-align:center;font-weight:800;font-size:13px;color:#5a4a12;margin-bottom:8px">Miniature sonata-form example</div>
-    <div style="display:flex;gap:6px;justify-content:center;font-weight:800;font-size:12px;flex-wrap:wrap">
-      <div style="border:2px solid #2F6DA8;border-radius:8px;padding:5px 9px;color:#2F6DA8;text-align:center">EXPOSITION<br><span style="font-weight:400;font-size:10px;color:#555">primary: tonic · secondary: contrasting key</span></div>
-      <div style="border:2px solid #C05A21;border-radius:8px;padding:5px 9px;color:#C05A21;text-align:center">DEVELOPMENT<br><span style="font-weight:400;font-size:10px;color:#555">fragments · sequences · changing keys</span></div>
-      <div style="border:2px solid #2F6DA8;border-radius:8px;padding:5px 9px;color:#2F6DA8;text-align:center">RECAPITULATION<br><span style="font-weight:400;font-size:10px;color:#555">primary + secondary in tonic</span></div>
-      <div style="border:2px solid #A9821F;border-radius:8px;padding:5px 9px;color:#A9821F;text-align:center">CODA<br><span style="font-weight:400;font-size:10px;color:#555">optional closing section</span></div>
-    </div>
-    <div style="text-align:center;margin-top:10px"><button class="play" id="l102-playall">▶ Hear the whole sonata — exposition → development → recapitulation → coda</button></div>
-    <div style="text-align:center;font-size:11px;color:#5a4a12;margin-top:6px">Listen to all four sections connected as one movement: the exposition leans to a new key (F♯ → G), the development stays unstable, then the recapitulation brings everything home (F♮ this time) and the coda confirms the tonic.</div>
-  </div>`;
-  const b=host.querySelector("#l102-playall"); if(b) b.onclick=()=>MF_L102_playAll();
-}
-
-LESSON_CONTENT[102]={
-  welcome:"Sonata form presents, develops, and recomposes contrasting tonal and thematic material.",
+LESSON_CONTENT[102]={stackFigures:true,
+  welcome:"The Neapolitan is a chromatic predominant chord built on the lowered second scale degree.",
   hook:{
-    say:"<b>The exposition presents primary material in the tonic and secondary material in a contrasting key. After a developmental passage, the opening material returns.</b> \u{1F447} <b>What happens to the secondary material in the recapitulation?</b>",
+    say:"<b>In A minor, a B♭ major chord appears</b> and moves toward the dominant. Listen to the progression. \u{1F447} <b>What harmonic function does the B♭ major chord perform?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ Play the short sonata-form example</button></div>
-          <div class="choices hk-ch" style="display:none"><button>The primary and secondary material return in the tonic region</button><button>Entirely unrelated themes replace the opening material</button><button>The opening material never returns</button></div>`;
+          <button class="play hk-a">▶ Play i → N⁶ → V → i</button></div>
+          <div class="choices hk-ch" style="display:none"><button>It prepares the dominant and functions as a predominant</button><button>It functions as the tonic throughout</button><button>Silent</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{
-          let t=0;
-          [[60,.3],[64,.3],[67,.6]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});         /* T1 in C */
-          [[74,.3],[71,.3],[67,.6]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});         /* T2 in G-ish */
-          [[64,.2],[67,.2],[66,.2],[69,.2],[68,.2],[71,.2]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.38);t+=d;}); /* development */
-          [[60,.3],[64,.3],[67,.6]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});         /* T1 home */
-          [[67,.3],[64,.3],[60,.8]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});         /* T2 home */
-          setTimeout(()=>ch.style.display="",t*1000+400);
-        };
+        container.querySelector(".hk-a").onclick=()=>{ [[60,64,69],[62,65,70],[59,64,68],[60,64,69]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.27))); setTimeout(()=>ch.style.display="",4*900+300); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ Correct. The exposition establishes contrasting tonal areas, the development destabilizes or transforms the material, and the recapitulation returns the principal material with the secondary area resolved into the tonic region.");
-          else fb(false,"Listen for the return of the opening material and the new tonal placement of the secondary theme group.");
+          if(i===0) fb(true,"✓ Correct. B♭-D-F is the Neapolitan chord in A minor. It is a major triad built on ♭2 and commonly provides predominant function before V.");
+          else fb(false,"B♭ is chromatic in A minor. Listen to how the chord prepares the dominant E major.");
         });
       } }
   },
   objectives:[
-    "Name the three principal sections: exposition, development, and recapitulation",
-    "Exposition: primary material in the tonic; secondary material in a contrasting key area",
-    "Development: fragmentation, sequence, and modulation",
-    "Recapitulation: primary and secondary material return in the tonic region",
-    "Know the optional framing sections: introduction and coda",
-    "Connect the form to periods, sequences, and modulation"
+    "Build the Neapolitan: a major triad on ♭2",
+    "Use its standard first-inversion form, N⁶, with scale degree 4 in the bass",
+    "Identify its predominant function leading toward V",
+    "Trace ♭2 downward toward the leading tone",
+    "Recognize the Neapolitan in both minor and major keys",
+    "Recognize N⁶ by ear and in notation"
   ],
   steps:[
-    { say:"<b>The Basic Plan:</b> Sonata form is commonly organized into three large functional sections. <b>Exposition</b> establishes the principal thematic material and contrasting tonal areas. <b>Development</b> transforms, fragments, combines, or reinterprets material while creating tonal instability. <b>Recapitulation</b> returns the principal material and resolves the exposition's tonal contrast, usually within the tonic region. A slow introduction may precede the exposition, and a coda may follow the recapitulation; expositions are also frequently repeated. \u{1F447} <b>What are the three principal sections of sonata form?</b>",
-      show:{ type:"html", html:`<div style="border:1px solid #A9821F;background:#FBF6E9;border-radius:8px;padding:8px 12px;margin-bottom:10px;font-size:12.5px;color:#5a4a12;text-align:left"><b>Sonata form vs. sonata genre:</b> Sonata form is the formal design studied in this lesson. A <i>sonata</i> is a multi-movement instrumental genre. A movement of a sonata may use sonata form, but not every movement does, and sonata form also appears in symphonies, quartets, concertos, overtures, and other genres.</div><div style="display:flex;gap:8px;justify-content:center;font-weight:800;font-size:14px;flex-wrap:wrap">
-        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 12px;color:#2F6DA8">EXPOSITION<br><span style="font-weight:400;font-size:11.5px;color:#555">primary: tonic · secondary: contrasting key</span></div>
-        <div style="border:2px solid #C05A21;border-radius:10px;padding:8px 12px;color:#C05A21">DEVELOPMENT<br><span style="font-weight:400;font-size:11.5px;color:#555">fragments · sequences · changing keys</span></div>
-        <div style="border:2px solid #2F6DA8;border-radius:10px;padding:8px 12px;color:#2F6DA8">RECAPITULATION<br><span style="font-weight:400;font-size:11.5px;color:#555">primary + secondary in tonic</span></div>
-        <div style="border:2px solid #A9821F;border-radius:10px;padding:8px 12px;color:#A9821F">CODA<br><span style="font-weight:400;font-size:11.5px;color:#555">optional closing section</span></div></div>` },
-      try:{ type:"mc", choices:["exposition, development, and recapitulation","verse, chorus, and bridge","A, B, A, C, and A"], answer:0,
-        success:"✓ Correct. The exposition establishes the material, the development transforms it, and the recapitulation returns and tonally resolves it.",
-        fail:"Recall the three principal formal functions.",
-        hint:"Exposition → development → recapitulation." } },
-    { say:"<b>The Exposition:</b> The primary thematic area normally begins in the tonic. A transition leads toward a contrasting tonal area, where the secondary theme group appears. In a major-key movement, the secondary area is commonly the dominant. In a minor-key movement, it is often the relative major, although other key relationships occur. A closing section may confirm the secondary key. \u{1F447} <b>In a conventional C-major sonata-form exposition, which key commonly supports the secondary theme group?</b>",
-      try:{ type:"mc", choices:["G major, the dominant","C major, the tonic","F♯ minor"], answer:0,
-        success:"✓ Correct. In a conventional major-key exposition, the secondary thematic area commonly appears in the dominant key.",
-        fail:"Identify the dominant key of C major.",
-        hint:"The dominant of C major is G major." } },
-    { say:"<b>The Development:</b> The development often transforms material from the exposition through fragmentation, sequence, recombination, rhythmic change, and modulation. It may also introduce new material. Tonal instability and increasing emphasis on the dominant commonly prepare the return of the tonic and the recapitulation. \u{1F447} <b>Which process commonly occurs in a development section?</b>",
-      try:{ type:"mc", choices:["thematic transformation and tonal instability","initial presentation of the complete exposition","exact repetition of the exposition in every detail"], answer:0,
-        success:"✓ Correct. The development reworks familiar material or introduces related ideas within a less tonally stable context.",
-        fail:"Listen for fragmentation, sequence, recombination, and changes of key.",
-        hint:"The exposition's material is transformed rather than simply restated." } },
-    { say:"<b>The Recapitulation:</b> The recapitulation begins with the return of the primary thematic area, usually in the tonic. The transition is often adjusted or recomposed so that the secondary thematic area appears in the tonic region rather than in the contrasting key of the exposition. This tonal return provides the principal large-scale resolution of the form. \u{1F447} <b>What is the principal tonal change to the secondary thematic area in a conventional recapitulation?</b>",
-      try:{ type:"mc", choices:["it returns in the tonic region","it is always omitted","it becomes a fugue"], answer:0,
-        success:"✓ Correct. The secondary area is recomposed into the tonic region, resolving the exposition's large-scale tonal contrast.",
-        fail:"Compare the key of the secondary area in the exposition with its key in the recapitulation.",
-        hint:"The recapitulation brings the secondary area into the tonic region." } },
-    { say:"<b>Optional Framing Sections:</b> An introduction may precede the exposition and may use a slower tempo or different character. A coda may follow the main recapitulation and extend, reinforce, or further develop the closing tonic area. Codas range from brief closing gestures to substantial formal sections. <b>Remember: exposition establishes thematic material and tonal contrast · development transforms material and creates tonal instability · recapitulation returns the principal material and resolves the contrast · coda is an optional closing extension.</b> \u{1F447} <b>What is a coda in sonata form?</b>",
-      try:{ type:"mc", choices:["an optional closing section following the main recapitulation","the required secondary theme","a melodic ornament"], answer:0,
-        success:"✓ Correct. A coda extends the closing portion of the movement and reinforces or develops its final tonal resolution.",
-        fail:"Identify the optional section that extends the ending.",
-        hint:"It occurs after the main recapitulation." } },
-    { say:"<b>Where Sonata Form Appears:</b> Sonata form is especially common in first movements of Classical and Romantic sonatas, symphonies, string quartets, and concertos. It also appears in finales, overtures, slow movements, and works from later periods. Its design varies according to genre, historical period, and composer. \u{1F447} <b>In which musical context is sonata form especially common?</b>",
-      try:{ type:"mc", choices:["first movements of many sonatas, symphonies, and chamber works","strophic folk-song verses only","unaccompanied drum solos only"], answer:0,
-        success:"✓ Correct. Sonata form is especially common in first movements, although it may appear in other movements and genres.",
-        fail:"Consider large instrumental movements from the Classical and Romantic traditions.",
-        hint:"It frequently appears in opening movements." } },
-    { say:"<b>Review:</b> \u{1F447} <b>Which sequence shows the principal sections of sonata form in their usual order?</b>",
-      try:{ type:"mc", choices:["exposition → development → recapitulation → optional coda","development → exposition → coda","recapitulation → exposition → development"], answer:0,
-        success:"✓ Correct. The exposition establishes the formal and tonal material, the development transforms it, and the recapitulation returns and resolves it. A coda may follow.",
-        fail:"Begin with the section that establishes the thematic and tonal material.",
-        hint:"E–D–R, followed by an optional coda." } }
+    { say:"<b>The Neapolitan Chord:</b> a <b>major triad built on the lowered second scale degree, ♭2</b>. In A minor, lower B to B♭ and build the major triad <b>B♭–D–F</b>. The chord is labeled ♭II in root position and most commonly appears in first inversion as N⁶, or ♭II⁶. \u{1F447} <b>What is the quality of the Neapolitan triad?</b>",
+      try:{ type:"mc", choices:["Major","Minor","Diminished"], answer:0,
+        success:"✓ Correct. The Neapolitan is a major triad built on the lowered second scale degree.",
+        fail:"Identify the intervals B♭-D and D-F.",
+        hint:"Major third plus minor third." } },
+    { say:"<b>First Inversion — N⁶:</b> the Neapolitan most commonly appears in <b>first inversion</b>. Its chordal third — the key's <b>fourth scale degree</b> — appears in the bass. In A minor, B♭–D–F becomes D–F–B♭ with D in the bass. \u{1F447} <b>Which pitch appears in the bass of N⁶ in A minor?</b>",
+      show:{ type:"staff", spec:{clef:"treble",tempo:72,notes:[
+        {p:"D4",d:"w",label:"N⁶: D in the bass"},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{bar:"final"}],width:300} },
+      try:{ type:"mc", choices:["D, scale degree 4","B♭, scale degree ♭2","A, the tonic"], answer:0,
+        success:"✓ Correct. D is the third of the B♭ major triad and scale degree 4 in A minor.",
+        fail:"Identify the chordal third of B♭-D-F.",
+        hint:"First inversion places the chordal third in the bass." } },
+    { say:"<b>Function:</b> the Neapolitan normally has <b>predominant</b> function and prepares <b>V</b>. It may move directly to V or pass through a cadential i⁶₄. Common patterns in A minor include N⁶–V–i and N⁶–i⁶₄–V–i. It occupies a position similar to ii°⁶ or iv but remains a distinct chromatic harmony. \u{1F447} <b>Which function does the Neapolitan most commonly serve?</b>",
+      try:{ type:"mc", choices:["Predominant","Dominant","Tonic"], answer:0,
+        success:"✓ Correct. The Neapolitan commonly prepares the dominant.",
+        fail:"Identify the function that commonly prepares V.",
+        hint:"Predominant → dominant → tonic." } },
+    { say:"<b>Voice Leading:</b> the lowered second scale degree commonly descends toward the leading tone. In a direct N⁶–V progression in A minor, B♭ may move directly to G♯, a diminished third. When a cadential i⁶₄ intervenes, the line may descend stepwise B♭–A–G♯. In the bass, scale degree 4 commonly rises to 5, while ♭6 often falls to 5. Other arrangements are possible depending on context. \u{1F447} <b>In a common N⁶–i⁶₄–V progression in A minor, how may ♭2 move?</b>",
+      try:{ type:"mc", choices:["B♭-A-G♯, descending toward the leading tone","Up by octave only","It must remain unchanged"], answer:0,
+        success:"✓ Correct. The line may move directly from B♭ to G♯ or pass through A when a cadential i⁶₄ intervenes.",
+        fail:"Follow the voice containing scale degree ♭2.",
+        hint:"B♭ may move through A toward G♯." } },
+    { say:"<b>Use in Major and Minor Keys:</b> the Neapolitan appears more frequently in <b>minor-key</b> repertoire, where scale degree ♭6 already belongs to the diatonic collection — though ♭2 stays chromatic even in minor. It also appears in <b>major keys</b> through chromatic alteration of scale degrees 2 and 6. In C minor or C major it is spelled D♭-F-A♭: the same pitches, but its relationship to the surrounding scale differs. \u{1F447} <b>In which mode has the Neapolitan historically been especially common?</b>",
+      try:{ type:"mc", choices:["Minor, although it also occurs in major","Whole-tone music only","Unpitched percussion music"], answer:0,
+        success:"✓ Correct. The Neapolitan is especially common in minor-key tonal music but also appears in major-key contexts.",
+        fail:"Compare the chord tones with the parallel major and minor scales.",
+        hint:"In minor, scale degree ♭6 is already diatonic, but ♭2 remains chromatic." } },
+    { say:"<b>Review:</b> \u{1F447} <b>Which major triad is the Neapolitan chord in E minor?</b>",
+      try:{ type:"mc", choices:["F major: F-A-C","F♯ major: F♯-A♯-C♯","B major: B-D♯-F♯"], answer:0,
+        success:"✓ Correct. Lower scale degree 2 from F♯ to F♮ and build a major triad: F-A-C. In first inversion, N⁶ is A-C-F.",
+        fail:"Lower scale degree 2 and build a major triad on the resulting pitch.",
+        hint:"The Neapolitan root is one half step above the tonic." } }
   ],
   examples:[
-    { mount:(host)=>MF_L102_diagram(host) },
-    { caption:"Exposition — analysis: the primary idea arpeggiates C major (I: C–G–E–D–C); then D–E–F♯–G raises the 4th to F♯, the leading tone of G, pulling toward the dominant; G–D–B–A–G confirms the new key. Tonic (C) vs contrasting key (G) — the conflict is set.",
-      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
-        {p:"C4",d:"q",label:"C: I"},{p:"G4",d:"q"},{p:"E4",d:"8"},{p:"D4",d:"8"},{p:"C4",d:"q"},{bar:"single"},
-        {p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q",label:"F♯→G"},{p:"G4",d:"q"},{bar:"single"},
-        {p:"G4",d:"q",label:"in G"},{p:"D5",d:"q"},{p:"B4",d:"8"},{p:"A4",d:"8"},{p:"G4",d:"q"},{bar:"final"}],
-        beams:[[2,3],[13,14]],width:660},
-      kb:{start:60,octaves:1.3333,labels:true} },
-    { caption:"Development — analysis: the opening fragments (C–G–E, D–A–F♯) are tossed about while F♯ keeps the key unstable, building tension that drives back toward the tonic and the return.",
-      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
-        {p:"C4",d:"8",label:"fragment"},{p:"G4",d:"8"},{p:"E4",d:"q"},{p:"D4",d:"8"},{p:"A4",d:"8"},{p:"F#4",d:"q",label:"unstable"},{bar:"single"},
-        {p:"G4",d:"8"},{p:"D5",d:"8"},{p:"B4",d:"8"},{p:"A4",d:"8"},{p:"G4",d:"h"},{bar:"final"}],
-        beams:[[0,1],[3,4],[7,10]],width:560},
-      kb:{start:60,octaves:1.3333,labels:true} },
-    { caption:"Recapitulation — analysis: the same opening in C (I), but the second phrase now uses F♮ instead of F♯, so it never leaves home; G–D–C–B–C cadences on the tonic. The conflict resolves in C.",
-      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
-        {p:"C4",d:"q",label:"C: I"},{p:"G4",d:"q"},{p:"E4",d:"8"},{p:"D4",d:"8"},{p:"C4",d:"q"},{bar:"single"},
-        {p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q",label:"F♮ home"},{p:"G4",d:"q"},{bar:"single"},
-        {p:"G4",d:"8"},{p:"D5",d:"8"},{p:"C5",d:"8"},{p:"B4",d:"8"},{p:"C5",d:"h",label:"tonic C"},{bar:"final"}],
-        beams:[[2,3],[11,14]],width:680},
-      kb:{start:60,octaves:1.3333,labels:true} },
-    { caption:"Coda — analysis: a rising C-major scale (G–A–B–C–D–E–F–D) settles onto a held tonic C — the closing confirmation of home.",
-      staff:{clef:"treble",tempo:96,time:"4/4",notes:[
-        {p:"G4",d:"8",label:"coda"},{p:"A4",d:"8"},{p:"B4",d:"8"},{p:"C5",d:"8"},{p:"D5",d:"8"},{p:"E5",d:"8"},{p:"F5",d:"8"},{p:"D5",d:"8"},{bar:"single"},
-        {p:"C5",d:"w",label:"tonic C"},{bar:"final"}],
-        beams:[[0,3],[4,7]],width:560},
-      kb:{start:60,octaves:2,labels:true} }
+    { caption:"Key: A minor — i → N⁶ → V → i. In the direct N⁶–V connection, B♭ may move to G♯, a diminished third.",
+      staff:{clef:"grand",tempo:72,time:"4/4",notes:[
+        {p:"A2",d:"w",clef:"bass",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"single"},
+        {p:"D3",d:"w",clef:"bass",label:"N⁶"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{bar:"single"},
+        {p:"E3",d:"w",clef:"bass",label:"V"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{bar:"single"},
+        {p:"A2",d:"w",clef:"bass",label:"i"},{p:"C4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"final"}],width:640},
+      kb:{start:45,octaves:2.1667,labels:true} },
+    { caption:"Key: A minor — ♭2 → 1̂ → 7̂ → 1̂. With a cadential i⁶₄ between N⁶ and V, ♭2 descends stepwise B♭–A–G♯ before resolving to A.",
+      staff:{clef:"treble",tempo:76,time:"4/4",notes:[
+        {p:"Bb4",d:"q",label:"♭2 (B♭)"},{p:"A4",d:"q",label:"1̂ (A)"},{p:"G#4",d:"q",label:"7̂ (G♯)"},{p:"A4",d:"q",label:"1̂ (A)"},{bar:"final"}],width:480},
+      kb:{start:65,octaves:0.5,labels:true} },
+    { caption:"Key: A major — the same Neapolitan, B♭–D–F. In a major key both ♭2 (B♭) and ♭6 (F♮) are chromatic (A major's scale has F♯), and the tonic is major (C♯). Compare it with the A-minor version above.",
+      staff:{clef:"grand",tempo:72,time:"4/4",notes:[
+        {p:"A2",d:"w",clef:"bass",label:"I"},{p:"C#4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"single"},
+        {p:"D3",d:"w",clef:"bass",label:"N⁶"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true},{bar:"single"},
+        {p:"E3",d:"w",clef:"bass",label:"V"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{bar:"single"},
+        {p:"A2",d:"w",clef:"bass",label:"I"},{p:"C#4",d:"w",chord:true},{p:"E4",d:"w",chord:true},{p:"A4",d:"w",chord:true},{bar:"final"}],width:640},
+      kb:{start:45,octaves:2.1667,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Sonata-Form Functions",
-      intro:"Match each formal section with its thematic and tonal function.",
-      miaIntro:"Establish, develop, recapitulate.",
+    { type:"gen-race", title:"Game 1 · Neapolitan-Chord Identification",
+      intro:"Identify the Neapolitan's spelling, inversion, and predominant function.",
+      miaIntro:"Major triad on \u{266D}2, commonly in first inversion.",
       spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Exposition","contrasting tonal areas"],
-        ["Development","fragments, sequences, modulations"],
-        ["Recapitulation","secondary area now in the tonic"],
-        ["Coda","the optional tail"],
-        ["Theme 1's key","the tonic"],
-        ["Theme 2's key (exposition)","dominant or relative major"],
-        ["Theme 2's key (recap)","the tonic — resolved"],
-        ["Sonata form's home","first movements"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — sonata-form functions identified!":null },
-    { type:"order-tap", title:"Game 2 · Arrange the Formal Events",
-      intro:"Arrange the principal events of a conventional sonata-form movement.",
-      miaIntro:"Exposition → development → recapitulation → optional coda.",
-      spec:{sequence:["Theme 1 — tonic","Theme 2 — new key","Development — fragments wander","Recapitulation — both themes home","Coda — the tail"],
-        title:"One movement, start to finish"},
-      result:(stars)=>stars>=2?"You arranged the formal events correctly.":null },
-    { type:"key-climb", title:"Game 3 · Perform the Tonal Plan",
-      intro:"Play a short primary idea in C major, a secondary idea in G major, and then the secondary idea in C major as it would appear in the recapitulation.",
-      miaIntro:"Exposition contrast, then recapitulation in the tonic.",
-      spec:{seq:[60,67,60],
-        chords:[[60,64,67],[67,71,74],[60,64,67]],
-        names:["C major — primary idea (home key)","G major — secondary idea (new key)","C major — secondary idea resolved home"],
-        start:60, octaves:1.3333, title:"The tonal plot in three notes"},
-      result:(score)=>score!==null?"You demonstrated the conventional tonal plan.":null },
-    { type:"term-race", title:"Game 4 · Identify the Section",
-      intro:"Match each description with the appropriate sonata-form section.",
-      miaIntro:"Identify both the thematic process and tonal function.",
+        ["The Neapolitan","a major triad on \u{266D}2"],
+        ["In A minor","B\u{266D}-D-F"],
+        ["Usual position","first inversion (N⁶)"],
+        ["N⁶'s bass note","the 4th scale degree"],
+        ["Function","predominant \u{2192} V"],
+        ["\u{266D}2 resolves","down toward the leading tone"],
+        ["More common in","minor"],
+        ["N of E minor","F major"]], reverse:true}, seconds:45},
+      result:(score)=>score>=8?score+" — Neapolitan chords identified!":null },
+    { type:"key-climb", title:"Game 2 · Perform the Neapolitan Progression",
+      intro:"Play the complete progression i-N⁶-V-i in A minor: Am → B♭/D → E → Am. Then compare it with i-N⁶-i⁶₄-V-i.",
+      miaIntro:"Listen to the predominant-dominant-tonic motion.",
+      spec:{seq:[57,50,52,45],
+        chords:[[57,60,64],[50,53,58],[52,56,59],[45,48,52]],
+        names:["Am (i)","B♭/D (N⁶)","E major (V)","Am (i)"],
+        start:45, octaves:1.5833, title:"The Neapolitan progression: i - N⁶ - V - i"},
+      result:(score)=>score!==null?"You performed both Neapolitan progressions.":null },
+    { type:"symbol-hunt", title:"Game 3 · Identify the Neapolitan",
+      intro:"Examine each chord in A minor and select the Neapolitan chord or its first inversion.",
+      miaIntro:"Locate \u{266D}2 and confirm the major-triad spelling.",
+      spec:{rounds:6, pool:[
+        {label:"N⁶ (D-F-B♭)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true}],width:150}},
+        {label:"iv (D-F-A)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:150}},
+        {label:"ii° (B-D-F)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}},
+        {label:"V (E-G♯-B)", spec:{clef:"treble",notes:[{p:"E4",d:"w"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"You identified the Neapolitan chord correctly.":null },
+    { type:"term-race", title:"Game 4 · Construct N⁶",
+      intro:"Construct the Neapolitan triad and place its chordal third in the bass.",
+      miaIntro:"Find \u{266D}2, build a major triad, and invert it.",
       spec:{rounds:8, reverse:true, pool:[
-        ["Theme 2 enters in the dominant","exposition"],
-        ["A motive sequences through keys","development"],
-        ["Theme 2 returns — in the tonic","recapitulation"],
-        ["A slow opening before theme 1","introduction"],
-        ["Closing section after the recap","coda"],
-        ["Maximum instability","development"],
-        ["The key conflict is created","exposition"],
-        ["The key conflict is resolved","recapitulation"]]},
-      result:(score)=>score>=6?"You identified the sections correctly.":null }
+        ["N of A minor","B\u{266D} major"],
+        ["N of E minor","F major"],
+        ["N of D minor","E\u{266D} major"],
+        ["N of B minor","C major"],
+        ["N of C minor","D\u{266D} major"],
+        ["N's PD role","near ii\u{00B0}\u{2076} or iv"],
+        ["N⁶'s figure","6 (first inversion)"],
+        ["After N⁶ comes","V"]]},
+      result:(score)=>score>=6?"You constructed the Neapolitan chords correctly.":null }
   ],
-  practiceIntro:"Complete 20 practice questions on sonata-form sections, thematic processes, and tonal relationships.",
+  practiceIntro:"Complete 20 practice questions on Neapolitan-chord spelling, inversion, function, and voice leading.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Exposition","presents"],["Development","argues"],["Recapitulation","resolves"],["Coda","tail"],["Transition","modulating bridge"]], reverse:true}, count:6 },
-    { gen:"rel-key", params:{ask:"both"}, count:2 },
-    { type:"mc", q:"Sonata form's three main sections are…", choices:["exposition, development, recapitulation","intro, verse, chorus","A, B, A"], answer:0, explain:"E-D-R." },
-    { type:"mc", q:"In a conventional major-key exposition, the secondary thematic area normally appears in…", choices:["a contrasting key, commonly the dominant","the tonic in every case","no identifiable key"], answer:0, explain:"The key conflict." },
-    { type:"mc", q:"The development treats the themes by…", choices:["fragmenting and sequencing them through keys","ignoring them","playing them backwards only"], answer:0, explain:"Instability by design." },
-    { type:"mc", q:"In a conventional recapitulation, the secondary thematic area…", choices:["returns in the tonic region","must remain in the exposition's contrasting key","must disappear"], answer:0, explain:"Resolution." },
-    { type:"truefalse", q:"A coda is required in every sonata-form movement.", answer:false, explain:"Optional tail." },
-    { type:"truefalse", q:"A minor-key exposition often puts theme 2 in the relative major.", answer:true, explain:"The minor-mode convention." },
-    { type:"truefalse", q:"Many symphonic first movements use sonata form.", answer:true, explain:"Sonata form also appears in other movements and genres." },
-    { gen:"term-match", params:{subject:"term", pool:[["T1's key","tonic"],["T2's key (expo)","dominant"],["T2's key (recap)","tonic"],["Development's tools","fragment + sequence + modulate"]], reverse:true}, count:3 },
-    { gen:"triad-id", params:{ask:"numeral"}, count:3 }
+    { gen:"term-match", params:{subject:"term", pool:[["\u{266D}II","the Neapolitan"],["N⁶","first inversion"],["Function","predominant"],["Target","V"],["More common in","minor"]], reverse:true}, count:6 },
+    { gen:"triad-quality", params:{quals:["M","m"]}, count:2 },
+    { type:"mc", q:"The Neapolitan is built on…", choices:["the lowered 2nd degree","the raised 4th","the 7th"], answer:0, explain:"The Neapolitan is a major triad built on scale degree ♭2." },
+    { type:"mc", q:"In A minor, the Neapolitan is…", choices:["B♭ major","B major","G♯ diminished"], answer:0, explain:"In A minor, the Neapolitan is B♭-D-F." },
+    { type:"mc", q:"N⁶ means the Neapolitan in…", choices:["first inversion","root position","third inversion"], answer:0, explain:"N⁶ indicates the Neapolitan in first inversion." },
+    { type:"mc", q:"The Neapolitan's function is…", choices:["predominant","dominant","tonic"], answer:0, explain:"The Neapolitan normally serves predominant function." },
+    { type:"truefalse", q:"The Neapolitan is a major triad.", answer:true, explain:"The Neapolitan is a major triad built on ♭2." },
+    { type:"truefalse", q:"In common Neapolitan voice leading, ♭2 frequently descends toward the leading tone, either directly or through the tonic scale degree.", answer:true, explain:"B♭ may move directly to G♯ or pass through A." },
+    { type:"truefalse", q:"The Neapolitan is a chromatic chord in both major and minor keys.", answer:true, explain:"♭2 is chromatic in both modes, though the chord is especially common in minor-key repertoire." },
+    { gen:"term-match", params:{subject:"term", pool:[["N of D minor","E\u{266D}"],["N of E minor","F"],["N's PD role","near iv/ii\u{00B0}"],["N⁶ bass","degree 4"]], reverse:true}, count:3 },
+    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:2 }
   ],
   vocabulary:[
-    {term:"Exposition", def:"Primary material in the tonic; secondary material in a contrasting key."},
-    {term:"Development", def:"Material transformed and moved through changing keys."},
-    {term:"Recapitulation", def:"Primary and secondary material return in the tonic region."},
-    {term:"Introduction / Coda", def:"Optional opening and closing sections."}
+    {term:"Neapolitan Chord (♭II)", def:"A major triad built on lowered scale degree 2."},
+    {term:"N⁶", def:"The Neapolitan in first inversion, with scale degree 4 in the bass."},
+    {term:"Predominant Function", def:"Prepares V, like ii°⁶ or iv."},
+    {term:"The ♭2 Resolution", def:"♭2 descends toward the leading tone, directly or through the tonic."}
   ],
   mistakes:[],
   summary:[
-    "✔ Three principal sections: <b>exposition → development → recapitulation</b> (+ optional coda).",
-    "✔ Exposition: <b>primary material in the tonic; secondary material in a contrasting key area</b> — tonal contrast established.",
-    "✔ Development: <b>material fragmented, sequenced, recombined, and moved through keys</b> — tonal instability created.",
-    "✔ Recapitulation: <b>primary and secondary material return in the tonic region</b> — tonal contrast resolved.",
-    "✔ Built from your toolkit: periods, sequences, and modulation."
+    "✔ <b>♭II</b> is a major triad built on the lowered second scale degree.",
+    "✔ <b>N⁶</b> is the standard first-inversion form, with scale degree 4 in the bass.",
+    "✔ The Neapolitan has <b>predominant function</b> and prepares V.",
+    "✔ <b>♭2 descends</b> toward the leading tone, directly or through the tonic.",
+    "✔ More common in <b>minor</b> but also occurs in major."
   ],
   tips:[
-    "Listen for the recapitulation's arrival — theme 1's return in the tonic is the movement's biggest landmark.",
-    "In the development, follow one motive; it is your map through the key changes.",
-    "Minor-key sonatas often brighten: theme 2 in the relative major, sometimes major-mode recaps.",
-    "Next lesson: the forms around the sonata — minuet & trio, scherzo, march, concerto."
+    "Fastest spell: go a half step above the tonic, build major, then flip to first inversion.",
+    "The N⁶ → V move often passes through a cadential i⁶₄ — listen for it in real scores.",
+    "Film composers use N for instant menace — listen for the flat-two glow under villains.",
+    "Next lesson: three chromatic chords named after countries — the augmented sixths."
   ],
-  rewards:{ badge:"Form Architect", icon:"\u{1F3F0}" },
+  rewards:{ badge:"Flat-Side Voyager", icon:"\u{1F30B}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaQuizIntro:"Quiz: Identify the thematic and tonal functions of exposition, development, and recapitulation.",
+  miaQuizIntro:"Quiz: Major triad on ♭2, commonly in first inversion, with predominant function.",
   quiz:[
-    { type:"mc", q:"Sonata form's sections, in order:", choices:["exposition, development, recapitulation","development, exposition, coda","recapitulation, development, exposition"], answer:0, explain:"E-D-R.", hint:"Present first." },
-    { type:"mc", q:"What does the exposition normally establish?", choices:["principal thematic material and contrasting tonal areas","exactly one theme with no tonal contrast","chords without thematic material"], answer:0, explain:"Thematic material plus contrasting tonal areas.", hint:"The conflict." },
-    { type:"mc", q:"In a C major movement, theme 2's usual expo key is…", choices:["G major","C minor","B♭ major"], answer:0, explain:"The dominant.", hint:"Closest neighbor." },
-    { type:"mc", q:"In a minor-key exposition, the secondary thematic area often appears in…", choices:["the relative major","the subdominant minor in every case","no key"], answer:0, explain:"The relative major shares the minor key's key signature and commonly provides the contrasting tonal area.", hint:"Shared key signature." },
-    { type:"mc", q:"The development is characterized by…", choices:["fragmentation, sequence and modulation","complete silence","exact repetition"], answer:0, explain:"Instability by design.", hint:"The argument." },
-    { type:"mc", q:"What is the recapitulation's principal tonal resolution?", choices:["the secondary thematic area returns in the tonic region","the primary theme is always omitted","the meter must change"], answer:0, explain:"Conflict resolved.", hint:"Home for everyone." },
-    { type:"mc", q:"A coda is…", choices:["an added ending after the recapitulation","the second theme","the development's nickname"], answer:0, explain:"The tail.", hint:"Extra closing." },
-    { type:"mc", q:"A slow section before theme 1 is…", choices:["an introduction","a cadenza","a refrain"], answer:0, explain:"The optional opening frame.", hint:"Before the expo." },
-    { type:"truefalse", q:"A development section must remain in one stable key throughout.", answer:false, explain:"Developments often move through several keys or destabilize the tonic, although individual examples vary.", hint:"The unstable core." },
-    { type:"truefalse", q:"Sonata form resolves the exposition's key conflict in the recapitulation.", answer:true, explain:"Both themes home.", hint:"The payoff." },
-    { type:"mc", q:"Which techniques commonly appear in a development section?", choices:["motive fragmentation, sequence, recombination, and modulation","clef changes and rest notation only","twelve-bar blues only"], answer:0, explain:"Familiar material transformed through several techniques.", hint:"Transforming the themes." },
-    { type:"mc", q:"After a development, the primary thematic area returns in the tonic and leads to a tonic-key restatement of the secondary area. Which section is this?", choices:["the recapitulation","the exposition","the introduction"], answer:0, explain:"The recapitulation returns the principal thematic material and resolves the secondary tonal area into the tonic region.", hint:"Both areas home in the tonic." }
+    { type:"mc", q:"The Neapolitan chord is a…", choices:["major triad on ♭2","minor triad on 2","diminished triad on 7"], answer:0, explain:"A major triad built on ♭2.", hint:"Its quality." },
+    { type:"mc", q:"In A minor the Neapolitan is spelled…", choices:["B♭-D-F","B-D-F","B♭-D♭-F"], answer:0, explain:"B♭-D-F in A minor.", hint:"Half step above A." },
+    { type:"mc", q:"Why 'N⁶'?", choices:["It appears in first inversion","It has six notes","It lasts six beats"], answer:0, explain:"N⁶ indicates first inversion, abbreviated from 6/3.", hint:"First-inversion figure." },
+    { type:"mc", q:"N⁶'s bass note in A minor is…", choices:["D","B♭","F"], answer:0, explain:"D, the chordal third and scale degree 4, is in the bass.", hint:"Diatonic bass." },
+    { type:"mc", q:"The Neapolitan most commonly serves which function?", choices:["predominant","dominant","tonic substitute"], answer:0, explain:"It normally prepares V, sometimes through a cadential i⁶₄.", hint:"Before V." },
+    { type:"mc", q:"Which progression shows a common use of the Neapolitan?", choices:["i → N⁶ → i⁶₄ → V → i","i → N⁶ → IV without dominant preparation","N⁶ as the final tonic"], answer:0, explain:"N⁶ commonly prepares a cadential i⁶₄ and dominant before tonic; a direct N⁶-V-i is also possible.", hint:"Through the dominant." },
+    { type:"mc", q:"In common Neapolitan voice leading, ♭2 frequently moves…", choices:["down toward the leading tone, directly or through scale degree 1","up to scale degree 3 in every case","nowhere in every case"], answer:0, explain:"B♭ may fall to G♯ directly or through A.", hint:"A diminished 3rd." },
+    { type:"mc", q:"Identify the chord in A minor.",
+      staff:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"Bb4",d:"w",chord:true}],width:160},
+      choices:["N⁶","iv","ii°"], answer:0, explain:"D-F-B♭ is a first-inversion B♭ major triad built on ♭2.", hint:"Find the B♭." },
+    { type:"truefalse", q:"The Neapolitan is diatonic to the minor scale.", answer:false, explain:"Its root, ♭2, is chromatic in both major and minor keys.", hint:"♭2 is chromatic." },
+    { type:"truefalse", q:"The Neapolitan can occupy a predominant position similar to ii°⁶ or iv.", answer:true, explain:"It fills a predominant slot but remains a distinct chromatic chord.", hint:"PD substitutes." },
+    { type:"mc", q:"What is the Neapolitan chord in D minor?", choices:["E♭ major","E major","F major"], answer:0, explain:"♭2 of D = E♭.", hint:"Half step above D." },
+    { type:"mc", q:"Which statement about the Neapolitan in major keys is accurate?", choices:["it may be created through chromatic alteration of scale degrees 2 and 6","it can never appear","it functions as the tonic chord"], answer:0, explain:"In a major key, the Neapolitan requires ♭2 and ♭6 and normally serves predominant function.", hint:"Chromatic alteration." }
   ],
-  miaPerfect:"Perfect score! You accurately identified the thematic and tonal functions of sonata form.",
-  miaPass:"You passed! Next, you will compare larger instrumental forms.",
+  miaPerfect:"Perfect score! You accurately constructed and analyzed the Neapolitan chord.",
+  miaPass:"You passed! Next, you will study augmented-sixth chords.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Two themes (tonic, then new key), a wandering middle, then both themes home — exposition, development, recapitulation.",
-      play:()=>{let t=0;[[60,.3],[64,.3],[67,.6],[74,.3],[71,.3],[67,.6]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});} },
-    learn:{ label:"sonata form",
-      explain:"Exposition (T1 tonic, T2 new key) → development (fragment/sequence/modulate) → recapitulation (both home) → coda.",
-      hint:"E-D-R.",
-      play:()=>{let t=0;[[60,.3],[64,.3],[67,.5],[60,.3],[64,.3],[67,.7]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});} },
+      explain:"B♭ major in A minor — the Neapolitan (♭II): chromatic predominant, driving into V.",
+      play:()=>{[[60,64,69],[62,65,70],[59,64,68],[60,64,69]].forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.8,i*.85,.27)));} },
+    learn:{ label:"the Neapolitan",
+      explain:"Major triad on ♭2, standard in first inversion (N⁶, degree-4 bass), predominant to V; ♭2 falls toward the leading tone.",
+      hint:"Half step up, made major.",
+      play:()=>{[50,53,58].forEach(m=>MFAudio.tone(m,.9,.05,.28));[52,56,59].forEach(m=>MFAudio.tone(m,1.0,1.0,.28));} },
     example:{ label:"the examples",
-      explain:"A miniature sonata-form example across four areas: exposition (tonal contrast), development (instability), recapitulation (resolved in the tonic), and an optional coda.",
-      play:()=>{const b=document.getElementById("exBtn1"); if(b)b.click();} },
+      explain:"Example 1 runs the i-N⁶-V-i route in A minor; example 2 isolates ♭2 stepping down to the leading tone; example 3 shows the same Neapolitan in A major, where ♭2 and ♭6 are both chromatic." },
     game:{ label:"the games",
-      explain:"Sprint the map, stage the drama, walk the key plan, then locate moments in the form.",
-      hint:"Where is the tonic?" },
+      explain:"Sprint the facts, walk the bass route, spot N⁶ among lookalikes, then build Neapolitans across keys.",
+      hint:"D-F-B♭ vs D-F-A: one half step." },
     quiz:{ label:"this question",
-      explain:"Track two things: WHICH theme, and WHICH key. Exposition splits them; the recapitulation reunites them at home.",
-      play:()=>{let t=0;[[74,.3],[71,.3],[67,.5],[67,.3],[64,.3],[60,.7]].forEach(([m,d])=>{MFAudio.tone(m,d*.9,t,.42);t+=d;});} }
+      explain:"Three checks: lowered 2nd as root? major quality? first inversion heading to V? Then it is the Neapolitan.",
+      play:()=>{[50,53,58].forEach(m=>MFAudio.tone(m,.9,.05,.28));} }
   }
 };

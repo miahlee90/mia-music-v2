@@ -1,290 +1,345 @@
-/* Lesson 72 — Basic Forms of Music: Motive and Phrase (AEMT Book 3, Unit 18)
-   Built from drafts/UNIT 18 – Lesson 72.md; AEMT3 p.114 verified by render.
-   Core: writing = letters→words→sentences; music = note→motive→phrase→piece.
-   MOTIVE = a short melodic, rhythmic or harmonic element used repeatedly
-   (Beethoven's 5th: the famous four-note pattern — reused in original form,
-   transposition and variation). PHRASE = a short section of music, a complete
-   or incomplete musical idea; its end gives a "lift" or breath, like a comma.
+/* Lesson 72 (10.2, formerly L53) — V7 Chord: 1st, 2nd and 3rd Inversions (AEMT Book 3, Unit 13)
+   Built from drafts/UNIT 13 – Lesson 53.md; AEMT3 p.85 verified by render.
+   Core: a 4-note V7 chord has FOUR positions — root, 1st (3rd bottom),
+   2nd (5th bottom), 3rd (7th bottom!); close-position trick: the root is
+   always the UPPER note of the interval of a 2nd. Letter symbols: G7/B etc.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* motive hunter: tap the first note of each motive appearance */
-function MF_L72_hunt(container,fb){
-  /* melody: motive (D-D-D-G) stated, then transposed (E-E-E-A), then again (G-G-G-C) */
-  const NOTES=[
-    {p:"D4",d:"8"},{p:"D4",d:"8"},{p:"D4",d:"8"},{p:"G4",d:"q"},
-    {p:"E4",d:"8"},{p:"E4",d:"8"},{p:"E4",d:"8"},{p:"A4",d:"q"},
-    {p:"G4",d:"8"},{p:"G4",d:"8"},{p:"G4",d:"8"},{p:"C5",d:"h"}];
-  const STARTS=[0,4,8];
-  let found=[];
-  container.innerHTML=`<div class="big-q l72h-q" style="text-align:center">Listen for the motive — it appears three times (later at different pitches). Tap the <b>first note of each appearance</b>.</div>
-    <div class="l72h-staff"></div>
-    <div style="text-align:center"><button class="play l72h-play">▶ Hear the melody</button></div>`;
-  const q=container.querySelector(".l72h-q"), holder=container.querySelector(".l72h-staff"), pl=container.querySelector(".l72h-play");
-  const spec={clef:"treble",tempo:110,notes:NOTES,beams:[[0,2],[4,6],[8,10]],width:560,clickNotes:true,
-    onNote:(i,p)=>{
-      MFAudio.tone(MFAudio.midi(p),.4,0,.4);
-      if(STARTS.includes(i)&&!found.includes(i)){
-        found.push(i); MFAudio.yay();
-        if(found.length<3) q.innerHTML=`✓ Great! You found the motive. ${3-found.length} more — same short-short-short-LONG shape, new pitch.`;
-        else { q.textContent="Excellent! You found the motive each time.";
-          fb(true,"✓ One motive, three statements — the 2nd and 3rd are repeated at different pitches (TRANSPOSITION). Most music develops one or more motives this way."); }
-      } else if(STARTS.includes(i)) q.innerHTML="Already found — listen again for the next one.";
-      else fb(false,"Listen again. Find where the short-short-short-LONG pattern BEGINS.");
-    }};
-  const api=Staff.render(holder,spec);
-  pl.onclick=()=>Staff.play(spec,api);
+/* flip machine: one G7, three taps, four positions */
+function MF_L72_flip(container,fb){
+  const POSITIONS=[
+    {ps:["G3","B3","D4","F4"], label:"root position", bass:"G (root)"},
+    {ps:["B3","D4","F4","G4"], label:"1st inversion", bass:"B (3rd)"},
+    {ps:["D4","F4","G4","B4"], label:"2nd inversion", bass:"D (5th)"},
+    {ps:["F4","G4","B4","D5"], label:"3rd inversion", bass:"F (7th!)"}];
+  let k=0;
+  container.innerHTML=`<div class="big-q l53-q" style="text-align:center"></div>
+    <div class="l53-staff"></div>`;
+  const q=container.querySelector(".l53-q"), holder=container.querySelector(".l53-staff");
+  function draw(){
+    const P=POSITIONS[k];
+    Staff.render(holder,{clef:"treble",notes:P.ps.map((p,ix)=>ix===0?{p,d:"w",label:"G7 — "+P.label}:{p,d:"w",chord:true}),
+      width:260, clickNotes:true,
+      onNote:(i)=>{
+        if(i===0){
+          if(k>=POSITIONS.length-1) return;
+          k++; draw();
+          const N=POSITIONS[k];
+          N.ps.forEach(p=>MFAudio.tone(MFAudio.midi(p),1.0,.1,.3));
+          if(k<POSITIONS.length-1){
+            fb(true,`✓ Great! The chord moved to the next inversion — the lowest note is now ${N.bass}.`);
+            q.innerHTML=`Position ${k+1} of 4: <b>${N.label}</b>. Tap the lowest note to continue.`;
+          } else {
+            fb(true,`✓ Excellent! In 3rd inversion the 7th (F) is the lowest note. Each chord tone has now been in the bass.`);
+            q.textContent="Excellent! Each chord tone has now been in the bass.";
+          }
+        } else { MFAudio.tone(40,.2); fb(false,"Tap the LOWEST note — that's the one that jumps up an octave."); }
+      }});
+  }
+  q.innerHTML=`G7 in <b>root position</b> (G-B-D-F). Tap the <b>lowest note</b> to move it up one octave.`;
+  draw();
 }
 
-/* phrase breaths: tap where each phrase ends */
-function MF_L72_breath(container,fb){
-  /* two phrases: rise…pause, rise…close */
-  const NOTES=[
-    {p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"h",label:"?"},
-    {p:"E4",d:"q"},{p:"D4",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"h",label:"?"}];
-  const ENDS=[3,7];
-  let found=[];
-  container.innerHTML=`<div class="big-q l72b-q" style="text-align:center">Two phrases. Play the melody, then tap the note where EACH phrase ends.</div>
-    <div class="l72b-staff"></div>
-    <div style="text-align:center"><button class="play l72b-play">▶ Play the melody</button></div>`;
-  const q=container.querySelector(".l72b-q"), holder=container.querySelector(".l72b-staff"), pl=container.querySelector(".l72b-play");
-  const spec={clef:"treble",tempo:100,notes:NOTES,width:520,clickNotes:true,
-    onNote:(i,p)=>{
-      MFAudio.tone(MFAudio.midi(p),.5,0,.4);
-      if(ENDS.includes(i)&&!found.includes(i)){
-        found.push(i); MFAudio.yay();
-        if(found.length<2) q.innerHTML="✓ You found one phrase ending — the long note where the line pauses. Where does the other phrase end?";
-        else { q.textContent="Excellent! You found both phrase endings.";
-          fb(true,"✓ The long notes are where the music 'takes a breath' — each marks the END OF A PHRASE. Phrase 1 pauses on G (incomplete); phrase 2 settles on C (complete)."); }
-      } else if(ENDS.includes(i)) q.innerHTML="Found — where does the OTHER phrase end?";
-      else fb(false,"Mid-phrase — sing along and notice where you'd naturally breathe: on the LONG notes.");
-    }};
-  const api=Staff.render(holder,spec);
-  pl.onclick=()=>Staff.play(spec,api);
+/* four-way detective: name the position of V7 chords */
+function MF_L72_detect(container,fb){
+  const ROUNDS=[
+    {ps:["B3","D4","F4","G4"], chord:"G7", pos:1},
+    {ps:["F4","G4","B4","D5"], chord:"G7", pos:3},
+    {ps:["G3","B3","D4","F4"], chord:"G7", pos:0},
+    {ps:["G4","C5","E5","Bb5"], chord:"C7", pos:2},
+    {ps:["Bb3","C4","E4","G4"], chord:"C7", pos:3}];
+  const POS=["Root position","1st inversion","2nd inversion","3rd inversion"];
+  const ROLE=["root","3rd","5th","7th"];
+  let r=0, found=false, score=0;
+  container.innerHTML=`<div class="big-q l53d-q" style="text-align:center"></div>
+    <div class="l53d-staff"></div>
+    <div class="choices chips l53d-ch" style="display:none"><button>Root position</button><button>1st inversion</button><button>2nd inversion</button><button>3rd inversion</button></div>`;
+  const q=container.querySelector(".l53d-q"), holder=container.querySelector(".l53d-staff"), ch=container.querySelector(".l53d-ch");
+  function ask(){
+    if(r>=ROUNDS.length){ q.textContent="Great job! You identified every inversion."; holder.innerHTML=""; ch.style.display="none"; return; }
+    const R=ROUNDS[r]; found=false; ch.style.display="none";
+    q.innerHTML=`${R.chord} (${R.chord==="G7"?"G-B-D-F":"C-E-G-B♭"}): tap the <b>lowest note</b> first. (Chord ${r+1} of ${ROUNDS.length})`;
+    Staff.render(holder,{clef:"treble",notes:R.ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:230,clickNotes:true,
+      onNote:(i,p)=>{
+        MFAudio.tone(MFAudio.midi(p),.5,0,.4);
+        if(found) return;
+        if(i===0){ found=true; q.innerHTML=`✓ The lowest note is <b>${R.ps[0].replace(/\d/,"").replace("b","♭")}</b>. Now identify the inversion.`; ch.style.display=""; }
+        else fb(false,"Lower! The bottom note decides the position.");
+      }});
+  }
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    const R=ROUNDS[r];
+    if(i===R.pos){ score++; MFAudio.yay();
+      fb(true,`✓ The bass is the ${ROLE[R.pos]} of ${R.chord} → ${POS[R.pos]}.`);
+      r++; setTimeout(ask,1200); }
+    else { MFAudio.tone(40,.2); fb(false,`Spell ${R.chord} from its root and find the bass note's job: root, 3rd, 5th or 7th?`); }
+  });
+  ask();
 }
 
-LESSON_CONTENT[72]={
-  welcome:"Motives and phrases: music's building blocks. \u{1F9F1}",
+/* keyboard builder: G7 inversions upward */
+function MF_L72_build(container,fb){
+  const ROUNDS=[
+    {name:"G7, 1st inversion", pcs:[11,2,5,7], letters:["B (the 3rd — bass)","D (the 5th)","F (the 7th)","G (the root on top)"]},
+    {name:"G7, 2nd inversion", pcs:[2,5,7,11], letters:["D (the 5th — bass)","F (the 7th)","G (the root)","B (the 3rd on top)"]},
+    {name:"G7, 3rd inversion", pcs:[5,7,11,2], letters:["F (the 7th — bass!)","G (the root)","B (the 3rd)","D (the 5th on top)"]}];
+  let r=0,k=0,last=null,got=[];
+  container.innerHTML=`<div class="big-q l53b-q" style="text-align:center"></div>
+    <div class="l53b-staff"></div><div class="l53b-kb"></div>`;
+  const q=container.querySelector(".l53b-q"), sh=container.querySelector(".l53b-staff"), kh=container.querySelector(".l53b-kb");
+  function drawStaff(){
+    if(!got.length){ sh.innerHTML=""; return; }
+    const NAMES={0:"C",2:"D",4:"E",5:"F",7:"G",9:"A",11:"B"};
+    const ps=got.map(m=>NAMES[m%12]+(Math.floor(m/12)-1));
+    Staff.render(sh,{clef:"treble",notes:ps.map((p,ix)=>ix===0?{p,d:"w"}:{p,d:"w",chord:true}),width:200});
+  }
+  function ask(){
+    if(r>=ROUNDS.length){ q.textContent="Excellent! You built all three inversions."; return; }
+    k=0; last=null; got=[]; drawStaff();
+    q.innerHTML=`Build <b>${ROUNDS[r].name}</b>. Press <b>${ROUNDS[r].letters[0]}</b> first.`;
+  }
+  Keyboard.create(kh,{start:60,octaves:2,labels:true,
+    onKey:m=>{
+      const R=ROUNDS[r]; if(!R) return;
+      const want=R.pcs[k];
+      if(m%12===want && (last===null || m>last)){
+        last=m; got.push(m); k++; drawStaff();
+        if(k>=4){ got.forEach(x=>MFAudio.tone(x,1.0,.1,.3));
+          fb(true,`✓ ${R.name} — the lowest note is ${R.letters[0].split(" ")[0]}.`);
+          r++; setTimeout(ask,1400); }
+        else q.innerHTML=`Now play <b>${R.letters[k]}</b> above the note you just played.`;
+      } else if(m%12===want){ MFAudio.tone(40,.2); fb(false,"Right letter — stack UPWARD from the bass."); }
+      else { MFAudio.tone(40,.2); fb(false,k===0? `Which note of G-B-D-F does the bass job in ${R.name}?` : "Keep the G7 spelling: G-B-D-F, rotated."); }
+    }});
+  ask();
+}
+
+LESSON_CONTENT[72]={stackFigures:true,
+  welcome:"A triad flips three ways. Today's chord flips FOUR — because it brought an extra note. \u{1F504}",
   hook:{
-    say:"<b>Can four notes become an entire piece of music?</b> Let's find out how a small musical idea can grow into something much bigger. <b>Listen — do you recognize these four notes?</b>",
+    say:"<b>A V7 chord has four notes, so it can be played in four different positions.</b> Listen carefully. <b>Which chord has the 7th as the lowest note?</b>",
     interact:{ type:"custom",
       mount:(container,fb)=>{
         container.innerHTML=`<div style="text-align:center">
-          <button class="play hk-a">▶ The four notes</button></div>
-          <div class="choices hk-ch" style="display:none"><button>Beethoven's Symphony No. 5 — short-short-short-LONG</button><button>A random doorbell</button><button>The blues scale</button></div>`;
+          <button class="play hk-a">▶ Version A</button>
+          <button class="play hk-b">▶ Version B</button></div>
+          <div class="choices hk-ch" style="display:none"><button>Version B — F, the 7th, is the lowest note</button><button>Version A — G in the bass is the 7th</button></div>`;
         const ch=container.querySelector(".hk-ch");
-        container.querySelector(".hk-a").onclick=()=>{
-          [67,67,67].forEach((m,i)=>MFAudio.tone(m,.22,i*.24,.45));
-          MFAudio.tone(63,1.6,.72,.5);
-          setTimeout(()=>ch.style.display="",2100);
-        };
+        let hA=false,hB=false;
+        container.querySelector(".hk-a").onclick=()=>{ [55,59,62,65].forEach(m=>MFAudio.tone(m,1.2,0,.32)); hA=true; if(hB) setTimeout(()=>ch.style.display="",1400); };
+        container.querySelector(".hk-b").onclick=()=>{ [53,55,59,62].forEach(m=>MFAudio.tone(m,1.2,0,.32)); hB=true; if(hA) setTimeout(()=>ch.style.display="",1400); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ The opening MOTIVE of Beethoven's 5th. A motive is a SHORT musical idea used repeatedly — Beethoven built an entire symphony from those four notes. Today: motives and phrases, music's building blocks!");
-          else fb(false,"Da-da-da-DUMMM… think of the most famous symphony opening ever written.");
+          if(i===0) fb(true,"✓ Version B was F-G-B-D — the 7th (F) is the lowest note: 3RD INVERSION. Today: all four positions of V7!");
+          else fb(false,"Version A had G, the ROOT, as its lowest note — that's root position. Listen again for the lowest note.");
         });
       } }
   },
   objectives:[
-    "Understand the order: notes → motives → phrases → sections → complete piece",
-    "Define MOTIVE: a short melodic, rhythmic or harmonic element used repeatedly",
-    "See how motives develop: repetition, transposition, variation",
-    "Define PHRASE: a short section — a complete or incomplete musical idea",
-    "Hear phrase endings as breaths ('lifts')",
-    "Count and compare the phrases of a simple song"
+    "Explain why a V7 chord has FOUR positions",
+    "Recognize 1st inversion (3rd in the bass), 2nd (5th) and 3rd (7th)",
+    "Read letter symbols like G7/B, G7/D and G7/F",
+    "Find the root fast: it's the UPPER note of the interval of a 2nd",
+    "Build every inversion of G7 on the staff and keyboard",
+    "Identify V7 positions by bass note, on sight"
   ],
   steps:[
-    { say:"<b>Building Blocks of Music:</b> Music is built from small ideas. Notes become motives. Motives become phrases. Phrases become larger sections. \u{1F447} <b>Why is it helpful to understand musical form?</b>",
-      show:{ type:"html", html:`<div style="max-width:300px;margin:0 auto;font-size:14.5px;line-height:1.9;background:var(--card,#fff);border:1.5px solid #cdd5e1;border-radius:12px;padding:12px 18px;text-align:center;font-weight:700">
-        Notes<br>↓<br>Motive<br>↓<br>Phrase<br>↓<br>Section<br>↓<br>Complete Piece</div>` },
-      try:{ type:"mc", choices:["To understand how a composition is organized and structured","To play louder","To avoid learning chords"], answer:0,
-        success:"✓ Understanding form shows how a composition is organized and structured.",
-        fail:"Think about organization and structure…",
-        hint:"Organization and structure." } },
-    { say:"<b>What Is a Motive?</b> A <b>motive</b> is a short musical idea. It may be melodic, rhythmic, or harmonic. It is usually repeated throughout a piece. \u{1F447} <b>What makes a musical idea a motive?</b>",
-      show:{ type:"staff", spec:{clef:"treble",time:"2/4",tempo:110,notes:[
-        {rest:"8"},{p:"G4",d:"8"},{p:"G4",d:"8"},{p:"G4",d:"8"},{bar:"single"},{p:"Eb4",d:"h",artic:"fermata"},{bar:"final"}],
-        beams:[[1,3]],width:380} },
-      try:{ type:"mc", choices:["Being SHORT and used REPEATEDLY","Being played by violins","Containing exactly four notes"], answer:0,
-        success:"✓ Short + repeated = motive. Beethoven's is four notes, but a motive can also be a rhythm or even a chord pattern.",
-        fail:"Two words in the definition carry all the weight…",
-        hint:"Short… repeatedly…" } },
-    { say:"Listen for the motive. <b>How many times do you hear it?</b> Tap the first note of each appearance. \u{1F447}",
+    { say:"<b>Quick Review:</b> A triad has <b>3 notes</b>, so it has <b>3 positions</b>. A <b>V7 chord has 4 notes</b>, so it has <b>4 positions</b>. \u{1F447} <b>How many positions can a V7 chord have?</b>",
+      try:{ type:"mc", choices:["4","3","7"], answer:0,
+        success:"✓ Four notes, four possible bass notes, four positions: root, 1st, 2nd and 3rd inversion.",
+        fail:"Every chord tone gets one turn in the bass…",
+        hint:"Count the notes of G-B-D-F." } },
+    { say:"Move the <b>lowest note</b> up one octave each time. Watch the <b>V7 chord</b> move through all <b>four positions</b>. \u{1F447}",
       try:{ type:"custom",
-        hint:"Same shape (short-short-short-LONG), different starting pitches.",
-        mount:(container,fb)=>MF_L72_hunt(container,fb) } },
-    { say:"<b>What Is a Phrase?</b> A <b>phrase</b> is a short musical idea that sounds complete or almost complete. A phrase may contain one or more motives. It often ends where a performer would naturally breathe. <b>Remember: a motive is a small idea. A phrase is a complete musical thought made from one or more motives.</b> \u{1F447} <b>What usually happens at the end of a phrase?</b>",
-      show:{ type:"html", html:`<table style="border-collapse:collapse;margin:0 auto;font-size:14.5px;min-width:280px">
-        <tr><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Motive</th><th style="border:1.5px solid #cdd5e1;background:#eef1ff;padding:6px 14px">Phrase</th></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px">Short musical idea</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px">Complete musical thought</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px">Repeated often</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px">Made of one or more motives</td></tr>
-        <tr><td style="border:1.5px solid #cdd5e1;padding:4px 14px">Very short</td><td style="border:1.5px solid #cdd5e1;padding:4px 14px">Longer</td></tr></table>` },
-      try:{ type:"mc", choices:["A 'lift' or breath","A louder dynamic","A new key signature"], answer:0,
-        success:"✓ A 'lift' or breath — singers breathe there; instrumentalists lift.",
-        fail:"Where would a singer breathe?",
-        hint:"What do singers need regularly?" } },
-    { say:"Listen and find where each phrase ends. \u{1F447}",
+        hint:"Tap the LOWEST note each time — three flips total.",
+        mount:(container,fb)=>MF_L72_flip(container,fb) } },
+    { say:"<b>V7 Inversions:</b> Each inversion places a different chord tone in the bass. In <b>3rd inversion</b>, the <b>7th</b> is the lowest note. \u{1F447} <b>Which chord tone is the lowest note in 3rd inversion?</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"G3",d:"w",label:"root (G7)"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
+        {p:"B3",d:"w",label:"1st (G7/B)"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"2nd (G7/D)"},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"3rd (G7/F)"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:600} },
+      try:{ type:"mc", choices:["The 7th","The 5th","The root"], answer:0,
+        success:"✓ 7th in the bass = 3rd inversion. The bass ladder is now root → 3rd → 5th → 7th.",
+        fail:"Three flips from root position — who's left to take the bass?",
+        hint:"Each flip promotes the next chord tone." } },
+    { say:"<b>Slash Chord Symbols:</b> A slash chord shows the <b>chord name</b> followed by the <b>bass note</b>. For example, <b>G7/D</b> means <b>G7 with D in the bass</b>. \u{1F447} <b>What does G7/D mean?</b>",
+      try:{ type:"mc", choices:["G7 with D in the bass (2nd inversion)","D7 with G in the bass","G major without a 7th"], answer:0,
+        success:"✓ Left of the slash = the chord; right of the slash = the bass note. D is the 5th of G7 → 2nd inversion.",
+        fail:"Read it aloud: \u{201C}G seven over D\u{201D}…",
+        hint:"chord / bass." } },
+    { say:"<b>Finding the Root:</b> In close position, the <b>7th</b> and the <b>root</b> are next to each other — an interval of a <b>2nd</b>. The <b>upper note</b> is always the <b>root</b>. Find F-G in each inversion below. \u{1F447} <b>The upper note of the 2nd is always…</b>",
+      show:{ type:"staff", spec:{clef:"treble",notes:[
+        {p:"B3",d:"w",label:"1st: F-G on top"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"2nd: F-G inside"},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"3rd: F-G at bottom"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:560} },
+      try:{ type:"mc", choices:["the ROOT of the chord","the 7th of the chord","the bass note"], answer:0,
+        success:"✓ Spot the 2nd (F-G here), grab its top note (G) — you've named the chord's root instantly, in ANY inversion.",
+        fail:"In G7 the crunchy neighbors are F and G. Which one is the root?",
+        hint:"Triads hid the root on top of a 4th; sevenths hide it on top of a 2nd." } },
+    { say:"<b>Identify the inversion.</b> Find the <b>lowest note</b>, then identify the chord position. \u{1F447}",
       try:{ type:"custom",
-        hint:"Phrases end on the LONG notes — where you'd naturally breathe.",
-        mount:(container,fb)=>MF_L72_breath(container,fb) } },
-    { say:"<b>Complete or Incomplete:</b> A phrase ending on the tonic usually sounds complete. A phrase ending away from the tonic usually sounds incomplete. \u{1F447} <b>Which phrase sounds unfinished?</b>",
-      try:{ type:"mc", choices:["Phrase 1 — it pauses on G, away from the tonic","Phrase 2 — it ends on C, the tonic","Neither"], answer:0,
-        success:"✓ Phrase 1 sounds unfinished — it ends away from the tonic and leads to another phrase.",
-        fail:"Did the pause on G feel finished?",
-        hint:"Tonic = complete." } },
-    { say:"<b>Finding Similar Phrases:</b> Some phrases begin the same because they use the same motive. When two phrases start identically but end differently, the pair still feels related. \u{1F447} <b>What does it mean when two phrases begin alike?</b>",
-      try:{ type:"mc", choices:["They use the same motive","A printing error","The song has no form"], answer:0,
-        success:"✓ They share a motive — recognizing similar phrases is the first step of form analysis, which the next three lessons build on.",
-        fail:"Why would a composer bring an idea back?",
-        hint:"Think of the motive lesson you JUST had." } }
+        hint:"Spell the chord from its root (G-B-D-F / C-E-G-B♭), then match the bass note's job.",
+        mount:(container,fb)=>MF_L72_detect(container,fb) } },
+    { say:"<b>Build all three inversions of G7.</b> \u{1F447}",
+      try:{ type:"custom",
+        hint:"Rotate G-B-D-F: start each round on the new bass note and stack upward.",
+        mount:(container,fb)=>MF_L72_build(container,fb) } }
   ],
   examples:[
-    { caption:"A motive grows: stated, transposed up a step, transposed again — each three quick notes landing on a longer one. One four-note idea powers the whole line, Beethoven-style.",
-      staff:{clef:"treble",tempo:110,time:"6/8",notes:[
-        {p:"D4",d:"8",label:"motive"},{p:"D4",d:"8"},{p:"D4",d:"8"},{p:"G4",d:"q."},{bar:"single"},
-        {p:"E4",d:"8",label:"transposed"},{p:"E4",d:"8"},{p:"E4",d:"8"},{p:"A4",d:"q."},{bar:"single"},
-        {p:"G4",d:"8",label:"again!"},{p:"G4",d:"8"},{p:"G4",d:"8"},{p:"C5",d:"q."},{bar:"final"}],
-        beams:[[0,2],[5,7],[10,12]],width:620},
-      kb:{start:60,octaves:1,labels:true} },
-    { caption:"Two phrases in question-and-answer: the first pauses on G (incomplete), the second settles on C (complete). Every simple song breathes this way.",
-      staff:{clef:"treble",tempo:100,time:"5/4",notes:[
-        {p:"C4",d:"q",label:"phrase 1…"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"h",label:"phrase ends (incomplete)"},{bar:"single"},
-        {p:"E4",d:"q",label:"phrase 2…"},{p:"D4",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"h",label:"phrase ends (complete)"},{bar:"final"}],width:680},
-      kb:{start:57,octaves:1.1667,labels:true} }
+    { caption:"G7 climbs through all four positions — root, 1st, 2nd, 3rd. Same four letters every time; only the bass changes. Watch the bottom of each stack.",
+      staff:{clef:"treble",tempo:60,notes:[
+        {p:"G3",d:"w",label:"G7"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},
+        {p:"B3",d:"w",label:"G7/B"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},
+        {p:"D4",d:"w",label:"G7/D"},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},
+        {p:"F4",d:"w",label:"G7/F"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:600},
+      kb:{start:53,octaves:1.9167,labels:true} },
+    { caption:"Why the 3rd inversion is a composer's favorite: the 7th in the bass (F) resolves down by step to E, giving I in 1st inversion. Bass line F → E.",
+      staff:{clef:"treble",tempo:70,notes:[
+        {p:"F4",d:"w",label:"G7/F (3rd inv.)"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},
+        {p:"E4",d:"w",label:"C/E (1st inv.)"},{p:"G4",d:"w",chord:true},{p:"C5",d:"w",chord:true},{bar:"final"}],width:440},
+      kb:{start:60,octaves:1.3333,labels:true} }
   ],
   games:[
-    { type:"gen-race", title:"Game 1 · Building-Block Sprint (45s)",
-      intro:"Motives, phrases, breaths and Beethoven — race the definitions!",
-      miaIntro:"Short-short-short-LONG! \u{26A1}",
-      spec:{gen:"term-match", params:{subject:"term", pool:[
-        ["Motive","a short element used repeatedly"],
-        ["A motive can be","melodic, rhythmic or harmonic"],
-        ["Most music is based on","developing and expanding motives"],
-        ["Beethoven's 5th motive","four notes: short-short-short-LONG"],
-        ["Phrase","a short section — complete or incomplete idea"],
-        ["A phrase's end","a 'lift' or breath"],
-        ["Transposition","the same motive at a new pitch level"],
-        ["Music's basic unit","the note"]], reverse:true}, seconds:45},
-      result:(score)=>score>=8?score+" — blocks stacked high!":null },
-    { type:"key-climb", title:"Game 2 · Play the Famous Motive",
-      intro:"Perform the short-short-short-LONG shape — then its transposition!",
-      miaIntro:"Fate knocks at the door! \u{1FA9C}",
-      spec:{seq:[67,67,67,63, 65,65,65,62],
-        names:["G","G","G","E♭ — the LONG one!","F (transposed!)","F","F","D — long again"],
-        start:60, octaves:0.9167, title:"The four-note motive, original and transposed"},
-      result:(score)=>score!==null?"You just played music's most famous motive!":null },
-    { type:"symbol-hunt", title:"Game 3 · Motive Detective",
-      intro:"Original, transposed, varied — or unrelated? Click what each round names!",
-      miaIntro:"Same shape, new address? \u{1F440}",
+    { type:"gen-race", title:"Game 1 · Four-Position Sprint (45s)",
+      intro:"Seventh chords in every position — read the bass, name the inversion!",
+      miaIntro:"Four options now — stay sharp! \u{1F50D}",
+      spec:{gen:"inversion-id", params:{subject:"v7", ask:"position"}, seconds:45},
+      result:(score)=>score>=8?score+" sevenths placed — four-position fluency!":null },
+    { type:"key-climb", title:"Game 2 · G7 Inversion Ladder",
+      intro:"Climb G7 through its 2nd, 3rd and 1st inversions — twelve keys, no wrong turns!",
+      miaIntro:"The grand tour of G7! \u{1FA9C}",
+      spec:{seq:[62,65,67,71, 65,67,71,74, 71,74,77,79],
+        names:["D (5th)","F (7th)","G (root)","B (3rd)","F (7th — bass!)","G (root)","B (3rd)","D (5th)","B (3rd — bass)","D (5th)","F (7th)","G (root on top)"],
+        start:60, octaves:2, title:"G7: 2nd inversion → 3rd inversion → 1st inversion"},
+      result:(score)=>score!==null?"G7 climbed in three different suits!":null },
+    { type:"symbol-hunt", title:"Game 3 · V7 Position Spotter",
+      intro:"Four faces of G7 — click the position each round names!",
+      miaIntro:"The bass note never lies! \u{1F440}",
       spec:{rounds:6, pool:[
-        {label:"The motive (original)", spec:{clef:"treble",notes:[{p:"D4",d:"8"},{p:"D4",d:"8"},{p:"D4",d:"8"},{p:"G4",d:"q"}],beams:[[0,2]],width:170}},
-        {label:"Transposed (same shape, higher)", spec:{clef:"treble",notes:[{p:"E4",d:"8"},{p:"E4",d:"8"},{p:"E4",d:"8"},{p:"A4",d:"q"}],beams:[[0,2]],width:170}},
-        {label:"Rhythm varied (long-short-short-long)", spec:{clef:"treble",notes:[{p:"D4",d:"q"},{p:"D4",d:"8"},{p:"D4",d:"8"},{p:"G4",d:"q"}],beams:[[1,2]],width:170}},
-        {label:"Unrelated material", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"}],width:170}}]},
-      result:(score)=>score>=5?"No disguise fools the detective!":null },
-    { type:"order-tap", title:"Game 4 · Build the Pyramid",
-      intro:"Tap music's building blocks from SMALLEST to LARGEST!",
-      miaIntro:"Note first, masterpiece last! \u{1F3C1}",
-      spec:{sequence:["Note","Motive","Phrase","Section","Complete piece"],
-        title:"Small to large: assemble the musical pyramid"},
-      result:(stars)=>stars>=2?"Architecture understood, ground floor up!":null }
+        {label:"Root position (G7)", spec:{clef:"treble",notes:[{p:"G3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:150}},
+        {label:"1st inversion (G7/B)", spec:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:150}},
+        {label:"2nd inversion (G7/D)", spec:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:150}},
+        {label:"3rd inversion (G7/F)", spec:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:150}}]},
+      result:(score)=>score>=5?"All four faces memorized!":null },
+    { type:"term-race", title:"Game 4 · Inversion Fact Race",
+      intro:"Positions, bass notes and slash symbols — match them at speed!",
+      miaIntro:"Everything from Lessons 51-53! \u{1F3C1}",
+      spec:{rounds:8, reverse:true, pool:[
+        ["3rd inversion","the 7th is in the bass"],
+        ["2nd inversion of V7","the 5th is in the bass"],
+        ["1st inversion of V7","the 3rd is in the bass"],
+        ["Root position","the root is in the bass"],
+        ["G7/D","G7 with D in the bass"],
+        ["G7/F","G7 in 3rd inversion"],
+        ["Why V7 has 4 positions","it contains 4 notes"],
+        ["The root in close inversions","the UPPER note of the 2nd"]]},
+      result:(score)=>score>=6?"Fact-race champion!":null }
   ],
-  practiceIntro:"20 practice questions — motives, phrases, breaths and the pyramid. Answer right and the next appears automatically!",
+  practiceIntro:"20 practice questions — four positions, slash symbols and the 2nd trick. Answer right and the next appears automatically!",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Motive","short, used repeatedly"],["Phrase","a complete or incomplete idea"],["Phrase ending","a breath or 'lift'"],["Transposition","same shape, new pitch"],["Music's basic unit","the note"]], reverse:true}, count:6 },
-    { gen:"note-value", params:{}, count:2 },
-    { type:"mc", q:"A MOTIVE is…", choices:["a short melodic, rhythmic or harmonic element used repeatedly","an entire song","a kind of tempo"], answer:0,
-      explain:"Short + repeated = motive." },
-    { type:"mc", q:"Most music develops from…", choices:["one or more motives, expanded and developed","a single long melody with no repeats","random notes"], answer:0,
-      explain:"Motives are the seeds of pieces." },
-    { type:"mc", q:"The famous four-note motive belongs to…", choices:["Beethoven's Symphony No. 5","a piano exercise","the blues"], answer:0,
-      explain:"The famous four-note motive." },
-    { type:"mc", q:"A PHRASE is…", choices:["a short section of music — a complete or incomplete idea","always exactly 4 notes","another word for motive"], answer:0,
-      explain:"It may CONTAIN motives." },
-    { type:"mc", q:"A phrase usually ends where…", choices:["a performer would take a breath","a drum solo begins","the key changes"], answer:0,
-      explain:"Singers breathe at phrase ends." },
-    { type:"mc", q:"Repeating a motive at a different pitch is called…", choices:["transposition","inversion","syncopation"], answer:0,
-      explain:"Same shape, new address." },
-    { type:"truefalse", q:"A motive must be melodic — rhythms can't be motives.", answer:false,
-      explain:"Melodic, RHYTHMIC or harmonic — Beethoven's rhythm returns in later movements." },
-    { type:"truefalse", q:"A phrase may contain one or more motives.", answer:true,
-      explain:"In original form or variation." },
-    { type:"truefalse", q:"A phrase must always be a complete musical idea.", answer:false,
-      explain:"Complete OR incomplete." },
-    { type:"truefalse", q:"Understanding basic forms helps you understand how a composition is organized.", answer:true,
-      explain:"The whole point of Unit 18." }
+    { gen:"inversion-id", params:{subject:"v7", ask:"position"}, count:6 },
+    { gen:"term-match", params:{subject:"term", pool:[["3rd inversion","7th in the bass"],["2nd inversion","5th in the bass"],["1st inversion","3rd in the bass"],["Root position","root in the bass"],["G7/B","G7 in 1st inversion"]], reverse:true}, count:4 },
+    { type:"mc", q:"A seventh chord can be written in how many positions?", choices:["4","3","2"], answer:0,
+      explain:"Four notes → four possible bass notes." },
+    { type:"mc", q:"Which position exists for V7 but NOT for a triad?", choices:["3rd inversion","1st inversion","2nd inversion"], answer:0,
+      explain:"Only a 4-note chord can put a 7th in the bass." },
+    { type:"mc", q:"In G7's 2nd inversion, the bass note is…", choices:["D","B","F"], answer:0,
+      explain:"2nd inversion = 5th in the bass; the 5th of G7 is D." },
+    { type:"mc", q:"F–G–B–D is which inversion of G7?", choices:["3rd inversion","root position","1st inversion"], answer:0,
+      explain:"F is the 7th of G-B-D-F → 3rd inversion." },
+    { type:"mc", q:"The letter symbol for G7 with B in the bass is…", choices:["G7/B","B7/G","G/B7"], answer:0,
+      explain:"Chord name, slash, bass note." },
+    { type:"mc", q:"In close position, where is the root located?", choices:["the upper note of the 2nd","the lower note of the 2nd","always the top note of the chord"], answer:0,
+      explain:"Find the two notes a 2nd apart (7th+root) — the root is on top." },
+    { type:"truefalse", q:"Inverting a V7 chord changes its name.", answer:false,
+      explain:"G-B-D-F in any order is still G7." },
+    { type:"truefalse", q:"In 3rd inversion, the 7th of the chord is the lowest note.", answer:true,
+      explain:"That's the definition — and it pulls hard downward." },
+    { type:"truefalse", q:"A triad can also have a 3rd inversion.", answer:false,
+      explain:"Triads own only three notes — after two flips they're back where they started." },
+    { type:"truefalse", q:"In G7/D, the D is the 5th of the chord.", answer:true,
+      explain:"G-B-D-F: D is the 5th, so G7/D is 2nd inversion." }
   ],
-  miaQuizIntro:"Quiz! Small ideas, big pieces.",
+  miaQuizIntro:"Quiz! Four notes, four positions — let the bass note do the talking.",
   quiz:[
-    { type:"mc", q:"The smallest building block of music is…", choices:["the note","the phrase","the chord"], answer:0,
-      explain:"Like a letter of the alphabet.", hint:"The smallest brick." },
-    { type:"mc", q:"A motive is…", choices:["a short musical idea used repeatedly","played only once","always in the bass"], answer:0,
-      explain:"Repetition is its identity.", hint:"Why we recognize da-da-da-DUM." },
-    { type:"mc", q:"A motive may be melodic, rhythmic or…", choices:["harmonic","visual","verbal"], answer:0,
-      explain:"Three possible kinds.", hint:"The third musical dimension." },
-    { type:"truefalse", q:"A motive can return in different forms (original, transposition, variation).", answer:true,
-      explain:"Development and expansion in action.", hint:"How motives grow." },
-    { type:"mc", q:"A phrase is a short section of music that may be…", choices:["a complete or incomplete musical idea","only complete","only incomplete"], answer:0,
-      explain:"Both kinds exist — incomplete and complete.", hint:"Two options." },
-    { type:"truefalse", q:"The end of a musical phrase provides a 'lift' or breath.", answer:true,
-      explain:"For instrumentalist or singer alike.", hint:"The comma analogy." },
-    { type:"truefalse", q:"When speaking, the end of a phrase usually happens at a comma.", answer:true,
-      explain:"Speakers pause; singers breathe.", hint:"Where do you pause?" },
-    { type:"mc", q:"Identify what happened to the motive between these two statements.",
-      staff:{clef:"treble",notes:[{p:"D4",d:"8"},{p:"D4",d:"8"},{p:"D4",d:"8"},{p:"G4",d:"q"},{p:"E4",d:"8"},{p:"E4",d:"8"},{p:"E4",d:"8"},{p:"A4",d:"q"}],beams:[[0,2],[4,6]],width:420},
-      choices:["It was repeated at a different pitch (transposition)","It was deleted","The rhythm changed completely"], answer:0,
-      explain:"Short-short-short-long, moved up a step.", hint:"Compare shapes, then pitches." },
-    { type:"mc", q:"A short song has four natural breathing points. How many phrases are in this melody?", choices:["4","2","8"], answer:0,
-      explain:"Four phrase endings = four phrases.", hint:"One breath per phrase." },
-    { type:"mc", q:"A phrase ends on a long note AWAY from the tonic. What does it sound like?", choices:["It sounds unfinished and leads to another phrase","It sounds fully finished","It sounds like an error"], answer:0,
-      explain:"Away from the tonic = incomplete.", hint:"The G pause in the example." },
-    { type:"mc", q:"What is the correct order, from smallest to largest?", choices:["Notes → Motives → Phrases","Phrases → Notes → Motives","Chords → Scales → Keys"], answer:0,
-      explain:"Small to large, in order.", hint:"Game 4's pyramid." },
-    { type:"mc", q:"Two phrases of a song begin identically. What does this mean?", choices:["The composer used the same motive in both phrases","The song is broken","They must be deleted"], answer:0,
-      explain:"Similarity-spotting IS form analysis.", hint:"Think of the motive." },
+    { type:"mc", q:"How many different positions can a seventh chord have?", choices:["4","2","3","5"], answer:0,
+      explain:"Root position plus three inversions.", hint:"One per chord tone." },
+    { type:"mc", q:"Which chord tone is in the bass of a THIRD-inversion V7 chord?", choices:["The 7th","The root","The 3rd","The 5th"], answer:0,
+      explain:"3rd inversion = 7th at the bottom.", hint:"The last tone left on the ladder." },
+    { type:"mc", q:"Which chord tone is in the bass of a FIRST-inversion V7 chord?", choices:["The 3rd","The root","The 5th","The 7th"], answer:0,
+      explain:"Same as triads: first flip puts the 3rd in the bass.", hint:"Lesson 51's rule carries over." },
+    { type:"truefalse", q:"Changing the inversion changes the chord name.", answer:false,
+      explain:"B-D-F-G still spells G7.", hint:"Count the letters, not the order." },
+    { type:"truefalse", q:"The V7 chord has more possible positions than a triad because it has more notes.", answer:true,
+      explain:"4 notes → 4 positions; 3 notes → 3 positions.", hint:"One position per possible bass note." },
+    { type:"mc", q:"Name this chord's position (G7 = G-B-D-F).",
+      staff:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:200},
+      choices:["2nd inversion","root position","1st inversion","3rd inversion"], answer:0,
+      explain:"Bass D = the 5th of G7 → 2nd inversion.", hint:"What job does D do in G-B-D-F?" },
+    { type:"mc", q:"Name this chord's position (G7 = G-B-D-F).",
+      staff:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:200},
+      choices:["3rd inversion","2nd inversion","root position","1st inversion"], answer:0,
+      explain:"F (the 7th) in the bass → 3rd inversion — G7/F.", hint:"The bass is the crunchiest note of the chord." },
+    { type:"mc", q:"What does the symbol G7/F mean?", choices:["a G7 chord with F as the lowest note","an F7 chord with G as the lowest note","F major, then G7"], answer:0,
+      explain:"Chord / bass — the slash names the floor.", hint:"Left = chord, right = bass." },
+    { type:"mc", q:"In close position, the two notes that sit a 2nd apart in an inverted V7 are…", choices:["the 7th and the root","the root and the 3rd","the 3rd and the 5th"], answer:0,
+      explain:"F-G in G7 — and the ROOT is the upper one.", hint:"The crunch pair." },
+    { type:"mc", q:"A student says, \u{201C}D–F–G–B is a D chord because D is the lowest note.\u{201D} Why is the student incorrect?", choices:["It is G7 in 2nd inversion. Rearrange the notes into thirds to find the root.","The student is right","It's B diminished"], answer:0,
+      explain:"F-G is the 2nd → the root is G → G-B-D-F → 2nd inversion.", hint:"Use the 2nd trick." },
+    { type:"mc", q:"Which listing is the bass-note ladder of V7 positions, in order?", choices:["root → 3rd → 5th → 7th","root → 5th → 3rd → 7th","7th → 5th → 3rd → root"], answer:0,
+      explain:"Each flip promotes the next chord tone into the bass.", hint:"Same ladder as triads, one rung longer." },
+    { type:"mc", q:"Why does F naturally resolve to E in G7/F → C?", choices:["The 7th of the V7 chord resolves down by step to the 3rd of the I chord","F is louder than E","The chord became minor"], answer:0,
+      explain:"The 7th's downward pull is the engine of V7 → I.", hint:"Which chord tone was in the bass?" },
     /* generated */
-    { gen:"term-match", params:{subject:"term", pool:[["Motive","the repeated short idea"],["Phrase","the musical sentence-part"],["Breath","a phrase's ending lift"],["Transposition","same idea, new height"]], reverse:true}, count:3 },
-    { gen:"rhythm-count", params:{}, count:2 },
-    { gen:"note-value", params:{}, count:1 }
+    { gen:"inversion-id", params:{subject:"v7", ask:"position"}, count:4 },
+    { gen:"term-match", params:{subject:"term", pool:[["3rd inversion","7th in the bass"],["G7/D","2nd inversion of G7"],["G7/B","1st inversion of G7"],["Root of an inverted 7th chord","upper note of the 2nd"]], reverse:true}, count:2 },
+    { gen:"inversion-id", params:{subject:"triad", ask:"position"}, count:2 }
   ],
   vocabulary:[
-    {term:"Motive", def:"A short melodic, rhythmic or harmonic element used repeatedly throughout a piece — the seed most music grows from."},
-    {term:"Phrase", def:"A short section of music — a complete or incomplete musical idea, often containing motives."},
-    {term:"The Breath", def:"A phrase ends with a 'lift' or breath — where a performer would naturally breathe."},
-    {term:"Transposition", def:"Restating a motive or phrase at a different pitch level — same shape, new height."}
+    {term:"Root Position (V7)", def:"The root is the lowest note: G-B-D-F.",
+      staff:{clef:"treble",notes:[{p:"G3",d:"w"},{p:"B3",d:"w",chord:true},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true}],width:130}},
+    {term:"1st Inversion (V7)", def:"The 3rd is the lowest note: B-D-F-G. Letter symbol: G7/B.",
+      staff:{clef:"treble",notes:[{p:"B3",d:"w"},{p:"D4",d:"w",chord:true},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true}],width:130}},
+    {term:"2nd Inversion (V7)", def:"The 5th is the lowest note: D-F-G-B. Letter symbol: G7/D.",
+      staff:{clef:"treble",notes:[{p:"D4",d:"w"},{p:"F4",d:"w",chord:true},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:130}},
+    {term:"3rd Inversion (V7)", def:"The 7th is the lowest note: F-G-B-D. Letter symbol: G7/F. Only 4-note chords can do this!",
+      staff:{clef:"treble",notes:[{p:"F4",d:"w"},{p:"G4",d:"w",chord:true},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true}],width:130}},
+    {term:"The 2nd Trick", def:"In close-position inversions of a seventh chord, the root is always the UPPER note of the interval of a 2nd."}
   ],
   mistakes:[],
   summary:[
-    "✔ Music is built from small ideas: <b>notes → motives → phrases → sections → complete piece</b>.",
-    "✔ <b>MOTIVE</b> = a short melodic, rhythmic or harmonic element <b>used repeatedly</b> — most music develops one or more of them.",
-    "✔ Beethoven's 5th: <b>four notes</b> reused in original form, <b>transposition</b> and variation.",
-    "✔ <b>PHRASE</b> = a short section — a <b>complete or incomplete</b> idea, ending with a <b>breath</b>.",
-    "✔ Spotting similar phrases = the first step of <b>form analysis</b>."
+    "✔ V7 has <b>four notes → four positions</b>: root, 1st, 2nd and <b>3rd inversion</b> (7th in the bass).",
+    "✔ The bass ladder: <b>root → 3rd → 5th → 7th</b>.",
+    "✔ Letter symbols read <b>chord / bass</b>: G7/B, G7/D, G7/F.",
+    "✔ Close-position shortcut: <b>the root is the upper note of the 2nd</b> (the 7th sits right below it).",
+    "✔ The 7th in the bass pulls DOWN by step — 3rd inversion loves resolving to I in 1st inversion."
   ],
   tips:[
-    "Hum any song you love and clap ONLY its first rhythm — you probably just isolated its motive.",
-    "Breath test for phrases: sing along; wherever you MUST inhale, a phrase just ended.",
-    "Composers' secret: don't write more ideas — develop the one you have. Beethoven got a symphony from four notes.",
-    "Next lesson, phrases combine into SECTIONS — and sections spell the alphabet of form: AB!"
+    "Spot a seventh-chord inversion instantly: find the 2nd (the crunch pair) inside the stack. Bass ladder position = how far that pair has climbed from the top.",
+    "Piano drill: play G7 → G7/B → G7/D → G7/F, then land on C/E. Your left hand just learned a week of voice-leading.",
+    "The nicknames 6/5, 4/3 and 4/2 you'll see in figured bass — next lesson decodes that entire number system. It's called figured bass!",
+    "Listen to any gospel or jazz pianist: those rich low notes under dominant chords are usually 3rds and 7ths in the bass — inversions at work."
   ],
-  rewards:{ badge:"Idea Archaeologist", icon:"\u{1F9F1}" },
+  rewards:{ badge:"Four-Position Pilot", icon:"\u{1F504}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! Motives, phrases, breaths — you know music's building blocks. \u{1F9F1}\u{1F389}",
-  miaPass:"Passed! You see the small ideas inside big music now. Sections are next…",
+  miaPerfect:"PERFECT — all four positions of V7, spotless! The figured-bass code awaits. \u{1F504}\u{1F389}",
+  miaPass:"Passed! Root, 3rd, 5th, 7th — the whole ladder is yours. Lesson 54 gives the numbers.",
   mia:{
     hook:{ label:"the welcome",
-      explain:"Those four notes — short-short-short-LONG — are the opening motive of Beethoven's Symphony No. 5, a famous example of a motive.",
-      play:()=>{[67,67,67].forEach((m,i)=>MFAudio.tone(m,.22,i*.24,.45));MFAudio.tone(63,1.6,.72,.5);} },
-    learn:{ label:"motives & phrases",
-      explain:"Motive = short element used repeatedly (melodic/rhythmic/harmonic); developed via repetition, transposition, variation. Phrase = short section, complete or incomplete, ending with a breath.",
-      hint:"Motive = the idea; phrase = the sentence-part.",
-      play:()=>{[62,62,62,67].forEach((m,i)=>MFAudio.tone(m,i===3?.8:.25,i*.26,.42));} },
+      explain:"Version A was G7 in root position; version B put the 7th (F) in the bass — 3rd inversion, a 4-note-chord exclusive.",
+      play:()=>{[53,55,59,62].forEach(m=>MFAudio.tone(m,1.1,0,.32));} },
+    learn:{ label:"V7 inversions",
+      explain:"Four notes give four positions; the bass ladder runs root-3rd-5th-7th. Slash symbols name the bass (G7/D). The root always tops the interval of a 2nd.",
+      hint:"Find the crunch pair (the 2nd) — root on top.",
+      play:()=>{[65,67,71,74].forEach(m=>MFAudio.tone(m,1,.1,.3));} },
     example:{ label:"the examples",
-      explain:"Example 1 grows one motive through transpositions; example 2 shows two phrases — incomplete, then complete." },
+      explain:"Example 1 climbs G7 through all four positions; example 2 resolves G7/F down to C/E — the 7th sinking by step." },
     game:{ label:"the games",
-      explain:"Sprint the definitions, play the famous motive, detect disguised motives, then build the pyramid from note to piece.",
-      hint:"Short + repeated = motive." },
+      explain:"Sprint the four positions, climb the G7 ladder, spot positions on cards, then race the facts.",
+      hint:"The bass note is always the answer's first clue." },
     quiz:{ label:"this question",
-      explain:"Two definitions cover it all: motive (short, repeated, developed) and phrase (short section, complete or incomplete, ends with a breath).",
-      play:()=>{[67,67,67].forEach((m,i)=>MFAudio.tone(m,.22,i*.24,.45));MFAudio.tone(63,1.4,.72,.5);} }
+      explain:"Spell the chord from its root (G-B-D-F), find the bass note's job, and the position names itself. The 2nd trick finds the root fastest.",
+      play:()=>{[65,67,71,74].forEach(m=>MFAudio.tone(m,.9,0,.3));[64,67,72].forEach(m=>MFAudio.tone(m,1.1,1,.33));} }
   }
 };
