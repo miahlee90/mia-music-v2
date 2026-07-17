@@ -348,3 +348,24 @@ create policy audit_read on audit_logs for select to authenticated
 
 -- student_sessions / login_attempts / app_secrets: NO policies -> no client access.
 -- (SECURITY DEFINER functions bypass RLS internally.)
+
+-- ============================================================
+-- EXPLICIT GRANTS
+-- Needed because the project is created with "Automatically expose
+-- new tables" turned OFF (recommended). RLS above still filters rows;
+-- these grants only allow the roles to run the queries at all.
+-- Teachers (authenticated) read; ALL writes go through RPCs.
+-- Students (anon) get no table access whatsoever.
+-- ============================================================
+grant usage on schema public to anon, authenticated;
+grant select on
+  organizations, organization_members, license_status,
+  approved_teachers, teacher_profiles,
+  courses, curriculum_units, curriculum_items,
+  classes, class_courses, students, class_enrollments, course_enrollments,
+  learning_progress, lbd_attempts, quiz_attempts,
+  unit_completions, course_completions,
+  teacher_adjustments, audit_logs
+to authenticated;
+grant update on teacher_profiles to authenticated;  -- own row only (RLS policy)
+revoke all on student_sessions, login_attempts, app_secrets from anon, authenticated;
