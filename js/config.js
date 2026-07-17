@@ -5,5 +5,5 @@
    Leave both empty to run the site with the LMS completely disabled. */
 const LMS_CONFIG={
   SUPABASE_URL:"https://aeojiauqujttnqhmvurh.supabase.co",
-  SUPABASE_ANON_KEY:""    /* the long "anon / publishable" key */
+  SUPABASE_ANON_KEY:"sb_publishable_hWzCbNlPsqD2UHr9RGID6Q_Nj_lCAqT"
 };
