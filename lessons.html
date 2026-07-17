@@ -44,7 +44,7 @@
         ls.map(l=>{
           const built=l.n<=BUILT_THROUGH;
           const p=prog[l.n];
-          const badge=p&&p.done?`<span class="done">✓ ${p.best}%</span>`:built?`<span style="color:var(--muted);font-size:13px">~${l.time} min</span>`:`<span style="color:#bbb;font-size:13px">coming soon</span>`;
+          const badge=p&&p.done?`<span class="done">✓ ${p.best}%</span>`:built?"":`<span style="color:#bbb;font-size:13px">coming soon</span>`;
           return built?
             `<a class="lesson-link" href="${href(l.n)}"><span><span class="lnum">${l.label}</span>${l.title}</span>${badge}</a>`:
             `<div class="lesson-link" style="opacity:.55"><span><span class="lnum">${l.label}</span>${l.title}</span>${badge}</div>`;

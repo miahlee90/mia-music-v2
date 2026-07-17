@@ -11,7 +11,6 @@ const Nav=(()=>{
     return `<header class="lesson-header"><div class="inner">
       <div class="crumb"><a href="../lessons.html">All Lessons</a> › Unit ${U.unit}: ${U.name} › Lesson ${L.label}</div>
       <h1>Lesson ${L.label} — ${L.title}</h1>
-      <span class="time-badge">⏱ about ${L.time} minutes</span>
     </div></header>`;
   }
   function footer(n){
@@ -32,7 +31,7 @@ const Nav=(()=>{
     const N=lesson(n+1);
     const soon=n+1>BUILT_THROUGH?" (coming soon)":"";
     return `<section class="card next-invite"><h2>Nice work! 🎉</h2>
-      <p>Up next: <b>Lesson ${N.label} — ${N.title}</b> (~${N.time} min)${soon}</p></section>`;
+      <p>Up next: <b>Lesson ${N.label} — ${N.title}</b>${soon}</p></section>`;
   }
   return {lesson,unitOf,href,label,header,footer,nextInvite};
 })();
