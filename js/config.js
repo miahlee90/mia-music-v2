@@ -4,6 +4,6 @@
    secret key in this file — it is public on the website.
    Leave both empty to run the site with the LMS completely disabled. */
 const LMS_CONFIG={
-  SUPABASE_URL:"",        /* e.g. "https://abcdefgh.supabase.co" */
+  SUPABASE_URL:"https://aeojiauqujttnqhmvurh.supabase.co",
   SUPABASE_ANON_KEY:""    /* the long "anon / publishable" key */
 };

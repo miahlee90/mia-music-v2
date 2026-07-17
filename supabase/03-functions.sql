@@ -7,11 +7,11 @@
 
 -- ---------- internals ----------
 create or replace function _hmac_key() returns text
-language sql stable security definer set search_path=public as
+language sql stable security definer set search_path=public,extensions as
 $$ select v from app_secrets where k='access_hmac_key' $$;
 
 create or replace function _gen_code(len int) returns text
-language plpgsql volatile security definer set search_path=public as $$
+language plpgsql volatile security definer set search_path=public,extensions as $$
 declare a text:='ABCDEFGHJKMNPQRSTUVWXYZ23456789'; r text:=''; i int;
 begin
   for i in 1..len loop
@@ -21,7 +21,7 @@ begin
 end $$;
 
 create or replace function _session_student(p_token text) returns uuid
-language plpgsql volatile security definer set search_path=public as $$
+language plpgsql volatile security definer set search_path=public,extensions as $$
 declare sid uuid;
 begin
   update student_sessions
@@ -33,12 +33,12 @@ begin
 end $$;
 
 create or replace function _audit(p_org uuid, p_actor text, p_action text, p_details jsonb)
-returns void language sql volatile security definer set search_path=public as
+returns void language sql volatile security definer set search_path=public,extensions as
 $$ insert into audit_logs(org_id,actor_email,action,details) values (p_org,p_actor,p_action,p_details) $$;
 
 -- recompute one page's status/completions after any academic event
 create or replace function _recompute(p_student uuid, p_course text, p_item int)
-returns void language plpgsql volatile security definer set search_path=public as $$
+returns void language plpgsql volatile security definer set search_path=public,extensions as $$
 declare req jsonb; has_q boolean; u int;
         done_ids jsonb; qa int; complete boolean; all_done boolean;
 begin
@@ -91,7 +91,7 @@ end $$;
 
 -- Login with Class Code + Access Code. Rate limited per class code.
 create or replace function student_login(p_class_code text, p_access_code text)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare fails int; s record; cls record; tok text; code text;
 begin
   code := upper(regexp_replace(coalesce(p_access_code,''),'[^0-9A-Za-z]','','g'));
@@ -131,12 +131,12 @@ begin
 end $$;
 
 create or replace function student_logout(p_token text) returns void
-language sql volatile security definer set search_path=public as
+language sql volatile security definer set search_path=public,extensions as
 $$ delete from student_sessions where token_hash=encode(digest(p_token,'sha256'),'hex') $$;
 
 -- Full progress pull (dashboard + resume-on-new-device)
 create or replace function student_progress(p_token text)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare sid uuid;
 begin
   sid := _session_student(p_token);
@@ -164,7 +164,7 @@ end $$;
 -- Learn-by-Doing activity completed (first correct answer of a required activity)
 create or replace function record_lbd(p_token text, p_id uuid, p_course text, p_item int,
                                       p_activity text, p_client_ts timestamptz)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare sid uuid; inserted boolean;
 begin
   sid := _session_student(p_token);
@@ -202,7 +202,7 @@ end $$;
 -- Final Quiz submitted
 create or replace function record_quiz(p_token text, p_id uuid, p_course text, p_item int,
                                        p_earned int, p_possible int, p_client_ts timestamptz)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare sid uuid; inserted boolean; e int; p int;
 begin
   sid := _session_student(p_token);
@@ -256,7 +256,7 @@ grant execute on function record_quiz(text,uuid,text,int,int,int,timestamptz) to
 
 -- One-time bootstrap: the FIRST signed-in user claims ownership.
 create or replace function bootstrap_owner(p_org_name text)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare oid uuid;
 begin
   if auth.uid() is null then raise exception 'not_signed_in'; end if;
@@ -277,7 +277,7 @@ end $$;
 
 -- Owner: manage the teacher allowlist
 create or replace function owner_set_teacher(p_email text, p_status text)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare oid uuid;
 begin
   if not is_owner() then raise exception 'not_owner'; end if;
@@ -301,7 +301,7 @@ end $$;
 
 -- Teacher first-login handshake: pending -> accepted, create profile
 create or replace function teacher_hello()
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare a record;
 begin
   if auth.uid() is null then raise exception 'not_signed_in'; end if;
@@ -324,7 +324,7 @@ end $$;
 
 -- Teacher: create a class (auto-enrolls it in the given course)
 create or replace function create_class(p_name text, p_course text)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare oid uuid; cid uuid; code text;
 begin
   if not is_active_teacher() then raise exception 'not_teacher'; end if;
@@ -341,7 +341,7 @@ begin
 end $$;
 
 create or replace function set_class_archived(p_class uuid, p_archived boolean)
-returns void language plpgsql volatile security definer set search_path=public as $$
+returns void language plpgsql volatile security definer set search_path=public,extensions as $$
 begin
   if not exists(select 1 from classes where id=p_class and (teacher_id=auth.uid() or is_owner())) then
     raise exception 'not_your_class'; end if;
@@ -352,7 +352,7 @@ end $$;
 
 -- Teacher: add a student. Returns the RAW access code exactly once — print it now.
 create or replace function add_student(p_class uuid, p_name text)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare cls record; sid uuid; code text;
 begin
   select * into cls from classes where id=p_class and (teacher_id=auth.uid() or is_owner());
@@ -373,7 +373,7 @@ end $$;
 
 -- Teacher: reset a student's access code (returns the new RAW code once)
 create or replace function reset_access_code(p_student uuid)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare ok boolean; code text; oid uuid;
 begin
   select exists(select 1 from class_enrollments e join classes c on c.id=e.class_id
@@ -391,7 +391,7 @@ begin
 end $$;
 
 create or replace function set_student_archived(p_student uuid, p_archived boolean)
-returns void language plpgsql volatile security definer set search_path=public as $$
+returns void language plpgsql volatile security definer set search_path=public,extensions as $$
 declare ok boolean;
 begin
   select exists(select 1 from class_enrollments e join classes c on c.id=e.class_id
@@ -404,7 +404,7 @@ begin
 end $$;
 
 create or replace function move_student(p_student uuid, p_from uuid, p_to uuid)
-returns void language plpgsql volatile security definer set search_path=public as $$
+returns void language plpgsql volatile security definer set search_path=public,extensions as $$
 begin
   if not exists(select 1 from classes where id=p_from and (teacher_id=auth.uid() or is_owner()))
    or not exists(select 1 from classes where id=p_to   and (teacher_id=auth.uid() or is_owner())) then
@@ -419,7 +419,7 @@ begin
 end $$;
 
 create or replace function enroll_student_course(p_student uuid, p_course text)
-returns void language plpgsql volatile security definer set search_path=public as $$
+returns void language plpgsql volatile security definer set search_path=public,extensions as $$
 declare ok boolean;
 begin
   select exists(select 1 from class_enrollments e join classes c on c.id=e.class_id
@@ -431,7 +431,7 @@ end $$;
 
 -- Teacher: formal completion reset (prior completion preserved in audit log)
 create or replace function reset_page_completion(p_student uuid, p_course text, p_item int, p_reason text)
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare ok boolean; oid uuid; prev record; u int;
 begin
   if coalesce(trim(p_reason),'')='' then raise exception 'reason_required'; end if;
@@ -462,7 +462,7 @@ end $$;
 
 -- Teacher dashboard: per-class matrix aggregated by unit
 create or replace function class_matrix(p_class uuid)
-returns jsonb language plpgsql stable security definer set search_path=public as $$
+returns jsonb language plpgsql stable security definer set search_path=public,extensions as $$
 declare res jsonb;
 begin
   if not exists(select 1 from classes where id=p_class and (teacher_id=auth.uid() or is_owner())) then
@@ -493,7 +493,7 @@ end $$;
 
 -- page-level drill-down for one student (teacher view)
 create or replace function student_report(p_student uuid)
-returns jsonb language plpgsql stable security definer set search_path=public as $$
+returns jsonb language plpgsql stable security definer set search_path=public,extensions as $$
 declare ok boolean;
 begin
   select exists(select 1 from class_enrollments e join classes c on c.id=e.class_id

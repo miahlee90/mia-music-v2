@@ -8,7 +8,7 @@
 -- ============================================================
 
 create or replace function seed_demo_data()
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare oid uuid; uid uuid; cids uuid[]:=array[]::uuid[]; ccodes text[]:=array[]::text[];
         names text[]:=array['Ari','Bea','Cody','Dana','Eli','Fay','Gus','Hana','Ian','Jo','Kai','Lia'];
         sid uuid; code text; codes jsonb:='[]'::jsonb; i int; cidx int; cid uuid;
@@ -103,7 +103,7 @@ begin
 end $$;
 
 create or replace function remove_demo_data()
-returns void language plpgsql volatile security definer set search_path=public as $$
+returns void language plpgsql volatile security definer set search_path=public,extensions as $$
 declare sids uuid[];
 begin
   if not is_owner() then raise exception 'not_owner'; end if;

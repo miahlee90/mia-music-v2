@@ -10,7 +10,7 @@ language sql immutable as
 $$ select jsonb_build_object('test',name,'result',case when cond then 'PASS' else 'FAIL' end) $$;
 
 create or replace function run_lms_tests()
-returns jsonb language plpgsql volatile security definer set search_path=public as $$
+returns jsonb language plpgsql volatile security definer set search_path=public,extensions as $$
 declare out jsonb:='[]'::jsonb; oid uuid; cid uuid; sid uuid; tok text; r jsonb;
         code text; item1 int; act1 text; act2 text; nreq int; d1 timestamptz; d2 timestamptz;
         cnt int; uid uuid;

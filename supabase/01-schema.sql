@@ -245,7 +245,7 @@ alter table app_secrets         enable row level security;
 
 -- helper: is the current auth user an ACCEPTED teacher (or owner)?
 create or replace function is_active_teacher() returns boolean
-language sql stable security definer set search_path=public as $$
+language sql stable security definer set search_path=public,extensions as $$
   select exists(
     select 1 from approved_teachers a
     where lower(a.email)=lower(coalesce(auth.jwt()->>'email',''))
@@ -255,12 +255,12 @@ language sql stable security definer set search_path=public as $$
     where m.user_id=auth.uid() and m.role='owner');
 $$;
 create or replace function is_owner() returns boolean
-language sql stable security definer set search_path=public as $$
+language sql stable security definer set search_path=public,extensions as $$
   select exists(select 1 from organization_members m
     where m.user_id=auth.uid() and m.role='owner');
 $$;
 create or replace function my_org_ids() returns setof uuid
-language sql stable security definer set search_path=public as $$
+language sql stable security definer set search_path=public,extensions as $$
   select org_id from organization_members where user_id=auth.uid()
   union
   select org_id from teacher_profiles where user_id=auth.uid();
