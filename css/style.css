@@ -224,6 +224,7 @@ hr.sep{border:none;border-top:1px solid var(--hairline);margin:20px 0}
 .hero a.ghost{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,.6)}
 .how{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:18px}
 .how .card{text-align:center;margin-top:0}
+.how .card h2::after{margin-left:auto;margin-right:auto}
 .unit-group{margin-top:16px}
 .unit-head{background:var(--card);border:1px solid var(--hairline);border-radius:12px;box-shadow:var(--shadow);padding:13px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-weight:700;color:var(--brand-dark)}
 .unit-body{display:none;padding:6px 0 0}
