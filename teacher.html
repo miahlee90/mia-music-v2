@@ -62,8 +62,9 @@
   function renderLogin(msg){
     app.innerHTML=`<div class="td-card" style="max-width:460px;margin:24px auto">
       <h2>Teacher Sign-in</h2>
-      <p class="td-small">Enter your approved teacher email. You'll receive a one-time sign-in link — no password.</p>
+      <p class="td-small">Enter your approved teacher email. You'll receive a one-time sign-in link — or use a password if the administrator set one for you.</p>
       <div class="td-row"><input id="em" type="email" placeholder="you@example.com" style="flex:1"><button id="go">Send link</button></div>
+      <div class="td-row"><input id="pw" type="password" placeholder="…or password (optional)" style="flex:1"><button id="goPw">Sign in</button></div>
       <p class="td-err" id="err">${msg||""}</p></div>`;
     document.getElementById("go").onclick=async()=>{
       const email=document.getElementById("em").value.trim();
@@ -74,6 +75,13 @@
         /not.*found|signups/i.test(error.message)?"This email is not authorized. Please contact the course administrator.":error.message;
         b.disabled=false; }
       else document.getElementById("err").innerHTML='<span style="color:#166534">Check your email and open the sign-in link on THIS device.</span>';
+    };
+    document.getElementById("goPw").onclick=async()=>{
+      const {error}=await sb.auth.signInWithPassword({
+        email:document.getElementById("em").value.trim(),
+        password:document.getElementById("pw").value});
+      if(error) document.getElementById("err").textContent=error.message;
+      else location.reload();
     };
   }
 

@@ -42,12 +42,20 @@
     app.innerHTML=`<div class="od-card" style="max-width:460px;margin:24px auto"><h2>Owner Sign-in</h2>
       <p class="od-small">Sign in with the owner email. (Create this user first in Supabase → Authentication → Add user.)</p>
       <div style="display:flex;gap:8px"><input id="em" type="email" placeholder="owner@example.com" style="flex:1"><button id="go">Send link</button></div>
+      <div style="display:flex;gap:8px;margin-top:8px"><input id="pw" type="password" placeholder="…or password (set in Supabase → Users)" style="flex:1"><button id="goPw">Sign in</button></div>
       <p class="od-err" id="err"></p></div>`;
     document.getElementById("go").onclick=async()=>{
       const {error}=await sb.auth.signInWithOtp({email:document.getElementById("em").value.trim(),
         options:{shouldCreateUser:false, emailRedirectTo:location.href.split("#")[0]}});
       document.getElementById("err").innerHTML=error?esc(error.message):
         '<span style="color:#166534">Check your email and open the sign-in link on THIS device.</span>';
+    };
+    document.getElementById("goPw").onclick=async()=>{
+      const {error}=await sb.auth.signInWithPassword({
+        email:document.getElementById("em").value.trim(),
+        password:document.getElementById("pw").value});
+      if(error) document.getElementById("err").textContent=esc(error.message);
+      else location.reload();
     };
     return;
   }
