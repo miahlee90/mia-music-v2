@@ -4,7 +4,7 @@
    "1-and-2-and-3-and-4-and" repeated across steps, games and quiz.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* flag-or-beam drill (unique L15 prefix) */
+/* flag-or-beam drill (unique L18 prefix) */
 function MF_L18_flagBeam(container,fb,rounds){
   const POOL=[
     {items:[{p:"G4",d:"8"}],beam:null,flag:true},

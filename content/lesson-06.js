@@ -4,7 +4,7 @@
    and the ONE-MEASURE RULE introduced with highlighted affected notes.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* find-the-flat-key drill (unique L22 prefix) */
+/* find-the-flat-key drill (unique L6 prefix) */
 function MF_L6_flatKey(container,fb){
   const rounds=[{from:"B4",to:"Bb4",name:"B♭"},{from:"E4",to:"Eb4",name:"E♭"},{from:"A4",to:"Ab4",name:"A♭"},{from:"D4",to:"Db4",name:"D♭"}];
   let i=0,api=null;
@@ -28,7 +28,7 @@ function MF_L6_flatKey(container,fb){
 }
 
 LESSON_CONTENT[6]={
-  welcome:"Unit 6! Today notes learn to duck DOWN. ⬇️",
+  welcome:"Today notes learn to duck DOWN. ⬇️",
   hook:{
     say:"Have you ever wished you could make a note just a little <b>lower</b>? That's exactly what a <b>flat (♭)</b> does! Press play — B, then B-flat. <b>Which way did the pitch move?</b>",
     interact:{ type:"custom",

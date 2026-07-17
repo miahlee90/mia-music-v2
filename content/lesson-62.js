@@ -193,9 +193,9 @@ LESSON_CONTENT[62]={
         {label:"Phrygian (♭2)", spec:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"Bb3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"}],width:250}},
         {label:"Locrian (♭2 ♭5)", spec:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"Bb3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"Eb4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"}],width:250}}]},
       result:(score)=>score>=5?"You identified every mode!":null },
-    { type:"term-race", title:"Game 4 · UNIT 15 GRAND FINALE Race",
+    { type:"term-race", title:"Game 4 · SEVEN-MODE GRAND FINALE Race",
       intro:"The victory lap: minor primaries, progressions and ALL seven modes!",
-      miaIntro:"Everything from Unit 15 — GO! \u{1F3C6}",
+      miaIntro:"All seven modes — GO! \u{1F3C6}",
       spec:{rounds:10, reverse:true, pool:[
         ["Aeolian","the natural minor scale"],
         ["Dorian","natural minor with raised 6th"],
@@ -207,7 +207,7 @@ LESSON_CONTENT[62]={
         ["Minor primaries","i, iv and V"],
         ["V in minor is major because","the harmonic minor raises the 7th"],
         ["Smooth minor bass","A-A-A-G♯-A"]]},
-      result:(score)=>score>=8?"UNIT 15 CHAMPION — modes and minors complete!":null }
+      result:(score)=>score>=8?"MODE CHAMPION — all seven complete!":null }
   ],
   practiceIntro:"20 practice questions — the four minor modes and the whole seven-mode family. Answer right and the next appears automatically!",
   practice:[
@@ -233,7 +233,7 @@ LESSON_CONTENT[62]={
     { type:"truefalse", q:"Phrygian's lowered 2nd puts a half step at the very start of the scale.", answer:true,
       explain:"1→♭2: the instant-recognition move." }
   ],
-  miaQuizIntro:"The Unit 15 finale quiz! Seven modes, four minor-family changes — map them all.",
+  miaQuizIntro:"Quiz time! Seven modes, four minor-family changes — map them all.",
   quiz:[
     { type:"mc", q:"Aeolian mode is…", choices:["a natural minor scale","a major scale","minor with a raised 6th"], answer:0,
       explain:"The free one on the minor side.", hint:"A to A, white keys." },
@@ -280,19 +280,19 @@ LESSON_CONTENT[62]={
     "✔ <b>Dorian raises only the 6th</b> — don't confuse it with melodic minor (6 AND 7).",
     "✔ <b>Phrygian's half step hits immediately</b>: 1→♭2 — the flamenco signature.",
     "✔ <b>Locrian is rarely used</b>: two lowered notes (♭2, ♭5) and a diminished tonic triad.",
-    "✔ All seven mapped: Ionian/Mixolydian/Lydian (major side) + these four. <b>UNIT 15 COMPLETE!</b> \u{1F389}"
+    "✔ All seven mapped: Ionian/Mixolydian/Lydian (major side) + these four. <b>ALL SEVEN MODES MAPPED!</b> \u{1F389}"
   ],
   tips:[
     "Quick tags: Dorian = minor with a raised 6th; Phrygian = minor with a lowered 2nd; Locrian = minor with ♭2 and ♭5.",
     "White-key map, complete: C-Ion, D-Dor, E-Phr, F-Lyd, G-Mix, A-Aeo, B-Loc. One octave of piano = the entire system.",
     "Much popular music uses Dorian or Mixolydian — listen for the changed 6ths and 7ths.",
-    "Unit 16 turns you into a COMPOSER: harmonizing real melodies with the chords you now command."
+    "Next lesson puts the modes to WORK — hearing and using them in real music."
   ],
-  rewards:{ badge:"Keeper of the Seven Modes — Unit 15 Champion", icon:"\u{1F3FA}" },
+  rewards:{ badge:"Keeper of the Seven Modes", icon:"\u{1F3FA}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! All seven modes — Greek fluency achieved, Unit 15 conquered! \u{1F3FA}\u{1F3C6}\u{1F389}",
-  miaPass:"Passed — and Unit 15 is COMPLETE! Seven modes, three minors, one smooth glide. \u{1F389}",
+  miaPerfect:"PERFECT! All seven modes — Greek fluency achieved! \u{1F3FA}\u{1F3C6}\u{1F389}",
+  miaPass:"Passed! Seven modes, three minors, one smooth glide. \u{1F389}",
   mia:{
     hook:{ label:"the welcome",
       explain:"Scale 2 lowered its 2nd (B→B♭): A Phrygian — natural minor with a half step at the very start.",
@@ -304,7 +304,7 @@ LESSON_CONTENT[62]={
     example:{ label:"the examples",
       explain:"Example 1 shows all four minor-family modes; example 2 finds Dorian, Phrygian and Locrian on the white keys (D→D, E→E, B→B)." },
     game:{ label:"the games",
-      explain:"Sprint the minor modes, climb Dorian and Phrygian, spot all four on cards, then run the Unit 15 victory lap.",
+      explain:"Sprint the minor modes, climb Dorian and Phrygian, spot all four on cards, then run the victory lap.",
       hint:"♯6 = Dorian, ♭2 = Phrygian, both-and-♭5 = Locrian." },
     quiz:{ label:"this question",
       explain:"Method: line the scale against natural minor, find the changed degree(s), name the Greek. Check degree 5 before crying Locrian.",

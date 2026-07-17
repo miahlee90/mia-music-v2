@@ -1,5 +1,5 @@
 /* Lesson 97 (14.8, formerly L91) — Common Song Forms (Book 4, Unit 22 — SELF-AUTHORED)
-   Binary/ternary/rondo (L73-75) get ONE review step only. New material:
+   Binary/ternary/rondo (14.5-14.7) get ONE review step only. New material:
    STROPHIC (same music, new words each verse), THROUGH-COMPOSED (new music
    throughout), 32-BAR AABA, VERSE-CHORUS form.
    NOTE: edit by FULL-FILE REWRITE only. */
@@ -178,7 +178,7 @@ LESSON_CONTENT[97]={
     "Radio exercise: label tonight's songs V-C-V-C-B-C — you'll find the form everywhere.",
     "AABA hides inside many verse-chorus songs: choruses themselves often run AABA internally.",
     "Writing strophic verses? Make the melody neutral enough to carry different words — that's the craft.",
-    "Unit 22 complete! Next unit: chords grow a fourth note — the seventh chords."
+    "Next lesson: THEME AND VARIATIONS — one melody, endless disguises."
   ],
   rewards:{ badge:"Songsmith", icon:"\u{1F3A4}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",

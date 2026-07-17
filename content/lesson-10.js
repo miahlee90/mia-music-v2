@@ -4,7 +4,7 @@
    games.js v4 (value-race, rhythm-tap, measure-build), quiz.js v4 (note-value, rhythm-count).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* count-the-beats helper (unique L6 prefix: safe for check.html batch load) */
+/* count-the-beats helper (unique L10 prefix: safe for check.html batch load) */
 function MF_L10_beatCount(container,fb){
   const rounds=[{d:"w",n:4},{d:"h",n:2},{d:"q",n:1}];
   const NAME={w:"Whole Note",h:"Half Note",q:"Quarter Note"};
@@ -75,7 +75,7 @@ LESSON_CONTENT[10]={
   ],
   steps:[
     /* Step 1 — the three note values: listen & compare (Activity 1) */
-    { say:"Before we begin, here's something important.<br>In this lesson, we'll use <b>4/4 Time</b> to learn note values.<br>In 4/4 Time:<br>• 1 Whole Note = <b>4 beats</b><br>• 1 Half Note = <b>2 beats</b><br>• 1 Quarter Note = <b>1 beat</b><br>You'll learn more about the Time Signature in Lesson 8.<br><br>Meet today's three notes.<br>The <b>Whole Note</b> has a hollow notehead with no stem and lasts the longest.<br>Add a stem and you get the <b>Half Note</b>.<br>Fill in the note head and you get the <b>Quarter Note</b>.<br>\u{1F447} <b>Click each note and compare how long each sound lasts:</b>",
+    { say:"Before we begin, here's something important.<br>In this lesson, we'll use <b>4/4 Time</b> to learn note values.<br>In 4/4 Time:<br>• 1 Whole Note = <b>4 beats</b><br>• 1 Half Note = <b>2 beats</b><br>• 1 Quarter Note = <b>1 beat</b><br>You'll learn more about the Time Signature in Lesson 2.3.<br><br>Meet today's three notes.<br>The <b>Whole Note</b> has a hollow notehead with no stem and lasts the longest.<br>Add a stem and you get the <b>Half Note</b>.<br>Fill in the note head and you get the <b>Quarter Note</b>.<br>\u{1F447} <b>Click each note and compare how long each sound lasts:</b>",
       try:{ type:"custom",
         hint:"Hollow + no stem = longest. Filled + stem = shortest.",
         mount:(container,fb)=>{
@@ -315,7 +315,7 @@ LESSON_CONTENT[10]={
   tips:[
     "Count OUT LOUD — “1-2-3-4” — while you clap note values. Your voice locks in the beat better than silent counting.",
     "Reading a new note? Ask two questions in order: hollow or filled? stem or no stem?",
-    "Today’s counts (4-2-1) come from 4/4 time — the most common. Lesson 8 introduces the time signature itself, and later you’ll meet signatures that count differently!",
+    "Today’s counts (4-2-1) come from 4/4 time — the most common. Lesson 2.3 introduces the time signature itself, and later you’ll meet signatures that count differently!",
     "Long notes are held, not re-played — let the whole note RING while you keep counting.",
     "\u{1F355} Next lesson: measures and bar lines — the boxes that keep all these beats organized!"
   ],

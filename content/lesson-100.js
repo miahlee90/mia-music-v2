@@ -184,14 +184,14 @@ LESSON_CONTENT[100]={
     "The trio is your landmark: hear the texture shift, and you are in the B of the big ABA.",
     "Scherzo hunting: symphony third movements after Beethoven — count how fast the 'minuet' got.",
     "In concertos, the orchestra's sudden silence announces the cadenza.",
-    "Unit 25 complete! Next unit: chromatic harmony — leading-tone chords, Neapolitan, augmented sixths."
+    "Unit 14 complete! Next unit: chromatic harmony — leading-tone chords, Neapolitan, augmented sixths."
   ],
   rewards:{ badge:"Grand Designer", icon:"\u{1F3BB}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
   miaQuizIntro:"Quiz: Use meter, character, formal plan, and performing forces to identify each form or genre.",
   quiz:[
-    { type:"mc", q:"A conventional minuet-and-trio movement is organized as…", choices:["Minuet–trio–minuet, an overall A–B–A design","A–B only","Rondo form"], answer:0, explain:"Ternary at movement scale.", hint:"L74 grown up." },
+    { type:"mc", q:"A conventional minuet-and-trio movement is organized as…", choices:["Minuet–trio–minuet, an overall A–B–A design","A–B only","Rondo form"], answer:0, explain:"Ternary at movement scale.", hint:"Lesson 14.6 grown up." },
     { type:"mc", q:"Which description is commonly associated with a Classical minuet?", choices:["Triple meter and dance character","Duple meter and march character","Free rhythm without meter"], answer:0, explain:"The courtly dance.", hint:"Three elegant beats." },
     { type:"mc", q:"Which statement best describes the trio section?", choices:["It provides contrast before the return of the opening minuet or scherzo","It must repeat the opening section exactly","It must be a percussion solo"], answer:0, explain:"The B of the big ABA.", hint:"Historically, some trios used reduced scoring, but later trio sections are not limited to fewer performers." },
     { type:"mc", q:"What does the Italian word \u{201C}scherzo\u{201D} mean?", choices:["Joke","Song","Slow"], answer:0, explain:"Despite the name, a scherzo may be playful, dramatic, or ominous.", hint:"Italian humor." },

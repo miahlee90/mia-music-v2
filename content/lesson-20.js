@@ -4,7 +4,7 @@
    "dotted quarter + eighth = 2 beats, counted 1-and-2 / and (eighth on the off-beat), LONG–short" everywhere. Counting corrected per instructor sketch (Session 16t).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* long-or-short drill (unique L17 prefix) */
+/* long-or-short drill (unique L20 prefix) */
 function MF_L20_longShort(container,fb){
   const seq=[{d:"q.",long:true},{d:"8",long:false},{d:"8",long:false},{d:"q.",long:true},{d:"q.",long:true},{d:"8",long:false}].sort(()=>Math.random()-.5);
   let i=0;
@@ -228,7 +228,7 @@ LESSON_CONTENT[20]={
     { type:"mc", q:"A dotted quarter note equals:", choices:["One quarter note","One half note","Three eighth notes","Four eighth notes"], answer:2,
       explain:"½ + ½ + ½ = 1½.", hint:"Count in halves." },
     { type:"mc", q:"A dot adds:", choices:["One beat","Half of the note's original value","Two beats","One quarter beat"], answer:1,
-      explain:"Always proportional.", hint:"The rule from Lesson 12." },
+      explain:"Always proportional.", hint:"The rule from Lesson 2.7." },
     { type:"truefalse", q:"A dotted quarter note lasts 1½ beats.", answer:true,
       explain:"1 + ½ = 1½.", hint:"Do the math." },
     { type:"truefalse", q:"A dotted quarter note is usually followed by an eighth note.", answer:true,
@@ -277,12 +277,12 @@ LESSON_CONTENT[20]={
     "Say “LOOONG-short” out loud while clapping the pair — exaggerate at first!",
     "The eighth after a dotted quarter often feels like a pickup INTO the next beat — let it lean forward.",
     "See a dot? Pause and do the math before playing: original + half.",
-    "\u{1F4E2} Next lesson: Unit 5 opens with DYNAMICS — how loud and soft shape the music!"
+    "\u{1F4E2} Next lesson: Unit 3 opens with DYNAMICS — how loud and soft shape the music!"
   ],
   rewards:{ badge:"Long-Short Rhythm Master", icon:"\u{1F3AF}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT — 1½ + ½ = 100%! Unit 4 conquered; Unit 5's expression marks await. \u{1F3AF}\u{1F389}",
+  miaPerfect:"PERFECT — 1½ + ½ = 100%! Unit 2 conquered; Unit 3's expression marks await. \u{1F3AF}\u{1F389}",
   miaPass:"You passed! The LONG–short pattern is in your hands forever. Review below or retry for the sweep.",
   mia:{
     hook:{ label:"the welcome",

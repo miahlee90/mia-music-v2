@@ -125,7 +125,7 @@ LESSON_CONTENT[82]={
         container.querySelector(".hk-a").onclick=()=>{ chords.forEach((row,i)=>row.forEach(m=>MFAudio.tone(m,.85,i*.9,.25))); hA=true; if(hB) setTimeout(()=>ch.style.display="",3900); };
         container.querySelector(".hk-b").onclick=()=>{ chords.forEach((row,i)=>{ row.forEach(m=>MFAudio.tone(m,.85,i*.9,.2)); MFAudio.tone(mel[i],.8,i*.9,.46); }); hB=true; if(hA) setTimeout(()=>ch.style.display="",3900); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
-          if(i===0) fb(true,"✓ D from Dm, B♭ from Gm, C♯ from A7 — the melody is built from each chord's own tones, so it inherits the minor mood automatically. Same method as Lesson 67, new mode. Today: composing in minor!");
+          if(i===0) fb(true,"✓ D from Dm, B♭ from Gm, C♯ from A7 — the melody is built from each chord's own tones, so it inherits the minor mood automatically. Same method as Lesson 11.6, new mode. Today: composing in minor!");
           else fb(false,"Tempo and clef don't create the fit. Listen to WHICH notes were chosen…");
         });
       } }
@@ -142,11 +142,11 @@ LESSON_CONTENT[82]={
     { say:"<b>Composing a Melody in a Minor Key:</b> Composing in a minor key follows the same process as composing in a major key. Build the melody from the tones of the chord progression. \u{1F447} <b>What changes when composing in a minor key?</b>",
       try:{ type:"mc", choices:["Only the chords — the method stays identical","Everything about the method","You may not use passing tones"], answer:0,
         success:"✓ Only the chords change — the process stays the same.",
-        fail:"Compare with Lesson 67's checklist…",
+        fail:"Compare with Lesson 11.6's checklist…",
         hint:"Method vs materials." } },
     { say:"<b>Analyze the Chords:</b> Before writing the melody, identify the Roman numerals and chord symbols. In D minor: i = Dm · iv = Gm · V7 = A7. \u{1F447} <b>Why does A7 contain C♯?</b>",
       try:{ type:"mc", choices:["D minor's harmonic scale raises its 7th, which is A7's 3rd","A7 always has sharps","It's borrowed from D major"], answer:0,
-        success:"✓ Lesson 60's logic rides along: the raised 7th (C♯) lives inside V7 and pulls to D.",
+        success:"✓ Lesson 8.3's logic rides along: the raised 7th (C♯) lives inside V7 and pulls to D.",
         fail:"What note is a half step below D — and which chord owns it?",
         hint:"The leading tone of D minor." } },
     { say:"<b>Beginning and Ending:</b> Most minor melodies begin and end on the <b>root of the i chord</b>. A <b>V (or V7)</b> chord usually comes before the final i chord. \u{1F447} <b>Which note is the best opening note in D minor?</b>",
@@ -218,7 +218,7 @@ LESSON_CONTENT[82]={
         {label:"Fits NO single chord", spec:{clef:"treble",notes:[{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"}],width:170}}]},
       result:(score)=>score>=5?"Chord tones spotted on sight!":null },
     { type:"term-race", title:"Game 4 · Minor Composer's Race",
-      intro:"The method, the frame, the raised 7th — everything from Lessons 68-69!",
+      intro:"The method, the frame, the raised 7th — harmonizing AND composing in minor!",
       miaIntro:"Compose at speed! \u{1F3C1}",
       spec:{rounds:8, reverse:true, pool:[
         ["Composing in minor","same method as major, minor chords"],
@@ -259,7 +259,7 @@ LESSON_CONTENT[82]={
   miaQuizIntro:"Quiz! Same checklist, minor palette — and let the C♯ do its magic.",
   quiz:[
     { type:"mc", q:"What is the basic process for composing a melody in a minor key?", choices:["The same as major: analyze, chord tones, non-harmonic tones, beginning and ending","A special minor-only method","Free improvisation with no rules"], answer:0,
-      explain:"One process, both modes.", hint:"Lesson 67's four steps." },
+      explain:"One process, both modes.", hint:"Lesson 11.6's four steps." },
     { type:"mc", q:"What should most melody notes come from?", choices:["The tones of the chord accompaniment","The chromatic scale","A different key"], answer:0,
       explain:"Each measure's chord provides the notes that fit.", hint:"The hook's discovery." },
     { type:"mc", q:"Begin by analyzing the progression and writing…", choices:["Roman numerals under the chords, symbols above the staff","the melody first","the tempo marking"], answer:0,
@@ -269,7 +269,7 @@ LESSON_CONTENT[82]={
     { type:"truefalse", q:"A V (or V7) usually precedes the last chord.", answer:true,
       explain:"The universal cadence rule.", hint:"Fourth lesson in a row!" },
     { type:"truefalse", q:"The labels U and L mark upper and lower neighboring tones.", answer:true,
-      explain:"The model's decoration marks.", hint:"Lesson 66 vocabulary." },
+      explain:"The model's decoration marks.", hint:"The decorations — full story in Lesson 12.1." },
     { type:"mc", q:"Which note is not part of the A7 chord?", choices:["D","A","C♯","E"], answer:0,
       explain:"A7 = A-C♯-E-G; D is not a chord tone.", hint:"Spell A7." },
     { type:"mc", q:"A melody measure over Dm reads A-G-A. The G is labeled…", choices:["L — lower neighboring tone","P — passing tone","5 — a chord tone"], answer:0,

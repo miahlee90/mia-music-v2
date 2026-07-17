@@ -141,7 +141,7 @@ LESSON_CONTENT[30]={
       show:{ type:"staff", spec:{clef:"grand",keysig:"F",notes:[],width:340} },
       try:{ type:"mc", choices:["False — it's F major","True — it's B♭ major"], answer:0,
         success:"✓ One flat alone = F major. Memorize the exception!",
-        fail:"Remember Lesson 28: which scale needed exactly one flat?",
+        fail:"Remember Lesson 4.3: which scale needed exactly one flat?",
         hint:"The scale F–G–A–B♭–C–D–E–F." } },
     { say:"The keys you already know from their scales: <b>Key of F — 1 flat (B♭)</b> and <b>Key of B♭ — 2 flats (B♭, E♭)</b>. The order of flats for up to two flats is <b>B E</b>. \u{1F447} <b>The key of B♭ major has which flats?</b>",
       show:{ type:"staff", spec:{clef:"grand",keysig:"Bb",notes:[],width:340} },
@@ -254,7 +254,7 @@ LESSON_CONTENT[30]={
     { type:"truefalse", q:"Flat key signatures always follow the same order.", answer:true,
       explain:"The order B–E–A–D–G–C–F never changes.", hint:"Same as sharps: fixed order." },
     { type:"truefalse", q:"The key signature with one flat is B♭ major.", answer:false,
-      explain:"One flat (B♭) alone = F major — the one exception.", hint:"Remember Lesson 28's one-flat scale." },
+      explain:"One flat (B♭) alone = F major — the one exception.", hint:"Remember Lesson 4.3's one-flat scale." },
     { type:"mc", q:"Which matching is correct?",
       choices:["F→1 · B♭→2 · E♭→3 · A♭→4 flats","F→2 · B♭→1 · E♭→4 · A♭→3 flats","F→3 · B♭→4 · E♭→1 · A♭→2 flats"], answer:0,
       explain:"The flat keys accumulate one flat at a time: F, B♭, E♭, A♭.", hint:"F major starts the chain with B♭." },
@@ -299,7 +299,7 @@ LESSON_CONTENT[30]={
     "✔ <b>Next-to-last flat = the key name</b> (for two or more flats).",
     "✔ <b>Exception: one flat (B♭) alone = F MAJOR</b>.",
     "✔ F = 1♭ · B♭ = 2♭ · E♭ = 3♭ · A♭ = 4♭ (and on to D♭, G♭, C♭).",
-    "✔ \u{1F389} <b>UNIT 7 COMPLETE</b> — tetrachords, four new scales, and both families of key signatures!"
+    "✔ \u{1F389} <b>Both signature families decoded</b> — tetrachords, four new scales, sharps AND flats!"
   ],
   tips:[
     "Notice the two-for-one: the flat KEYS (F, B♭, E♭, A♭…) follow the same B-E-A-D chain as the flats themselves, one step behind.",
@@ -310,8 +310,8 @@ LESSON_CONTENT[30]={
   rewards:{ badge:"Flat Key Decoder", icon:"\u{1F511}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secGame4","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"Perfect score — Unit 7 conquered! Scales built, signatures decoded, exception memorized. \u{1F511}\u{1F389}\u{1F389}",
-  miaPass:"You passed — and finished Unit 7! Keep BEAD Goes Clean Fast handy, and never forget: one flat = F major.",
+  miaPerfect:"Perfect score! Scales built, signatures decoded, exception memorized. \u{1F511}\u{1F389}\u{1F389}",
+  miaPass:"You passed! Keep BEAD Goes Clean Fast handy, and never forget: one flat = F major.",
   mia:{
     hook:{ label:"the welcome",
       explain:"The shortcut hiding in every flat signature: the next-to-last flat IS the key name. B♭–E♭–A♭ → E♭ major.",

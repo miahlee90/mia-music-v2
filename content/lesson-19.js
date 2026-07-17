@@ -4,7 +4,7 @@
    visual comparison of the eighth rest with the flagged eighth note.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* note-or-rest sorter (unique L16 prefix) */
+/* note-or-rest sorter (unique L19 prefix) */
 function MF_L19_noteRest(container,fb,rounds){
   const POOL=[
     {item:{p:"G4",d:"8"},rest:false},{item:{rest:"8"},rest:true},
@@ -240,7 +240,7 @@ LESSON_CONTENT[19]={
     { type:"mc", q:"How many eighth rests fill one beat of silence?", choices:["2","4","8"], answer:0,
       explain:"½ + ½ = 1 beat.", hint:"Two halves." },
     { type:"mc", q:"In “1-and-2-(and)”, the parentheses mean…", choices:["a silent half-beat","play louder","repeat"], answer:0,
-      explain:"Count it, don't play it.", hint:"Lesson 9's notation, now with half-beats." },
+      explain:"Count it, don't play it.", hint:"Lesson 2.4's notation, now with half-beats." },
     { type:"truefalse", q:"This measure is complete.",
       staff:{clef:"treble",time:"4/4",notes:[{p:"B4",d:"q"},{rest:"8"},{p:"B4",d:"8"},{p:"B4",d:"h"},{bar:"final"}],width:380},
       answer:true,

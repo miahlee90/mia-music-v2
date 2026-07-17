@@ -196,9 +196,9 @@ LESSON_CONTENT[84]={
         {label:"♭7 (C to B♭)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Bb4",d:"w",chord:true}],width:150}},
         {label:"Natural 5 (C to G) — NOT blue", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"G4",d:"w",chord:true}],width:150}}]},
       result:(score)=>score>=5?"Blue vision: activated!":null },
-    { type:"term-race", title:"Game 4 · UNIT 17 GRAND FINALE Race",
+    { type:"term-race", title:"Game 4 · UNIT 11 GRAND FINALE Race",
       intro:"The victory lap — minor harmonizing, composing, 12 bars and blue notes!",
-      miaIntro:"Everything from Unit 17 — GO! \u{1F3C6}",
+      miaIntro:"Everything blues — GO! \u{1F3C6}",
       spec:{rounds:10, reverse:true, pool:[
         ["Minor chart rows","1,3,5→i · 2,4,5,7→V · 1,4,6→iv"],
         ["Raised 7th in a melody","harmonize with V(7)"],
@@ -210,7 +210,7 @@ LESSON_CONTENT[84]={
         ["C blues scale","C-E♭-F-G♭-G-B♭-C"],
         ["Improvising","creating music as you play"],
         ["The complete blues sound","12-bar progression + blues scale"]]},
-      result:(score)=>score>=8?"UNIT 17 CHAMPION!":null }
+      result:(score)=>score>=8?"UNIT 11 CHAMPION!":null }
   ],
   practiceIntro:"20 practice questions — the recipe, the spelling and the blue notes. Answer right and the next appears automatically!",
   practice:[
@@ -237,10 +237,10 @@ LESSON_CONTENT[84]={
     { type:"truefalse", q:"Playing blues-scale notes over a blues progression creates the special blues sound.", answer:true,
       explain:"Scale + progression = the blues sound." }
   ],
-  miaQuizIntro:"The Unit 17 finale quiz! Seven notes, three of them blue — and a license to improvise.",
+  miaQuizIntro:"The Unit 11 finale quiz! Seven notes, three of them blue — and a license to improvise.",
   quiz:[
     { type:"mc", q:"What creates the blues sound?", choices:["The chord progression AND the blues scale","Only the tempo","Only the lyrics"], answer:0,
-      explain:"Two ingredients, one style.", hint:"Lessons 70 + 71 together." },
+      explain:"Two ingredients, one style.", hint:"Lessons 11.8 + 11.9 together." },
     { type:"mc", q:"Compared with a major scale, what is different about the blues scale?", choices:["It has 7 notes, with lowered 3rd, 5th and 7th","It has more notes","It has the same notes, reordered"], answer:0,
       explain:"Fewer notes; three of them lowered.", hint:"Count and compare." },
     { type:"mc", q:"The flatted notes are often called…", choices:["blue notes","soft notes","minor notes"], answer:0,
@@ -282,19 +282,19 @@ LESSON_CONTENT[84]={
     "✔ The scale has <b>7 notes</b> with <b>♭3, ♭5, ♭7 — the BLUE NOTES</b>.",
     "✔ Build it: <b>remove 2 & 6 → lower 3 & 7 → add ♭5</b>.",
     "✔ C blues: <b>C-E♭-F-G♭-G-B♭-C</b> (Root, ♭3, 4, ♭5, 5, ♭7, Root).",
-    "✔ <b>IMPROVISE</b> = create music as you play. <b>UNIT 17 COMPLETE!</b> \u{1F389}"
+    "✔ <b>IMPROVISE</b> = create music as you play. <b>UNIT 11 COMPLETE!</b> \u{1F389}"
   ],
   tips:[
     "Every note of the blues scale works over every chord of the 12-bar progression — that's why it's the improviser's first scale.",
     "The ♭5 is strongest as a PASSING note — slide G♭ into G (or down into F) rather than parking on it.",
     "Practice trick: loop the Game 2 round trip until your fingers know it blind, then improvise by rearranging its pieces.",
-    "Unit 18 — the FINAL unit — zooms all the way out: how whole pieces of music are built. Form!"
+    "Unit 11 complete! Next unit zooms in on the decorations: nonchord tones and ornaments!"
   ],
-  rewards:{ badge:"Blue-Note Bender — Unit 17 Champion", icon:"\u{1F535}" },
+  rewards:{ badge:"Blue-Note Bender — Unit 11 Champion", icon:"\u{1F535}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT — the scale, the blue notes AND a solo of your own! Unit 17 conquered. \u{1F535}\u{1F3C6}\u{1F389}",
-  miaPass:"Passed — and Unit 17 is COMPLETE! You harmonize, compose AND improvise now. \u{1F389}",
+  miaPerfect:"PERFECT — the scale, the blue notes AND a solo of your own! Unit 11 conquered. \u{1F535}\u{1F3C6}\u{1F389}",
+  miaPass:"Passed — and Unit 11 is COMPLETE! You harmonize, compose AND improvise now. \u{1F389}",
   mia:{
     hook:{ label:"the welcome",
       explain:"Solo A used plain C major; solo B used the BLUES SCALE — its ♭3, ♭5 and ♭7 against the chord created the blues sound.",
@@ -306,7 +306,7 @@ LESSON_CONTENT[84]={
     example:{ label:"the examples",
       explain:"Example 1 sets C major and C blues side by side; example 2 is a written blues lick over the I chord — the ♭3 rub in action." },
     game:{ label:"the games",
-      explain:"Sprint the facts, climb the scale both ways, spot the blue intervals, then run the Unit 17 victory lap.",
+      explain:"Sprint the facts, climb the scale both ways, spot the blue intervals, then run the Unit 11 victory lap.",
       hint:"Three blue notes: ♭3, ♭5, ♭7." },
     quiz:{ label:"this question",
       explain:"Everything comes from the three steps (remove 2&6, lower 3&7, add ♭5) and the spelling they produce. When in doubt, rebuild the scale.",

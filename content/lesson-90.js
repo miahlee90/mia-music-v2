@@ -210,7 +210,7 @@ LESSON_CONTENT[90]={
     { type:"truefalse", q:"A phrase must always be a complete musical idea.", answer:false,
       explain:"Complete OR incomplete." },
     { type:"truefalse", q:"Understanding basic forms helps you understand how a composition is organized.", answer:true,
-      explain:"The whole point of Unit 18." }
+      explain:"The whole point of Unit 14." }
   ],
   miaQuizIntro:"Quiz! Small ideas, big pieces.",
   quiz:[

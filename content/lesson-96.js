@@ -153,7 +153,7 @@ LESSON_CONTENT[96]={
       intro:"A quick review race across the big ideas — the staff, chords, scales, and forms. GO!",
       miaIntro:"Review race — how many can you catch? \u{26A1}",
       spec:{rounds:12, reverse:true, pool:[
-        ["The staff","5 lines, 4 spaces (Lesson 1!)"],
+        ["The staff","5 lines, 4 spaces (Lesson 1.1!)"],
         ["Treble & bass together","the grand staff"],
         ["A whole note","4 beats in 4/4"],
         ["Relative minor","the major scale's 6th degree"],
@@ -207,13 +207,13 @@ LESSON_CONTENT[96]={
     { type:"mc", q:"You hear: theme, contrast 1, theme, contrast 2, theme. The form is…", choices:["Rondo (ABACA)","Ternary (ABA)","Binary (AB)"], answer:0,
       explain:"Two DIFFERENT contrasts with returns = rondo.", hint:"Count the different contrasts." },
     { type:"mc", q:"You hear: statement, contrast, restatement — three sections total. The form is…", choices:["Ternary (ABA)","Rondo","Binary"], answer:0,
-      explain:"One contrast only = ABA.", hint:"Lesson 74's shape." },
+      explain:"One contrast only = ABA.", hint:"Lesson 14.6's shape." },
     { type:"mc", q:"Which form does NOT make a full return of its opening section?", choices:["AB (binary)","ABA (ternary)","Rondo"], answer:0,
       explain:"Binary (A–B) has no full return of the opening; ABA and rondo bring A back.", hint:"The one without a return of A." },
     { type:"mc", q:"Order the forms by how many times A appears (ABACA vs ABA vs AB):", choices:["Rondo (3) > Ternary (2) > Binary (1)","Binary > Ternary > Rondo","All equal"], answer:0,
       explain:"The rondo loves its theme most.", hint:"Count A's in each map." },
     { type:"mc", q:"Forms are built from…", choices:["motives → phrases → sections","only key signatures","only dynamics"], answer:0,
-      explain:"Lesson 72's order underlies Lessons 73-75.", hint:"The smallest ideas first." },
+      explain:"Lesson 14.1's order underlies Lessons 14.5-14.7.", hint:"The smallest ideas first." },
     { type:"mc", q:"Which statement best describes rondo form?", choices:["A recurring main theme alternates with contrasting sections","Two sections: A–B","One melody with no repeats"], answer:0,
       explain:"That is the rondo.", hint:"A keeps returning." },
     /* generated — a review mix from across the course */
@@ -235,7 +235,7 @@ LESSON_CONTENT[96]={
     "✔ A <b>RONDO</b> = the A section <b>alternating with contrasting sections</b>; A is the <b>recurring</b> one.",
     "✔ Common types: <b>ABABA, ABACA, ABACABA</b> — each opening and closing on A.",
     "✔ The family: <b>AB</b> (A–B) · <b>ABA</b> (A–B–A) · <b>rondo</b> (A–B–A–C–A…).",
-    "✔ Everything is built from <b>motives → phrases → sections</b> — Lesson 72's pyramid."
+    "✔ Everything is built from <b>motives → phrases → sections</b> — Lesson 14.1's pyramid."
   ],
   tips:[
     "Listen for rondos in classical finales — composers loved ending big works with the friendliest form.",

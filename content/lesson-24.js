@@ -4,7 +4,7 @@
    is rehearsed visually and interactively in steps, games and quiz.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* which-ending drill (unique L14 prefix) */
+/* which-ending drill (unique L24 prefix) */
 function MF_L24_whichEnding(container,fb){
   const rounds=[
     {q:"FIRST time through the section — which ending do you play?",a:0,why:"First trip → 1st ending, then back to the repeat sign."},
@@ -28,7 +28,7 @@ function MF_L24_whichEnding(container,fb){
 }
 
 LESSON_CONTENT[24]={
-  welcome:"Unit 4! Today music learns to say “again!” \u{1F501}",
+  welcome:"Today music learns to say “again!” \u{1F501}",
   hook:{
     say:"Have you ever listened to a song that repeats your favorite part? Instead of writing the same music twice, composers use <b>repeat signs</b> — a double bar with <b>two dots</b>. \u{1F447} <b>Which bar line says “play it again”?</b>",
     interact:{ type:"custom",

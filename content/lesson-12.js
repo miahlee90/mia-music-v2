@@ -5,7 +5,7 @@
    Uses staff.js v4.1 (time signatures incl. Common Time "C"), games.js v4.1 (measure-judge).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* tap-along-the-beat activity (unique L8 prefix: safe for check.html batch load) */
+/* tap-along-the-beat activity (unique L12 prefix: safe for check.html batch load) */
 function MF_L12_tapBeat(container,fb){
   const tempo=90, spb=60/tempo, total=8;
   let t0=0, taps=[], on=false, timers=[];
@@ -42,7 +42,7 @@ function MF_L12_tapBeat(container,fb){
 }
 
 LESSON_CONTENT[12]={
-  welcome:"Lesson 8 — the rhythmic roadmap arrives! \u{1F5FA}\u{FE0F}",
+  welcome:"The rhythmic roadmap arrives! \u{1F5FA}\u{FE0F}",
   hook:{
     say:"Every piece of music has a rhythm. But how do musicians know how many beats belong in each measure? That's the job of the <b>Time Signature</b>! Press play and count along — <b>which beat feels the strongest?</b>",
     interact:{ type:"custom",

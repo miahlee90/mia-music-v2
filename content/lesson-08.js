@@ -4,7 +4,7 @@
    (raise / lower / cancel + one-measure rule) consolidated here.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* which-accidental drill (unique L24 prefix) */
+/* which-accidental drill (unique L8 prefix) */
 function MF_L8_whichAcc(container,fb){
   const rounds=[
     {q:"You want F to become the black key to its RIGHT.",a:0},

@@ -1,5 +1,5 @@
 /* Lesson 63 (8.6, formerly L80) — Modes in Practice (Book 4, Unit 20 — SELF-AUTHORED)
-   Prerequisites: L62–63 defined all seven modes. Focus of THIS lesson:
+   Prerequisites: L61-62 (8.4-8.5) defined all seven modes. Focus of THIS lesson:
    the ONE idea that changing a single scale degree changes the modal sound.
    Two families (major-type / minor-type), each mode's characteristic scale
    degree, recognizing modes by ear and from notation. (Bright-to-dark

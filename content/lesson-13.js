@@ -5,7 +5,7 @@
    measure-build with rests, symbol-hunt).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* hat-or-hole drill (unique L9 prefix: safe for check.html batch load) */
+/* hat-or-hole drill (unique L13 prefix: safe for check.html batch load) */
 function MF_L13_hatHole(container,fb,rounds){
   const seq=[]; for(let i=0;i<rounds;i++) seq.push(i%2===0?"w":"h");
   seq.sort(()=>Math.random()-.5);
@@ -30,7 +30,7 @@ function MF_L13_hatHole(container,fb,rounds){
 }
 
 LESSON_CONTENT[13]={
-  welcome:"Lesson 9 — today we play… NOTHING. And it will be beautiful. \u{1F92B}",
+  welcome:"Today we play… NOTHING. And it will be beautiful. \u{1F92B}",
   hook:{
     say:"Music isn't only about sound — sometimes the most beautiful moment is <b>silence</b>. Press play: the same little tune, twice. \u{1F447} <b>What's different the second time?</b>",
     interact:{ type:"custom",
@@ -283,7 +283,7 @@ LESSON_CONTENT[13]={
     "Say “rest” out loud on every silent beat — “1, rest(2), 3, rest(4)” — until counting through silence feels natural.",
     "Hat or hole? Say it out loud every single time. Corny works — that's why it sticks!",
     "Great performers love rests: silence makes the next note land harder.",
-    "\u{1F92B} You've finished Unit 2's core rhythm symbols! Next lesson opens Unit 3: the 2/4 time signature."
+    "\u{1F92B} You've finished the core rhythm symbols! Next lesson: the 2/4 time signature."
   ],
   rewards:{ badge:"Silence Master", icon:"\u{1F92B}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",

@@ -5,7 +5,7 @@
    Draft Q12 implementation note followed: option B revised so only one answer is correct.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* loud-or-soft listening drill (unique L18 prefix) */
+/* loud-or-soft listening drill (unique L21 prefix) */
 function MF_L21_loudSoft(container,fb,rounds){
   const seq=[]; for(let i=0;i<rounds;i++) seq.push(i%2===0);
   seq.sort(()=>Math.random()-.5);
@@ -34,7 +34,7 @@ function MF_L21_loudSoft(container,fb,rounds){
 }
 
 LESSON_CONTENT[21]={
-  welcome:"Unit 5! Today music learns to whisper AND shout. \u{1F4E2}",
+  welcome:"Unit 3! Today music learns to whisper AND shout. \u{1F4E2}",
   hook:{
     say:"Have you ever whispered a secret… or shouted across a room? Music works the same way! Press play — the same melody, twice. <b>What's different?</b>",
     interact:{ type:"custom",

@@ -117,9 +117,9 @@ LESSON_CONTENT[50]={
         mount:(container,fb)=>MF_L50_logic(container,fb) } },
     { say:"Last connection: the degrees carrying the <b>primary chords</b> are exactly the big three names — <b>Tonic (I), Subdominant (IV), Dominant (V)</b>. When musicians say 'go to the dominant', they mean the V chord. \u{1F447} <b>'The dominant chord' in C major means…?</b>",
       try:{ type:"mc", choices:["The G triad (V)","The F triad (IV)","The loudest chord"], answer:0,
-        success:"✓ Dominant = degree 5 = G in C major = the V chord. Names, numerals, and chords now speak one language. Unit 12 has one lesson left: V gets a 7th!",
+        success:"✓ Dominant = degree 5 = G in C major = the V chord. Names, numerals, and chords now speak one language.",
         fail:"Dominant = degree 5. Which triad sits there?",
-        hint:"Lesson 48: V = ?" } }
+        hint:"V = the chord built on degree 5." } }
   ],
   examples:[
     { caption:"The C major scale with every degree's name and numeral — play and recite: Tonic, Supertonic, Mediant, Subdominant, Dominant, Submediant, Leading Tone, Tonic.",
@@ -200,7 +200,7 @@ LESSON_CONTENT[50]={
     { type:"mc", q:"In C major, the leading tone is…", choices:["B","A","D","F"], answer:0,
       explain:"Degree 7 — a half step under C.", hint:"One key below home." },
     { type:"mc", q:"Which numerals match Tonic-Subdominant-Dominant?", choices:["I - IV - V","I - II - III","ii - IV - vi"], answer:0,
-      explain:"The primary-chord trio by another name.", hint:"Lesson 48's primary triads." },
+      explain:"The primary-chord trio by another name.", hint:"The I, IV and V trio." },
     { type:"mc", q:"'Go to the dominant chord' in C major means play…", choices:["G-B-D","F-A-C","C-E-G"], answer:0,
       explain:"Dominant = degree 5 = the G triad (V).", hint:"Degree 5's triad." },
     /* generated */

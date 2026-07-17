@@ -1,8 +1,8 @@
 /* Lesson 86 (12.2, formerly L96) — Nonharmonic Tones Expanded (Book 4, Unit 24 — SELF-AUTHORED)
-   L66's passing/neighbor tones = ONE review step. New: SUSPENSION (4-3, 7-6,
+   L85's (12.1) passing/neighbor tones = ONE review step. New: SUSPENSION (4-3, 7-6,
    9-8: preparation-suspension-resolution), APPOGGIATURA (leap in, step out),
    ESCAPE TONE (step in, leap out), ANTICIPATION (melodic — early arrival of
-   the NEXT chord's tone; distinct from L78's rhythmic anticipation),
+   the NEXT chord's tone; distinct from L47's (6.10) rhythmic anticipation),
    PEDAL POINT (held bass under changing harmony), RETARDATION (upward
    suspension). NOTE: edit by FULL-FILE REWRITE only. */
 
@@ -187,7 +187,7 @@ LESSON_CONTENT[86]={
   ],
   tips:[
     "Suspensions are expressive gold: the clash is the emotion, the resolution is the relief — do not rush them.",
-    "Hear a 4-3 everywhere: it is the classic 'sus4 resolving' from Lesson 93, now with its full name.",
+    "Hear a 4-3 everywhere: it is the classic 'sus4 resolving' from Lesson 10.5, now with its full name.",
     "Pedal test: if the bass refuses to move while chords argue above, it is a pedal point.",
     "Next lesson: writing for four voices — SATB voice leading."
   ],
@@ -213,7 +213,7 @@ LESSON_CONTENT[86]={
     { type:"mc", q:"A pedal point is…", choices:["a sustained pitch, usually in the bass, under changing harmonies","a fast melody","a type of cadence"], answer:0,
       explain:"Usually tonic or dominant, and usually in the bass, though an inverted pedal may appear in an upper voice.", hint:"The unmoving voice." },
     { type:"truefalse", q:"Suspension figures 4-3, 7-6 and 9-8 count intervals above the bass.", answer:true,
-      explain:"They count intervals above the actual bass pitch, like figured bass.", hint:"Lesson 54's habit." },
+      explain:"They count intervals above the actual bass pitch, like figured bass.", hint:"Lesson 7.9's habit." },
     { type:"truefalse", q:"A harmonic anticipation can also create a rhythmic sense of early arrival.", answer:true,
       explain:"An anticipation belongs to the following harmony but arrives early in time, so harmonic and rhythmic anticipation can overlap.", hint:"Timing and pitch connect." },
     { type:"mc", q:"The soprano C is prepared, sustained over a G chord, and then resolves to B. What nonchord tone is created?", choices:["A 4-3 suspension","An escape tone","A pedal point"], answer:0,

@@ -4,7 +4,7 @@
    roadmaps with follow-the-path interaction and highlighted playback.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* where-do-you-go drill (unique L21 prefix) */
+/* where-do-you-go drill (unique L25 prefix) */
 function MF_L25_whereGo(container,fb){
   const rounds=[
     {see:"D.C. (Da Capo)",a:0,why:"Da Capo = “from the head” — back to the BEGINNING."},
@@ -293,12 +293,12 @@ LESSON_CONTENT[25]={
     "Know each sign's destination: D.C. = the beginning, D.S. = the sign \u{1F516}, Fine = stop \u{1F6D1}, Coda = the ending \u{1F3C1}.",
     "In real scores, mark your route with a pencil — every pro does it!",
     "Meet the instruction at the END of the written music — it always sends you somewhere you've been.",
-    "\u{1F389} Unit 5 complete! Next: Unit 6 — accidentals! Flats make notes lower…"
+    "\u{1F389} Unit 3 complete! Next: Unit 4 — major scales and key signatures!"
   ],
   rewards:{ badge:"Musical GPS Guide", icon:"\u{1F5FA}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT navigation — not one wrong turn on the whole map! Unit 6 awaits. \u{1F5FA}\u{FE0F}\u{1F389}",
+  miaPerfect:"PERFECT navigation — not one wrong turn on the whole map! Unit 4 awaits. \u{1F5FA}\u{FE0F}\u{1F389}",
   miaPass:"You passed! The musical GPS is calibrated. Review below or run the route once more.",
   mia:{
     hook:{ label:"the welcome",

@@ -206,7 +206,7 @@ LESSON_CONTENT[95]={
     { type:"mc", q:"Opening section → New section → Opening section again. The form is…", choices:["ABA (ternary)","AB (binary)","a 12-bar blues"], answer:0,
       explain:"Statement-contrast-restatement.", hint:"The return seals it." },
     { type:"mc", q:"Opening section → New section → Finish (no return). The form is…", choices:["AB (binary)","ABA (ternary)","rondo"], answer:0,
-      explain:"No return = two-part.", hint:"Lesson 73's shape." },
+      explain:"No return = two-part.", hint:"Lesson 14.5's shape." },
     { type:"mc", q:"Does every song that has an A section and a B section use ternary form?", choices:["No — only if the opening section returns as a third section","Yes, always","Only in classical music"], answer:0,
       explain:"Ternary needs the opening to return (A B A). Many songs are verse–chorus form instead.", hint:"Structure decides, not the letters." },
     { type:"truefalse", q:"The same musical sections can create different forms depending on their order.", answer:true,
@@ -236,7 +236,7 @@ LESSON_CONTENT[95]={
   ],
   tips:[
     "If you can hum the ENDING before the piece gets there (because it is the beginning again), the form is ABA.",
-    "Composers often mark the return with 'D.C. al Fine' instead of rewriting A — your Lesson 21 roadmap skills predicted this!",
+    "Composers often mark the return with 'D.C. al Fine' instead of rewriting A — your Lesson 3.5 roadmap skills predicted this!",
     "When B borrows a rhythm from A but changes the melody, the form still counts as ternary — contrast lives in the overall material.",
     "Final lesson next: what if A returns not once, but again and AGAIN? The rondo awaits — and with it, the finish line!"
   ],

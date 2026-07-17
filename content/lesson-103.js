@@ -217,7 +217,7 @@ LESSON_CONTENT[103]={
   tips:[
     "Spell any +6 fast: find 5, put half steps on both sides (♭6 below-target, ♯4 above-target… both aiming at 5).",
     "Hear Ger⁶ vs V7: identical sound, opposite futures — one opens outward, one falls a 5th.",
-    "The Fr⁶'s four notes all belong to one whole-tone scale — L82 hiding inside L106.",
+    "The Fr⁶'s four notes all belong to one whole-tone scale — Lesson 8.9 hiding inside this one.",
     "Next lesson: chords borrowed straight from the parallel key — modal mixture."
   ],
   rewards:{ badge:"Pincer Operator", icon:"\u{2194}\u{FE0F}" },

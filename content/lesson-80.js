@@ -277,7 +277,7 @@ LESSON_CONTENT[80]={
   tips:[
     "Reading trick: when a bass line skips (not steps), try stacking its notes — you're probably looking at an unrolled chord.",
     "Alberti bass — the classical pattern low-high-middle-high (C-G-E-G) — is history's most famous broken chord. Mozart built careers on it.",
-    "Play your harmonized scale from Lesson 64 again, but arpeggiate every chord for a flowing accompaniment.",
+    "Play your harmonized scale from Lesson 11.3 again, but arpeggiate every chord for a flowing accompaniment.",
     "Next lesson: the melody itself gets decorated — passing tones and neighbors that don't belong to the chord (on purpose!)."
   ],
   rewards:{ badge:"Harp Whisperer", icon:"\u{1F3B5}" },

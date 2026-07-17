@@ -241,7 +241,7 @@ LESSON_CONTENT[27]={
   tips:[
     "If the intervals are correct, the scale is correct — check the pattern, not your memory.",
     "At a piano, play G to G on white keys only, then again with F♯ — hear the 7th note 'lean' up into the keynote.",
-    "The overlap chain C → G → D continues: the next sharp scale starts on A (Lesson 31 territory!).",
+    "The overlap chain C → G → D continues: the next sharp scale starts on A — more sharps on the way!",
     "New sharps always appear on degree 7 of the new sharp scale."
   ],
   rewards:{ badge:"Sharp Scale Builder", icon:"\u{266F}" },

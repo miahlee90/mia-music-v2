@@ -29,7 +29,7 @@ function MF_L29_buildSig(container,fb){
 /* the SHARP-KEY LADDER (instructor 2026-07-06): start from an EMPTY signature
    (C major) and climb to 7 sharps — the student ADDS each sharp in order and
    MATCHES every new signature to its key name. (The book saves the circle of
-   fifths for Lesson 34 — this ladder is the raw material for it.) */
+   fifths for Lesson 31 (4.6) — this ladder is the raw material for it.) */
 function MF_L29_ladder(container,fb){
   const SHARPS=["F♯","C♯","G♯","D♯","A♯","E♯","B♯"];
   const KEYS=["C","G","D","A","E","B","F♯","C♯"];
@@ -286,7 +286,7 @@ LESSON_CONTENT[29]={
   tips:[
     "Reading a new piece? Check the key signature BEFORE you play a note — it tells you which black keys live in the piece.",
     "The order of sharps is also the order the sharp KEYS appear: G(1), D(2), A(3), E(4)…",
-    "A natural sign can cancel a key-signature sharp — but only for that measure (Lesson 24's one-measure rule still applies).",
+    "A natural sign can cancel a key-signature sharp — but only for that measure (Lesson 1.8's one-measure rule still applies).",
     "Next lesson: the flat keys — with their own order and their own naming trick."
   ],
   rewards:{ badge:"Sharp Key Decoder", icon:"\u{1F5DD}" },

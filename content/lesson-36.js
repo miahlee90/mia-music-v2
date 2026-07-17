@@ -90,7 +90,7 @@ LESSON_CONTENT[36]={
         container.querySelector(".hk-b").onclick=()=>{ MFAudio.tone(60,1.1,0,.42); MFAudio.tone(66,1.1,0,.42); hB=true; if(hA) setTimeout(()=>ch.style.display="",1100); };
         [...ch.children].forEach((b,i)=>b.onclick=()=>{
           if(i===1) fb(true,"✓ Number 2 was C–G♭ — a DIMINISHED 5th, the Perfect 5th shrunk by one half step. So dissonant that medieval theorists nicknamed it 'the devil in music'. Today: how intervals stretch (augmented) and shrink (diminished).");
-          else fb(false,"Press again — number 1 is the calm, open Perfect 5th from Lesson 35.");
+          else fb(false,"Press again — number 1 is the calm, open Perfect 5th from Lesson 5.2.");
         });
       } }
   },

@@ -230,9 +230,9 @@ LESSON_CONTENT[54]={
         {label:"C+ (augmented)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"E4",d:"w",chord:true},{p:"G#4",d:"w",chord:true}],width:150}},
         {label:"C° (diminished)", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"Eb4",d:"w",chord:true},{p:"Gb4",d:"w",chord:true}],width:150}}]},
       result:(score)=>score>=5?"Symbols locked in!":null },
-    { type:"term-race", title:"Game 4 · UNIT 14 GRAND FINALE Race",
+    { type:"term-race", title:"Game 4 · FOUR-QUALITY GRAND FINALE Race",
       intro:"The victory lap — relatives, three minors, four qualities!",
-      miaIntro:"Everything from Unit 14 — GO! \u{1F3C6}",
+      miaIntro:"All four qualities — GO! \u{1F3C6}",
       spec:{rounds:10, reverse:true, pool:[
         ["Augmented triad","a major triad with a raised 5th"],
         ["Diminished triad","a minor triad with a lowered 5th"],
@@ -244,7 +244,7 @@ LESSON_CONTENT[54]={
         ["Melodic minor","♯6 ♯7 up, natural down"],
         ["Minor triad","root + m3 + P5"],
         ["Aug stacking","M3 + M3"]]},
-      result:(score)=>score>=8?"UNIT 14 CHAMPION — the minor world is yours!":null }
+      result:(score)=>score>=8?"QUALITY CHAMPION — all four are yours!":null }
   ],
   practiceIntro:"20 practice questions — building, changing and naming all four triad qualities. Answer right and the next appears automatically!",
   practice:[
@@ -270,7 +270,7 @@ LESSON_CONTENT[54]={
     { type:"truefalse", q:"Augmented and diminished triads sound stable.", answer:false,
       explain:"Both are tense — that's their job." }
   ],
-  miaQuizIntro:"The Unit 14 finale quiz! The 3rd sets major/minor; the 5th sets augmented/diminished.",
+  miaQuizIntro:"Quiz time! The 3rd sets major/minor; the 5th sets augmented/diminished.",
   quiz:[
     { type:"mc", q:"An AUGMENTED triad is made by…", choices:["raising the 5th of a major triad a half step","lowering the 5th of a minor triad","lowering the 3rd of a major triad","adding a 7th"], answer:0,
       explain:"Major, made LARGER.", hint:"The name means 'enlarged'." },
@@ -322,19 +322,19 @@ LESSON_CONTENT[54]={
     "✔ <b>Diminished (°)</b> = minor triad, 5th LOWERED a half step: <b>m3+m3</b> (C-E♭-G♭).",
     "✔ Symbols: <b>C · Cm · C+ · C°</b> — four marks, four qualities.",
     "✔ Major-triad scale: <b>1-4-5 major, 2-3-6 minor, 7 diminished (vii°)</b>.",
-    "✔ The 3rd sets major/minor; the <b>5th</b> sets stable/unstable. <b>UNIT 14 COMPLETE!</b> \u{1F389}"
+    "✔ The 3rd sets major/minor; the <b>5th</b> sets stable/unstable. <b>ALL FOUR QUALITIES COMPLETE!</b> \u{1F389}"
   ],
   tips:[
     "Two-question quality test: (1) Is the 3rd major or minor? (2) Is the 5th perfect, raised, or lowered? Two answers = one quality.",
     "The augmented chord is film music's favorite 'dream sequence' sound; the diminished chord is its favorite 'danger!' sound. Listen for them tonight.",
     "vii° is secretly V7's upper three notes (B-D-F ⊂ G-B-D-F) — that's why both chords crave I.",
-    "Unit 15 next: the primary chords move INTO minor keys — i, iv, V… and why that V stays major."
+    "Next lesson: triads learn to stand on their heads — 1st INVERSION!"
   ],
-  rewards:{ badge:"Quality Alchemist — Unit 14 Champion", icon:"\u{26A1}" },
+  rewards:{ badge:"Quality Alchemist", icon:"\u{26A1}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! All four qualities, sight AND sound — Unit 14 conquered in style! \u{26A1}\u{1F3C6}\u{1F389}",
-  miaPass:"Passed — and Unit 14 is COMPLETE! Major, minor, augmented, diminished: the full palette. \u{1F389}",
+  miaPerfect:"PERFECT! All four qualities, sight AND sound — conquered in style! \u{26A1}\u{1F3C6}\u{1F389}",
+  miaPass:"Passed! Major, minor, augmented, diminished: the full palette. \u{1F389}",
   mia:{
     hook:{ label:"the welcome",
       explain:"Chord A was C-E-G♯ (augmented — raised 5th); chord B was C-E♭-G♭ (diminished — lowered 5th).",
@@ -346,7 +346,7 @@ LESSON_CONTENT[54]={
     example:{ label:"the examples",
       explain:"Example 1 plays the four faces of C; example 2 walks the entire triad scale I→vii°→I — listen for the wobble on degree 7." },
     game:{ label:"the games",
-      explain:"Sprint all four qualities, build C in all four qualities, match the symbols, then run the Unit 14 victory lap.",
+      explain:"Sprint all four qualities, build C in all four qualities, match the symbols, then run the victory lap.",
       hint:"+ = raised 5th, ° = lowered 5th." },
     quiz:{ label:"this question",
       explain:"Two dials answer everything: the 3rd (major/minor) and the 5th (perfect/raised/lowered). Spell, measure, name.",

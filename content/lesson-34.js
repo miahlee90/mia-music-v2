@@ -101,7 +101,7 @@ LESSON_CONTENT[34]={
     "Explain why no Major 5th or Perfect 3rd exists"
   ],
   steps:[
-    { say:"Quick review from Lesson 33: an interval's <b>NUMBER</b> comes from counting letter names, both ends included. \u{1F447} <b>C up to A — count the letters. What number is this interval?</b>",
+    { say:"Quick review from Lesson 5.1: an interval's <b>NUMBER</b> comes from counting letter names, both ends included. \u{1F447} <b>C up to A — count the letters. What number is this interval?</b>",
       show:{ type:"staff", spec:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"A4",d:"w",chord:true}],brackets:[{from:0,to:1,label:"?"}],width:200} },
       try:{ type:"mc", choices:["A 6th","A 5th","A 7th"], answer:0,
         success:"✓ C(1) D(2) E(3) F(4) G(5) A(6) — a 6th. Number: solved. But the number is only HALF of an interval's name…",

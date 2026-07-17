@@ -103,7 +103,7 @@ LESSON_CONTENT[35]={
     "Identify minor intervals on staff and keyboard"
   ],
   steps:[
-    { say:"Review first — the two families from Lesson 35. \u{1F447} <b>Which numbers make up the MAJOR family?</b>",
+    { say:"Review first — the two families from Lesson 5.2. \u{1F447} <b>Which numbers make up the MAJOR family?</b>",
       try:{ type:"mc", choices:["2, 3, 6, 7","1, 4, 5, 8","1, 3, 5, 7"], answer:0,
         success:"✓ 2-3-6-7 = Major. Keep that roster warm — today it's EXACTLY these four that learn a new trick.",
         fail:"1-4-5-8 is the Perfect team. The other four are…",
@@ -139,7 +139,7 @@ LESSON_CONTENT[35]={
         hint:"M3 = 4. Subtract the half step." } },
     { say:"Critical fine print: <b>only Major intervals can become minor</b> — the 2nds, 3rds, 6ths and 7ths. <b>Perfect intervals (1, 4, 5, 8) can NEVER be minor.</b> There is no such thing as a 'minor 5th' — lowering a Perfect interval creates something else entirely (next lesson!). \u{1F447} <b>Which of these can become minor?</b>",
       try:{ type:"mc", choices:["A Major 6th","A Perfect 5th","A Perfect octave","A Perfect 4th"], answer:0,
-        success:"✓ Only the Major family shrinks to minor. Perfect intervals follow different rules — coming in Lesson 37.",
+        success:"✓ Only the Major family shrinks to minor. Perfect intervals follow different rules — coming in Lesson 5.4.",
         fail:"Minor comes from MAJOR — which choice is a Major interval?",
         hint:"2-3-6-7 can go minor; 1-4-5-8 cannot." } },
     { say:"Convert on the staff — the writer's skill. \u{1F447} <b>Pick the accidental that turns each Major interval into its minor twin:</b>",

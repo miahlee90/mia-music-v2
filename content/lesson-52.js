@@ -1,7 +1,7 @@
 /* Lesson 52 (7.4, formerly L85) — Diatonic Triads (Book 4, Unit 21 — SELF-AUTHORED)
    Core: build a triad on EVERY scale degree. Major key qualities:
    I ii iii IV V vi vii° = M m m M M m dim. Harmonic minor:
-   i ii° III+ iv V VI vii° (L60 introduced this — reviewed here).
+   i ii° III+ iv V VI vii° (introduced here; fully explored in Lesson 8.3).
    Case convention: upper = major, lower = minor, ° = dim, + = aug.
    This lesson is the prerequisite for Roman numeral analysis.
    NOTE: edit by FULL-FILE REWRITE only. */

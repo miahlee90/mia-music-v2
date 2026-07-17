@@ -199,7 +199,7 @@ LESSON_CONTENT[4]={
       spec:{rounds:6, pool:[
         {p:"E4",clef:"treble",n:0},{p:"G4",clef:"treble",n:0},{p:"B4",clef:"treble",n:0},{p:"C4",clef:"treble",n:1},
         {p:"F3",clef:"bass",n:0},{p:"C3",clef:"bass",n:0},{p:"C4",clef:"bass",n:1}]},
-      result:(score)=>score>=5?"You see ledger lines instantly — Lesson 5 will be a breeze!":null },
+      result:(score)=>score>=5?"You see ledger lines instantly — Lesson 1.5 will be a breeze!":null },
     { type:"note-race", title:"Game 4 · Grand Staff Speed Round",
       intro:"Notes from BOTH staffs — name as many as you can in <b>45 seconds</b>!",
       spec:{seconds:45, pool:[
@@ -273,7 +273,7 @@ LESSON_CONTENT[4]={
       explain:"E4 is line 1 and G4 is line 2 — but C4 sits below the staff on a ledger line.",
       hint:"Which one is Middle C?" },
     { type:"truefalse", q:"Ledger lines can extend the staff both above and below.", answer:true,
-      explain:"High notes get them above, low notes below — Lesson 5 explores both!",
+      explain:"High notes get them above, low notes below — Lesson 1.5 explores both!",
       hint:"Middle C uses one BELOW the treble staff… and ABOVE the bass staff." },
     { type:"mc", q:"The brace and the barline are…", choices:["two names for the same thing","the curly bracket and the straight vertical line joining the staffs","types of ledger lines"], answer:1,
       explain:"Brace = curly bracket; barline = straight vertical line. Together they bind the Grand Staff.",
@@ -314,7 +314,7 @@ LESSON_CONTENT[4]={
   rewards:{ badge:"Grand Staff Explorer", icon:"\u{1F309}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secKb","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect 20?! The Grand Staff is officially your home — Lesson 5 takes us beyond its edges! \u{1F3B5}",
+  miaPerfect:"A perfect 20?! The Grand Staff is officially your home — Lesson 1.5 takes us beyond its edges! \u{1F3B5}",
   mia:{
     hook:{ label:"the welcome",
       explain:"Piano music needs both hands — so it needs both staffs. The Grand Staff joins treble and bass with a brace, and Middle C bridges the gap between them.",

@@ -4,7 +4,7 @@
    step, game, practice and quiz; visual comparisons throughout (staff.js v5 arcs).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* tie-or-slur drill (unique L13 prefix) */
+/* tie-or-slur drill (unique L17 prefix) */
 function MF_L17_tieSlur(container,fb,rounds){
   const POOL=[
     {notes:[{p:"G4",d:"h"},{p:"G4",d:"h"}],tie:true},

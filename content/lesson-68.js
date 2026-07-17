@@ -67,7 +67,7 @@ LESSON_CONTENT[68]={
       try:{ type:"mc", choices:["At or near the end of a phrase","On every beat","Only at the end of an entire composition"], answer:0,
         success:"✓ Correct. Cadences commonly mark phrase endings, so a composition may contain many cadential points.",
         fail:"Where does a phrase create a point of arrival or pause?",
-        hint:"Recall the phrase endings introduced in Lesson 72." } },
+        hint:"Think of phrase endings — the spots where the music breathes." } },
     { say:"<b>Authentic Cadence — V (or V⁷) → I:</b> the dominant resolves to the tonic at a phrase ending. This is the strongest way to close a phrase. \u{1F447} <b>Which harmonic motion defines an authentic cadence in a major key?</b>",
       show:{ type:"staff", spec:{clef:"treble",tempo:80,notes:[
         {p:"G4",d:"w",label:"V7"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true},
@@ -222,7 +222,7 @@ LESSON_CONTENT[68]={
     "Question-answer pairs: phrase 1 with a weaker cadence (often a half cadence), phrase 2 with a stronger one (often a PAC) — one common design in countless melodies (and next lesson's periods).",
     "Deceptive cadences extend pieces: composers 'miss' the ending on purpose, then land it for real.",
     "Sing the soprano at each cadence — ending on 1 (PAC) feels different from ending on 3 (IAC).",
-    "Unit 21 complete! Next unit: phrases pair into PERIODS — cadences make it possible."
+    "Next lesson: progressions — the chords between the cadences start moving."
   ],
   rewards:{ badge:"Cadence Keeper", icon:"\u{1F6A6}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",

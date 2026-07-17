@@ -238,7 +238,7 @@ LESSON_CONTENT[2]={
     { type:"mc", q:"What is the correct order for reading any note?", choices:["Guess → check → count","Find the clef → line or space? → count from the bottom → name it","Count from the top → name it → find the clef"], answer:1,
       explain:"Clef first, position second, count from the bottom, then name.", hint:"What must you find FIRST?" },
     { type:"mc", q:"Which note is HIGHER: E4 (line 1) or F5 (line 5)?", choices:["E4","F5","They're the same"], answer:1,
-      explain:"Line 5 is the top of the staff — far above line 1.", hint:"Higher on the staff = higher pitch (Lesson 1!)." },
+      explain:"Line 5 is the top of the staff — far above line 1.", hint:"Higher on the staff = higher pitch (Lesson 1.1!)." },
     { type:"truefalse", q:"Line notes and space notes use two completely different alphabets.", answer:false,
       explain:"Same seven letters — lines and spaces simply alternate through A–G.",
       hint:"How many letters does ALL of music use?" }
@@ -273,7 +273,7 @@ LESSON_CONTENT[2]={
   rewards:{ badge:"Treble Clef Explorer", icon:"\u{1F3BC}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secKb","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect 20?! Treble Clef Explorer barely covers it — Lesson 3 and the bass clef await! \u{1F3B5}",
+  miaPerfect:"A perfect 20?! Treble Clef Explorer barely covers it — Lesson 1.3 and the bass clef await! \u{1F3B5}",
   mia:{
     hook:{ label:"the welcome",
       explain:"A clef assigns a letter name to one line. The treble clef names line 2 “G,” and from that anchor every line and space gets its name.",

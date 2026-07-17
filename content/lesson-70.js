@@ -181,7 +181,7 @@ LESSON_CONTENT[70]={stackFigures:true,
       try:{ type:"mc", choices:["E — the top of the 2nd (D-E)","G♯ — the bass is always the root","B — the middle"], answer:0,
         success:"✓ D→E is the 2nd; its upper note E is the root — this is E7 (V7 of A minor) in 1st inversion, our V⁶₅.",
         fail:"Find two neighbors a 2nd apart inside G♯-B-D-E…",
-        hint:"Lesson 53's crunch-pair trick." } }
+        hint:"The crunch pair inside V7." } }
   ],
   examples:[
     { caption:"The CHOPPY version: i-iv-i-V7-i in root position. Honest, but hear the bass leap around: A, D, A, E, A.",
@@ -265,7 +265,7 @@ LESSON_CONTENT[70]={stackFigures:true,
   miaQuizIntro:"Quiz! Common tones stay in place; the leading tone moves by half step.",
   quiz:[
     { type:"mc", q:"The i, iv and V triads can accompany most simple minor melodies because…", choices:["they contain all the notes of the harmonic minor scale","minor melodies use only three notes","they never need inversions"], answer:0,
-      explain:"Seven letters, three chords, full coverage.", hint:"Same argument as Lesson 55, minor edition." },
+      explain:"Seven letters, three chords, full coverage.", hint:"Same argument as Lesson 9.3, minor edition." },
     { type:"mc", q:"Which inversion is commonly used for the iv chord?", choices:["2nd inversion (iv⁶₄)","3rd inversion","open position"], answer:0,
       explain:"Its 5th — the tonic A — drops to the bass.", hint:"Which inversion parks the tonic in the bass?" },
     { type:"mc", q:"Which inversion is commonly used for the V or V7 chord?", choices:["1st inversion (V⁶ or V⁶₅)","2nd inversion","root position"], answer:0,

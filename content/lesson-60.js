@@ -113,13 +113,13 @@ LESSON_CONTENT[60]={
         {p:"D4",d:"w",label:"iv = Dm"},{p:"F4",d:"w",chord:true},{p:"A4",d:"w",chord:true}],width:400} },
       try:{ type:"mc", choices:["Lowercase numerals mark MINOR triads","They're quieter chords","They're played with the left hand"], answer:0,
         success:"✓ Case = quality, as always: i and iv wear lowercase because they're minor.",
-        fail:"Remember Lesson 58's labeling rule…",
+        fail:"Remember Lesson 7.5's labeling rule…",
         hint:"ii, iii, vi wore lowercase too." } },
     { say:"<b>Why Is V Major?</b> The <b>harmonic minor scale</b> raises the <b>7th degree</b>. That raised note becomes the <b>3rd of the V chord</b>, making it <b>major</b>. <b>Remember: without the raised 7th, the V chord would be minor. Raising the 7th changes v into V.</b> \u{1F447} <b>Where does the G♯ in E major come from?</b>",
       show:{ type:"staff", spec:{clef:"treble",notes:[
         {p:"E4",d:"w",label:"V = E major"},{p:"G#4",d:"w",chord:true},{p:"B4",d:"w",chord:true}],width:240} },
       try:{ type:"mc", choices:["It's the harmonic minor's raised 7th, serving as the chord's 3rd","It's a printing error","V chords always add sharps"], answer:0,
-        success:"✓ Lesson 57's raised 7th becomes chord power: the leading tone G♯ lives inside V and aims straight at the tonic A.",
+        success:"✓ Lesson 8.2's raised 7th becomes chord power: the leading tone G♯ lives inside V and aims straight at the tonic A.",
         fail:"Which scale form raises its 7th? And which note of E-G♯-B is that 7th?",
         hint:"A harmonic minor: A B C D E F G♯." } },
     { say:"Build the three primary triads in A minor. \u{1F447}",
@@ -244,7 +244,7 @@ LESSON_CONTENT[60]={
     { type:"mc", q:"The primary triads of a minor key are…", choices:["i, iv and V","I, IV and V","i, iii and v","ii, iv and vi"], answer:0,
       explain:"Minor, minor, MAJOR — the case tells the story.", hint:"Check each numeral's case." },
     { type:"mc", q:"Why are the i and iv chords minor?", choices:["They consist of a root, minor 3rd and perfect 5th","They consist of a root, major 3rd and perfect 5th","They stack two major 3rds"], answer:0,
-      explain:"Recall Lesson 58: minor triad = root + m3 + P5.", hint:"Lesson 58." },
+      explain:"Recall Lesson 7.5: minor triad = root + m3 + P5.", hint:"Lesson 7.5." },
     { type:"mc", q:"Why is the V chord major?", choices:["the harmonic minor scale raises the 7th, which becomes V's 3rd","composers prefer loud chords","the key signature adds a sharp"], answer:0,
       explain:"Raised 7th → chord quality.", hint:"Where does G♯ sit inside E-G♯-B?" },
     { type:"mc", q:"In A minor, the three primary triads are…", choices:["Am, Dm, E","Am, Dm, Em","Am, D, E","C, F, G"], answer:0,
@@ -268,7 +268,7 @@ LESSON_CONTENT[60]={
     { type:"mc", q:"In E minor, the V chord is spelled…", choices:["B-D♯-F♯","B-D-F♯","E-G-B"], answer:0,
       explain:"E harmonic minor raises D→D♯; V = B major.", hint:"Raise E minor's 7th degree." },
     { type:"mc", q:"Why is the raised 7th important in a minor key?", choices:["It creates a leading tone that pulls to the tonic","It makes the chord easier to finger","It cancels the key signature"], answer:0,
-      explain:"That pull is the engine of every strong cadence.", hint:"Lesson 57's whole argument." },
+      explain:"That pull is the engine of every strong cadence.", hint:"Lesson 8.2's whole argument." },
     /* generated */
     { gen:"triad-quality", params:{}, count:4 },
     { gen:"rel-key", params:{ask:"both"}, count:2 },
@@ -294,7 +294,7 @@ LESSON_CONTENT[60]={
     "Spot-check any minor key in seconds: spell V, and make sure its middle note is the RAISED 7th (a half step below the tonic).",
     "The chord just above V — VI — is major too; the i→VI move appears in many pieces.",
     "III+ rarely appears in simple songs, but film composers adore it — it's the sound of something transforming.",
-    "Next lesson these three chords start MOVING: minor progressions with the same smoothing tricks you learned in Lesson 55."
+    "Next lesson: the seven MODES of the major scale. (These three chords start MOVING in Lesson 9.4!)"
   ],
   rewards:{ badge:"Minor-Key Locksmith", icon:"\u{1F511}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",

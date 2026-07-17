@@ -87,7 +87,7 @@ LESSON_CONTENT[79]={
   steps:[
     { say:"<b>Harmonizing in a Minor Key:</b> Harmonizing a melody in a minor key is very similar to harmonizing in a major key. The <b>i, iv, and V (or V7)</b> chords contain all the notes of the <b>harmonic minor scale</b>. \u{1F447} <b>Which minor scale is used for harmonization?</b>",
       try:{ type:"mc", choices:["Harmonic minor — the raised 7th feeds the V chord","Natural minor only","Melodic minor descending"], answer:0,
-        success:"✓ The raised 7th (G♯ in A minor) is exactly what makes V major — Lesson 60's whole story, now applied.",
+        success:"✓ The raised 7th (G♯ in A minor) is exactly what makes V major — Lesson 8.3's whole story, now applied.",
         fail:"Which form gave the V chord its major 3rd?",
         hint:"The 'most used' minor form." } },
     { say:"<b>Using the Minor Harmonizing Chart:</b> Use the chart to choose a chord that contains the melody note. \u{1F447} <b>Which chord harmonizes scale degree 6 in A minor?</b>",
@@ -124,7 +124,7 @@ LESSON_CONTENT[79]={
     { say:"<b>Choosing Between Chords:</b> Some melody notes belong to more than one chord. <b>Remember: if more than one chord fits the melody note, use your ear to choose the best harmony.</b> \u{1F447} <b>Who makes the final choice?</b>",
       try:{ type:"mc", choices:["Your ear","The metronome","Always the V chord"], answer:0,
         success:"✓ Your ear should always be the final guide.",
-        fail:"Same tie-breaker as Lesson 64…",
+        fail:"Same tie-breaker as Lesson 11.3…",
         hint:"The final guide." } },
     { say:"<b>Try Another Key:</b> Apply the same harmonizing chart in E minor. \u{1F447} <b>Which are the three primary chords?</b>",
       try:{ type:"mc", choices:["Em (E-G-B), Am (A-C-E), B7 (B-D♯-F♯-A)","Em, Am, Bm — all minor","E, A, B — all major"], answer:0,
@@ -217,7 +217,7 @@ LESSON_CONTENT[79]={
   miaQuizIntro:"Quiz! Same chart shape, minor spellings — and G♯ always points at V.",
   quiz:[
     { type:"mc", q:"Why can many minor melodies be harmonized with i, iv, and V (or V7)?", choices:["Those chords contain all the notes of the harmonic minor scale","Minor melodies avoid most notes","The chart forbids other chords"], answer:0,
-      explain:"Complete coverage, minor edition.", hint:"Same argument as Lesson 64." },
+      explain:"Complete coverage, minor edition.", hint:"Same argument as Lesson 11.3." },
     { type:"mc", q:"The minor chart assigns degrees 1, 3 and 5 to…", choices:["the i chord","the iv chord","the V7 chord"], answer:0,
       explain:"They are i's own tones.", hint:"Root, 3rd, 5th of the tonic." },
     { type:"mc", q:"Degrees 2, 4, 5 and 7 (raised) go to…", choices:["V (or V7)","i","iv"], answer:0,

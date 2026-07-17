@@ -236,7 +236,7 @@ LESSON_CONTENT[3]={
       hint:"Lower on the staff = lower pitch." },
     { type:"truefalse", q:"Once you know “All Cows Eat Grass,” you never need to check note positions.", answer:false,
       explain:"Mnemonics start you off — fluency comes from recognizing positions directly.",
-      hint:"What did Mia say about mnemonics in Lesson 2?" }
+      hint:"What did Mia say about mnemonics in Lesson 1.2?" }
   ],
   vocabulary:[
     {def:"The clef used for notes in the lower pitch ranges. The two dots of the clef surround the line on which the note F is placed.", term:"Bass Clef (F Clef)", staff:{clef:"bass",notes:[],width:150}},
@@ -266,7 +266,7 @@ LESSON_CONTENT[3]={
   rewards:{ badge:"Bass Clef Explorer", icon:"\u{1F3B6}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secKb","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect 20 on a brand-new clef?! Bass Clef Explorer — see you at the Grand Staff in Lesson 4! \u{1F3B5}",
+  miaPerfect:"A perfect 20 on a brand-new clef?! Bass Clef Explorer — see you at the Grand Staff in Lesson 1.4! \u{1F3B5}",
   mia:{
     hook:{ label:"the welcome",
       explain:"The bass clef is the low half of music — cello, tuba, left hand. Its two dots mark line 4 as F, and that anchor names everything else.",

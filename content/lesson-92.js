@@ -141,7 +141,7 @@ LESSON_CONTENT[92]={
         ["Shape climbing by step","rising sequence"],
         ["Shape sinking by step","falling sequence"],
         ["Development's workhorse","the sequence"],
-        ["Lesson 72's connection","motive development"]]},
+        ["Lesson 14.1's connection","motive development"]]},
       result:(score)=>score>=6?"You classified the tonal and real sequences correctly.":null }
   ],
   practiceIntro:"Complete 20 practice questions on melodic patterns, sequential levels, direction, and tonal and real sequences. The next question will appear after each correct answer.",
@@ -215,7 +215,7 @@ LESSON_CONTENT[92]={
       explain:"Development's workhorse.", hint:"This lesson." },
     { type:"mc", q:"In C major, C–D–E followed by D–E–F♯ and E–F♯–G♯ is best classified as…", choices:["a rising real sequence","a tonal sequence remaining diatonic to C major","exact repetition at one pitch level"], answer:0,
       explain:"Each statement preserves the original whole-step pattern. The required accidentals take the passage outside C major, producing a real sequence.", hint:"Spot the accidentals." },
-    { type:"mc", q:"Which earlier concept does melodic sequence directly develop?", choices:["Motive development from Lesson 72","Key-signature notation","Meter classification"], answer:0,
+    { type:"mc", q:"Which earlier concept does melodic sequence directly develop?", choices:["Motive development from Lesson 14.1","Key-signature notation","Meter classification"], answer:0,
       explain:"It develops motives by moving them.", hint:"The building blocks lesson." }
   ],
   miaPerfect:"Perfect score! You accurately identified rising, descending, tonal, and real sequences.",

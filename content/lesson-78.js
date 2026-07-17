@@ -224,7 +224,7 @@ LESSON_CONTENT[78]={
     { type:"mc", q:"Harmonizing a melody means…", choices:["creating a chord accompaniment for it","writing a new melody","changing its rhythm","adding dynamics"], answer:0,
       explain:"Chords under a tune.", hint:"Today's title." },
     { type:"mc", q:"Why can I, IV, and V harmonize many melodies?", choices:["Those chords contain all the notes of the major scale","Melodies only use three notes","Other chords are forbidden"], answer:0,
-      explain:"Full scale coverage with three chords.", hint:"The Unit 13 fact returns." },
+      explain:"Full scale coverage with three chords.", hint:"Three primary chords cover every scale note." },
     { type:"mc", q:"According to the chart, scale degrees 1, 3 and 5 take which chord?", choices:["I","IV","V7"], answer:0,
       explain:"They ARE the I chord's tones.", hint:"Root, 3rd, 5th of the tonic." },
     { type:"mc", q:"Scale degrees 2, 4, 5 and 7 take which chord?", choices:["V (or V7)","I","IV"], answer:0,
@@ -242,7 +242,7 @@ LESSON_CONTENT[78]={
     { type:"mc", q:"Which chords contain melody note F?", choices:["IV (F-A-C) and V7 (G-B-D-F)","I and IV","only I"], answer:0,
       explain:"F = IV's root = V7's 7th.", hint:"Spell both chords." },
     { type:"mc", q:"When the V7 is used in these harmonizations, which note is often left out?", choices:["The 5th (D)","The root (G)","The 7th (F)"], answer:0,
-      explain:"Lesson 50's omission rule, now in service.", hint:"The filler note." },
+      explain:"Lesson 10.1's omission rule, now in service.", hint:"The filler note." },
     { type:"mc", q:"In F major, melody note D (degree 6) should be harmonized by…", choices:["B♭ major — the IV chord","F major — the I chord","C7 — the V7"], answer:0,
       explain:"Degree 6 → IV; IV of F is B♭ (B♭-D-F contains D).", hint:"Degrees first, letters second." },
     /* generated */

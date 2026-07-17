@@ -250,7 +250,7 @@ LESSON_CONTENT[1]={
   rewards:{ badge:"Staff Explorer", icon:"\u{1F3C5}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect 20?! Staff Explorer doesn't even cover it — see you in Lesson 2! \u{1F3B5}",
+  miaPerfect:"A perfect 20?! Staff Explorer doesn't even cover it — see you in Lesson 1.2! \u{1F3B5}",
   mia:{
     hook:{ label:"the welcome",
       explain:"Music is a language and the staff is where its symbols live — five lines and four spaces.",

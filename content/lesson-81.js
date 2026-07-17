@@ -107,7 +107,7 @@ LESSON_CONTENT[81]={
     { say:"<b>Composing a Melody:</b> Instead of adding chords to a melody, you will write a melody that fits a chord progression. \u{1F447} <b>What does composing mean in this lesson?</b>",
       try:{ type:"mc", choices:["Writing a melody to fit a given progression","Writing a progression to fit a melody","Copying an existing tune"], answer:0,
         success:"✓ The chords come first this time; the tune is yours to invent.",
-        fail:"Which direction is the REVERSE of Lesson 64?",
+        fail:"Which direction is the REVERSE of Lesson 11.3?",
         hint:"Progression → melody." } },
     { say:"<b>Analyze the Chords:</b> Before writing the melody, identify each chord using Roman numerals and chord symbols. This helps you choose notes that fit each harmony. \u{1F447} <b>Why should you analyze the progression first?</b>",
       try:{ type:"mc", choices:["Each measure's chord tells you which melody notes will fit","It makes the page look professional","Analysis replaces composing"], answer:0,
@@ -187,9 +187,9 @@ LESSON_CONTENT[81]={
         {label:"Fits the G7 chord (G-B-D-F)", spec:{clef:"treble",notes:[{p:"G4",d:"q"},{p:"B4",d:"q"},{p:"D5",d:"q"},{p:"F5",d:"q"}],width:170}},
         {label:"Fits NO single chord (scale run)", spec:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"}],width:170}}]},
       result:(score)=>score>=5?"Safe notes spotted instantly!":null },
-    { type:"term-race", title:"Game 4 · UNIT 16 GRAND FINALE Race",
+    { type:"term-race", title:"Game 4 · COMPOSER'S GRAND FINALE Race",
       intro:"The victory lap — harmonizing, textures, non-harmonic tones and composing!",
-      miaIntro:"Everything from Unit 16 — GO! \u{1F3C6}",
+      miaIntro:"Harmonize, compose, decorate — GO! \u{1F3C6}",
       spec:{rounds:10, reverse:true, pool:[
         ["To harmonize","add chords to a melody"],
         ["To compose","add a melody to chords"],
@@ -201,7 +201,7 @@ LESSON_CONTENT[81]={
         ["Neighboring tone","returns to the same chord tone"],
         ["First & last note","root of I"],
         ["The pre-final chord","V or V7"]]},
-      result:(score)=>score>=8?"UNIT 16 CHAMPION!":null }
+      result:(score)=>score>=8?"COMPOSER CHAMPION!":null }
   ],
   practiceIntro:"20 practice questions — the method, the labels and the frame rules. Answer right and the next appears automatically!",
   practice:[
@@ -228,7 +228,7 @@ LESSON_CONTENT[81]={
     { type:"truefalse", q:"Composing and harmonizing are opposite processes.", answer:true,
       explain:"Melody→chords vs chords→melody." }
   ],
-  miaQuizIntro:"The Unit 16 finale quiz! Analyze → chord tones → non-harmonic tones → beginning and ending.",
+  miaQuizIntro:"Quiz time! Analyze → chord tones → non-harmonic tones → beginning and ending.",
   quiz:[
     { type:"mc", q:"What is the first step in composing a melody?", choices:["Analyze the chord progression","Write the melody immediately","Choose a tempo"], answer:0,
       explain:"Analysis shows which notes fit each harmony.", hint:"Chords first, tune second." },
@@ -237,7 +237,7 @@ LESSON_CONTENT[81]={
     { type:"mc", q:"What should most melody notes come from?", choices:["The tones of each measure's chord","The chromatic scale","The drum pattern"], answer:0,
       explain:"Chord tones form the framework.", hint:"The hook's discovery." },
     { type:"mc", q:"Which notes can make a melody more interesting?", choices:["Passing and neighboring tones","More rests","Louder dynamics"], answer:0,
-      explain:"Non-harmonic tones add smoothness and interest.", hint:"Lesson 66's tones." },
+      explain:"Non-harmonic tones add smoothness and interest.", hint:"Passing and neighboring tones — Lesson 12.1 tells all." },
     { type:"truefalse", q:"The first and last note of a melody tends to be the root of the I chord.", answer:true,
       explain:"Begin and end on the root of I.", hint:"The tonic." },
     { type:"truefalse", q:"A V or V7 chord usually precedes the last chord.", answer:true,
@@ -271,19 +271,19 @@ LESSON_CONTENT[81]={
     "✔ Method: <b>analyze</b> (numerals below, symbols above) → <b>outline from chord tones</b> → <b>decorate</b> with passing/neighboring tones.",
     "✔ Frame: <b>first and last note = root of I</b>; <b>V(7) precedes the final chord</b>.",
     "✔ The labels <b>R / 3 / 5 / P</b> name each melody note's job.",
-    "✔ Many melodies fit one progression — <b>your choices make yours</b>. UNIT 16 COMPLETE! \u{1F389}"
+    "✔ Many melodies fit one progression — <b>your choices make yours</b>. THE COMPOSER'S TOOLKIT IS COMPLETE! \u{1F389}"
   ],
   tips:[
     "Composer's warm-up: take ANY progression you know and hum only roots. Then upgrade some roots to 3rds and 5ths. Then add one passing tone. Congratulations — you compose.",
     "The 3rd of each chord is the juiciest melody note — it carries the chord's whole personality.",
     "Label your own melodies R/3/5/P and see whether the P's land on weak beats.",
-    "Unit 17 takes composing into MINOR keys — and then somewhere unexpected: the blues."
+    "Next lesson takes composing into MINOR keys — and later this unit, somewhere unexpected: the blues."
   ],
-  rewards:{ badge:"Composer's Quill — Unit 16 Champion", icon:"\u{270D}\u{FE0F}" },
+  rewards:{ badge:"Composer's Quill", icon:"\u{270D}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"PERFECT! Analyze, chord tones, non-harmonic tones, beginning and ending — Unit 16 complete! \u{270D}\u{FE0F}\u{1F3C6}\u{1F389}",
-  miaPass:"Passed — and Unit 16 is COMPLETE! You can harmonize, play textures, and compose. \u{1F389}",
+  miaPerfect:"PERFECT! Analyze, chord tones, non-harmonic tones, beginning and ending — the composer's checklist, complete! \u{270D}\u{FE0F}\u{1F3C6}\u{1F389}",
+  miaPass:"Passed! You can harmonize, play textures, and compose. \u{1F389}",
   mia:{
     hook:{ label:"the welcome",
       explain:"The melody's notes came from inside each measure's chord: C, A, E, D, C over C-F-C-G7-C. Chord tones are the composer's palette.",
@@ -295,7 +295,7 @@ LESSON_CONTENT[81]={
     example:{ label:"the examples",
       explain:"Example 1 is a fully labeled composed melody (R/3/5/P); example 2 shows the same framework before and after decoration." },
     game:{ label:"the games",
-      explain:"Sprint the checklist, perform the model, spot safe notes, then run the Unit 16 victory lap.",
+      explain:"Sprint the checklist, perform the model, spot safe notes, then run the victory lap.",
       hint:"Chord tones first — always." },
     quiz:{ label:"this question",
       explain:"Every question is one of the four steps: analyze, framework, decorate, frame. Identify which step, and the answer follows.",

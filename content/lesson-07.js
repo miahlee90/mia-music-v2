@@ -1,10 +1,10 @@
 /* Lesson 7 (1.7, formerly L23) — Sharps (AEMT Book 1, Unit 6)
    Built from drafts/UNIT 6 – Lessons 22, 23 & 24.md (combined draft — pages stay separate, DD-12).
    QA notes honored: ♯ = one key to the RIGHT (keyboard ↔ pitch direction),
-   one-measure rule reinforced from L22.
+   one-measure rule reinforced from L6 (1.6).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* find-the-sharp-key drill (unique L23 prefix) */
+/* find-the-sharp-key drill (unique L7 prefix) */
 function MF_L7_sharpKey(container,fb){
   const rounds=[{from:"C4",to:"C#4",name:"C♯"},{from:"F4",to:"F#4",name:"F♯"},{from:"G4",to:"G#4",name:"G♯"},{from:"D4",to:"D#4",name:"D♯"}];
   let i=0;
@@ -205,7 +205,7 @@ LESSON_CONTENT[7]={
     { type:"mc", q:"F♯ on the piano is…", choices:["the black key just right of F","the black key just left of F","the white key F itself"], answer:0,
       explain:"One half step UP from F.", hint:"Right = up." },
     { type:"mc", q:"An accidental stops applying when…", choices:["the measure ends at the bar line","the note repeats","the line of music ends"], answer:0,
-      explain:"Bar line = off switch.", hint:"Same rule as Lesson 22." },
+      explain:"Bar line = off switch.", hint:"Same rule as Lesson 1.6." },
     { type:"mc", q:"The sharp symbol looks most like…", choices:["a hashtag #","a lowercase b","a circle with a cross"], answer:0,
       explain:"♯ — two verticals, two slants.", hint:"Social-media friendly." },
     { type:"mc", q:"Which statement is correct?",

@@ -94,7 +94,7 @@ LESSON_CONTENT[71]={
         {p:"G4",d:"w",x:390,label:"V7 = G-B-D-F"},{p:"B4",d:"w",chord:true},{p:"D5",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:520} },
       try:{ type:"mc", choices:["A minor 7th above the root","A Major 7th above the root","Another perfect 5th"], answer:0,
         success:"✓ Minor 7th (G→F = 10 half steps). A MAJOR 7th would give F♯ — a very different, dreamier chord.",
-        fail:"G up to F — count the half steps: 10 = which interval from Unit 9?",
+        fail:"G up to F — count the half steps: 10 = which interval from Unit 5?",
         hint:"m7, not M7." } },
     { say:"Terminology check: with <b>FOUR notes</b>, V7 is officially a <b>CHORD but not a triad</b> — triads have exactly three. Its full name: the <b>DOMINANT SEVENTH</b> chord. \u{1F447} <b>Why isn't V7 a triad?</b>",
       try:{ type:"mc", choices:["It has 4 notes — triads have exactly 3","It's too loud","It has no root"], answer:0,
@@ -168,7 +168,7 @@ LESSON_CONTENT[71]={
         {label:"V7, 5th omitted", spec:{clef:"treble",notes:[{p:"G4",d:"w"},{p:"B4",d:"w",chord:true},{p:"F5",d:"w",chord:true}],width:150}}]},
       result:(score)=>score>=5?"No seventh slips past you!":null },
     { type:"term-race", title:"Game 4 · GRAND REVIEW Race",
-      intro:"The victory lap: chords, intervals, meters — highlights from Lessons 26–50!",
+      intro:"The victory lap: chords, intervals, meters — highlights from everything so far!",
       miaIntro:"Everything you've learned — GO! \u{1F3C6}",
       spec:{rounds:10, reverse:true, pool:[
         ["V7","the dominant seventh chord"],
@@ -180,8 +180,8 @@ LESSON_CONTENT[71]={
         ["6/8 time","six eighth-beats in two bundles"],
         ["Cut time","2/2 — alla breve"],
         ["Leading tone","degree 7 — pulls to the tonic"],
-        ["Circle of fifths","the key-signature map from Unit 8"]]},
-      result:(score)=>score>=8?"REVIEW CHAMPION — inversions await in Lesson 51!":null }
+        ["Circle of fifths","the key-signature map from Unit 4"]]},
+      result:(score)=>score>=8?"REVIEW CHAMPION — V7's own inversions await in Lesson 10.2!":null }
   ],
   practiceIntro:"16 practice questions — recipes, spellings, omissions and the big finale review. Answer right and the next appears automatically!",
   practice:[
@@ -202,7 +202,7 @@ LESSON_CONTENT[71]={
     { type:"truefalse", q:"After this lesson, the three primary chords are I, IV, and V7.", answer:true,
       explain:"The dominant almost always brings its 7th." },
     { type:"mc", q:"The tension inside V7 comes partly from B and F forming…", choices:["a tritone (dim 5th)","a perfect 5th","an octave"], answer:0,
-      explain:"The B–F tritone (the unstable interval from Lesson 37) naturally wants to resolve to I." },
+      explain:"The B–F tritone (the unstable interval from Lesson 5.4) naturally wants to resolve to I." },
     { type:"mc", q:"V7 resolves most naturally to…", choices:["I","IV","vii"], answer:0,
       explain:"Dominant → tonic: music's strongest arrival." }
   ],

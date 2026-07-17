@@ -258,7 +258,7 @@ LESSON_CONTENT[104]={
     "Songwriters: try iv in place of your last IV for a sudden change of color.",
     "♭VI–♭VII–I powers countless game and film finales — the borrowed climb home.",
     "Every mixture chord still resolves within C — treat the flats as visitors, not settlers.",
-    "Unit 26 complete! Next unit: extended chords — 9ths, 11ths, 13ths and beyond."
+    "Next lesson: extended chords — 9ths, 11ths, 13ths and beyond."
   ],
   rewards:{ badge:"Color Borrower", icon:"\u{1F3A8}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",

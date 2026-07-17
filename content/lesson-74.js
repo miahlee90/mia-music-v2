@@ -1,5 +1,5 @@
 /* Lesson 74 (10.4, formerly L94) — Seventh-Chord Inversions (Book 4, Unit 23 — SELF-AUTHORED)
-   L51-54 covered triad inversions + V7 inversions + figured bass — reviewed
+   Triad/V7 inversions + figured bass (7.7-7.9, 10.2) — reviewed
    in ONE step. New: ALL five seventh types invert the same way; figures
    7 / 6-5 / 4-3 / 4-2 apply to every seventh chord; bass-line reading;
    lead-sheet slash equivalents. NOTE: edit by FULL-FILE REWRITE only. */
@@ -247,7 +247,7 @@ LESSON_CONTENT[74]={stackFigures:true,
     { type:"mc", q:"In conventional tonal voice leading, why does a third-inversion seventh chord often move to a first-inversion chord?", choices:["The chordal seventh in the bass normally resolves downward by step","The first chord must be performed more loudly","The progression eliminates dominant function"], answer:0,
       explain:"For example, D7/C may resolve to G/B as the bass moves downward from C to B.", hint:"Where does a 7th want to go?" },
     { type:"mc", q:"Which is an important purpose of chord inversions?", choices:["Shaping bass lines and improving voice leading","Changing the chord root","Increasing the tempo"], answer:0,
-      explain:"Inversions allow the bass and upper voices to connect chords in varied and efficient ways.", hint:"Lesson 55's principle." }
+      explain:"Inversions allow the bass and upper voices to connect chords in varied and efficient ways.", hint:"Lesson 9.3's principle." }
   ],
   miaPerfect:"Perfect score! You accurately identified all positions and inversion figures of seventh chords.",
   miaPass:"You passed! Next, you will study common chord progressions.",

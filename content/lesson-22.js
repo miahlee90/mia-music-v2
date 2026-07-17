@@ -4,7 +4,7 @@
    (walking/running imagery + two tap games at slow and fast tempos).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* listen-and-choose tempo drill (unique L19 prefix) */
+/* listen-and-choose tempo drill (unique L22 prefix) */
 function MF_L22_tempoListen(container,fb){
   const ROUNDS=[{bpm:56,a:"Adagio"},{bpm:132,a:"Allegro"},{bpm:88,a:"Andante"},{bpm:160,a:"Vivace"}].sort(()=>Math.random()-.5);
   const OPTS=["Adagio","Andante","Allegro","Vivace"];

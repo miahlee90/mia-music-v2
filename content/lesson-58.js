@@ -64,7 +64,7 @@ function MF_L58_down3(container,fb){
 }
 
 LESSON_CONTENT[58]={
-  welcome:"Unit 14 begins — welcome to the minor world. Every major key has a relative minor. \u{1F3E0}",
+  welcome:"Unit 8 begins — welcome to the minor world. Every major key has a relative minor. \u{1F3E0}",
   hook:{
     say:"<b>These two scales use the same notes and the same key signature.</b> <b>Why do they sound different?</b>",
     interact:{ type:"custom",

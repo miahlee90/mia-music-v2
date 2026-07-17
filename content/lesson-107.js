@@ -407,7 +407,7 @@ LESSON_CONTENT[107]={
     { type:"mc", q:"Which statement correctly distinguishes the two concepts?", choices:["Functional substitution replaces a chord with one of similar function; reharmonization is broader and may preserve or change the function","Both mean exactly the same procedure","Neither involves the melody"], answer:0, explain:"One is narrower than the other.", hint:"Which allows the function to change?" }
   ],
   miaPerfect:"Perfect score! You reharmonized by family, applied the tritone substitute, and analyzed chromatic mediants and the ♭9.",
-  miaPass:"You passed and completed Lesson 110. You can now identify and apply the principal harmonic, melodic, rhythmic, and formal concepts in Music Theory 1.",
+  miaPass:"You passed and completed the final lesson of the course. You can now identify and apply the principal harmonic, melodic, rhythmic, and formal concepts in Music Theory 1.",
   mia:{
     hook:{ label:"the welcome",
       explain:"D♭7 replaced G7 — the tritone substitution: same tritone engine, chromatic bass slide.",

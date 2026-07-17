@@ -230,7 +230,7 @@ LESSON_CONTENT[16]={
     { type:"mc", q:"How many beats does a dotted half note receive?", choices:["2","3","4","5"], answer:1,
       explain:"2 + 1 = 3 beats.", hint:"The golden equation." },
     { type:"mc", q:"A half note is worth…", choices:["1 beat","2 beats","3 beats","4 beats"], answer:1,
-      explain:"Two beats — before any dot.", hint:"Review from Lesson 6." },
+      explain:"Two beats — before any dot.", hint:"Review from Lesson 2.1." },
     { type:"truefalse", q:"A dotted half note lasts three beats.", answer:true,
       explain:"2 + 1 = 3.", hint:"Add the dot's bonus." },
     { type:"truefalse", q:"A dot doubles the value of a note.", answer:false,
@@ -277,7 +277,7 @@ LESSON_CONTENT[16]={
   ],
   tips:[
     "Whenever you meet a dotted note, say the equation out loud: “2 plus 1 equals 3.”",
-    "The dot is proportional — later you'll dot a QUARTER note and get 1½ beats (Lesson 17!).",
+    "The dot is proportional — later you'll dot a QUARTER note and get 1½ beats (Lesson 2.11!).",
     "In 3/4 music, scan for dotted halves first — they mark the calmest measures.",
     "\u{1F517} Next lesson: curved lines that GLUE notes together — ties and slurs!"
   ],

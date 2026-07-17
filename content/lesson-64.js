@@ -198,7 +198,7 @@ LESSON_CONTENT[64]={
   ],
   tips:[
     "Improvising with the major or minor pentatonic? A clear tonal center, rhythm and phrasing still matter.",
-    "Blues soloing: minor pentatonic + the ♭5 from Lesson 71 = the commonly taught minor blues scale.",
+    "Blues soloing: minor pentatonic + one extra ♭5 = the minor blues scale (coming in Lesson 11.9!).",
     "Sing a spiritual or a lullaby and check the notes — many use only five.",
     "Next lesson: whole-tone and chromatic scales — scales that do not point to a tonic by structure alone."
   ],

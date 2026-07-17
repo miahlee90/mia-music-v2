@@ -113,8 +113,8 @@ LESSON_CONTENT[61]={
         <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px">Aeolian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center">6</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px">= natural minor</td></tr>
         <tr><td style="border:1.5px solid #cdd5e1;padding:4px 12px;color:#889">Locrian</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;text-align:center;color:#889">7</td><td style="border:1.5px solid #cdd5e1;padding:4px 12px;color:#889">(later)</td></tr></table>` },
       try:{ type:"mc", choices:["Aeolian (starting on A)","Locrian (starting on B)","Dorian (starting on D)"], answer:0,
-        success:"✓ A to A on white keys = A natural minor = the AEOLIAN mode. And C to C is IONIAN — the major scale. You've been playing modes since Lesson 26!",
-        fail:"Which white-key scale did Lesson 56 call the relative minor?",
+        success:"✓ A to A on white keys = A natural minor = the AEOLIAN mode. And C to C is IONIAN — the major scale. You've been playing modes since Lesson 4.1!",
+        fail:"Which white-key scale did Lesson 8.1 call the relative minor?",
         hint:"A to A…" } },
     { say:"<b>Ionian Mode:</b> Ionian is simply the <b>major scale</b>. \u{1F447} <b>How is Ionian different from the major scale?</b>",
       show:{ type:"staff", spec:{clef:"treble",tempo:110,notes:[
@@ -230,7 +230,7 @@ LESSON_CONTENT[61]={
     { type:"truefalse", q:"There are seven modes altogether, each with a Greek name.", answer:true,
       explain:"One per degree of the parent scale.", hint:"Count the white keys C to B." },
     { type:"truefalse", q:"The Aeolian mode (starting on A) is the natural minor scale.", answer:true,
-      explain:"Lesson 56's relative minor, under its Greek name.", hint:"A to A, white keys." },
+      explain:"Lesson 8.1's relative minor, under its Greek name.", hint:"A to A, white keys." },
     { type:"mc", q:"Name this mode (built on C).",
       staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F4",d:"q"},{p:"G4",d:"q"},{p:"A4",d:"q"},{p:"Bb4",d:"q"},{p:"C5",d:"q"}],width:400},
       choices:["C Mixolydian","C Ionian","C Lydian"], answer:0,
@@ -265,7 +265,7 @@ LESSON_CONTENT[61]={
     "Fast recall: Lydian = ♯4 (raised); Mixolydian = ♭7 (lowered).",
     "Hum the plain scale, then change the one note — modes are easier to HEAR than to memorize.",
     "White-key trick: any mode's flavor = play its home-to-home octave on white keys (G to G on white keys = Mixolydian).",
-    "Lesson 63 finishes the family: the four modes that grow from the natural minor scale."
+    "Lesson 8.5 finishes the family: the four modes that grow from the natural minor scale."
   ],
   rewards:{ badge:"Mode Traveler", icon:"\u{1F3DB}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",

@@ -204,7 +204,7 @@ LESSON_CONTENT[59]={
         {label:"Melodic minor ↑ (♯6 ♯7)", spec:{clef:"treble",notes:[{p:"A3",d:"q"},{p:"B3",d:"q"},{p:"C4",d:"q"},{p:"D4",d:"q"},{p:"E4",d:"q"},{p:"F#4",d:"q"},{p:"G#4",d:"q"},{p:"A4",d:"q"}],width:250}}]},
       result:(score)=>score>=5?"No form can hide from you!":null },
     { type:"term-race", title:"Game 4 · Minor-Scale Grand Race",
-      intro:"Everything from Lessons 56-57 — relatives and all three forms!",
+      intro:"Everything from Lessons 8.1-8.2 — relatives and all three forms!",
       miaIntro:"The minor world so far! \u{1F3C1}",
       spec:{rounds:9, reverse:true, pool:[
         ["Relative minor","starts on the major's 6th degree"],

@@ -177,7 +177,7 @@ LESSON_CONTENT[98]={
     "✔ Hearing a variation = asking <b>what changed?</b>"
   ],
   tips:[
-    "Write your own: take L67's composed melody, add passing tones (var. 1), dot the rhythm (var. 2), turn it minor (var. 3).",
+    "Write your own: take your Lesson 11.6 melody, add passing tones (var. 1), dot the rhythm (var. 2), turn it minor (var. 3).",
     "In classical sets, the last variation often speeds up brilliantly and the minore sits near the middle.",
     "Variation hearing is structure hearing — hum the theme UNDER each variation.",
     "Next lesson: the largest form yet — SONATA FORM."

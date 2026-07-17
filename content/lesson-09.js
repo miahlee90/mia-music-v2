@@ -4,7 +4,7 @@
    enharmonic pairs demonstrated on the interactive keyboard.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* half-or-whole keyboard drill (unique L25 prefix) */
+/* half-or-whole keyboard drill (unique L9 prefix) */
 function MF_L9_stepDrill(container,fb){
   const rounds=[
     {a:"C4",b:"C#4",half:true},{a:"C4",b:"D4",half:false},{a:"E4",b:"F4",half:true},
@@ -160,11 +160,11 @@ LESSON_CONTENT[9]={
         ["E–F and B–C","The two white-key half steps"],
         ["H + H","= one Whole step"]]},
       result:(score)=>score>=7?"Vocabulary complete — fully loaded!":null },
-    { type:"value-race", title:"Game 4 · GRAND Value Sprint (45s)",
-      intro:"The grand finale sprint: every note value you've learned since Lesson 6!",
+    { type:"gen-race", title:"Game 4 · GRAND Step & Twin Sprint (45s)",
+      intro:"The grand finale sprint: half steps, whole steps and enharmonic twins — everything from today!",
       miaIntro:"The grand sprint — everything you've got! \u{1F3C6}",
-      spec:{seconds:45, ask:"beats", values:["8","q","q.","h","h.","w"]},
-      result:(score)=>score>=13?score+" — a champion finish!":null }
+      spec:{gen:"step-type", params:{}, seconds:45},
+      result:(score)=>score>=10?score+" — a champion finish!":null }
   ],
   practiceIntro:"20 practice questions — half steps, whole steps, enharmonic twins, and the white-key surprises. Answer right and the next appears automatically!",
   practice:[
@@ -252,14 +252,14 @@ LESSON_CONTENT[9]={
   tips:[
     "At any piano, play E–F and B–C slowly — feel how CLOSE those white neighbors are.",
     "Which name to use — C♯ or D♭? Context decides; for now, know they're the same key.",
-    "Half steps are the atoms of music — scales and keys (coming in Lesson 26!) are built from H and W patterns.",
+    "Half steps are the atoms of music — scales and keys (coming in Lesson 4.1!) are built from H and W patterns.",
     "\u{1F393} You finished the first 25 lessons! Next up: tetrachords and major scales. See you there!"
   ],
   rewards:{ badge:"25-Lesson Graduate", icon:"\u{1F393}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
   miaPerfect:"A PERFECT score on this milestone lesson?! Take a bow, graduate — the major scales await! \u{1F393}\u{1F389}\u{1F389}",
-  miaPass:"You passed — the first 25 lessons complete! Every step from the empty staff to enharmonic twins. Review below, or celebrate and meet me in Lesson 26!",
+  miaPass:"You passed — Unit 1 complete! Every step from the empty staff to enharmonic twins. Review below, or celebrate and meet me in Unit 2!",
   mia:{
     hook:{ label:"the welcome",
       explain:"One black key, two names: C♯ approached from C, D♭ approached from D. Same sound — enharmonic.",
@@ -271,7 +271,7 @@ LESSON_CONTENT[9]={
     example:{ label:"the examples",
       explain:"Half steps with and without accidentals, then whole steps skipping one key each — the two building blocks of every scale." },
     game:{ label:"the games",
-      explain:"Race the twins, hunt the signs one last time, dash the vocabulary, and sprint every value you know.",
+      explain:"Race the twins, hunt the signs one last time, dash the vocabulary, and sprint the steps and twins.",
       hint:"Finish strong — this is a milestone finale!" },
     quiz:{ label:"this question",
       explain:"Three ideas: half = next key, whole = two halves, enharmonic = one key with two names. Plus the E–F/B–C surprise.",

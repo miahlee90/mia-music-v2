@@ -1,6 +1,6 @@
 /* Lesson 5 (1.5) — Ledger Lines (low and high notes) (AEMT Book 1, Unit 1)
    v2 — rebuilt from the instructor's design document (drafts/UNIT 1 – Lesson 5.md)
-   Final quiz doubles as the Unit 1 review (25 questions; full mastery page = Phase 2).
+   Final quiz doubles as the staff-and-clefs review (25 questions; full mastery page = Phase 2).
    NOTE: edit by FULL-FILE REWRITE only. */
 
 /* name-the-note drill (unique L5 prefix: safe for check.html batch load) */
@@ -29,7 +29,7 @@ function MF_L5_nameDrill(container,fb,items,doneMsg){
 }
 
 LESSON_CONTENT[5]={
-  welcome:"Last lesson of Unit 1! Today music climbs beyond the staff. \u{1F3B5}",
+  welcome:"Today music climbs beyond the staff. \u{1F3B5}",
   hook:{
     say:"You've already met <b>Middle C</b>, the first note that uses a ledger line. But what happens when music goes even higher… or much lower?<br><br>Instead of building a bigger staff, musicians simply add <b>ledger lines</b> — extra steps on a ladder that let music climb as high or low as it needs. Let's explore beyond the staff!"
   },
@@ -186,11 +186,11 @@ LESSON_CONTENT[5]={
       spec:{rounds:6},
       result:(score)=>score>=6?"A perfect pattern-spotter — that's the real secret of fast reading!":null },
     { type:"note-race", title:"Game 4 · Extreme Note Challenge",
-      intro:"EVERYTHING from Unit 1 — staff notes, ledger notes, both clefs. Name as many as you can in <b>60 seconds</b>!",
+      intro:"EVERYTHING so far — staff notes, ledger notes, both clefs. Name as many as you can in <b>60 seconds</b>!",
       spec:{seconds:60, pool:[
         {p:"E4",clef:"treble"},{p:"G4",clef:"treble"},{p:"B4",clef:"treble"},{p:"F5",clef:"treble"},{p:"A5",clef:"treble"},{p:"C6",clef:"treble"},{p:"C4",clef:"treble"},
         {p:"G2",clef:"bass"},{p:"B2",clef:"bass"},{p:"D3",clef:"bass"},{p:"A3",clef:"bass"},{p:"E2",clef:"bass"},{p:"C2",clef:"bass"}]},
-      result:(score)=>score>=12?score+" notes across the entire Unit 1 range — EXTREME indeed! \u{1F3C6}":null }
+      result:(score)=>score>=12?score+" notes across the entire staff-and-clefs range — EXTREME indeed! \u{1F3C6}":null }
   ],
   practiceIntro:"20 practice questions — high ledger notes, low ledger notes, drawing rules, and patterns. Answer right and the next appears automatically!",
   practice:[
@@ -219,9 +219,9 @@ LESSON_CONTENT[5]={
     { type:"mc", q:"Name this note.", staff:{clef:"bass",notes:[{p:"E2",d:"q"}],width:260}, choices:["C","D","E"], answer:2,
       explain:"Bottom line G, space F, 1st ledger line E." },
     { type:"truefalse", q:"Middle C was the very first ledger-line note you learned.", answer:true,
-      explain:"Lesson 4's bridge note — one ledger line between the two staffs. Today you extended the idea in both directions." }
+      explain:"Lesson 1.4's bridge note — one ledger line between the two staffs. Today you extended the idea in both directions." }
   ],
-  miaQuizIntro:"The FINAL quiz of Unit 1 — 25 questions covering everything from Lesson 1 to today. You've earned this moment. Landmarks ready? Go!",
+  miaQuizIntro:"A big staff review — 25 questions covering everything from Lesson 1.1 to today. You've earned this moment. Landmarks ready? Go!",
   quiz:[
     /* easy — L5 */
     { type:"truefalse", q:"Ledger lines can extend the staff both above and below.", answer:true,
@@ -247,7 +247,7 @@ LESSON_CONTENT[5]={
     { type:"mc", q:"The best strategy for a note with several ledger lines is…", choices:["panic — it must be too advanced","find the nearest landmark and count carefully","skip it and play anything nearby"], answer:1,
       explain:"Landmarks + counting always work. Several ledger lines just means several careful steps.",
       hint:"What did Mia say fast readers rely on?" },
-    /* Unit 1 review */
+    /* staff & clefs review */
     { type:"mc", q:"UNIT REVIEW: How many lines and spaces does a staff have?", choices:["5 lines, 4 spaces","4 lines, 5 spaces","5 lines, 5 spaces"], answer:0,
       explain:"Always 5 lines with 4 spaces between them.", hint:"Think back to building the staff." },
     { type:"truefalse", q:"UNIT REVIEW: Staff lines and spaces are counted from the bottom up.", answer:true,
@@ -293,13 +293,13 @@ LESSON_CONTENT[5]={
     "Don't be afraid of ledger lines — they're just extra pieces of the same staff you already know.",
     "The musical alphabet never changes. Trust the pattern!",
     "Every difficult-looking note becomes easy when you count carefully.",
-    "\u{1F389} You've completed all of UNIT 1 — staff, treble clef, bass clef, Grand Staff, and ledger lines. Unit 2 brings rhythm: note values, measures, and time signatures!"
+    "\u{1F389} You've mastered the whole staff family — treble clef, bass clef, Grand Staff, and ledger lines. Next: the accidentals — flats, sharps and naturals!"
   ],
   rewards:{ badge:"Ledger Line Master", icon:"\u{1F3C6}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A PERFECT 25 on the Unit 1 review?! Ledger Line Master, staff champion, clef expert — Unit 2 won't know what hit it! \u{1F3B5}\u{1F389}",
-  miaPass:"You passed the Unit 1 review! Look at how far you've come since that first blank staff. On to rhythm in Unit 2!",
+  miaPerfect:"A PERFECT 25 on the staff review?! Ledger Line Master, staff champion, clef expert — the accidentals won't know what hit them! \u{1F3B5}\u{1F389}",
+  miaPass:"You passed the staff review! Look at how far you've come since that first blank staff. Next up: flats, sharps and naturals!",
   mia:{
     hook:{ label:"the welcome",
       explain:"Ledger lines are extra ladder steps: short lines added above or below the staff so music can climb or dig as far as it needs.",
@@ -311,10 +311,10 @@ LESSON_CONTENT[5]={
     example:{ label:"the examples",
       explain:"Two ladders leaving the staff: one climbing above the treble (F-G-A-B-C), one sinking below the bass (G-F-E-D-C)." },
     game:{ label:"the games",
-      explain:"High-or-low ears, ledger note naming, pattern completion — then the 60-second Extreme Challenge over everything in Unit 1.",
+      explain:"High-or-low ears, ledger note naming, pattern completion — then the 60-second Extreme Challenge over everything so far.",
       hint:"Landmarks: F5 on top, G2 at the bottom, Middle C in between." },
     quiz:{ label:"this question",
-      explain:"This quiz reviews ALL of Unit 1: the staff, both clefs, the Grand Staff, Middle C, and ledger lines. Count from landmarks and trust the alphabet.",
+      explain:"This quiz reviews everything so far: the staff, both clefs, the Grand Staff, Middle C, and ledger lines. Count from landmarks and trust the alphabet.",
       play:()=>{MFAudio.tone(84,.4,0);MFAudio.tone(36,.6,.5);} }
   }
 };

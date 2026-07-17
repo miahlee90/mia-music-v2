@@ -316,7 +316,7 @@ LESSON_CONTENT[53]={
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
     "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
   miaPerfect:"PERFECT! Major and minor hold no secrets from you now. \u{1F311}\u{1F389}",
-  miaPass:"Passed! The 3rd is your quality compass. Two wilder chords await in Lesson 59…",
+  miaPass:"Passed! The 3rd is your quality compass. Two wilder chords await in Lesson 7.6…",
   mia:{
     hook:{ label:"the welcome",
       explain:"Chord A was C-E-G (major); chord B lowered the middle note to E♭ — C minor. One half step, total mood change.",

@@ -7,7 +7,7 @@
    NOTE: edit by FULL-FILE REWRITE only. */
 
 LESSON_CONTENT[14]={
-  welcome:"Unit 3 — a new time signature.",
+  welcome:"A new time signature arrives.",
   hook:{
     say:"You know 4/4. Now listen to this example — there is a two-beat count-off, then the music. <b>Count along: how many beats are in each measure?</b>",
     interact:{ type:"custom",

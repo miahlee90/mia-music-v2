@@ -189,7 +189,7 @@ LESSON_CONTENT[89]={
     "Find pivots fast: list the old key's triads, the new key's triads, and circle the shared ones.",
     "The V of the NEW key is the modulation's engine — the pivot just steers toward it.",
     "Final-chorus lifts are phrase modulations up a half or whole step — count them in tonight's playlist.",
-    "Unit 24 complete! Next unit: ornaments, variations and the grand forms."
+    "Unit 13 complete! Next unit: FORM — motives, periods, and the grand designs."
   ],
   rewards:{ badge:"Key Traveler", icon:"\u{1F5FA}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
@@ -199,7 +199,7 @@ LESSON_CONTENT[89]={
     { type:"mc", q:"Modulation occurs when music…", choices:["establishes a new tonic and key","increases its dynamic level","repeats a motive"], answer:0,
       explain:"A cadence and continued harmonic emphasis can provide strong confirmation of the new key.", hint:"Move, not visit." },
     { type:"mc", q:"Which evidence most strongly distinguishes modulation from brief tonicization?", choices:["Structural confirmation of the new tonic through cadence, continued harmony, or formal emphasis","A change in tempo","A change of clef"], answer:0,
-      explain:"The new tonic receives more substantial structural confirmation.", hint:"Lesson 98's line." },
+      explain:"The new tonic receives more substantial structural confirmation.", hint:"Lesson 13.1's line." },
     { type:"mc", q:"For a major key, closely related keys generally have key signatures that…", choices:["are identical to or differ by one accidental","differ by exactly three accidentals","must be identical"], answer:0,
       explain:"The neighborhood rule.", hint:"±1." },
     { type:"mc", q:"Which list contains the closely related keys of C major?", choices:["G major, F major, A minor, E minor, and D minor","D major, A major, and E major","C♯ major only"], answer:0,

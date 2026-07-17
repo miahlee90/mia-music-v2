@@ -4,7 +4,7 @@
    fermata excepted) with side-by-side AUDIO demos of every marking.
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* listen-and-identify articulation drill (unique L20 prefix) */
+/* listen-and-identify articulation drill (unique L23 prefix) */
 function MF_L23_articListen(container,fb){
   const ROUNDS=[
     {a:"Staccato",play:()=>{[67,67,67,67].forEach((m,k)=>MFAudio.tone(m,.12,k*.5,.5));}},

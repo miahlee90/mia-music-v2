@@ -171,7 +171,7 @@ LESSON_CONTENT[32]={
     { say:"Last detail: the transposed melody lives in a <b>new key</b> — so it needs that key's <b>KEY SIGNATURE</b>. Transpose from C major up to G major and the new version carries one sharp (F♯), even if no F appears in the tune. The signature announces the new home. \u{1F447} <b>A melody transposed from C major to G major gets which key signature?</b>",
       try:{ type:"mc", choices:["One sharp (F♯)","No sharps or flats","One flat (B♭)"], answer:0,
         success:"✓ G major = 1 sharp. New key, new signature — always update it when you transpose.",
-        fail:"What is G major's key signature? (Lesson 29 knows…)",
+        fail:"What is G major's key signature? (Lesson 4.4 knows…)",
         hint:"G major carries exactly one sharp." } }
   ],
   examples:[

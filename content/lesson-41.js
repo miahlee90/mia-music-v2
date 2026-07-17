@@ -92,7 +92,7 @@ LESSON_CONTENT[41]={
       try:{ type:"mc", choices:["Common time — exactly 4/4","Cut time — 2/2","'Chorus'"], answer:0,
         success:"✓ C = common time = 4/4. Same music, fancier badge.",
         fail:"The PLAIN C (no slash) is the familiar one…",
-        hint:"Common = the time you've used since Lesson 11." } },
+        hint:"Common = the 4/4 you've known since Unit 2." } },
     { say:"Second symbol: draw a vertical line through the C — <b><span style='font-size:1.3em;line-height:1;vertical-align:-0.14em;display:inline-block'>𝄵</span></b> — and you get <b>CUT TIME</b>, also called <b>ALLA BREVE</b>. The slash cuts 4/4's numbers in half: <b>2/2</b>. That means <b>2 beats per measure</b>, and the <b>HALF note receives 1 beat</b>. \u{1F447} <b>In cut time, which note is the beat?</b>",
       show:{ type:"staff", spec:{clef:"treble",tempo:168,time:"C|",notes:[
         {p:"C5",d:"h",label:"1"},{p:"G4",d:"h",label:"2"},{bar:"single"},
@@ -162,8 +162,8 @@ LESSON_CONTENT[41]={
         ["h","h","q","q","q","q"]]},
       result:(score)=>score!==null?"You marched straight through it!":null },
     { type:"term-race", title:"Game 4 · Meter Vocabulary Race",
-      intro:"Common, cut, alla breve, beat unit — the full Unit 10 wrap-up race!",
-      miaIntro:"Last race of Unit 10! \u{1F3C1}",
+      intro:"Common, cut, alla breve, beat unit — the full cut-time wrap-up race!",
+      miaIntro:"Last race of the lesson! \u{1F3C1}",
       spec:{rounds:8, reverse:true, pool:[
         ["Common Time","the symbol C — equals 4/4"],
         ["Cut Time","the slashed C — equals 2/2"],
@@ -171,7 +171,7 @@ LESSON_CONTENT[41]={
         ["Beat Unit","the note value that receives one beat"],
         ["Half note in 2/2","receives exactly one beat"],
         ["Whole note in 2/2","receives two beats"]]},
-      result:(score)=>score>=7?"Unit 10 vocabulary: complete!":null }
+      result:(score)=>score>=7?"Cut-time vocabulary: complete!":null }
   ],
   practiceIntro:"20 practice questions — symbols, conversions, and the cut-time value chart. Answer right and the next appears automatically!",
   practice:[
@@ -197,7 +197,7 @@ LESSON_CONTENT[41]={
     { type:"mc", q:"Which are the THREE names for the same thing?", choices:["cut time · alla breve · 2/2","common time · alla breve · 4/4","cut time · common time · 2/4"], answer:0,
       explain:"One meter, three labels." }
   ],
-  miaQuizIntro:"Two symbols, one slash of difference — final quiz of Unit 10!",
+  miaQuizIntro:"Two symbols, one slash of difference — quiz time!",
   quiz:[
     { type:"mc", q:"The symbol C stands for…", choices:["common time (4/4)","cut time (2/2)","the note C","crescendo"], answer:0,
       explain:"A symbol, not a letter-name.", hint:"No slash = the familiar four." },
@@ -248,7 +248,7 @@ LESSON_CONTENT[41]={
     "See the slash BEFORE you play — misreading 𝄵 as C means counting twice as many beats as the band.",
     "Practice converting aloud: 'in cut time this half note is ONE, this quarter is a half…'.",
     "The Stars and Stripes Forever and most Sousa marches: cut time. Feel them stride in 2.",
-    "Unit 10 complete! Next: Unit 11 — 3/8 and 6/8, where the EIGHTH note takes the beat."
+    "Next lesson: 3/8 and 6/8, where the EIGHTH note takes the beat."
   ],
   rewards:{ badge:"Time Cutter", icon:"\u{2702}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",

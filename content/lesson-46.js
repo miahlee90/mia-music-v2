@@ -135,7 +135,7 @@ LESSON_CONTENT[46]={
         mount:(container,fb)=>MF_L46_sync(container,fb) } },
     { say:"Why do these two tricks matter together? Both play <b>against the expected downbeat</b>: the pick-up arrives before it, syncopation dodges it. Control the downbeat's gravity and rhythm comes alive. \u{1F447} <b>What do pick-ups and syncopation have in common?</b>",
       try:{ type:"mc", choices:["Both play against the expected strong beat","Both make the music slower","Both require 6/8 time"], answer:0,
-        success:"✓ Rhythm's rules exist so these two can bend them — arrival early, accent askew. Unit 11 complete!",
+        success:"✓ Rhythm's rules exist so these two can bend them — arrival early, accent askew!",
         fail:"Where's the strong beat in each trick?",
         hint:"Both tease the downbeat." } }
   ],
@@ -176,7 +176,7 @@ LESSON_CONTENT[46]={
       miaIntro:"Count every beat! \u{1F9EE}",
       spec:{gen:"measure-complete", params:{beats:4}, rounds:10},
       result:(score)=>score>=8?"Every measure audited!":null },
-    { type:"term-race", title:"Game 4 · Unit 11 Grand Vocabulary Race",
+    { type:"term-race", title:"Game 4 · Grand Vocabulary Race",
       intro:"The whole unit: 6/8, triplets, pick-ups, syncopation — final race!",
       miaIntro:"Unit finale — everything you've got! \u{1F3C1}",
       spec:{rounds:8, reverse:true, pool:[
@@ -186,7 +186,7 @@ LESSON_CONTENT[46]={
         ["6/8 time","six eighth-beats in two bundles"],
         ["Fast 6/8","counted in two"],
         ["Compound meter","beats grouped in threes"]]},
-      result:(score)=>score>=7?"UNIT 11 COMPLETE — rhythm virtuoso!":null }
+      result:(score)=>score>=7?"Rhythm virtuoso!":null }
   ],
   practiceIntro:"20 practice questions — pick-up beats, counting, accents and grooves. Answer right and the next appears automatically!",
   practice:[
@@ -211,7 +211,7 @@ LESSON_CONTENT[46]={
     { type:"mc", q:"Another name for a pick-up is…", choices:["anacrusis","cadenza","fermata"], answer:0,
       explain:"The formal term for up-beat openings." }
   ],
-  miaQuizIntro:"Sneak in early, land off the beat — the Unit 11 finale quiz!",
+  miaQuizIntro:"Sneak in early, land off the beat — the finale quiz!",
   quiz:[
     { type:"mc", q:"Pick-up notes are…", choices:["notes in an incomplete measure at the start of a piece","the loudest notes of a piece","notes added after the final bar line","ornamental fast notes"], answer:0,
       explain:"An incomplete opening measure.", hint:"They 'pick up' into measure 1." },
@@ -261,7 +261,7 @@ LESSON_CONTENT[46]={
     "Famous pick-up openings: Happy Birthday, The Star-Spangled Banner, Auld Lang Syne — sing any of them and feel the run-in.",
     "To perform syncopation, keep your foot IRON-steady on the beat and let your hands fight it.",
     "Writers: check your beat-math! Pick-up beats + final-measure beats must total one full measure.",
-    "UNIT 11 COMPLETE! Next: Unit 12 — triads and chords, where notes finally stack into harmony."
+    "Next lesson: syncopation grows up — contemporary off-beat grooves."
   ],
   rewards:{ badge:"Groove Bender", icon:"\u{1FA98}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
@@ -279,7 +279,7 @@ LESSON_CONTENT[46]={
     example:{ label:"the examples",
       explain:"Example 1 pairs a pick-up with its short final measure; example 2 kicks its accents onto the &s." },
     game:{ label:"the games",
-      explain:"Sprint the tricks, tap the off-beats, audit measures, then run the Unit 11 grand vocabulary race.",
+      explain:"Sprint the tricks, tap the off-beats, audit measures, then run the grand vocabulary race.",
       hint:"Foot on the beat, always." },
     quiz:{ label:"this question",
       explain:"Two definitions cover it: pick-up = incomplete first measure (the final measure completes the missing beats); syncopation = accent on the weak beat.",

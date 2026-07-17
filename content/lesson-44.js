@@ -172,7 +172,7 @@ LESSON_CONTENT[44]={
       try:{ type:"mc", choices:["Compound meter — three per pulse","Cut time — two per measure","A fermata"], answer:0,
         success:"✓ One beat of compound flow inside a duple world. Jazz 'swing' and blues shuffle live in exactly this space.",
         fail:"Where else did three little notes ride one pulse?",
-        hint:"Lesson 43-44's bundles of three." } }
+        hint:"Lessons 6.5-6.6's bundles of three." } }
   ],
   examples:[
     { caption:"Straight eighths vs triplets, side by side — play and feel the beat first split in two, then melt into three.",
@@ -303,7 +303,7 @@ LESSON_CONTENT[44]={
     "Evenness drill: alternate one '1 &' beat with one 'tri-po-let' beat, back and forth, until switching is effortless.",
     "Don't let triplets collapse into a dotted-8th+16th limp — three EQUAL notes, no swagger.",
     "Listen for triplets tonight: the Nutcracker March, Debussy's Arabesque No. 1, any slow blues.",
-    "Next lesson finishes Unit 11: pick-up notes and syncopation — rhythm's grand entrance and its off-beat kick."
+    "Next lesson: TUPLETS — the triplet's whole extended family."
   ],
   rewards:{ badge:"Triplet Tamer", icon:"\u{1F54A}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",

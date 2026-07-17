@@ -4,7 +4,7 @@
    Uses staff.js v4.1 (clickBars, labeled bars), games.js v4.1 (measure-count, symbol-hunt).
    NOTE: edit by FULL-FILE REWRITE only. */
 
-/* worksheet-style bar-spot activity (unique L7 prefix: safe for check.html batch load)
+/* worksheet-style bar-spot activity (unique L11 prefix: safe for check.html batch load)
    A real melody with NO bar lines; four candidate spots marked A–D with arrows
    (like the instructor's worksheet). Student clicks the TWO spots where the
    beats reach 4 — bar lines appear on the staff, then the result plays. */
@@ -66,7 +66,7 @@ function MF_L11_barSpots(container,fb){
 }
 
 LESSON_CONTENT[11]={
-  welcome:"Lesson 7! Today we tidy up the music. \u{1F4E6}",
+  welcome:"Today we tidy up the music. \u{1F4E6}",
   hook:{
     say:"Music is divided into small sections called <b>measures</b>, and the vertical lines that divide them are called <b>bar lines</b>.<br><br>For today's lesson, we'll keep counting in <b>4/4 Time</b>.<br>That means every measure has <b>4 beats</b>.<br>Your job today is to discover where the <b>bar lines</b> belong so the music is organized into easy-to-read measures.<br>Next lesson, you'll learn why every measure has 4 beats!<br><br>\u{1F447} <b>Which staff is easier to read?</b>",
     interact:{ type:"custom",
@@ -181,7 +181,7 @@ LESSON_CONTENT[11]={
     { type:"mc", q:"Where does the Double Bar live?", choices:["at the very end of a piece","at the beginning of every line","after every measure"], answer:0,
       explain:"Thin + thick lines = “the music ends here.”" },
     { type:"truefalse", q:"A Double Bar means “start again.”", answer:false,
-      explain:"It means the END. (Repeat signs come later, in Lesson 14!)" },
+      explain:"It means the END. (Repeat signs come later, in Lesson 3.4!)" },
     { type:"truefalse", q:"Every measure in a piece holds the same number of beats.", answer:true,
       explain:"That's the whole point — equal containers keep the music organized." },
     { type:"mc", q:"Why do musicians divide music into measures?", choices:["to organize music into equal sections","to make the notes higher","to play faster"], answer:0,

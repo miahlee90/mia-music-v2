@@ -215,7 +215,7 @@ LESSON_CONTENT[48]={
     "Walk it: step LONG-short for 5/4 (3+2) — your feet learn asymmetry faster than your eyes.",
     "In 7/8, find the 3 first; the 2s fall into place around it.",
     "Famous asymmetry to find tonight: a jazz classic in 5/4 — count ONE-two-three ONE-two along with it.",
-    "Unit 19 complete! Next unit returns to pitch: the modes, put to WORK."
+    "Unit 6 complete! Next unit returns to pitch: TRIADS — notes stacked into harmony."
   ],
   rewards:{ badge:"Odd-Meter Navigator", icon:"\u{2696}\u{FE0F}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
