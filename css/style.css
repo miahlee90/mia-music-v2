@@ -282,6 +282,9 @@ hr.sep{border:none;border-top:1px solid var(--hairline);margin:20px 0}
   radial-gradient(45% 90% at 88% 8%,rgba(249,107,238,.28),transparent 65%),
   radial-gradient(40% 80% at 8% 95%,rgba(255,209,102,.18),transparent 60%)}
 .hero h1,.hero p,.hero .btns{position:relative;z-index:1}
+/* gradient underline bar under the home title, matching the lesson header */
+.hero h1::after{content:"";display:block;width:64px;height:5px;border-radius:3px;
+  background:linear-gradient(90deg,#ffd166,#f96bee);margin:12px auto 0}
 .card h2::after{content:"";display:block;width:42px;height:4px;border-radius:2px;
   background:linear-gradient(90deg,#533afd,#ffd166);margin-top:7px}
 .next-invite{box-shadow:0 10px 30px rgba(28,30,84,.35)}
