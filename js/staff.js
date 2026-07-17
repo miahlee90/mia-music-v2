@@ -39,16 +39,51 @@
    one (same x; 2nds/unisons offset 13px) and plays it SIMULTANEOUSLY.
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 const MFAudio=(()=>{
-  let ctx=null;
-  function ac(){ if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)(); return ctx; }
+  /* v2 sound upgrade (2026-07-17, instructor: "richer tone"): additive EP-style
+     voice — 5 decaying partials with slight detune, per-note lowpass that closes
+     over the note (piano-like darkening), generated-IR convolution reverb (~14%
+     wet) and a master compressor. Same tone()/chord()/yay() API as before. */
+  let ctx=null,master=null,wet=null;
+  function makeIR(c,sec,decay){ /* synthesized stereo impulse response — no asset files */
+    const rate=c.sampleRate,len=Math.floor(rate*sec),buf=c.createBuffer(2,len,rate);
+    for(let ch=0;ch<2;ch++){ const d=buf.getChannelData(ch);
+      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay); }
+    return buf;
+  }
+  function ac(){
+    if(!ctx){
+      ctx=new (window.AudioContext||window.webkitAudioContext)();
+      const comp=ctx.createDynamicsCompressor();
+      comp.threshold.value=-18;comp.knee.value=20;comp.ratio.value=6;
+      comp.connect(ctx.destination);
+      master=ctx.createGain();master.gain.value=.9;master.connect(comp);
+      const conv=ctx.createConvolver();conv.buffer=makeIR(ctx,1.4,2.8);
+      wet=ctx.createGain();wet.gain.value=.14;wet.connect(conv);conv.connect(comp);
+    }
+    return ctx;
+  }
+  const PARTIALS=[[1,1],[2,.5],[3,.22],[4,.11],[5,.05]];
   function tone(midi,dur=0.7,when=0,vol=0.5){
     const c=ac(),t=c.currentTime+when,f=440*Math.pow(2,(midi-69)/12);
-    const o=c.createOscillator(),o2=c.createOscillator(),g=c.createGain(),g2=c.createGain();
-    o.type="triangle";o.frequency.value=f;o2.type="sine";o2.frequency.value=f*2;g2.gain.value=.15;
-    o.connect(g);o2.connect(g2);g2.connect(g);g.connect(c.destination);
-    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.02);
+    const g=c.createGain(),lp=c.createBiquadFilter();
+    lp.type="lowpass";
+    lp.frequency.setValueAtTime(Math.min(f*9,9000),t);
+    lp.frequency.exponentialRampToValueAtTime(Math.max(f*1.7,500),t+Math.min(dur,1.2));
+    g.connect(lp);lp.connect(master);lp.connect(wet);
+    const amp=vol*.55;
+    g.gain.setValueAtTime(0,t);
+    g.gain.linearRampToValueAtTime(amp,t+.008);
+    g.gain.exponentialRampToValueAtTime(Math.max(amp*.3,.0012),t+Math.min(.22,Math.max(dur*.5,.05)));
     g.gain.exponentialRampToValueAtTime(.001,t+dur);
-    o.start(t);o2.start(t);o.stop(t+dur+.05);o2.stop(t+dur+.05);
+    PARTIALS.forEach(([n,a])=>{
+      const pf=f*n; if(n>1&&pf>7500) return;
+      const o=c.createOscillator(),og=c.createGain();
+      o.type="sine";o.frequency.value=pf;
+      o.detune.value=n===1?0:(n%2?3:-3); /* faint inharmonicity = warmth */
+      og.gain.value=a;
+      o.connect(og);og.connect(g);
+      o.start(t);o.stop(t+dur+.1);
+    });
   }
   function click(when=0,vol=0.5,hi=false){ /* metronome tick (for rhythm games) */
     const c=ac(),t=c.currentTime+when;
