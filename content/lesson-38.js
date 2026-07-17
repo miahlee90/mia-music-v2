@@ -3,6 +3,9 @@
    Movable Do: syllables ride scale DEGREES, not fixed pitches.
    Transposition: same intervals/syllables, new keynote (B&S Ch.3: interval method).
    Uses quiz.js v5.4 solfege-id generator; melodies kept accidental-free (C↔G).
+   v2 reorg (2026-07-17): absorbed the practice drills from deleted old Lesson 84 —
+   the transpose-by-key (scale-degree) method step, the Scale-Degree Translator
+   race, and degree/interval drill items.
    NOTE: edit by FULL-FILE REWRITE only. */
 
 /* solfège climber: press the scale on the keyboard; each key gets its syllable badge.
@@ -120,6 +123,7 @@ LESSON_CONTENT[38]={
     "Sing/press any major scale in solfège",
     "Define transposition",
     "Transpose a melody up or down by an interval",
+    "Transpose by key: new key signature, same scale degrees",
     "Explain what changes and what stays the same"
   ],
   steps:[
@@ -159,6 +163,11 @@ LESSON_CONTENT[38]={
       try:{ type:"custom",
         hint:"Every note moves UP a Perfect 5th — count 5 letter names, starting on the note itself as 1.",
         mount:(container,fb)=>MF_L38_machine(container,fb) } },
+    { say:"There's a second method — <b>transposing by key</b>, and solfège makes it easy: identify each note's <b>scale degree</b> (its syllable!) in the original key, then place it on the <b>same degree of the new key</b>. Do-Re-Mi in C major (C-D-E) becomes Do-Re-Mi in F major (F-G-A). \u{1F447} <b>Which notes are scale degrees 5–3–1 (Sol–Mi–Do) in G major?</b>",
+      try:{ type:"mc", choices:["D–B–G","G–E–C","D–B♭–G"], answer:0,
+        success:"✓ In G major, degree 5 (Sol) is D, degree 3 (Mi) is B, and degree 1 (Do) is G. Same syllables, new home — the degree method in action.",
+        fail:"Count up the G major scale: G(Do)–A(Re)–B(Mi)–C(Fa)–D(Sol).",
+        hint:"G major begins G–A–B–C–D." } },
     { say:"Last detail: the transposed melody lives in a <b>new key</b> — so it needs that key's <b>KEY SIGNATURE</b>. Transpose from C major up to G major and the new version carries one sharp (F♯), even if no F appears in the tune. The signature announces the new home. \u{1F447} <b>A melody transposed from C major to G major gets which key signature?</b>",
       try:{ type:"mc", choices:["One sharp (F♯)","No sharps or flats","One flat (B♭)"], answer:0,
         success:"✓ G major = 1 sharp. New key, new signature — always update it when you transpose.",
@@ -196,7 +205,7 @@ LESSON_CONTENT[38]={
       result:(score)=>score!==null?"The ladder is in your fingers AND your voice!":null },
     { type:"term-race", title:"Game 4 · Solfège & Transposition Vocabulary",
       intro:"Solfège, movable Do, transposition — match the big ideas at speed!",
-      miaIntro:"Final vocabulary dash of Unit 9! \u{1F3C1}",
+      miaIntro:"Vocabulary dash! \u{1F3C1}",
       spec:{rounds:8, reverse:true, pool:[
         ["Solfège","Syllables assigned to the scale degrees: Do Re Mi Fa Sol La Ti"],
         ["Movable Do","Do is always the keynote of the current key"],
@@ -204,13 +213,29 @@ LESSON_CONTENT[38]={
         ["Do","The keynote's syllable in every major key"],
         ["Ti","Scale degree 7 — one half step below Do"],
         ["Interval of transposition","The distance every note moves during a transposition"]]},
-      result:(score)=>score>=7?"Unit 9 vocabulary: complete!":null }
+      result:(score)=>score>=7?"Vocabulary: complete!":null },
+    { type:"term-race", title:"Game 5 · Scale-Degree Translator",
+      intro:"Which note carries each scale degree in the given key? Translate at speed!",
+      miaIntro:"Begin with the key's Do and count up! \u{1F9EE}",
+      spec:{rounds:8, reverse:true, pool:[
+        ["Degree 1 in G major","G"],
+        ["Degree 3 in G major","B"],
+        ["Degree 5 in F major","C"],
+        ["Degree 1 in D major","D"],
+        ["Degree 3 in F major","A"],
+        ["Degree 5 in G major","D"],
+        ["Degree 2 in D major","E"],
+        ["Degree 3 in D major","F♯"]]},
+      result:(score)=>score>=6?"You matched the scale degrees and pitches correctly!":null }
   ],
   practiceIntro:"20 practice questions — syllables, movable Do, and transposition logic. Answer right and the next appears automatically!",
   practice:[
-    { gen:"solfege-id", params:{keys:["C","G","F"],ask:"syllable"}, count:5 },
-    { gen:"solfege-id", params:{keys:["C","G","F","D"],ask:"note"}, count:4 },
-    { gen:"term-match", params:{subject:"term", pool:[["Solfège","syllables for the scale degrees"],["Movable Do","Do = the keynote of the current key"],["Transposition","rewriting a melody in a different key"],["Scale degree","a note's position within its scale"]], reverse:true}, count:3 },
+    { gen:"solfege-id", params:{keys:["C","G","F"],ask:"syllable"}, count:4 },
+    { gen:"solfege-id", params:{keys:["C","G","F","D"],ask:"note"}, count:3 },
+    { gen:"term-match", params:{subject:"term", pool:[["Solfège","syllables for the scale degrees"],["Movable Do","Do = the keynote of the current key"],["Transposition","rewriting a melody in a different key"],["Scale degree","a note's position within its scale"]], reverse:true}, count:2 },
+    { gen:"term-match", params:{subject:"term", pool:[["Up a M2 from E","F♯"],["Up a P5 from C","G"],["Up a P4 from D","G"],["Up a M3 from F","A"]], reverse:true}, count:3 },
+    { type:"mc", q:"In a transposition from one key to another, each note normally keeps its…", choices:["scale-degree (syllable)","original pitch","original letter name"], answer:0,
+      explain:"Degree 3 (Mi) stays degree 3 (Mi) in the new key — that's the degree method." },
     { type:"mc", q:"The solfège syllables in order are…", choices:["Do Re Mi Fa Sol La Ti","Do Mi Re Fa Sol Ti La","Do Re Mi Sol Fa La Ti"], answer:0,
       explain:"Do Re Mi Fa Sol La Ti — then Do again." },
     { type:"mc", q:"In G major, Ti is sung on…", choices:["F♯","F","E"], answer:0,
@@ -226,7 +251,7 @@ LESSON_CONTENT[38]={
     { type:"mc", q:"A melody in C major is transposed up a P5. Its new key signature is…", choices:["1 sharp","no accidentals","1 flat"], answer:0,
       explain:"Up a P5 from C = G major = F♯." }
   ],
-  miaQuizIntro:"Sing the ladder, move the Do, lift the melody — final quiz of Unit 9!",
+  miaQuizIntro:"Sing the ladder, move the Do, lift the melody — quiz time!",
   quiz:[
     { type:"mc", q:"Solfège is a system that…", choices:["names rhythms with numbers","assigns syllables to the scale degrees","replaces key signatures","tunes the piano"], answer:1,
       explain:"Do Re Mi Fa Sol La Ti — one syllable per degree.", hint:"Sing-able names for 1-8." },
@@ -248,6 +273,10 @@ LESSON_CONTENT[38]={
       explain:"C→D, E→F♯ (a M2 is 2 half steps — F is only 1!), G→A.", hint:"Every note exactly 2 half steps up." },
     { type:"mc", q:"A melody in C major is transposed UP a Perfect 5th. The new key and signature are…", choices:["G major — 1 sharp","F major — 1 flat","D major — 2 sharps"], answer:0,
       explain:"C up a P5 = G; G major carries F♯.", hint:"Count 5 letters up from C." },
+    { type:"mc", q:"Scale degrees 1–2–3 of F major are…", choices:["F–G–A","F–G–A♭","C–D–E"], answer:0,
+      explain:"Do–Re–Mi from F: F–G–A (F major's flat is B♭, degree 4).", hint:"F major begins on F — count up." },
+    { type:"mc", q:"In the key (degree) method of transposing, notes keep their…", choices:["scale degrees","letter names","octave"], answer:0,
+      explain:"Do stays Do, Mi stays Mi — the degrees carry the melody into the new key.", hint:"Think syllables, not letters." },
     { type:"mc", q:"What is the solfège of this melody?",
       staff:{clef:"treble",notes:[{p:"C4",d:"q"},{p:"E4",d:"q"},{p:"G4",d:"q"},{p:"C5",d:"q"}],width:320},
       choices:["Do Mi Sol Do","Do Re Mi Fa","Do Fa La Do"], answer:0,
@@ -265,6 +294,8 @@ LESSON_CONTENT[38]={
     {term:"Solfège", def:"A system that assigns syllables — Do, Re, Mi, Fa, Sol, La, Ti — to the scale degrees of a major scale."},
     {term:"Movable Do", def:"The system in which Do is always the keynote (tonic) of the current major key — syllables follow the key, not fixed pitches."},
     {term:"Transposition", def:"Rewriting or performing a melody in a different key while preserving the same intervals and melodic relationships."},
+    {term:"Transposing by Interval", def:"Pick the interval; move each note exactly that far — double-check the half-step spots (E→F, B→C)."},
+    {term:"Transposing by Key", def:"Write the new key signature; place each note on the same scale degree (the same solfège syllable) in the new key."},
     {term:"Scale Degree", def:"The position of a note within a scale — degree 1 is the keynote, degree 5 is Sol, and so on."}
   ],
   mistakes:[],
@@ -273,17 +304,19 @@ LESSON_CONTENT[38]={
     "✔ <b>Movable Do</b>: Do = the keynote of the CURRENT key. G major → G is Do and F♯ is Ti.",
     "✔ Syllables name <b>relationships</b>, not letters — 'Do-Mi-Sol' is the same shape in every key.",
     "✔ <b>Transposition</b> = same melody, new key: every note moves by the same interval; every interval is preserved.",
+    "✔ Two methods: <b>by interval</b> (every note the same distance) and <b>by key</b> (new signature + same scale degrees).",
     "✔ After transposing, write the <b>new key signature</b> — the melody has a new home."
   ],
   tips:[
     "Sing the scale in solfège daily — up AND down (Do Ti La Sol Fa Mi Re Do). Down is where most people wobble.",
     "Transposing by interval? Move every note the SAME distance, and double-check any spot where the letters step E→F or B→C — the half steps hide there.",
-    "Solfège + transposition are the same insight twice: music lives in RELATIONSHIPS, not fixed letters.",
-    "Unit 9 complete! Next up: Unit 10 — sixteenth notes, and rhythm gets twice as fast."
+    "Singers ask for keys, not notes: 'take it down a whole step' = transpose everything down a Major 2nd.",
+    "The degree method beats the interval method in fast sessions — think Do-Mi-Sol (1-3-5), not letter names.",
+    "Solfège + transposition are the same insight twice: music lives in RELATIONSHIPS, not fixed letters."
   ],
   rewards:{ badge:"Melody Mover", icon:"\u{1F3A4}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
-    "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
+    "secGame0","secGame1","secGame2","secGame3","secGame4","secPractice","secQuiz","secTips","secNext"],
   miaPerfect:"A perfect score — Do would follow YOU anywhere! \u{1F3A4}\u{1F389}",
   miaPass:"Passed! Keep singing: Do Re Mi Fa Sol La Ti Do — in every key you meet.",
   mia:{
@@ -291,13 +324,13 @@ LESSON_CONTENT[38]={
       explain:"Both versions were Do-Re-Mi-Sol: first from C, then from G — the same melody transposed up a Perfect 5th. Shape preserved, letters changed.",
       play:()=>{[0,2,4,7].forEach((s,ix)=>MFAudio.tone(60+s,.3,ix*.35));[0,2,4,7].forEach((s,ix)=>MFAudio.tone(67+s,.3,1.7+ix*.35));} },
     learn:{ label:"solfège & transposition",
-      explain:"Do Re Mi Fa Sol La Ti ride the scale degrees; Do is always the keynote (movable Do). Transposition moves every note by one fixed interval — shape and syllables survive.",
+      explain:"Do Re Mi Fa Sol La Ti ride the scale degrees; Do is always the keynote (movable Do). Transposition moves every note by one fixed interval — or by key: same degrees, new signature. Shape and syllables survive.",
       hint:"Do = keynote. Intervals never change.",
       play:()=>{[60,62,64,65,67].forEach((m,ix)=>MFAudio.tone(m,.25,ix*.3));} },
     example:{ label:"the examples",
       explain:"Example 1 is the solfège ladder in C; example 2 lifts one melody from C major to G major — identical shape, new key signature." },
     game:{ label:"the games",
-      explain:"Sprint the syllables, hunt the notes, dash up Do-Re-Mi, then race the vocabulary.",
+      explain:"Sprint the syllables, hunt the notes, dash up Do-Re-Mi, race the vocabulary, then translate scale degrees across keys.",
       hint:"In every game, find Do first — everything else is counted from it." },
     quiz:{ label:"this question",
       explain:"Anchor on two facts: Do = the keynote of the current key, and transposition preserves every interval.",

@@ -4,7 +4,34 @@
    6/8 duple · 9/8 triple · 12/8 quadruple; beats = top ÷ 3; conducting
    patterns follow the BEATS, not the divisions.
    Color code: simple/2-division = #2F6DA8 (blue) · compound/3-division = #C05A21 (orange).
+   v2 reorg (2026-07-17): absorbed the fast-tempo counting content from deleted old
+   Lesson 44 — fast 3/8 counted IN ONE, fast 6/8 IN TWO, with the slow-vs-fast
+   listening lab; count only the strong beats when the divisions blur.
    NOTE: edit by FULL-FILE REWRITE only. */
+
+/* slow vs fast lab (from old L44): the same 6/8 passage — count in 6, then feel in 2 */
+function MF_L76_fastlab(container,fb){
+  let hS=false,hF=false;
+  container.innerHTML=`<div class="big-q" style="text-align:center">The SAME 6/8 measures — first slow (count all 6), then fast (feel just 2). Press both!</div>
+    <div style="text-align:center">
+      <button class="play l76f-s">\u{1F422} Slow — count 1-2-3-4-5-6</button>
+      <button class="play l76f-f">\u{1F407} Fast — feel ONE-two</button></div>
+    <div class="choices l76f-ch" style="display:none"><button>Fast: counting all 6 becomes impossible — feel 2 big beats</button><button>Fast: you can still comfortably count all six</button></div>`;
+  const ch=container.querySelector(".l76f-ch");
+  const seq=[72,74,76,77,79,76];
+  container.querySelector(".l76f-s").onclick=()=>{
+    seq.forEach((m,k)=>{ MFAudio.tone(m,.3,k*.5,.45); MFAudio.tone(45,.08,k*.5,(k===0||k===3)?.6:.35); });
+    hS=true; if(hF) setTimeout(()=>ch.style.display="",3300);
+  };
+  container.querySelector(".l76f-f").onclick=()=>{
+    for(let r=0;r<2;r++) seq.forEach((m,k)=>{ MFAudio.tone(m,.13,r*.96+k*.16,.45); if(k===0||k===3) MFAudio.tone(45,.1,r*.96+k*.16,.65); });
+    hF=true; if(hS) setTimeout(()=>ch.style.display="",2400);
+  };
+  [...ch.children].forEach((b,i)=>b.onclick=()=>{
+    if(i===0) fb(true,"✓ At speed, six little counts blur — so musicians count ONLY the strong beats: 1 and 4 become 'ONE-two'. Fast 6/8 is felt IN TWO.");
+    else fb(false,"Try counting '1-2-3-4-5-6' aloud with the fast version… exhausting, right?");
+  });
+}
 
 /* conducting-pattern matcher: a meter is called; click the correct beat pattern */
 function MF_L76_conduct(container,fb){
@@ -126,6 +153,7 @@ LESSON_CONTENT[76]={
     "Read 6/8 (duple), 9/8 (triple) and 12/8 (quadruple)",
     "Determine the number of beats by dividing the top number by three",
     "Match each compound meter to its conducting pattern",
+    "Count fast 3/8 'in one' and fast 6/8 'in two'",
     "Hear the difference between simple and compound meter"
   ],
   steps:[
@@ -171,6 +199,15 @@ LESSON_CONTENT[76]={
       try:{ type:"custom",
         hint:"Divide the top number by 3 to find the number of main beats.",
         mount:(container,fb)=>MF_L76_conduct(container,fb) } },
+    { say:"<b>Fast Tempos:</b> At fast tempos the notation never changes — only the counting strategy. The six divisions of 6/8 blur, so musicians count <b>only the strong beats</b>: fast <b>6/8 is counted IN TWO</b> (beats 1 and 4 become 'ONE-two'), and fast <b>3/8 is counted IN ONE</b> (the whole measure is a single pulse). The <b>dotted quarter is the felt beat</b>. \u{1F447} <b>At a fast tempo, each measure of 6/8 is counted as…</b>",
+      try:{ type:"mc", choices:["2 counts","6 counts","3 counts"], answer:0,
+        success:"✓ Correct. Fast 6/8 is counted in two — one count per dotted-quarter beat, on the old strong beats 1 and 4.",
+        fail:"Try counting to six, twice a second… count only the strong beats instead.",
+        hint:"Count the dotted-quarter beats, not the divisions." } },
+    { say:"Hear the collapse happen. \u{1F447} <b>Compare the same 6/8 passage slow and fast:</b>",
+      try:{ type:"custom",
+        hint:"Slow = count six; fast = feel two. Your foot knows before your brain does.",
+        mount:(container,fb)=>MF_L76_fastlab(container,fb) } },
     { say:"<b>6/8 and 3/4</b> can both contain six eighth notes, but they organize them differently. <b style='color:#2F6DA8'>In 3/4, the eighth notes form three groups of two.</b> <b style='color:#C05A21'>In 6/8, they form two groups of three.</b> The <b>grouping and accent pattern</b> determine how the meter is heard. \u{1F447} <b>Six eighth notes beamed 3 + 3 most strongly suggest…</b>",
       show:{ type:"staff", spec:{clef:"treble",time:"6/8",tempo:60,notes:[
         {p:"C5",d:"8"},{p:"B4",d:"8"},{p:"A4",d:"8"},{p:"G4",d:"8"},{p:"F4",d:"8"},{p:"E4",d:"8"},{bar:"final"}],
@@ -257,7 +294,7 @@ LESSON_CONTENT[76]={
   ],
   practiceIntro:"Complete 20 practice questions on compound meters, beats, and divisions. The next question will appear after each correct answer.",
   practice:[
-    { gen:"term-match", params:{subject:"term", pool:[["Compound meter","beats divide into three"],["6/8","compound duple"],["9/8","compound triple"],["12/8","compound quadruple"],["Beat note","dotted quarter"],["Division note","eighth note"]], reverse:true}, count:6 },
+    { gen:"term-match", params:{subject:"term", pool:[["Compound meter","beats divide into three"],["6/8","compound duple"],["9/8","compound triple"],["12/8","compound quadruple"],["Beat note","dotted quarter"],["Division note","eighth note"]], reverse:true}, count:5 },
     { gen:"rhythm-count", params:{}, count:2 },
     { type:"mc", q:"At a moderate tempo, how many main beats are in a measure of 6/8?", choices:["2","6","3"], answer:0,
       explain:"6 ÷ 3 = 2 dotted-quarter beats." },
@@ -273,14 +310,19 @@ LESSON_CONTENT[76]={
       explain:"3/4 is simple triple meter; each beat normally divides into two equal parts." },
     { type:"truefalse", q:"Conductors normally show every division rather than the main beats.", answer:false,
       explain:"Conducting patterns normally show the main beats." },
+    { type:"mc", q:"At a fast tempo, each measure of 3/8 is counted as…", choices:["1 count","3 counts","6 counts"], answer:0,
+      explain:"Fast 3/8 = in one: the whole measure is a single pulse." },
+    { type:"mc", q:"Fast 6/8's two counts land on written beats…", choices:["1 and 4","1 and 3","3 and 6"], answer:0,
+      explain:"The two strong beats get promoted to the only counts." },
     { gen:"term-match", params:{subject:"term", pool:[["Top ÷ 3","the beat count"],["3+3 beaming","compound"],["2+2+2 beaming","simple triple"],["Dotted note","the compound beat"]], reverse:true}, count:3 },
-    { gen:"note-value", params:{}, count:2 }
+    { gen:"note-value", params:{}, count:1 }
   ],
   vocabulary:[
     {term:"Compound Meter", def:"A meter in which each beat naturally divides into three equal parts. In compound meter, the beat is usually a dotted note."},
     {term:"Beat vs. Division", def:"The beat is the pulse you feel and conduct. Each beat divides into three equal divisions, usually written as eighth notes."},
     {term:"Compound Duple / Triple / Quadruple", def:"6/8 = compound duple · 9/8 = compound triple · 12/8 = compound quadruple. The number of beats equals the top number divided by three."},
-    {term:"Conducting Pattern", def:"Conductors make one conducting motion for each beat, not for each written eighth note — a 2-beat, 3-beat, or 4-beat pattern."}
+    {term:"Conducting Pattern", def:"Conductors make one conducting motion for each beat, not for each written eighth note — a 2-beat, 3-beat, or 4-beat pattern."},
+    {term:"In One / In Two", def:"Fast-tempo counting: fast 3/8 is counted 'in one' (the measure = 1 pulse) and fast 6/8 'in two' (each dotted quarter = 1 count). Only the strong beats are counted when the divisions blur."}
   ],
   mistakes:[],
   summary:[
@@ -288,11 +330,13 @@ LESSON_CONTENT[76]={
     "✔ <b>Beats = top number ÷ 3</b>: 6/8 → 2 · 9/8 → 3 · 12/8 → 4.",
     "✔ The bottom number names the <b>division</b>, not the beat.",
     "✔ Beaming in groups of <b>three</b> shows the beats — 3+3 (6/8) vs 2+2+2 (3/4).",
-    "✔ Conduct the <b>beats</b>: 6/8 in two, 9/8 in three, 12/8 in four."
+    "✔ Conduct the <b>beats</b>: 6/8 in two, 9/8 in three, 12/8 in four.",
+    "✔ At <b>fast tempos</b>, count only the strong beats: fast 3/8 = <b>in one</b>, fast 6/8 = <b>in two</b> — the notation never changes."
   ],
   tips:[
     "Say '1-&-a 2-&-a' for 6/8 — the '&-a' fills each beat's three divisions.",
     "Hearing test: if the quick notes come in threes, the meter is compound.",
+    "Practice bridge: count a passage in 6, speed it up gradually, and FEEL the moment your counting wants to collapse to 2 — conductors literally beat fast 6/8 in two.",
     "12/8 powers the blues shuffle and slow doo-wop ballads — four big beats, each rolling in three.",
     "Next lesson: what happens when a SIMPLE meter borrows a three-division — the triplet — and compound borrows two: the duplet."
   ],
@@ -321,6 +365,10 @@ LESSON_CONTENT[76]={
       explain:"Three groups of two eighth notes indicate three simple beats and therefore suggest 3/4.", hint:"Count the number of beamed groups." },
     { type:"mc", q:"At a moderate tempo, which conducting pattern is normally used for 12/8?", choices:["The four-beat pattern","The twelve-beat pattern","The three-beat pattern"], answer:0,
       explain:"Conduct the four main beats rather than all twelve eighth-note divisions.", hint:"Beats only." },
+    { type:"mc", q:"At a fast tempo, each measure of 6/8 is counted as…", choices:["2 counts","6 counts","3 counts"], answer:0,
+      explain:"Fast 6/8 = in two: the strong beats 1 and 4 become the only counts.", hint:"Strong beats only." },
+    { type:"truefalse", q:"Fast tempo changes how 6/8 is counted, not how it is written.", answer:true,
+      explain:"The page is identical; only the counting strategy changes.", hint:"Notation vs feel." },
     { type:"truefalse", q:"In 6/8, the bottom number identifies the beat value.", answer:false,
       explain:"The bottom number identifies the eighth-note division. At a moderate tempo, the beat is represented by a dotted quarter note.", hint:"Beat vs division." },
     { type:"truefalse", q:"You hear each main beat divide into three equal parts. This suggests compound meter.", answer:true,
@@ -335,7 +383,7 @@ LESSON_CONTENT[76]={
       explain:"Pattern 1 divided each beat into two (simple); pattern 2 divided each beat into three (compound). That three-part division is today's subject.",
       play:()=>{for(let b=0;b<4;b++){ MFAudio.tone(48,.3,b*.6,.42); MFAudio.tone(74,.12,b*.6+.2,.16); MFAudio.tone(74,.12,b*.6+.4,.16); }} },
     learn:{ label:"compound meter",
-      explain:"Beats divide into three; beat = dotted quarter; beats = top ÷ 3 (6/8→2, 9/8→3, 12/8→4); beaming 3+3 shows the beats; conduct the beats.",
+      explain:"Beats divide into three; beat = dotted quarter; beats = top ÷ 3 (6/8→2, 9/8→3, 12/8→4); beaming 3+3 shows the beats; conduct the beats. At fast tempos count only the strong beats: fast 3/8 in one, fast 6/8 in two.",
       hint:"Top ÷ 3.",
       play:()=>{for(let b=0;b<2;b++){ MFAudio.tone(48,.3,b*.6,.42); for(let j=1;j<3;j++) MFAudio.tone(74,.12,b*.6+j*.2,.16); }} },
     example:{ label:"the examples",

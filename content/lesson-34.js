@@ -4,7 +4,34 @@
    drawn as an original interactive SVG: 12 positions, C on top, enharmonic dual
    labels at the bottom (B/C♭ · F♯/G♭ · C♯/D♭), clockwise = +1♯, counterclockwise = +1♭.
    QA note honored: exploration over rote — click keys, step around, build the circle.
+   v2 reorg (2026-07-17): absorbed the enharmonic-key content from deleted old
+   Lesson 31 — 15 written scales / 12 unique sounds, the three twin pairs
+   (B=C♭ · F♯=G♭ · C♯=D♭) with the B-vs-C♭ keyboard proof and the twin-match drill.
    NOTE: edit by FULL-FILE REWRITE only. */
+
+/* tap-match the three enharmonic twin pairs (from old L31) */
+function MF_L34_twins(container,fb){
+  const PAIRS={"B":"C♭","F♯":"G♭","C♯":"D♭"};
+  let sel=null, matched=0;
+  container.innerHTML=`<div class="big-q l34tw-q" style="text-align:center">Tap a SHARP key, then tap its FLAT twin!</div>
+    <div class="choices chips l34tw-sh"></div><div class="choices chips l34tw-fl"></div>`;
+  const q=container.querySelector(".l34tw-q"), shRow=container.querySelector(".l34tw-sh"), flRow=container.querySelector(".l34tw-fl");
+  Object.keys(PAIRS).forEach(k=>{ const b=document.createElement("button"); b.textContent=k+" Major";
+    b.style.color="var(--correct)"; b.style.borderColor="var(--correct)";
+    b.onclick=()=>{ if(b.disabled) return; [...shRow.children].forEach(x=>x.style.outline=""); sel=k; b.style.outline="3px solid #ffd166"; b.dataset.sel="1"; };
+    shRow.appendChild(b); });
+  Object.values(PAIRS).forEach(v=>{ const b=document.createElement("button"); b.textContent=v+" Major";
+    b.style.color="var(--primary)"; b.style.borderColor="var(--primary)";
+    b.onclick=()=>{ if(b.disabled||!sel) return;
+      if(PAIRS[sel]===v){ b.disabled=true; b.style.opacity=".4";
+        const sb=[...shRow.children].find(x=>x.textContent.startsWith(sel)); sb.disabled=true; sb.style.opacity=".4"; sb.style.outline="";
+        MFAudio.tone(71,.3); matched++; sel=null;
+        if(matched>=3){ q.textContent="All three twin pairs matched!";
+          fb(true,"✓ B=C♭ · F♯=G♭ · C♯=D♭ — three pairs of scales that SOUND identical but are spelled differently."); }
+        else fb(true,"✓ Twins! Same piano keys, different spelling. Next pair…"); }
+      else { MFAudio.tone(40,.25); fb(false,"Not that twin — the pair shares the SAME black-key keynote (B/C♭ share a white one!)."); } };
+    flRow.appendChild(b); });
+}
 
 /* the circle data: 12 positions clockwise from the top */
 const MF_L34_POS=[
@@ -191,6 +218,8 @@ LESSON_CONTENT[34]={
     "Determine how many sharps or flats a key contains",
     "Recognize neighboring keys",
     "Locate all major keys (and the enharmonic twins) on the circle",
+    "Explain what enharmonic keys are: 15 written scales, 12 unique sounds",
+    "Identify the three enharmonic pairs: B=C♭ · F♯=G♭ · C♯=D♭",
     "Use the circle to identify key signatures"
   ],
   steps:[
@@ -212,16 +241,48 @@ LESSON_CONTENT[34]={
       try:{ type:"custom",
         hint:"Clockwise from C: G D A E B F♯ C♯. Counterclockwise: F B♭ E♭ A♭. The dual-name spots sit at the bottom.",
         mount:(container,fb)=>MF_L34_build(container,fb) } },
-    { say:"Finally, explore freely — every key's signature, count and neighbors, one tap away. Notice the <b>enharmonic twins</b> sharing the bottom three spots. \u{1F447} <b>Inspect at least three keys:</b>",
+    { say:"Now explore freely — every key's signature, count and neighbors, one tap away. Notice the keys at the <b>bottom</b> wearing TWO names each. \u{1F447} <b>Inspect at least three keys:</b>",
       try:{ type:"custom",
         hint:"Tap B, F♯ or C♯ at the bottom — each wears two names.",
-        mount:(container,fb)=>MF_L34_explorer(container,fb) } }
+        mount:(container,fb)=>MF_L34_explorer(container,fb) } },
+    { say:"Why the double names? Those bottom keys are <b>ENHARMONIC KEYS</b> — they sound the same but are written differently. Proof at the keyboard: below, <b>B major</b> (5 sharps) and <b>C♭ major</b> (7 flats) — written completely differently, yet the marked piano keys are IDENTICAL. \u{1F447} <b>Why do both scales light up the same keys?</b>",
+      show:{ type:"custom", mount:(el)=>{
+        const s1=document.createElement("div"); el.appendChild(s1);
+        Staff.render(s1,{clef:"treble",keysig:"B",notes:[{p:"B3",d:"q",label:"B"},{p:"C4",d:"q",label:"C♯"},{p:"D4",d:"q",label:"D♯"},{p:"E4",d:"q",label:"E"},{p:"F4",d:"q",label:"F♯"},{p:"G4",d:"q",label:"G♯"},{p:"A4",d:"q",label:"A♯"},{p:"B4",d:"q",label:"B"}],width:480});
+        const s2=document.createElement("div"); s2.style.marginTop="6px"; el.appendChild(s2);
+        Staff.render(s2,{clef:"treble",keysig:"Cb",notes:[{p:"C4",d:"q",label:"C♭"},{p:"D4",d:"q",label:"D♭"},{p:"E4",d:"q",label:"E♭"},{p:"F4",d:"q",label:"F♭"},{p:"G4",d:"q",label:"G♭"},{p:"A4",d:"q",label:"A♭"},{p:"B4",d:"q",label:"B♭"},{p:"C5",d:"q",label:"C♭"}],width:480});
+        const k=document.createElement("div"); k.style.marginTop="10px"; el.appendChild(k);
+        Keyboard.create(k,{start:59,octaves:1.0833,labels:true,marks:[59,61,63,64,66,68,70,71]});
+      } },
+      try:{ type:"mc", choices:["They are enharmonic — same pitches, different spelling","C♭ major is played lower","The keyboard is too small"], answer:0,
+        success:"✓ Enharmonic keys: every written note differs, every sounding pitch matches.",
+        fail:"Look at the marked keys — do the two scales use different ones?",
+        hint:"Same sound ≠ same name." } },
+    { say:"Count the circle's keys: <b>7 sharp keys</b> + <b>7 flat keys</b> + <b>C</b> = <b>15 written major scales</b>. But the three twin pairs (<b>B=C♭ · F♯=G♭ · C♯=D♭</b>) each SOUND identical — so those 15 spellings make only <b>12 unique sounds</b>, exactly the 12 positions of the circle. \u{1F447} <b>How many unique-SOUNDING major scales are there?</b>",
+      show:{ type:"html", html:`<div style="max-width:520px;margin:0 auto;text-align:center;line-height:2">
+        <div><b style="color:var(--correct)">Sharp keys:</b> G(1♯) · D(2♯) · A(3♯) · E(4♯) · B(5♯) · F♯(6♯) · C♯(7♯)</div>
+        <div><b style="color:var(--primary)">Flat keys:</b> F(1♭) · B♭(2♭) · E♭(3♭) · A♭(4♭) · D♭(5♭) · G♭(6♭) · C♭(7♭)</div>
+        <div><b>+ C major</b> — no sharps, no flats</div></div>` },
+      try:{ type:"mc", choices:["12","15","10","21"], answer:0,
+        success:"✓ 15 spellings − 3 twin pairs = 12 different sounds — one per circle position.",
+        fail:"Three of the fifteen are duplicates in sound…",
+        hint:"15 minus the three twins." } },
+    { say:"Match the twins yourself. \u{1F447} <b>Pair each sharp scale with its enharmonic flat twin:</b>",
+      try:{ type:"custom",
+        hint:"B pairs with the C-flat spelling; F♯ with G♭; C♯ with D♭.",
+        mount:(container,fb)=>MF_L34_twins(container,fb) } }
   ],
   examples:[
     { caption:"The engine of the circle: perfect 5ths. C up to G, G up to D — each leap is the same interval that powers every clockwise step.",
       staff:{clef:"treble",tempo:80,notes:[{p:"C4",d:"h",label:"C"},{p:"G4",d:"h",label:"G"},{p:"D5",d:"h",label:"D"}],brackets:[{from:0,to:1,label:"5th"},{from:1,to:2,label:"5th"}],width:380} },
     { caption:"A harmonic perfect 5th — the most stable interval after the octave. Hear why neighboring keys feel so closely related.",
-      staff:{clef:"treble",tempo:60,notes:[{p:"C4",d:"w"},{p:"G4",d:"w",chord:true}],brackets:[{from:0,to:1,label:"perfect 5th"}],width:240} }
+      staff:{clef:"treble",tempo:60,notes:[{p:"C4",d:"w"},{p:"G4",d:"w",chord:true}],brackets:[{from:0,to:1,label:"perfect 5th"}],width:240} },
+    { caption:"B major — 5 sharps, from the bottom of the circle. The key signature does all the work: every C, D, F, G and A plays sharp.",
+      staff:{clef:"treble",tempo:100,keysig:"B",notes:[{p:"B3",sound:"B3",d:"q",label:"1"},{p:"C4",sound:"C#4",d:"q",label:"2"},{p:"D4",sound:"D#4",d:"q",label:"3"},{p:"E4",d:"q",label:"4"},{p:"F4",sound:"F#4",d:"q",label:"5"},{p:"G4",sound:"G#4",d:"q",label:"6"},{p:"A4",sound:"A#4",d:"q",label:"7"},{p:"B4",d:"q",label:"8"}],width:540},
+      kb:{start:59,octaves:1.0833,labels:true,marks:[59,61,63,64,66,68,70,71]} },
+    { caption:"C♭ major — 7 flats, the SAME circle position. Different spelling, yet listen: EXACTLY the same scale, on exactly the same keys.",
+      staff:{clef:"treble",tempo:100,keysig:"Cb",notes:[{p:"C4",sound:"B3",d:"q",label:"1"},{p:"D4",sound:"Db4",d:"q",label:"2"},{p:"E4",sound:"Eb4",d:"q",label:"3"},{p:"F4",sound:"E4",d:"q",label:"4"},{p:"G4",sound:"Gb4",d:"q",label:"5"},{p:"A4",sound:"Ab4",d:"q",label:"6"},{p:"B4",sound:"Bb4",d:"q",label:"7"},{p:"C5",sound:"B4",d:"q",label:"8"}],width:540},
+      kb:{start:59,octaves:1.0833,labels:true,marks:[59,61,63,64,66,68,70,71]} }
   ],
   games:[
     { type:"gen-race", title:"Game 1 · Compass Sprint (45s) \u{1F9ED}",
@@ -239,11 +300,26 @@ LESSON_CONTENT[34]={
       miaIntro:"Reverse lap, flat side! \u{1F3CE}",
       spec:{sequence:["C","F","B♭","E♭","A♭","D♭","G♭","C♭"], title:"Tap the counterclockwise lap — C first, +1♭ each step!"},
       result:(stars)=>stars>=3?"A clean flat-side lap!":null },
-    { type:"gen-race", title:"Game 4 · Signature Recall (10 rounds)",
-      intro:"The circle in your head: signatures flash, you name the key.",
-      miaIntro:"No circle to look at — just memory! \u{1F9E0}",
-      spec:{gen:"keysig-id", params:{max:7}, rounds:10},
-      result:(score)=>score>=8?"The circle lives in your head now!":null }
+    { type:"sig-match", title:"Game 4 · The GRAND Match-Up — all 15 keys!",
+      intro:"Every key signature on the circle — sharps, flats, empty. Drag each name onto its signature!",
+      miaIntro:"The complete collection in one game! \u{1F3C6}",
+      spec:{rounds:3, perRound:4, clefs:["treble","bass"], pool:[
+        {key:"C",label:"C Major"},{key:"G",label:"G Major"},{key:"D",label:"D Major"},{key:"A",label:"A Major"},
+        {key:"E",label:"E Major"},{key:"B",label:"B Major"},{key:"F#",label:"F♯ Major"},{key:"C#",label:"C♯ Major"},
+        {key:"F",label:"F Major"},{key:"Bb",label:"B♭ Major"},{key:"Eb",label:"E♭ Major"},{key:"Ab",label:"A♭ Major"},
+        {key:"Db",label:"D♭ Major"},{key:"Gb",label:"G♭ Major"},{key:"Cb",label:"C♭ Major"}]},
+      result:(stars)=>stars>=3?"Fifteen signatures, zero hesitation!":null },
+    { type:"term-race", title:"Game 5 · Enharmonic Twin Race",
+      intro:"Scales, twins and counts — match them at speed!",
+      miaIntro:"Know the twins cold! \u{1F46F}",
+      spec:{rounds:8, reverse:true, pool:[
+        ["B Major","Enharmonic twin of C♭ Major (5♯ = 7♭)"],
+        ["F♯ Major","Enharmonic twin of G♭ Major (6♯ = 6♭)"],
+        ["C♯ Major","Enharmonic twin of D♭ Major (7♯ = 5♭)"],
+        ["15","How many written major scales there are"],
+        ["12","How many unique-SOUNDING major scales there are"],
+        ["Enharmonic Keys","Sound the same, written differently"]]},
+      result:(score)=>score>=7?"Twin master!":null }
   ],
   practiceIntro:"20 practice questions — directions, counts, neighbors and landings. Answer right and the next appears automatically!",
   practice:[
@@ -269,7 +345,16 @@ LESSON_CONTENT[34]={
     { type:"mc", q:"In the circle of fifths, go clockwise and ascend by 5ths for the ____ keys.", choices:["sharp","flat","minor"], answer:0,
       explain:"Clockwise = the sharp keys; counterclockwise = the flat keys." },
     { type:"mc", q:"Which pair are NEIGHBORS on the circle?", choices:["D and A","D and F","C and E"], answer:0,
-      explain:"D (2♯) and A (3♯) sit side by side — one accidental apart." }
+      explain:"D (2♯) and A (3♯) sit side by side — one accidental apart." },
+    { gen:"term-match", params:{subject:"pair", pool:[["B Major","sounds the same as C♭ Major"],["F♯ Major","sounds the same as G♭ Major"],["C♯ Major","sounds the same as D♭ Major"],["Enharmonic Keys","different spelling, identical pitches"]], reverse:true}, count:4 },
+    { type:"mc", q:"The 15 written major scales are made of…", choices:["7 sharp + 7 flat + C","8 sharp + 7 flat","12 white + 3 black"], answer:0,
+      explain:"Seven of each family plus plain C major." },
+    { type:"truefalse", q:"B Major and C♭ Major sound the same on a piano.", answer:true,
+      explain:"Enharmonic twins — identical keys, different spelling." },
+    { type:"mc", q:"The enharmonic equivalent of F♯ Major is ____ Major.", choices:["G♭","E","A♭"], answer:0,
+      explain:"6 sharps = 6 flats — same keys." },
+    { type:"mc", q:"There are ____ unique-sounding major scales.", choices:["12","15","7"], answer:0,
+      explain:"15 written − 3 duplicates = 12 sounds — the circle's 12 positions." }
   ],
   miaQuizIntro:"Time to navigate the whole circle of keys!",
   quiz:[
@@ -302,7 +387,17 @@ LESSON_CONTENT[34]={
       explain:"C→G→D→A… each leap is a perfect 5th — hence the circle's name.", hint:"It's in the title." },
     { type:"mc", q:"Which keys share the BOTTOM of the circle with two names each?",
       choices:["B/C♭ · F♯/G♭ · C♯/D♭","C/D · E/F · G/A","A/B♭ · C/C♯ · D/E♭"], answer:0,
-      explain:"The three enharmonic twin pairs from Lesson 31 meet at the bottom of the circle.", hint:"Remember the twins!" },
+      explain:"The three enharmonic twin pairs meet at the bottom of the circle.", hint:"Remember the twins!" },
+    { type:"mc", q:"How many written major scales are commonly recognized?", choices:["12","13","15","24"], answer:2,
+      explain:"7 sharp keys + 7 flat keys + C.", hint:"Count both families plus C." },
+    { type:"mc", q:"How many unique-sounding major scales are there?", choices:["10","12","15","21"], answer:1,
+      explain:"Three enharmonic pairs collapse 15 spellings into 12 sounds — the circle's 12 positions.", hint:"Subtract the twins." },
+    { type:"truefalse", q:"Enharmonic keys always have different pitches.", answer:false,
+      explain:"The opposite: IDENTICAL pitches, different names.", hint:"En-HARMONIC: the harmony is the same." },
+    { type:"mc", q:"Name this major key signature.",
+      staff:{clef:"treble",keysig:"B",notes:[],width:220},
+      choices:["B Major","A Major","E Major"], answer:0,
+      explain:"Five sharps — last is A♯, one half step up = B.", hint:"Count the sharps first." },
     /* generated */
     { gen:"circle-nav", params:{maxMove:3}, count:4 },
     { gen:"keysig-id", params:{max:7}, count:2 },
@@ -313,39 +408,43 @@ LESSON_CONTENT[34]={
     {term:"Perfect Fifth", def:"An interval spanning five letter names — like C up to G. Each clockwise step of the circle is a perfect 5th.",
       staff:{clef:"treble",notes:[{p:"C4",d:"w"},{p:"G4",d:"w",chord:true}],width:130}},
     {term:"Clockwise ↻", def:"Moving by ascending perfect fifths, adding one SHARP at each step: C → G → D → A → E → B → F♯ → C♯."},
-    {term:"Counterclockwise ↺", def:"Moving the other way, adding one FLAT at each step: C → F → B♭ → E♭ → A♭ → D♭ → G♭ → C♭."}
+    {term:"Counterclockwise ↺", def:"Moving the other way, adding one FLAT at each step: C → F → B♭ → E♭ → A♭ → D♭ → G♭ → C♭."},
+    {term:"Enharmonic Keys", def:"Keys and scales that sound the same but are written differently. The keys of C♯, F♯ and B sound the same as the keys of D♭, G♭ and C♭ respectively.",
+      staff:{clef:"treble",keysig:"B",notes:[],width:120}},
+    {term:"15 Scales, 12 Sounds", def:"7 sharp keys + 7 flat keys + C = 15 written scales — but the three enharmonic pairs make only 12 different sounds: the circle's 12 positions."}
   ],
   mistakes:[],
   summary:[
     "✔ The <b>Circle of Fifths</b> maps every key by its <b>sharps and flats</b> — C on top with none.",
     "✔ <b>Clockwise ↻ = +1♯</b> per step (C G D A E B F♯ C♯) · <b>Counterclockwise ↺ = +1♭</b> (C F B♭ E♭ A♭ D♭ G♭ C♭).",
     "✔ <b>Neighbors differ by exactly one accidental</b> — that's why they sound so closely related.",
-    "✔ Each clockwise step is a <b>perfect 5th</b> up — the interval from Lesson 33!",
-    "✔ The three <b>enharmonic twins</b> (B/C♭ · F♯/G♭ · C♯/D♭) share the bottom of the circle. \u{1F389} <b>UNIT 8 COMPLETE!</b>"
+    "✔ Each clockwise step climbs a <b>perfect 5th</b> — five letter names up, like C to G.",
+    "✔ <b>15 written scales</b> (7♯ + 7♭ + C) make only <b>12 unique sounds</b> — the circle's 12 positions.",
+    "✔ The three <b>enharmonic twins</b> (B=C♭ · F♯=G♭ · C♯=D♭) share the bottom of the circle: <b>different spelling, identical pitches</b>."
   ],
   tips:[
-    "Your L29/L30 key ladders were the circle unrolled into straight lines — now they've curled into a circle.",
+    "Your sharp-key and flat-key ladders were the circle unrolled into straight lines — now they've curled into a circle.",
     "Stuck on a signature? Walk the circle from C in your head, counting accidentals as you go.",
     "The circle also predicts which keys blend beautifully in real music: neighbors first.",
-    "Unit 9 sharpens the ruler: intervals gain QUALITIES — perfect, major, minor."
+    "Reading a piece in 6 sharps? Its enharmonic twin in 6 flats plays IDENTICALLY — composers pick whichever is easier to read. The twins' accidental counts always sum to 12: 5♯/7♭ · 6♯/6♭ · 7♯/5♭."
   ],
   rewards:{ badge:"Circle Navigator", icon:"\u{1F9ED}" },
   sectionOrder:["secHook","secObjectives","secLearn","secExample","secReview",
-    "secGame0","secGame1","secGame2","secGame3","secPractice","secQuiz","secTips","secNext"],
-  miaPerfect:"A perfect lap of the entire circle — Unit 8 conquered, navigator! \u{1F9ED}\u{1F389}\u{1F389}",
-  miaPass:"You passed — and finished Unit 8! Remember: clockwise for sharps, counterclockwise for flats.",
+    "secGame0","secGame1","secGame2","secGame3","secGame4","secPractice","secQuiz","secTips","secNext"],
+  miaPerfect:"A perfect lap of the entire circle — every key AND its twin, navigator! \u{1F9ED}\u{1F389}\u{1F389}",
+  miaPass:"You passed! Remember: clockwise for sharps, counterclockwise for flats — and the three twins at the bottom.",
   mia:{
     hook:{ label:"the welcome",
       explain:"Neighboring keys differ by exactly one accidental — the whole circle is built from that single fact.",
       play:()=>{MFAudio.tone(60,.4,0);MFAudio.tone(67,.5,.45);} },
     learn:{ label:"the circle",
-      explain:"C on top; clockwise adds sharps (C G D A E B F♯ C♯), counterclockwise adds flats (C F B♭ E♭ A♭ D♭ G♭ C♭); the enharmonic twins share the bottom.",
+      explain:"C on top; clockwise adds sharps (C G D A E B F♯ C♯), counterclockwise adds flats (C F B♭ E♭ A♭ D♭ G♭ C♭); the enharmonic twins (B=C♭, F♯=G♭, C♯=D♭) share the bottom — 15 written scales, 12 unique sounds.",
       hint:"Right = sharps, left = flats.",
       play:()=>{[60,67,62,69].forEach((m,i)=>MFAudio.tone(m,.3,i*.3));} },
     example:{ label:"the examples",
-      explain:"The perfect 5th is the engine: every clockwise step is that same leap, first melodic (C-G-D), then rung as harmony." },
+      explain:"The perfect 5th is the engine: every clockwise step is that same leap, first melodic (C-G-D), then rung as harmony. Then the twins: the same eight piano keys spelled as B major (5♯) and as C♭ major (7♭) — watch the keyboards, identical marks." },
     game:{ label:"the games",
-      explain:"Sprint the compass, lap the circle both directions, then recall signatures from memory.",
+      explain:"Sprint the compass, lap the circle both directions, match all 15 signatures, then race the enharmonic twins.",
       hint:"In the sprint: direction first (♯ or ♭?), then count the steps." },
     quiz:{ label:"this question",
       explain:"Steer with three facts: clockwise +1♯, counterclockwise +1♭, neighbors differ by one accidental.",
