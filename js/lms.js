@@ -33,22 +33,24 @@ const MFTrack=(()=>{
   async function flush(){
     if(!enabled||flushing) return;
     const s=session(); if(!s) return;
-    let q=get(LSQ,[]);
-    if(!q.length){ paint(); return; }
     flushing=true; paint();
     try{
-      while(q.length){
+      /* re-read the queue every iteration: events enqueued DURING a flush
+         must never be lost to a stale snapshot */
+      for(;;){
+        const q=get(LSQ,[]);
+        if(!q.length) break;
         const ev=q[0];
         const args=Object.assign({p_token:s.token,p_id:ev.id,p_course:COURSE,p_client_ts:ev.ts},ev.args);
-        let r;
-        try{ r=await rpc(ev.fn,args); }
+        try{ await rpc(ev.fn,args); }
         catch(err){
           if(err.status>=400&&err.status<500&&String(err.message).includes("invalid_session")){
             logout(false); break;               /* session died: stop, keep queue for next login */
           }
           throw err;                            /* network/5xx: retry later */
         }
-        q.shift(); set(LSQ,q);                  /* confirmed by server (ok or dedup) */
+        const q2=get(LSQ,[]);                   /* confirmed by server (ok or dedup) */
+        if(q2.length&&q2[0].id===ev.id){ q2.shift(); set(LSQ,q2); }
       }
     }catch(e){ /* stay queued; retried on online/interval */ }
     flushing=false; paint();

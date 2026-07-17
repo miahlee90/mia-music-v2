@@ -1,17 +1,21 @@
 /* Music Fundamentals v2 — service worker (offline cache).
    Bump CACHE when deploying updated files. */
-const CACHE="mf-v2-20260717a";
+const CACHE="mf-v2-20260717b";
 const PRECACHE=[
  "./index.html",
  "./lessons.html",
+ "./student.html",
  "./manifest.json",
  "./icons/icon-192.png",
  "./icons/icon-512.png",
  "./icons/apple-touch-icon.png",
  "./css/style.css",
+ "./js/config.js",
+ "./js/curriculum.js",
  "./js/games.js",
  "./js/keyboard.js",
  "./js/lessons-data.js",
+ "./js/lms.js",
  "./js/nav.js",
  "./js/pwa.js",
  "./js/quiz.js",
@@ -243,12 +247,12 @@ self.addEventListener("activate",e=>{
 });
 self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET") return;
+  const u=new URL(e.request.url);
+  if(u.origin!==location.origin) return;                 /* CDN + Supabase: straight to network */
+  if(u.pathname.endsWith("/sw.js")) return;
   e.respondWith(
     caches.match(e.request,{ignoreSearch:true}).then(hit=>hit||fetch(e.request).then(res=>{
-      if(res.ok&&new URL(e.request.url).origin===location.origin){
-        const copy=res.clone();
-        caches.open(CACHE).then(c=>c.put(e.request,copy));
-      }
+      if(res.ok){ const copy=res.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); }
       return res;
     }))
   );
