@@ -51,6 +51,7 @@ const MFAudio=(()=>{
     return buf;
   }
   function ac(){
+    if(ctx&&ctx.state==="suspended") ctx.resume(); /* iOS/Safari: unlock inside the user gesture */
     if(!ctx){
       ctx=new (window.AudioContext||window.webkitAudioContext)();
       const comp=ctx.createDynamicsCompressor();
