@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Instructor — Completion Code Verifier</title>
+<link rel="stylesheet" href="css/style.css?v=20260717b">
+</head>
+<body>
+<header class="lesson-header"><div class="inner">
+  <h1>🔑 Completion Code Verifier (instructor)</h1>
+  <div class="crumb">Paste one code per line — student codes look like MF01-XXXX-XXXX</div>
+</div></header>
+<main>
+  <div class="card">
+    <textarea id="codes" style="width:100%;min-height:140px;font:14px ui-monospace,monospace;padding:12px;border:2px solid #d7e4ee;border-radius:10px" placeholder="MF01-2X9K-4FQZ&#10;MF02-3A7B-9CDE&#10;…"></textarea>
+    <div class="continue-row"><button id="go">Verify all</button></div>
+  </div>
+  <div class="card" id="out" style="display:none">
+    <h2>Results</h2>
+    <div id="table"></div>
+  </div>
+</main>
+<script src="js/lessons-data.js?v=20260717b"></script>
+<script src="js/staff.js?v=20260717b"></script>
+<script src="js/keyboard.js?v=20260717b"></script>
+<script src="js/quiz.js?v=20260717b"></script>
+<script>
+document.getElementById("go").onclick=()=>{
+  const lines=document.getElementById("codes").value.split(/\n+/).map(s=>s.trim()).filter(Boolean);
+  let rows=`<table style="width:100%;border-collapse:collapse;font-size:15px">
+    <tr style="text-align:left;color:var(--muted)"><th style="padding:6px">Code</th><th>Lesson</th><th>Score</th><th>Date</th><th>Status</th></tr>`;
+  lines.forEach(code=>{
+    const r=Quiz.verifyCode(code);
+    rows+=r.valid?
+      `<tr><td style="padding:6px;font-family:monospace">${code}</td><td>Lesson ${r.lesson}${LESSONS[r.lesson-1]?" — "+LESSONS[r.lesson-1].title:""}</td><td>${r.score}/10</td><td>${r.date}</td><td style="color:var(--correct);font-weight:700">✓ valid</td></tr>`:
+      `<tr><td style="padding:6px;font-family:monospace">${code}</td><td colspan="3"></td><td style="color:var(--wrong);font-weight:700">✗ invalid</td></tr>`;
+  });
+  document.getElementById("table").innerHTML=rows+"</table>";
+  document.getElementById("out").style.display="block";
+};
+</script>
+</body>
+</html>

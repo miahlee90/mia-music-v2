@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maintenance — Content Validator</title>
+<link rel="stylesheet" href="css/style.css?v=20260717b">
+</head>
+<body>
+<header class="lesson-header"><div class="inner">
+  <h1>🧪 Content Validator (maintenance)</h1>
+  <div class="crumb">Batch-validates every built lesson's content file. Run after each editing session (SPEC §8.1).</div>
+</div></header>
+<main><div class="card"><div id="out">Loading content files…</div></div></main>
+<script src="js/lessons-data.js?v=20260717b"></script>
+<script src="js/staff.js?v=20260717b"></script>
+<script src="js/keyboard.js?v=20260717b"></script>
+<script src="js/quiz.js?v=20260717b"></script>
+<script>
+(function(){
+  let loaded=0;
+  for(let i=1;i<=BUILT_THROUGH;i++){
+    const s=document.createElement("script");
+    s.src="content/lesson-"+String(i).padStart(2,"0")+".js";
+    s.onload=s.onerror=()=>{ if(++loaded===BUILT_THROUGH) report(); };
+    document.body.appendChild(s);
+  }
+  function report(){
+    let rows=`<table style="width:100%;border-collapse:collapse;font-size:14px">
+      <tr style="text-align:left;color:var(--muted)"><th style="padding:6px">Lesson</th><th>Sections</th><th>Quiz</th><th>Interactions</th><th>Status</th></tr>`;
+    let allOk=true;
+    for(let i=1;i<=BUILT_THROUGH;i++){
+      const C=LESSON_CONTENT[i]; const warns=[];
+      if(!C){ rows+=`<tr><td style="padding:6px">${i}</td><td colspan="3">content file missing</td><td style="color:var(--wrong)">✗</td></tr>`; allOk=false; continue; }
+      ["objectives","hook","steps","examples","quiz","vocabulary","mistakes","summary"].forEach(k=>{ if(!C[k]) warns.push("missing "+k); });
+      let qlen=0; try{ qlen=Quiz.expand(C.quiz||[]).length; }catch(e){ warns.push("quiz expand error"); }
+      if(qlen<8||qlen>12) warns.push("quiz="+qlen);
+      const inter=(C.hook?1:0)+(C.steps||[]).filter(s=>s.try).length+(C.keyboard?1:0)+(C.game?1:0);
+      if(inter<2) warns.push("interactions="+inter);
+      const ok=!warns.length; if(!ok) allOk=false;
+      rows+=`<tr><td style="padding:6px">${i}. ${LESSONS[i-1].title}</td>
+        <td>${["hook","steps","examples","keyboard","game"].filter(k=>C[k]).join(", ")}</td>
+        <td>${qlen}</td><td>${inter}</td>
+        <td style="color:${ok?"var(--correct)":"var(--wrong)"};font-weight:700">${ok?"✓ ok":warns.join(" · ")}</td></tr>`;
+    }
+    document.getElementById("out").innerHTML=rows+`</table><p style="margin-top:14px;font-weight:700;color:${allOk?"var(--correct)":"var(--wrong)"}">${allOk?"✓ All built lessons pass.":"✗ Fix the items above before publishing."}</p>`;
+  }
+})();
+</script>
+</body>
+</html>
