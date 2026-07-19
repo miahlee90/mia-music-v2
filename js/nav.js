@@ -9,7 +9,7 @@ const Nav=(()=>{
   function header(n){
     const L=lesson(n),U=unitOf(n);
     return `<header class="lesson-header"><div class="inner">
-      <div class="crumb"><a href="../lessons.html">All Lessons</a> › Unit ${U.unit}: ${U.name} › Lesson ${L.label}</div>
+      <div class="crumb">🏠 <a href="https://miahlee90.github.io/">Mia Music Studio</a> › <a href="../index.html">Theory Lab</a> › <a href="../lessons.html">All Lessons</a> › Lesson ${L.label}</div>
       <h1>Lesson ${L.label} — ${L.title}</h1>
     </div></header>`;
   }

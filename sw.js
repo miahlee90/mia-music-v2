@@ -1,6 +1,6 @@
 /* Music Fundamentals v2 — service worker (offline cache).
    Bump CACHE when deploying updated files. */
-const CACHE="mf-v2-20260718-theorylab17";
+const CACHE="mf-v2-20260718-theorylab18";
 const PRECACHE=[
  "./index.html",
  "./lessons.html",
