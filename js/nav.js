@@ -22,7 +22,7 @@ const Nav=(()=>{
       const built=l.n<=BUILT_THROUGH;
       return `<option value="${built?href(l.n):""}" ${l.n===n?"selected":""} ${built?"":"disabled"}>${l.label} · ${l.title}${built?"":" (soon)"}</option>`;
     }).join("");
-    return `<div class="navrow">${prev}<a href="../lessons.html">All lessons</a>${next}</div>`+
+    return `<div class="navrow">${prev}<a href="../lessons.html">All Lessons</a>${next}</div>`+
       `<div class="navrow"><select class="nav-jump" onchange="if(this.value)location.href=this.value" aria-label="Jump to lesson">`+
       `<option value="">Jump to any lesson…</option>${opts}</select></div>`;
   }
