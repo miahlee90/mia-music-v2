@@ -53,6 +53,14 @@ main{max-width:860px;margin:0 auto;padding:36px 16px 8px}
 .nb-chip{display:inline-block;margin-top:8px}
 footer{text-align:center;padding:26px 16px 44px;color:var(--muted);font-size:14px}
 footer a{color:var(--primary);font-weight:600;text-decoration:none}
+/* phones: scale the desktop hero back down (keep LAST in the cascade) */
+@media(max-width:640px){
+  .hero{min-height:0;padding:40px 18px 48px}
+  .hero h1{font-size:1.8rem}
+  .hero .tagline{font-size:1.15rem}
+  .hero .btns a{padding:12px 22px}
+  main{padding-top:26px}
+}
 </style>
 </head>
 <body>
