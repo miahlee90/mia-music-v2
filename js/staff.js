@@ -39,52 +39,51 @@
    one (same x; 2nds/unisons offset 13px) and plays it SIMULTANEOUSLY.
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 const MFAudio=(()=>{
-  /* v2 sound upgrade (2026-07-17, instructor: "richer tone"): additive EP-style
-     voice — 5 decaying partials with slight detune, per-note lowpass that closes
-     over the note (piano-like darkening), generated-IR convolution reverb (~14%
-     wet) and a master compressor. Same tone()/chord()/yay() API as before. */
-  let ctx=null,master=null,wet=null;
-  function makeIR(c,sec,decay){ /* synthesized stereo impulse response — no asset files */
-    const rate=c.sampleRate,len=Math.floor(rate*sec),buf=c.createBuffer(2,len,rate);
-    for(let ch=0;ch<2;ch++){ const d=buf.getChannelData(ch);
-      for(let i=0;i<len;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/len,decay); }
-    return buf;
-  }
+  /* v3 sound (2026-07-18, instructor: Aural Lab's piano sounds much better):
+     the voice is PORTED FROM AURAL LAB's ALAudio.toneAt — sine + triangle@2f
+     + sine@3f with register-aware voicing (bass gets a stronger 2nd partial,
+     softer level, slower attack), a two-stage piano decay (fast bloom-down to
+     28%, then a long tail, crisp release), static per-note lowpass, and a
+     clean master chain (highpass 70Hz + gentle 4:1 compressor — the old
+     synthesized-IR reverb and 6:1 squeeze are gone; they smeared the tone).
+     Same tone()/chord()/click()/yay() API as before. */
+  let ctx=null,master=null;
   function ac(){
     if(ctx&&ctx.state==="suspended") ctx.resume(); /* iOS/Safari: unlock inside the user gesture */
     if(!ctx){
       ctx=new (window.AudioContext||window.webkitAudioContext)();
+      master=ctx.createGain();master.gain.value=.8;
+      const hp=ctx.createBiquadFilter();
+      hp.type="highpass";hp.frequency.value=70;hp.Q.value=.5;
       const comp=ctx.createDynamicsCompressor();
-      comp.threshold.value=-18;comp.knee.value=20;comp.ratio.value=6;
-      comp.connect(ctx.destination);
-      master=ctx.createGain();master.gain.value=.9;master.connect(comp);
-      const conv=ctx.createConvolver();conv.buffer=makeIR(ctx,1.4,2.8);
-      wet=ctx.createGain();wet.gain.value=.14;wet.connect(conv);conv.connect(comp);
+      comp.threshold.value=-18;comp.knee.value=24;comp.ratio.value=4;
+      comp.attack.value=.005;comp.release.value=.12;
+      master.connect(hp);hp.connect(comp);comp.connect(ctx.destination);
     }
     return ctx;
   }
-  const PARTIALS=[[1,1],[2,.5],[3,.22],[4,.11],[5,.05]];
   function tone(midi,dur=0.7,when=0,vol=0.5){
     const c=ac(),t=c.currentTime+when,f=440*Math.pow(2,(midi-69)/12);
-    const g=c.createGain(),lp=c.createBiquadFilter();
-    lp.type="lowpass";
-    lp.frequency.setValueAtTime(Math.min(f*9,9000),t);
-    lp.frequency.exponentialRampToValueAtTime(Math.max(f*1.7,500),t+Math.min(dur,1.2));
-    g.connect(lp);lp.connect(master);lp.connect(wet);
-    const amp=vol*.55;
+    const v=Math.min(1,vol*.96)*(f<180?.72:1);      /* vol .5 → level ≈ Aural's default */
+    const att=f<200?.014:.005;
+    const g=c.createGain();
+    const lp=c.createBiquadFilter();lp.type="lowpass";
+    lp.frequency.value=Math.min(6000,Math.max(800,f*5));lp.Q.value=.4;
+    const o1=c.createOscillator();o1.type="sine";    o1.frequency.value=f;
+    const o2=c.createOscillator();o2.type="triangle";o2.frequency.value=f*2;
+    const o3=c.createOscillator();o3.type="sine";    o3.frequency.value=f*3;
+    const g2=c.createGain();g2.gain.value=f<180?.34:.14;
+    const g3=c.createGain();g3.gain.value=f<400?.09:.05;
+    const rel=Math.max(.15,Math.min(dur,3.4));
     g.gain.setValueAtTime(0,t);
-    g.gain.linearRampToValueAtTime(amp,t+.008);
-    g.gain.exponentialRampToValueAtTime(Math.max(amp*.3,.0012),t+Math.min(.22,Math.max(dur*.5,.05)));
-    g.gain.exponentialRampToValueAtTime(.001,t+dur);
-    PARTIALS.forEach(([n,a])=>{
-      const pf=f*n; if(n>1&&pf>7500) return;
-      const o=c.createOscillator(),og=c.createGain();
-      o.type="sine";o.frequency.value=pf;
-      o.detune.value=n===1?0:(n%2?3:-3); /* faint inharmonicity = warmth */
-      og.gain.value=a;
-      o.connect(og);og.connect(g);
-      o.start(t);o.stop(t+dur+.1);
-    });
+    g.gain.linearRampToValueAtTime(v*.5,t+att);
+    g.gain.exponentialRampToValueAtTime(Math.max(v*.5*.28,.0012),t+Math.min(.7,rel));
+    g.gain.setValueAtTime(Math.max(v*.5*.28*Math.pow(.0029,Math.max(0,rel-.7)/2.9),.0012),t+rel);
+    g.gain.exponentialRampToValueAtTime(.0006,t+rel+.12);
+    o1.connect(g);o2.connect(g2);g2.connect(g);o3.connect(g3);g3.connect(g);
+    g.connect(lp);lp.connect(master);
+    o1.start(t);o2.start(t);o3.start(t);
+    o1.stop(t+rel+.25);o2.stop(t+rel+.25);o3.stop(t+rel+.25);
   }
   function click(when=0,vol=0.5,hi=false){ /* metronome tick (for rhythm games) */
     const c=ac(),t=c.currentTime+when;
