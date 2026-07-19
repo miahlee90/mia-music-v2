@@ -12,6 +12,11 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
 /* landing polish — same front-door system as the three labs */
+/* style.css turns every .hero anchor into a gold pill button — the breadcrumb
+   links in the eyebrow must stay plain text */
+.hero .eyebrow a{background:none;padding:0;border-radius:0;box-shadow:none;display:inline;
+  font-weight:inherit;color:rgba(255,255,255,.9);text-decoration:none}
+.hero .eyebrow a:hover{background:none;transform:none;box-shadow:none;text-decoration:underline}
 .hero{min-height:50vh;padding:60px 20px 68px}
 .hero h1{font-size:2.4rem}
 .hero .tagline{font-size:1.5rem;font-weight:800;letter-spacing:-.3px;margin:10px 0 14px;color:#fff}
