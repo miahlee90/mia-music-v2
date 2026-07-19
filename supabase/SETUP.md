@@ -33,6 +33,7 @@
 1. `supabase/01-schema.sql` — 테이블 + 보안 규칙(RLS)
 2. `supabase/02-curriculum-seed.sql` — 107개 레슨 커리큘럼
 3. `supabase/03-functions.sql` — 서버 기능(로그인, 진도 기록 등)
+4. `supabase/06-game-lab.sql` — (선택) Game Lab 게임 기록 저장 — 학사 기록과 완전 분리된 별도 테이블. 실행하지 않아도 게임은 정상 작동하며, 기록이 기기에만 남습니다. 나중에 실행하면 그동안 쌓인 기록이 자동으로 올라갑니다.
 
 각각 "Success. No rows returned"가 나오면 정상입니다.
 

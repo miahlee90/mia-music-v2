@@ -1,0 +1,215 @@
+/* Note Bird — game-only styles. Loaded AFTER css/style.css and touches only
+   nb-* classes: the site design system is reused, never modified.
+   Palette = existing tokens (--primary, --accent, --correct, --wrong, etc.).
+   v0.3 design pass: red-bird states, padded Music Gate, subtle sky scene,
+   compact status bar with progress dots, labeled Distance-to-Gate indicator,
+   upgraded A–G buttons. No screen shake, no flashes; reduced-motion turns
+   off all decorative motion. */
+
+/* ---------- setup ---------- */
+/* numbered steps on COLOR BANDS (infographic style; instructor: titles must
+   pop). CSS counter skips hidden fields, so the numbering stays contiguous
+   in both Practice and Level modes. Band tint matches its number badge. */
+.nb-setup{counter-reset:nbstep}
+.nb-setup .nb-field{margin:18px 0;counter-increment:nbstep}
+.nb-setup .nb-field>.nb-lab{position:relative;display:flex;align-items:center;
+  min-height:40px;padding:5px 18px 5px 52px;margin:0 0 10px;border-radius:12px;
+  font-weight:800;color:var(--brand-dark);font-size:14.5px;letter-spacing:.02em;
+  background:#eceaff}
+.nb-setup .nb-field>.nb-lab::before{content:counter(nbstep,decimal-leading-zero);
+  position:absolute;left:3px;top:50%;transform:translateY(-50%);
+  width:36px;height:36px;border-radius:9px;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  font-weight:800;font-size:15px;font-feature-settings:"tnum";
+  background:var(--primary);box-shadow:0 3px 8px rgba(13,37,61,.2)}
+.nb-setup .nb-field:nth-of-type(4n+2)>.nb-lab{background:#e2f2e8}
+.nb-setup .nb-field:nth-of-type(4n+2)>.nb-lab::before{background:#2E8B57}
+.nb-setup .nb-field:nth-of-type(4n+3)>.nb-lab{background:#faf0da}
+.nb-setup .nb-field:nth-of-type(4n+3)>.nb-lab::before{background:var(--accent)}
+.nb-setup .nb-field:nth-of-type(4n)>.nb-lab{background:#fbe7ef}
+.nb-setup .nb-field:nth-of-type(4n)>.nb-lab::before{background:#ea2261}
+.nb-setup .nb-lab{font-weight:700;color:var(--brand-dark);margin-bottom:6px;font-size:14.5px}
+.nb-signin{font-size:13.5px;color:var(--muted);margin:-4px 0 4px}
+.nb-signin a{font-weight:600}
+/* notation-preview cards for quick picks & line/space sets */
+.nb-notecard{display:flex;flex-direction:column;align-items:center;gap:2px;
+  min-width:128px;border-radius:12px !important;padding:8px 10px 7px !important}
+.nb-notecard .nb-cardlbl{font-weight:800;font-size:13.5px;color:var(--brand-dark);letter-spacing:.02em}
+.nb-quick .nb-notecard svg.mf-staff,.nb-sets .nb-notecard svg.mf-staff{height:60px;width:auto;max-width:100%}
+.nb-notecard.nb-on{border-color:var(--primary) !important;background:#f6f4ff !important;
+  box-shadow:0 0 0 2.5px rgba(83,58,253,.28) !important}
+@media (max-width:600px){
+  .nb-setup .nb-field>.nb-lab{padding-left:46px;min-height:36px}
+  .nb-setup .nb-field>.nb-lab::before{width:30px;height:30px;font-size:13px;border-radius:8px}
+  .nb-notecard{min-width:46%}
+}
+.nb-setup .choices.chips{justify-content:flex-start}
+.nb-modedesc{color:var(--muted);font-size:14px;margin-top:6px;min-height:20px}
+.nb-setup select.nav-jump{max-width:420px;display:block}
+.choices.chips button.nb-on{background:#f4f2ff;border-color:var(--primary);
+  box-shadow:0 0 0 2px rgba(83,58,253,.18)}
+.nb-rangeRow{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+.nb-rangeRow label{font-size:14px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
+.nb-rangeRow select{min-width:90px}
+.nb-sublab{display:inline-block;font-size:12px;font-weight:700;letter-spacing:.07em;
+  text-transform:uppercase;color:var(--ink-2);margin:12px 0 6px;
+  background:var(--cream);border:1px solid #e4d5ae;border-radius:9999px;padding:4px 14px}
+.nb-condline{font-size:14px;color:var(--primary-dark);font-weight:600;margin-top:8px;
+  font-feature-settings:"tnum"}
+
+/* ---------- header bird mark (same character as in the game) ---------- */
+.nb-birdmark{display:inline-flex;vertical-align:middle;margin-right:6px}
+.nb-birdmark svg{overflow:visible}
+.nb-birdmark .nb-wing{transform-box:fill-box;transform-origin:15% 85%;
+  animation:nb-flap .9s ease-in-out infinite alternate}
+
+/* ---------- compact status bar ---------- */
+.nb-play{padding:16px 20px 20px}
+.nb-hud{display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  font-feature-settings:"tnum";color:var(--ink-2);font-size:14px;
+  border-bottom:1px solid var(--hairline);padding-bottom:8px}
+.nb-hud-round{font-weight:700;color:var(--brand-dark);white-space:nowrap}
+.nb-hud-score{color:var(--accent-dark);font-weight:600;white-space:nowrap}
+.nb-hud-lives{letter-spacing:2px}
+.nb-hud-spacer{flex:1}
+.nb-hud button{min-height:30px;padding:4px 12px;font-size:13px}
+.nb-dots{display:inline-flex;gap:5px;align-items:center}
+.nb-dot{width:9px;height:9px;border-radius:50%;background:transparent;
+  border:1.6px solid var(--primary-subtle);transition:background .3s,border-color .3s}
+.nb-dot.filled{background:var(--primary);border-color:var(--primary)}
+.nb-q{text-align:center;min-height:24px;margin-top:8px;
+  font-size:15.5px;font-weight:600;color:var(--ink-2)}
+
+/* ---------- scene: friendly sky-blue over a soft green field ---------- */
+.nb-scene{position:relative;margin-top:6px;border-radius:16px;
+  border:1px solid var(--hairline);overflow:hidden;
+  background:linear-gradient(180deg,#b7dff8 0%,#d3ecfb 30%,#e9f6ff 52%,#f0f8ec 72%,#dff0da 100%)}
+.nb-scene::before,.nb-scene::after{ /* soft clouds, kept to the TOP strip only —
+  never behind the clef, noteheads, ledger lines or buttons */
+  content:"";position:absolute;top:6px;height:16px;border-radius:9999px;
+  background:#fff;opacity:.9;pointer-events:none;
+  box-shadow:14px 4px 0 -2px #fff, -12px 5px 0 -3px #fff}
+.nb-scene::before{left:8%;width:52px}
+.nb-scene::after{right:10%;width:40px;top:10px;opacity:.7}
+.nb-scene .staffwrap{overflow:visible;position:relative;z-index:1;padding:14px 6px 10px}
+.nb-pausedveil{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  background:rgba(246,240,226,.82);font-weight:800;font-size:1.3rem;color:var(--brand-dark);
+  border-radius:16px;z-index:5}
+.nb-pausedveil[hidden]{display:none}
+
+/* level-up toast — a little wooden sign (nod to the studio's reference art) */
+.nb-leveltoast{position:absolute;top:8px;left:50%;transform:translateX(-50%);z-index:6;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0) 0 8px, rgba(90,55,20,.14) 8px 10px),
+    linear-gradient(180deg,#b07c46,#8a5a2c);
+  color:#fff7e6;border:2px solid #6f4722;
+  font-weight:800;padding:9px 22px;border-radius:10px;box-shadow:var(--shadow-2);
+  pointer-events:none;font-feature-settings:"tnum"}
+.nb-leveltoast[hidden]{display:none}
+.nb-toastin{animation:nb-toast 1.6s ease forwards}
+@keyframes nb-toast{0%{opacity:0;transform:translate(-50%,-8px)}12%{opacity:1;transform:translate(-50%,0)}
+  80%{opacity:1}100%{opacity:0}}
+
+/* ---------- Distance-to-Gate indicator (labeled; hidden when untimed) ---------- */
+.nb-timerwrap{max-width:640px;margin:10px auto 0;display:flex;align-items:center;gap:10px}
+.nb-timerlab{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--muted);white-space:nowrap}
+.nb-timertrack{flex:1;height:8px;background:#eee6d4;border-radius:9999px;overflow:hidden}
+.nb-timerfill{height:100%;width:100%;border-radius:9999px;
+  background:linear-gradient(90deg,#f96bee,#ffd166); /* site pink→orange accents */
+  transition:width .12s linear,filter .8s ease}
+.nb-timertrack.nb-low .nb-timerfill{filter:saturate(1.35) hue-rotate(-28deg)} /* gentle warm shift, no flash */
+
+.nb-fb{text-align:center;min-height:24px;font-size:15px}
+.nb-revealkb{height:104px;max-width:380px;margin:8px auto}
+.nb-reveal{min-height:4px}
+
+/* ---------- A–G answer buttons ---------- */
+.nb-answerbar{margin-top:10px}
+.nb-letters{margin-top:6px;gap:10px}
+.nb-letters button{min-width:60px;min-height:58px;padding:12px 14px;
+  font-size:1.4rem;font-weight:700;border-radius:14px;
+  background:#fff;color:var(--primary);
+  border:2px solid var(--primary-subtle);border-bottom-width:4px;
+  box-shadow:0 2px 8px rgba(13,37,61,.08);
+  transition:background .15s,border-color .15s,transform .1s}
+.nb-letters button:hover{background:#f4f2ff;border-color:var(--primary);transform:translateY(-1px)}
+.nb-letters button:focus-visible{outline:3px solid var(--primary);outline-offset:2px}
+.nb-letters button:active{transform:translateY(2px);border-bottom-width:2px;
+  background:var(--primary);color:#fff}
+.nb-letters button.right{background:#e6f4ec;border-color:var(--correct);color:var(--correct)}
+.nb-letters button.right::after{content:" ✓";font-size:1rem;vertical-align:middle}
+.nb-letters button.wrongpick{background:#fff5f2;border-color:#f0876f;color:#c65b43;
+  animation:nb-nudge .35s ease 1} /* gentle sideways nudge, never a red flash */
+@keyframes nb-nudge{0%,100%{transform:translateX(0)}30%{transform:translateX(-3px)}70%{transform:translateX(3px)}}
+
+/* hint & audio: clearly secondary to the answer buttons */
+.nb-tools{text-align:center;margin-top:8px}
+.nb-tools button{min-height:32px;padding:5px 14px;font-size:13px}
+
+/* mobile: answers pinned to the bottom, staff stays visible above */
+@media (max-width:600px){
+  .nb-answerbar{position:sticky;bottom:0;background:var(--card);
+    padding:8px 4px calc(8px + env(safe-area-inset-bottom));margin:10px -18px -18px;
+    border-top:1px solid var(--hairline);z-index:6}
+  .nb-letters{gap:8px}
+  .nb-letters button{min-width:64px;min-height:52px;padding:8px 10px;flex:0 0 auto}
+  .nb-revealkb{height:92px}
+  .nb-hud{gap:8px;font-size:13px}
+  .nb-timerlab{display:none} /* keep the bar; reclaim width on small screens */
+}
+
+/* ---------- tree, perch branch & meadow (SVG + scene decor) ---------- */
+.nb-trunk{fill:#9a6a3f;stroke:#7a4f28;stroke-width:1.6}
+.nb-crown.c1{fill:#4f9f58}
+.nb-crown.c2{fill:#3f8f4b}
+.nb-crown.c3{fill:#6fbf72}
+.nb-grass{fill:#58a95c;opacity:.9}
+.nb-branchwood{fill:#9a6a3f;stroke:#7a4f28;stroke-width:1.4}
+.nb-flower{fill:#fff;stroke:#ffd166;stroke-width:1.4}
+.nb-meadow{position:absolute;left:0;right:0;bottom:0;height:36px;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(circle 3px at 12% 55%, #fff 0 2.4px, rgba(255,255,255,0) 3.4px),
+    radial-gradient(circle 3px at 32% 72%, #fff 0 2.2px, rgba(255,255,255,0) 3.2px),
+    radial-gradient(circle 3px at 58% 60%, #fff 0 2.4px, rgba(255,255,255,0) 3.4px),
+    radial-gradient(circle 3px at 84% 70%, #fff 0 2.2px, rgba(255,255,255,0) 3.2px),
+    linear-gradient(180deg, rgba(124,197,126,0) 0%, rgba(105,190,110,.6) 38%, rgba(72,158,80,.85) 100%)}
+
+/* ---------- the red Note Bird (SVG states) ---------- */
+.nb-bird .nb-wing{transform-box:fill-box;transform-origin:15% 85%}
+.nb-bird.st-wait .nb-wing{animation:nb-flap .7s ease-in-out infinite alternate}
+.nb-bird.st-fly  .nb-wing{animation:nb-flap .32s ease-in-out infinite alternate}
+.nb-bird.st-pass .nb-wing{animation:nb-flap .16s ease-in-out infinite alternate}
+.nb-bird.st-bump .nb-wing{animation:none;transform:rotate(20deg)} /* wings down a beat */
+@keyframes nb-flap{from{transform:rotate(-14deg)}to{transform:rotate(16deg)}}
+
+/* cartoon dizzy stars after a bump — friendly, brief, no injury imagery */
+.nb-star{font-size:13px;fill:var(--accent);font-family:inherit}
+.nb-dizzy{transform-box:fill-box;transform-origin:center;animation:nb-orbit 1.1s linear infinite}
+@keyframes nb-orbit{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.nb-spark .nb-star{fill:var(--primary-soft);font-size:19px}
+
+/* ---------- results ---------- */
+.nb-successbanner{font-size:1.5rem;font-weight:800;color:var(--brand-dark);letter-spacing:-.3px}
+.nb-newbest{color:var(--accent-dark);font-weight:700;margin-top:4px}
+.nb-statgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));
+  gap:10px;margin-top:14px;text-align:center}
+.nb-statgrid>div{background:var(--bg);border:1px solid var(--hairline);border-radius:10px;padding:10px}
+.nb-statgrid b{display:block;font-size:1.3rem;color:var(--brand-dark);font-feature-settings:"tnum"}
+.nb-statgrid span{font-size:12.5px;color:var(--muted)}
+.nb-chiprow{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.nb-chip{background:var(--cream);border:1px solid #dcc794;border-radius:9999px;
+  padding:5px 14px;font-size:13px;font-weight:600;color:var(--ink-2);font-feature-settings:"tnum"}
+.nb-missedgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:10px}
+.nb-misscard{background:var(--bg);border:1px solid var(--hairline);border-radius:12px;
+  padding:10px;cursor:pointer;transition:transform .12s,box-shadow .15s;text-align:center}
+.nb-misscard:hover{transform:translateY(-2px);box-shadow:var(--shadow-2)}
+.nb-misscap b{font-size:14.5px;color:var(--brand-dark)}
+.nb-misscap span{font-size:12.5px;color:var(--muted);margin-left:6px}
+
+/* ---------- reduced motion: no flap, no orbit, no bob (JS also checks) ---------- */
+@media (prefers-reduced-motion: reduce){
+  .nb-wing,.nb-dizzy,.nb-birdmark .nb-wing{animation:none!important}
+  .nb-letters button.wrongpick{animation:none}
+  .nb-toastin{animation:none;opacity:1}
+}

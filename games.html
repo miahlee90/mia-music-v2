@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Game Lab · Theory Lab</title>
+<link rel="stylesheet" href="css/style.css?v=20260717b">
+<link rel="stylesheet" href="css/notebird.css?v=20260717nb12">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1c1e54">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+</head>
+<body>
+<header class="lesson-header"><div class="inner">
+  <div class="crumb"><a href="index.html">Theory Lab</a> › Game Lab</div>
+  <h1>🎮 Game Lab</h1>
+</div></header>
+<main>
+  <div class="card">
+    <p><b>Practical musicianship games</b> — separate from the lessons: no grades, no pressure,
+       just skill-building you can replay any time. Results stay on this device.
+       New games join the Lab as they're ready.</p>
+  </div>
+  <div id="gameList"></div>
+</main>
+
+<script src="js/notebird/nb-strings.js?v=20260717nb12"></script>
+<script src="js/notebird/nb-data.js?v=20260717nb12"></script>
+<script src="js/notebird/nb-engine.js?v=20260717nb12"></script>
+<script>
+/* Game Lab registry — adding a future game = one more entry here.
+   mark: small inline SVG/emoji for the card; badge: optional live stat. */
+const GAMELAB=[
+  {
+    id:"note-bird",
+    title:()=>NB_CONFIG.TITLE,
+    mark:()=>NBData.birdMark(40),
+    href:"games/note-bird.html",
+    desc:"Read notes on the staff and name them before the bird reaches the tree. "+
+         "Pick your clef & range · Levels 1–10, the bird speeds up · hearts grow with you · Practice mode too.",
+    badge:()=>{ /* best level so far on this device, across all conditions */
+      try{
+        const v=JSON.parse(localStorage.getItem(NB_CONFIG.STORAGE_KEY)||"{}");
+        const best=Object.values(v.best||{}).reduce((m,b)=>Math.max(m,b.level||0),0);
+        const done=Object.values(v.best||{}).some(b=>b.success);
+        return best?("🏅 Best: Level "+best+(done?" · L10 ✓":"")):"";
+      }catch(e){ return ""; }
+    },
+    status:"live"
+  },
+  {
+    id:"coming-soon",
+    title:()=>"More games hatching…",
+    mark:()=>"🥚",
+    desc:"Rhythm flights, interval hops, landmark hunts — new Game Lab games land here as they're verified.",
+    status:"soon"
+  }
+];
+
+const list=document.getElementById("gameList");
+GAMELAB.forEach(g=>{
+  const live=g.status==="live";
+  const el=document.createElement(live?"a":"div");
+  el.className="card lesson-link";
+  el.style.cssText="display:flex;margin-top:14px;align-items:center"+(live?"":";opacity:.65");
+  if(live) el.href=g.href;
+  const badge=g.badge?g.badge():"";
+  el.innerHTML=
+    `<span style="display:flex;align-items:center;gap:12px">
+       <span style="font-size:1.6rem;display:inline-flex">${typeof g.mark==="function"?g.mark():g.mark}</span>
+       <span><b>${typeof g.title==="function"?g.title():g.title}</b>
+         ${badge?`<span class="nb-chip" style="margin-left:8px">${badge}</span>`:""}<br>
+         <span style="color:var(--muted);font-size:14px">${g.desc}</span></span>
+     </span>
+     ${live?`<span style="color:var(--primary);font-weight:700;margin-left:auto;white-space:nowrap">Play →</span>`:""}`;
+  list.appendChild(el);
+});
+</script>
+</body>
+</html>
