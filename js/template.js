@@ -38,7 +38,7 @@
   learn+=`<div class="continue-row"><button id="contBtn">Continue ↓</button></div></section>`;
   S.secLearn=learn;
 
-  let ex=`<section class="card step" id="secExample"><h2>${C.exampleHeading||"Hear it in real music"}</h2>`;
+  let ex=`<section class="card step" id="secExample"><h2>${C.exampleHeading||"See and Hear It in Examples"}</h2>`;
   C.examples.forEach((e,i)=>{
     ex+=`${e.caption?Teacher.bubbleHTML(e.caption):""}<div id="ex${i}"></div>
       ${(!e.mount && e.playable!==false)?`<div style="text-align:center"><button class="play" id="exBtn${i}">▶ Play the example</button></div>`:""}`;
