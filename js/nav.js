@@ -13,19 +13,43 @@ const Nav=(()=>{
       <h1>Lesson ${L.label} — ${L.title}</h1>
     </div></header>`;
   }
-  function footer(n){
-    const LAST=LESSONS[LESSONS.length-1].n;
-    const prev=n>1?`<a href="${href(n-1)}">← Lesson ${label(n-1)}</a>`:`<a class="disabled">← Previous</a>`;
-    const next=(n<LAST&&n<BUILT_THROUGH)?`<a href="${href(n+1)}">Lesson ${label(n+1)} →</a>`:
-               n<LAST?`<a class="disabled" title="Coming soon">Lesson ${label(n+1)} (soon)</a>`:`<a class="disabled">—</a>`;
-    const opts=LESSONS.map(l=>{
-      const built=l.n<=BUILT_THROUGH;
-      return `<option value="${built?href(l.n):""}" ${l.n===n?"selected":""} ${built?"":"disabled"}>${l.label} · ${l.title}${built?"":" (soon)"}</option>`;
-    }).join("");
-    return `<div class="navrow">${prev}<a href="../lessons.html">All Lessons</a>${next}</div>`+
-      `<div class="navrow"><select class="nav-jump" onchange="if(this.value)location.href=this.value" aria-label="Jump to lesson">`+
-      `<option value="">Jump to any lesson…</option>${opts}</select></div>`;
+  /* v3 footer (instructor 2026-07-20): ← Previous · "You are at N.N" · Next →.
+     Previous/Next open a scrollable per-lesson button list — earlier lessons
+     pop UP above the button, later lessons pop DOWN below it. The old
+     "All Lessons" middle link (still in the breadcrumb) and the jump
+     dropdown are gone. */
+  function popItem(l){
+    const built=l.n<=BUILT_THROUGH;
+    return `<a class="${built?"":"disabled"}" ${built?`href="${href(l.n)}"`:""}>${l.label} · ${l.title}${built?"":" (soon)"}</a>`;
   }
+  function footer(n){
+    const L=lesson(n);
+    const before=LESSONS.filter(l=>l.n<n), after=LESSONS.filter(l=>l.n>n);
+    return `<div class="navrow lesson-nav">
+      <div class="navpop-wrap">
+        <button class="navbtn" ${before.length?`onclick="Nav.togglePop(event,'prev')"`:"disabled"}>← Previous</button>
+        <div class="navpop up" id="navPopPrev">${before.map(popItem).join("")}</div>
+      </div>
+      <span class="nav-here">You are at ${L.label}</span>
+      <div class="navpop-wrap">
+        <button class="navbtn" ${after.length?`onclick="Nav.togglePop(event,'next')"`:"disabled"}>Next →</button>
+        <div class="navpop down" id="navPopNext">${after.map(popItem).join("")}</div>
+      </div>
+    </div>`;
+  }
+  function togglePop(ev,which){
+    ev.stopPropagation();
+    const el=document.getElementById(which==="prev"?"navPopPrev":"navPopNext");
+    const other=document.getElementById(which==="prev"?"navPopNext":"navPopPrev");
+    if(other) other.classList.remove("open");
+    if(!el) return;
+    el.classList.toggle("open");
+    /* upward list: keep the NEAREST earlier lesson visible next to the button */
+    if(el.classList.contains("open")&&el.classList.contains("up")) el.scrollTop=el.scrollHeight;
+  }
+  document.addEventListener("click",()=>{
+    document.querySelectorAll(".navpop.open").forEach(p=>p.classList.remove("open"));
+  });
   function nextInvite(n){
     if(n>=LESSONS[LESSONS.length-1].n) return "";
     const N=lesson(n+1);
@@ -33,5 +57,5 @@ const Nav=(()=>{
     return `<section class="card next-invite"><h2>Nice work! 🎉</h2>
       <p>Up next: <b>Lesson ${N.label} — ${N.title}</b>${soon}</p></section>`;
   }
-  return {lesson,unitOf,href,label,header,footer,nextInvite};
+  return {lesson,unitOf,href,label,header,footer,nextInvite,togglePop};
 })();

@@ -209,6 +209,30 @@ hr.sep{border:none;border-top:1px solid var(--hairline);margin:20px 0}
 .navrow a.disabled{opacity:.4;pointer-events:none}
 .nav-jump{flex:1;font:inherit;padding:12px;border-radius:9999px;border:1px solid var(--hairline);background:var(--card);color:var(--primary);font-weight:500;box-shadow:var(--shadow)}
 
+/* v3 lesson footer: Previous/Next pop a per-lesson button list (prev = up, next = down) */
+.navpop-wrap{flex:1;position:relative;display:flex}
+.navbtn{flex:1;font:inherit;cursor:pointer;text-align:center;background:var(--card);
+  border:1px solid var(--hairline);border-radius:9999px;box-shadow:var(--shadow);
+  padding:12px;color:var(--primary);font-weight:500}
+.navbtn:hover{background:var(--bg)}
+.navbtn:disabled{opacity:.4;cursor:default}
+.nav-here{flex:1.1;text-align:center;font-weight:700;color:var(--brand-dark);
+  background:var(--cream);border:1px solid #dcc794;border-radius:9999px;padding:12px;
+  font-feature-settings:"tnum";white-space:nowrap}
+.navpop{position:absolute;z-index:60;display:none;
+  min-width:280px;max-width:min(92vw,380px);max-height:320px;overflow:auto;
+  background:var(--card);border:1px solid var(--hairline);border-radius:14px;
+  box-shadow:0 14px 36px rgba(0,55,112,.20);padding:6px}
+.navpop.open{display:block}
+/* prev pops up, anchored to the row's left edge; next pops down, anchored right */
+.navpop.up{bottom:calc(100% + 8px);left:0}
+.navpop.down{top:calc(100% + 8px);right:0}
+.navpop a{display:block;text-align:left;padding:8px 12px;border-radius:8px;
+  color:var(--ink);text-decoration:none;font-size:13.5px;line-height:1.35}
+.navpop a:hover{background:var(--bg);text-decoration:none}
+.navpop a.disabled{opacity:.45;pointer-events:none}
+@media(max-width:600px){ .nav-here{font-size:13px;padding:12px 6px} .navpop{min-width:240px} }
+
 /* index & home — mesh hero */
 .hero{color:#fff;text-align:left;padding:44px 16px;position:relative;overflow:hidden;
   display:flex;flex-direction:column;justify-content:center;min-height:36vh;
