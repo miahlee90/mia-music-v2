@@ -41,29 +41,46 @@ LESSON_CONTENT[2]={
     "Read simple notes on the treble staff with confidence"
   ],
   steps:[
-    /* Section 1 — Meet the Treble Clef (pencil-drawn, instructor's stroke order:
-       1 vertical line down, 2 top hook, 3 loop around the G line, 4 bottom tail curl) */
-    { say:"A <b>clef</b> tells us the names of the notes on the staff. The <b>Treble Clef</b> is used for higher-pitched music — flute, violin, trumpet, and the pianist's <b>right hand</b> all read it. \u{1F447} Watch the pencil draw it in the right stroke order:",
+    /* Section 1 — Meet the Treble Clef. TWO famous ways to draw it (instructor
+       2026-07-20): Method 1 = stroke order, where the FIRST stroke is the
+       straight line drawn together with its bottom tail curl in one motion;
+       Method 2 = one continuous line that starts INSIDE, on the G line, and
+       spirals outward, up, down and into the tail without lifting the pencil. */
+    { say:"A <b>clef</b> tells us the names of the notes on the staff. The <b>Treble Clef</b> is used for higher-pitched music — flute, violin, trumpet, and the pianist's <b>right hand</b> all read it. \u{1F447} There are <b>two famous ways</b> to draw it — watch the pencil do both:",
       try:{ type:"custom",
         mount:(container,fb)=>{
-          container.innerHTML=`<div class="tc-stage"></div><div style="text-align:center"><button class="play tc-go">\u{270F}\u{FE0F} Draw the Treble Clef</button></div>`;
+          container.innerHTML=`<div class="tc-stage"></div><div style="text-align:center;display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="play tc-go" data-m="1">\u{270F}\u{FE0F} Method 1: Stroke Order</button>
+            <button class="play tc-go" data-m="2">\u{1F300} Method 2: One Continuous Line</button></div>`;
           const stage=container.querySelector(".tc-stage");
           Staff.render(stage,{clef:"treble",notes:[],width:400});
           const svg=stage.querySelector("svg");
           const real=[...svg.querySelectorAll(".clef,.clef-path,.clefdot,.clef-stroke")];
           real.forEach(el=>{ el.style.opacity=0; el.style.transition="opacity .9s"; });
           const NS="http://www.w3.org/2000/svg";
-          /* 6 strokes, wikiHow order; each starts exactly where the last ended */
-          /* instructor chart: 1 line · 2 skinny P to the 4th line · 3 swoop left,
-             touch the bottom of the staff · 4 swoop out, cross the middle line,
-             stop over the G line · (5 tail curl) */
-          const STROKES=[["M 40 8 L 40 100",800],
-                         ["M 40 8 C 50 13 51 30 44 40 C 42 43 41 44 40 45",500],
-                         ["M 40 45 C 28.4 45 19 55 19 67.5 C 19 80 28.4 90 40 90",800],
-                         ["M 40 90 C 50 90 53 78 47 68 C 43 61 35 59 31 66 C 28 71 31 77 36 78",800],
-                         ["M 40 100 C 41 107 31 110 27 104 C 24 99 30 96 33 99",500]];
-          container.querySelector(".tc-go").onclick=function(){
-            this.disabled=true; const btn=this;
+          /* Method 1 — stroke order (instructor chart): ① straight line down AND
+             its tail curl, one motion · ② skinny P to the 4th line · ③ swoop
+             left, touch the bottom of the staff · ④ swoop out, cross the middle
+             line, stop over the G line */
+          const M1=[["M 40 8 L 40 100 C 41 107 31 110 27 104 C 24 99 30 96 33 99",1100],
+                    ["M 40 8 C 50 13 51 30 44 40 C 42 43 41 44 40 45",500],
+                    ["M 40 45 C 28.4 45 19 55 19 67.5 C 19 80 28.4 90 40 90",800],
+                    ["M 40 90 C 50 90 53 78 47 68 C 43 61 35 59 31 66 C 28 71 31 77 36 78",800]];
+          /* Method 2 — start INSIDE on the G line, spiral outward, climb, then
+             straight down into the tail — the pencil never lifts (same geometry
+             as Method 1, traced in reverse from the spiral's center) */
+          const M2=[["M 36 78 C 31 77 28 71 31 66 C 35 59 43 61 47 68 C 53 78 50 90 40 90 "+
+                     "C 28.4 90 19 80 19 67.5 C 19 55 28.4 45 40 45 "+
+                     "C 41 44 42 43 44 40 C 51 30 50 13 40 8 "+
+                     "L 40 100 C 41 107 31 110 27 104 C 24 99 30 96 33 99",3000]];
+          const DONE={
+            "1":"✓ Method 1 — stroke order: \u{2460} one straight line down WITH its tail curl, in a single motion \u{2461} skinny P down to line 4 \u{2462} swoop left to touch the bottom \u{2463} swoop out, cross the middle, stop over the G line. Try tracing it in the air!",
+            "2":"✓ Method 2 — one continuous line: start INSIDE, right on the G line, spiral outward, climb to the top, then straight down and finish with the tail — the pencil never lifts. Many musicians draw it this way. Pick whichever feels natural!"
+          };
+          const btns=[...container.querySelectorAll(".tc-go")];
+          btns.forEach(btn=>btn.onclick=function(){
+            btns.forEach(b=>b.disabled=true);
+            const STROKES=this.dataset.m==="1"?M1:M2, msg=DONE[this.dataset.m];
             svg.querySelectorAll(".sketch,.pencil").forEach(el=>el.remove());
             real.forEach(el=>el.style.opacity=0);
             const pen=document.createElementNS(NS,"text");
@@ -77,8 +94,8 @@ LESSON_CONTENT[2]={
                   svg.querySelectorAll(".sketch").forEach(el=>{ el.style.transition="opacity .9s"; el.style.opacity=0; setTimeout(()=>el.remove(),1000); });
                   real.forEach(el=>el.style.opacity=1);
                   MFAudio.tone(67,.8,.1,.4);
-                  fb(true,"✓ This is the Treble Clef! \u{2460} straight line \u{2461} skinny P down to line 4 \u{2462} swoop left to touch the bottom \u{2463} swoop out, cross the middle, stop over the G line \u{2464} tail curl. Try tracing it in the air!");
-                  btn.disabled=false; btn.textContent="\u{270F}\u{FE0F} Draw it again";
+                  fb(true,msg);
+                  btns.forEach(b=>b.disabled=false);
                 },400);
                 return;
               }
@@ -99,7 +116,7 @@ LESSON_CONTENT[2]={
                 else { si++; MFAudio.tone(60+si*4,.15,0,.25); setTimeout(drawStroke,240); }
               })(t0);
             })();
-          };
+          });
         } } },
     /* Section 2 — Why the G Clef? */
     { say:"The Treble Clef is also called the <b>G Clef</b>: its spiral wraps around the <b>second line</b> of the staff — and that line is <b>G</b>. \u{1F449} <b>Click the line the spiral wraps around:</b>",
