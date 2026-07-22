@@ -434,7 +434,9 @@ button.notecard svg.mf-staff{height:46px;width:auto;max-width:100%;display:block
    gradient, faint tilted staff + notes across the middle, glow + vignette.
    Layout untouched; header background only. -- */
 .time-badge{display:none}
-.lesson-header{padding:26px 16px 40px;background:linear-gradient(135deg,#12143c 0%,#22246e 55%,#3a2fae 100%)}
+.lesson-header{padding:26px 16px 40px;
+  /* Theory Lab identity: SKY (matches the front door) */
+  background:linear-gradient(135deg,#0c1f3c 0%,#1a4a80 55%,#2f86d6 100%)}
 .hero{padding:44px 16px;background:linear-gradient(135deg,#12143c 0%,#22246e 55%,#3a2fae 100%)}
 .lesson-header::before,.hero::before{
   content:"";position:absolute;inset:0;z-index:0;pointer-events:none;
