@@ -38,6 +38,38 @@ const NBUI=(()=>{
     catch(e){ return null; }
   }
 
+  /* "Big screen" toggle (instructor 2026-07-17: kids play on phones; the button
+     must be VISIBLE and WORK everywhere). iOS Safari has NO element Fullscreen
+     API, so the reliable effect is a CSS fill of the whole viewport
+     (body.nb-fill) — that works on every device and any orientation. We ALSO
+     try the real Fullscreen API as a bonus where it exists (Android/desktop, to
+     also hide the browser's own chrome). So: button always shown, always does
+     something. */
+  function toggleBigScreen(){
+    const on=document.body.classList.toggle("nb-fill");
+    const d=document, el=d.documentElement;
+    try{
+      if(on){ const rq=el.requestFullscreen||el.webkitRequestFullscreen;
+        if(rq){ const p=rq.call(el); if(p&&p.catch) p.catch(()=>{}); } }
+      else { const ex=d.exitFullscreen||d.webkitExitFullscreen;
+        if(ex&&(d.fullscreenElement||d.webkitFullscreenElement)){ const p=ex.call(d); if(p&&p.catch) p.catch(()=>{}); } }
+    }catch(e){}
+    paintFsBtn();
+  }
+  function exitBigScreen(){
+    document.body.classList.remove("nb-fill");
+    const d=document;
+    try{ if((d.exitFullscreen||d.webkitExitFullscreen)&&(d.fullscreenElement||d.webkitFullscreenElement))
+      (d.exitFullscreen||d.webkitExitFullscreen).call(d); }catch(e){}
+  }
+  function paintFsBtn(){
+    const b=$(".nb-fs"); if(!b) return;
+    const on=document.body.classList.contains("nb-fill");
+    b.textContent=on?"✕":"⛶";
+    b.setAttribute("aria-label",nbt(on?"hud.exitFullscreen":"hud.fullscreen"));
+    b.title=b.getAttribute("aria-label");
+  }
+
   /* quiz-show feedback sounds (instructor): correct = "ding-dong-dang" rising
      chime; wrong press or tree-bump = a FALLING pitch slide (like a string
      bending down) — a pitched thud was confusable with real notes */
@@ -75,6 +107,8 @@ const NBUI=(()=>{
   /* ============================== SETUP SCREEN ============================== */
   function showSetup(){
     stopLoop(); NBMusic.stop();
+    document.body.classList.remove("nb-playing"); /* back to normal page layout */
+    exitBigScreen();
     const stu=studentSession();
     root.innerHTML=`
     <section class="card nb-setup">
@@ -121,6 +155,7 @@ const NBUI=(()=>{
         </div></div>
       <p style="color:var(--muted);font-size:14px">${nbt("setup.answerNote")}</p>
       <div style="text-align:center;margin-top:14px"><button class="play nb-start">▶ ${nbt("setup.start")}</button></div>
+      <p class="nb-rotatehint">${nbt("setup.rotateHint")}</p>
     </section>`;
 
     /* range selects */
@@ -258,6 +293,7 @@ const NBUI=(()=>{
         <span class="nb-hud-lives" aria-label="chances left"></span>
         <span class="nb-hud-score"></span>
         <span class="nb-hud-spacer"></span>
+        <button class="ghost nb-fs" aria-label="${nbt("hud.fullscreen")}" title="${nbt("hud.fullscreen")}">⛶</button>
         ${session.mode==="level"?`<button class="ghost nb-musicbtn" aria-label="${nbt("setup.music")}"></button>`:""}
         <button class="ghost nb-pause" aria-label="${nbt("hud.pause")}" style="display:${session.mode==="level"?"":"none"}">⏸ ${nbt("hud.pause")}</button>
         <button class="ghost nb-quit">${nbt("hud.quit")}</button>
@@ -305,6 +341,12 @@ const NBUI=(()=>{
     if(musBtn){ musBtn.onclick=()=>{ settings.music=!settings.music;
         if(settings.music) NBMusic.start(session.level); else NBMusic.stop(); paintMusicBtn(); };
       paintMusicBtn(); }
+    const fsBtn=$(".nb-fs");
+    if(fsBtn){ fsBtn.onclick=()=>toggleBigScreen(); paintFsBtn(); }
+
+    /* mark the page as "in play" so the landscape CSS can fill the screen
+       (hide the header banner, size the card to the viewport) */
+    document.body.classList.add("nb-playing");
 
     /* untimed practice: no countdown pressure — hide the indicator entirely */
     if(session.mode==="practice") $(".nb-timerwrap").style.display="none";
@@ -663,6 +705,8 @@ const NBUI=(()=>{
   /* ============================== RESULTS ============================== */
   function finishRound(aborted){
     stopLoop(); NBMusic.stop();
+    document.body.classList.remove("nb-playing"); /* results scroll normally */
+    exitBigScreen();
     document.removeEventListener("keydown",onKey);
     const s=session.stats();
     const cond=session.condition;
@@ -774,6 +818,12 @@ const NBUI=(()=>{
     document.querySelectorAll("[data-nb-title]").forEach(n=>n.textContent=NB_CONFIG.TITLE);
     /* the SAME red bird everywhere: inject the shared mark into header slots */
     document.querySelectorAll(".nb-birdmark").forEach(n=>{ n.innerHTML=NBData.birdMark(n.dataset.w?+n.dataset.w:44); });
+    /* if the user leaves real fullscreen with Esc, drop big-screen fill too */
+    document.addEventListener("fullscreenchange",()=>{
+      if(!document.fullscreenElement && document.body.classList.contains("nb-fill")){
+        document.body.classList.remove("nb-fill"); paintFsBtn();
+      }
+    });
     if(location.search.indexOf("check")>=0) console.log("NBData.validate:",NBData.validate());
     showSetup();
   }

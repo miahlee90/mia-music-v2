@@ -31,6 +31,9 @@
 .nb-setup .nb-lab{font-weight:700;color:var(--brand-dark);margin-bottom:6px;font-size:14.5px}
 .nb-signin{font-size:13.5px;color:var(--muted);margin:-4px 0 4px}
 .nb-signin a{font-weight:600}
+/* rotate-to-fill tip — only meaningful on touch phones */
+.nb-rotatehint{display:none;text-align:center;color:var(--muted);font-size:13px;margin-top:10px}
+@media (pointer:coarse){ .nb-rotatehint{display:block} }
 /* notation-preview cards for quick picks & line/space sets */
 .nb-notecard{display:flex;flex-direction:column;align-items:center;gap:2px;
   min-width:128px;border-radius:12px !important;padding:8px 10px 7px !important}
@@ -158,6 +161,63 @@
   .nb-hud{gap:8px;font-size:13px}
   .nb-timerlab{display:none} /* keep the bar; reclaim width on small screens */
 }
+
+/* ===== Landscape FULL-SCREEN play (phone held sideways, instructor 2026-07-17)
+   When a round is active (body.nb-playing) on a short landscape screen, the
+   game fills the whole viewport: the site header hides, the play card becomes
+   a fixed full-viewport flex column, the staff grows to fill the height, and
+   the A–G buttons sit in one compact row underneath — no page scrolling. ===== */
+@media (orientation:landscape) and (max-height:600px){
+  body.nb-playing{overflow:hidden}
+  body.nb-playing .lesson-header{display:none}
+  body.nb-playing main{max-width:none;margin:0;padding:0}
+  body.nb-playing .nb-play{position:fixed;inset:0;z-index:40;margin:0;border-radius:0;
+    height:100vh;height:100dvh;display:flex;flex-direction:column;
+    padding:5px 14px calc(5px + env(safe-area-inset-bottom))}
+  body.nb-playing .nb-hud{padding-bottom:4px;gap:8px;font-size:12.5px}
+  body.nb-playing .nb-hud button{min-height:26px;padding:2px 10px;font-size:12px}
+  body.nb-playing .nb-q{margin-top:2px;min-height:0;font-size:14px}
+  /* the scene takes all the leftover height; the SVG scales to fit it */
+  body.nb-playing .nb-scene{flex:1 1 auto;min-height:0;margin-top:4px}
+  body.nb-playing .nb-scene .staffwrap{height:100%;padding:2px 6px;display:flex;
+    align-items:center;justify-content:center}
+  body.nb-playing .nb-scene svg.mf-staff{height:100%;width:auto !important;
+    max-width:100% !important;max-height:100%;margin:0 auto;display:block}
+  body.nb-playing .nb-timerwrap{margin:4px auto 0}
+  body.nb-playing .nb-fb{min-height:0;font-size:13.5px}
+  body.nb-playing .nb-reveal{display:none} /* keyboard reveal is too tall sideways; the note name still shows */
+  /* answers: one compact row, not the sticky bottom bar */
+  body.nb-playing .nb-answerbar{position:static;margin:4px 0 0;padding:0;border:none;background:none}
+  body.nb-playing .nb-letters{gap:6px;margin-top:2px;flex-wrap:nowrap}
+  body.nb-playing .nb-letters button{min-width:0;flex:1 1 0;min-height:46px;font-size:1.2rem;padding:6px 4px}
+  body.nb-playing .nb-tools{margin-top:3px}
+}
+
+/* ===== Manual "Big screen" fill (⛶ button) — instructor 2026-07-17.
+   Works on ANY device and orientation, with NO dependence on the Fullscreen
+   API (which iOS Safari lacks for elements). The button toggles body.nb-fill;
+   the game card becomes a fixed full-viewport flex column, header hidden,
+   staff grown to fill the height, A–G buttons in one wide row. ===== */
+body.nb-fill{overflow:hidden}
+body.nb-fill .lesson-header{display:none}
+body.nb-fill main{max-width:none;margin:0;padding:0}
+body.nb-fill .nb-play{position:fixed;inset:0;z-index:60;margin:0;border-radius:0;
+  height:100vh;height:100dvh;display:flex;flex-direction:column;
+  padding:8px 18px calc(8px + env(safe-area-inset-bottom))}
+body.nb-fill .nb-q{margin-top:4px}
+body.nb-fill .nb-scene{flex:1 1 auto;min-height:0;margin-top:6px}
+body.nb-fill .nb-scene .staffwrap{height:100%;display:flex;align-items:center;
+  justify-content:center;padding:4px 8px}
+body.nb-fill .nb-scene svg.mf-staff{height:100%;width:auto !important;
+  max-width:100% !important;max-height:100%;margin:0 auto;display:block}
+body.nb-fill .nb-timerwrap{margin:6px auto 0}
+body.nb-fill .nb-answerbar{position:static;margin:8px 0 0;padding:0;border:none;background:none}
+body.nb-fill .nb-letters{flex-wrap:nowrap;gap:8px}
+body.nb-fill .nb-letters button{flex:1 1 0;min-width:0}
+body.nb-fill .nb-reveal{display:none} /* keyboard reveal is too tall in fill mode; note name still shows */
+/* the ⛶ button reads as "active" once filling */
+.nb-fs{font-size:15px;line-height:1}
+body.nb-fill .nb-fs{background:var(--primary);color:#fff;border-color:var(--primary)}
 
 /* ---------- tree, perch branch & meadow (SVG + scene decor) ---------- */
 .nb-trunk{fill:#9a6a3f;stroke:#7a4f28;stroke-width:1.6}
