@@ -304,7 +304,8 @@
         <div class="lbl">Website</div><code style="font-size:13px;letter-spacing:0">${location.origin+location.pathname.replace(/teacher\.html$/,"student.html")}</code>
         <div class="lbl">Class Code</div><code>${c.classCode}</code>
         <div class="lbl">Access Code</div><code>${c.accessCode}</code></div>`).join("")+
-      `</body></html>`);
+      `<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "8a1736edec544bda87b5b7a8252b7b59"}'></script><!-- End Cloudflare Web Analytics -->
+</body></html>`);
     w.document.close();
   }
 
