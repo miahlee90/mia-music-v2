@@ -66,6 +66,9 @@
       <p class="td-small">Enter your approved teacher email. You'll receive a one-time sign-in link — or use a password if the administrator set one for you.</p>
       <div class="td-row"><input id="em" type="email" placeholder="you@example.com" style="flex:1"><button id="go">Send link</button></div>
       <div class="td-row"><input id="pw" type="password" placeholder="…or password (optional)" style="flex:1"><button id="goPw">Sign in</button></div>
+      <p class="td-small" style="margin-top:10px">New here? Instructor accounts are by invitation —
+      <a href="https://miamusicstudio.com/for-teachers.html">read the Instructor Guide</a> or email
+      <a href="mailto:miahlee90@gmail.com">miahlee90@gmail.com</a> to request access.</p>
       <p class="td-err" id="err">${msg||""}</p></div>`;
     document.getElementById("go").onclick=async()=>{
       const email=document.getElementById("em").value.trim();
