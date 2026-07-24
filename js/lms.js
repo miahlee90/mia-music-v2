@@ -10,7 +10,9 @@ const MFTrack=(()=>{
   const COURSE="practical-music-theory";
   const cfg=(typeof LMS_CONFIG!=="undefined")?LMS_CONFIG:{SUPABASE_URL:"",SUPABASE_ANON_KEY:""};
   const enabled=!!(cfg.SUPABASE_URL&&cfg.SUPABASE_ANON_KEY);
-  const LSS="mf-lms-session", LSQ="mf-lms-queue", LSD="mf-lms-sent";
+  /* SHARED session key across all Mia Music Studio labs (same origin) so one
+     student sign-in carries into every lab. Queue/sent stay per-lab. */
+  const LSS="mms-lms-session", LSQ="mf-lms-queue", LSD="mf-lms-sent";
 
   function get(k,d){ try{return JSON.parse(localStorage.getItem(k))??d;}catch(e){return d;} }
   function set(k,v){ try{localStorage.setItem(k,JSON.stringify(v));}catch(e){} }
