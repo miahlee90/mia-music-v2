@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Game Lab 쨌 Theory Lab</title>
+<title>Game Lab · Theory Lab</title>
 <link rel="stylesheet" href="css/style.css?v=20260720nav3">
 <link rel="stylesheet" href="css/notebird.css?v=20260717nb12">
 <link rel="manifest" href="manifest.json">
@@ -11,8 +11,8 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
 <style>
-/* landing polish ??same front-door system as the three labs */
-/* style.css turns every .hero anchor into a gold pill button ??the breadcrumb
+/* landing polish — same front-door system as the three labs */
+/* style.css turns every .hero anchor into a gold pill button — the breadcrumb
    links in the eyebrow must stay plain text */
 .hero .eyebrow a{background:none;padding:0;border-radius:0;box-shadow:none;display:inline;
   font-weight:inherit;color:rgba(255,255,255,.9);text-decoration:none}
@@ -70,13 +70,13 @@ footer a{color:var(--primary);font-weight:600;text-decoration:none}
 <body>
 <div class="hero">
   <div class="inner">
-    <div class="eyebrow">?룧 <a href="https://miamusicstudio.com/" style="color:rgba(255,255,255,.9);text-decoration:none" title="Mia Music Studio home">Mia Music Studio</a> ??<a href="index.html" style="color:rgba(255,255,255,.9);text-decoration:none">Theory Lab</a> ??Game Lab</div>
-    <h1>?렜 Game Lab</h1>
+    <div class="eyebrow">🏠 <a href="https://miamusicstudio.com/" style="color:rgba(255,255,255,.9);text-decoration:none" title="Mia Music Studio home">Mia Music Studio</a> › <a href="index.html" style="color:rgba(255,255,255,.9);text-decoration:none">Theory Lab</a> › Game Lab</div>
+    <h1>🎮 Game Lab</h1>
     <p class="tagline"><span class="w1">Play.</span> <span class="w2">Level up.</span> <span class="w3">Have fun.</span></p>
-    <p>Practical musicianship games ??separate from the lessons: no grades, no pressure,
+    <p>Practical musicianship games — separate from the lessons: no grades, no pressure,
        just skill-building you can replay any time. Results stay on this device.</p>
     <div class="btns">
-      <a href="games/note-bird.html">??Play Note Bird</a>
+      <a href="games/note-bird.html">▶ Play Note Bird</a>
       <a class="ghost" href="index.html">Theory Lab</a>
     </div>
   </div>
@@ -106,29 +106,29 @@ footer a{color:var(--primary);font-weight:600;text-decoration:none}
 <main>
   <div class="how">
     <a class="card" href="games/note-bird.html">
-      <div class="ico" id="nbMark">?맔</div>
+      <div class="ico" id="nbMark">🐦</div>
       <h2 id="nbTitle">Note Bird</h2>
       <span id="nbBadge"></span>
       <p>Read notes on the staff and name them before the bird reaches the tree.
-         Pick your clef &amp; range 쨌 Levels 1??0 쨌 hearts grow with you 쨌 Practice mode too.</p>
-      <span class="go">Play ??/span>
+         Pick your clef &amp; range · Levels 1–10 · hearts grow with you · Practice mode too.</p>
+      <span class="go">Play →</span>
     </a>
     <div class="card soon">
-      <div class="ico">?쪇</div>
+      <div class="ico">🥁</div>
       <h2>Rhythm Flight</h2>
-      <p>Tap the beat to keep the bird in the air ??rhythm reading as a flying game.</p>
+      <p>Tap the beat to keep the bird in the air — rhythm reading as a flying game.</p>
       <span class="go">Coming soon</span>
     </div>
     <div class="card soon">
-      <div class="ico">?쪡</div>
+      <div class="ico">🥚</div>
       <h2>Interval Hop</h2>
-      <p>Hop from branch to branch by naming the interval you hear ??hatching next.</p>
+      <p>Hop from branch to branch by naming the interval you hear — hatching next.</p>
       <span class="go">Coming soon</span>
     </div>
   </div>
 </main>
 <footer>
-  <a href="index.html">Theory Lab</a> &nbsp;쨌&nbsp;
+  <a href="index.html">Theory Lab</a> &nbsp;·&nbsp;
   <a href="https://miamusicstudio.com/">Mia Music Studio</a>
 </footer>
 
@@ -144,7 +144,7 @@ footer a{color:var(--primary);font-weight:600;text-decoration:none}
     const best=Object.values(v.best||{}).reduce((m,b)=>Math.max(m,b.level||0),0);
     const done=Object.values(v.best||{}).some(b=>b.success);
     if(best) document.getElementById("nbBadge").innerHTML=
-      '<span class="nb-chip">?룆 Best: Level '+best+(done?" 쨌 L10 ??:"")+"</span>";
+      '<span class="nb-chip">🏅 Best: Level '+best+(done?" · L10 ✓":"")+"</span>";
   }catch(e){}
 })();
 </script>
