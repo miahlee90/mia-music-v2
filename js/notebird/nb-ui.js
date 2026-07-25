@@ -107,6 +107,7 @@ const NBUI=(()=>{
   /* ============================== SETUP SCREEN ============================== */
   function showSetup(){
     stopLoop(); NBMusic.stop();
+    if(window.NBInput) NBInput.stopRound();   /* mic/MIDI never outlive a round */
     document.body.classList.remove("nb-playing"); /* back to normal page layout */
     exitBigScreen();
     const stu=studentSession();
@@ -143,6 +144,13 @@ const NBUI=(()=>{
         <div class="choices chips nb-rounds">
           <button data-r="5">5</button><button data-r="10">10</button><button data-r="15">15</button>
         </div></div>
+      <div class="nb-field nb-inputfield"><div class="nb-lab">${nbt("setup.input")}</div>
+        <div class="choices chips nb-inputchips">
+          <button data-i="buttons">🔤 ${nbt("setup.input.buttons")}</button>
+          <button data-i="midi">🎹 ${nbt("setup.input.midi")}</button>
+          <button data-i="mic">🎤 ${nbt("setup.input.mic")}</button>
+        </div>
+        <p class="nb-inputdesc" aria-live="polite" style="color:var(--muted);font-size:13.5px"></p></div>
       <div class="nb-field"><div class="nb-lab">${nbt("setup.sound")}</div>
         <select class="nav-jump nb-sound" aria-label="${nbt("setup.sound")}"></select></div>
       <div class="nb-field nb-musicfield"><div class="nb-lab">${nbt("setup.music")}</div>
@@ -269,6 +277,24 @@ const NBUI=(()=>{
     chipToggle(".nb-hints",()=>settings.hints?"1":"0",b=>{ settings.hints=b.dataset.h==="1"; });
     chipToggle(".nb-rounds",()=>String(settings.rounds),b=>{ settings.rounds=+b.dataset.r; });
 
+    /* answer-input picker (letter buttons / MIDI keyboard / real-piano mic);
+       unsupported choices hide themselves, buttons always keep working */
+    if(window.NBInput){
+      const row=$(".nb-inputchips");
+      [...row.children].forEach(b=>{
+        if(b.dataset.i==="midi"&&!NBInput.midiSupported()) b.style.display="none";
+        if(b.dataset.i==="mic"&&!NBInput.micSupported()) b.style.display="none";
+      });
+      const paintInput=()=>{
+        [...row.children].forEach(b=>{
+          const on=b.dataset.i===NBInput.mode();
+          b.classList.toggle("nb-on",on); b.setAttribute("aria-pressed",String(on)); });
+        $(".nb-inputdesc").textContent=nbt("setup.input."+NBInput.mode()+"Desc");
+      };
+      [...row.children].forEach(b=>b.onclick=()=>{ NBInput.setMode(b.dataset.i); paintInput(); });
+      paintInput();
+    } else $(".nb-inputfield").style.display="none";
+
     paintMode();
     $(".nb-start").onclick=()=>startRound();
     /* chime:false everywhere in the game — no sounds the student didn't cause */
@@ -353,6 +379,14 @@ const NBUI=(()=>{
 
     document.removeEventListener("keydown",onKey);
     document.addEventListener("keydown",onKey);
+    /* instrument input: MIDI note-on / real-piano mic detection feed the
+       same tryAnswer() as the letter buttons (which keep working) */
+    if(window.NBInput&&NBInput.mode()!=="buttons"){
+      NBInput.enableForRound(l=>tryAnswer(l)).then(got=>{
+        if(got!==NBInput.mode())
+          levelToast(nbt(NBInput.mode()==="midi"?"setup.input.midiNone":"setup.input.micFail"));
+      });
+    }
     document.removeEventListener("visibilitychange",onVis);
     document.addEventListener("visibilitychange",onVis);
 
@@ -705,6 +739,7 @@ const NBUI=(()=>{
   /* ============================== RESULTS ============================== */
   function finishRound(aborted){
     stopLoop(); NBMusic.stop();
+    if(window.NBInput) NBInput.stopRound();
     document.body.classList.remove("nb-playing"); /* results scroll normally */
     exitBigScreen();
     document.removeEventListener("keydown",onKey);

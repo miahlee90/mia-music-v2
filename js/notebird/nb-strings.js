@@ -37,6 +37,19 @@ const NB_STR={ en:{
   "setup.signIn":"👤 Student sign-in",
   "setup.signInWhy":"Sign in (same as lessons) to keep flight records under your name.",
 
+  /* answer input (letter buttons / MIDI / real-piano microphone) */
+  "setup.input":"Answer with",
+  "setup.input.buttons":"Letter buttons",
+  "setup.input.midi":"MIDI keyboard",
+  "setup.input.mic":"Piano sound (microphone)",
+  "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard.",
+  "setup.input.midiDesc":"Play the note on a connected MIDI keyboard — any octave counts, black keys are ignored. The buttons keep working too.",
+  "setup.input.micDesc":"Play the note on a real piano — this device listens and names what it hears (any octave). Audio is analyzed here only, never recorded or uploaded. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
+  "setup.input.midiNone":"No MIDI keyboard detected — answering with the buttons.",
+  "setup.input.micFail":"Microphone unavailable — answering with the buttons.",
+  "hud.midiOn":"MIDI keyboard on",
+  "hud.micOn":"Listening for your piano",
+
   /* sets */
   "set.lines":"lines",
   "set.spaces":"spaces",
