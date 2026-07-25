@@ -43,8 +43,8 @@ const NB_STR={ en:{
   "setup.input.midi":"MIDI keyboard",
   "setup.input.mic":"Piano sound (microphone)",
   "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard.",
-  "setup.input.midiDesc":"Play the note on a connected MIDI keyboard — any octave counts, black keys are ignored. The buttons keep working too.",
-  "setup.input.micDesc":"Play the note on a real piano — this device listens and names what it hears (any octave). Audio is analyzed here only, never recorded or uploaded. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
+  "setup.input.midiDesc":"Play the note on a connected MIDI keyboard — the OCTAVE matters, so play the exact note you see. Black keys are ignored. The buttons keep working too.",
+  "setup.input.micDesc":"Play the note on a real piano — this device listens and names what it hears. The OCTAVE matters, so play the exact note you see. Audio is analyzed here only, never recorded or uploaded. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
   "setup.input.midiNone":"No MIDI keyboard detected — answering with the buttons.",
   "setup.input.micFail":"Microphone unavailable — answering with the buttons.",
   "hud.midiOn":"MIDI keyboard on",
@@ -85,6 +85,7 @@ const NB_STR={ en:{
   /* feedback — wrong */
   "fb.practiceWrong":"Check the clef and try again.",
   "fb.wrongLife":"Not {picked} — {left} left!",
+  "fb.wrongOctave":"{letter} is the right name — but the wrong octave! Play {target}.",
   /* feedback — timeout (gentle: bump + cartoon stars, never a hurt bird) */
   "fb.timeout":"That note was {name}. Let's try another.",
   "fb.lastLife":"Careful — last chance!",

@@ -22,7 +22,11 @@ const NBInput=(()=>{
 
   let cb=null, midiAccess=null, midiHot=false;
   let stream=null, ctx=null, node=null, micHot=false;
-  let realMusicStart=null;
+  let realMusicStart=null, wrapped=[];
+  /* while the GAME plays a sound (note preview, ding-dong-dang, wrong-slide)
+     the mic must go deaf — otherwise it "hears" the game and answers itself */
+  let suppressUntil=0;
+  const suppress=ms=>{ suppressUntil=Math.max(suppressUntil,performance.now()+ms); };
 
   /* ---------- shared ---------- */
   const midiSupported=()=>!!navigator.requestMIDIAccess;
@@ -35,7 +39,9 @@ const NBInput=(()=>{
       document.body.appendChild(b); }
     b.textContent=txt;
   }
-  const fire=l=>{ if(cb) cb(l); };
+  /* answers carry the PLAYED midi too — on an instrument the octave matters
+     (C4 is not the printed C2); the letter buttons stay octave-free */
+  const fire=(l,midi)=>{ if(cb) cb({letter:l,midi}); };
 
   /* ---------- MIDI ---------- */
   async function startMIDI(){
@@ -48,7 +54,7 @@ const NBInput=(()=>{
       const [st,note,vel]=e.data;
       if((st&0xf0)===0x90&&vel>0){
         const L=NAT[note%12];
-        if(L) fire(L);                 /* black keys are simply ignored */
+        if(L) fire(L,note);            /* black keys are simply ignored */
       }
     };
     midiAccess.onstatechange=wire;
@@ -84,6 +90,7 @@ const NBInput=(()=>{
     let lastFire=0,lastVoiced=0,candPc=-1,candN=0,heldPc=-1;
     return r=>{
       const now=performance.now();
+      if(now<suppressUntil){ candPc=-1; candN=0; return; }   /* game audio playing */
       const voiced=r.freq>0&&r.conf>=CFG.conf&&r.rms>=CFG.rmsGate;
       if(!voiced){ if(now-lastVoiced>CFG.silenceMs){ heldPc=-1; candPc=-1; candN=0; } return; }
       lastVoiced=now;
@@ -93,7 +100,7 @@ const NBInput=(()=>{
       if(candN>=CFG.needFrames&&now-lastFire>=CFG.cooldownMs){
         heldPc=pc; candPc=-1; candN=0; lastFire=now;
         const L=NAT[pc];
-        if(L) fire(L);
+        if(L) fire(L,midi);
       }
     };
   }
@@ -134,9 +141,17 @@ const NBInput=(()=>{
     }
     micHot=true;
     badge("🎤 "+nbt("hud.micOn"));
-    /* the game must not hear itself: suppress birdsong while listening */
+    /* the game must not hear itself: suppress birdsong while listening … */
     if(window.NBMusic&&!realMusicStart){ realMusicStart=NBMusic.start;
       NBMusic.start=()=>{}; NBMusic.stop(); }
+    /* … and go deaf while the game plays its own tones (note previews,
+       ding-dong-dang) — wrap the audio calls to raise the deaf window */
+    if(window.MFAudio) ["tone","yay"].forEach(fn=>{
+      if(typeof MFAudio[fn]==="function"){
+        const orig=MFAudio[fn]; wrapped.push([fn,orig]);
+        MFAudio[fn]=(...a)=>{ suppress(1600); return orig(...a); };
+      }
+    });
     return true;
   }
 
@@ -154,6 +169,7 @@ const NBInput=(()=>{
     try{ if(ctx) ctx.close(); }catch(e){}
     stream=ctx=node=null;
     if(window.NBMusic&&realMusicStart){ NBMusic.start=realMusicStart; realMusicStart=null; }
+    wrapped.forEach(([fn,orig])=>{ MFAudio[fn]=orig; }); wrapped=[];
   }
   if(typeof document!=="undefined"){
     document.addEventListener("visibilitychange",()=>{ if(document.hidden&&(micHot||midiHot)) stopRound(); });
@@ -161,7 +177,7 @@ const NBInput=(()=>{
   }
 
   return {mode:()=>mode,setMode:m=>{ mode=m; save(); },
-          midiSupported,micSupported,enableForRound,stopRound,
+          midiSupported,micSupported,enableForRound,stopRound,suppress,
           yin,_onsetFactory:makeOnset};
 })();
 window.NBInput=NBInput;   /* const doesn't land on window — expose explicitly */

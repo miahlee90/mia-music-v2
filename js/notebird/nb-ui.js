@@ -382,7 +382,7 @@ const NBUI=(()=>{
     /* instrument input: MIDI note-on / real-piano mic detection feed the
        same tryAnswer() as the letter buttons (which keep working) */
     if(window.NBInput&&NBInput.mode()!=="buttons"){
-      NBInput.enableForRound(l=>tryAnswer(l)).then(got=>{
+      NBInput.enableForRound(a=>tryAnswer(a.letter,a.midi)).then(got=>{
         if(got!==NBInput.mode())
           levelToast(nbt(NBInput.mode()==="midi"?"setup.input.midiNone":"setup.input.micFail"));
       });
@@ -625,11 +625,14 @@ const NBUI=(()=>{
     setTimeout(()=>{ el.hidden=true; },1600);
   }
 
-  function tryAnswer(letter){
+  function tryAnswer(letter,playedMidi){
     if(!scene||scene.state!=="fly") return;
     const T=session.seconds();
     const elapsed=T?now()-scene.t0:now()-(scene.prepEnd||now());
-    const res=session.answer(letter,Math.max(0,Math.round(elapsed)));
+    /* instrument input (MIDI / piano mic) must match the OCTAVE too — the
+       printed C2 is not answered by playing C4. Buttons stay octave-free. */
+    const octaveMiss=playedMidi!=null&&letter===scene.note.letter&&playedMidi!==scene.note.midi;
+    const res=session.answer(octaveMiss?"#octave":letter,Math.max(0,Math.round(elapsed)));
     const btn=$(`.nb-letters button[data-l="${letter}"]`);
 
     if(res.correct){
@@ -658,10 +661,14 @@ const NBUI=(()=>{
     }
 
     /* wrong */
+    if(window.NBInput) NBInput.suppress(1100);   /* mic must not hear the wrong-slide */
     sfxWrong(); /* "ddaeng" */
     if(btn){ btn.classList.add("wrongpick"); setTimeout(()=>btn.classList.remove("wrongpick"),700); }
     const fb=$(".nb-fb");
-    if(session.mode==="level"){
+    if(octaveMiss){
+      fb.textContent="✗ "+nbt("fb.wrongOctave",{letter,target:noteName(scene.note)})+
+        (session.mode==="level"&&res.livesLeft===1?" "+nbt("fb.lastLife"):"");
+    }else if(session.mode==="level"){
       fb.textContent="✗ "+nbt("fb.wrongLife",{picked:letter,left:res.livesLeft})+
         (res.livesLeft===1?" "+nbt("fb.lastLife"):"");
     }else{
