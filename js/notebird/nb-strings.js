@@ -6,6 +6,9 @@
 const NB_STR={ en:{
   /* setup screen */
   "setup.title":"Set up your flight",
+  "setup.beginner":"🐣 Beginner Start",
+  "setup.beginnerDesc":"Practice mode · Treble clef · C4–G4 · Letter buttons — the easiest first flight, one click.",
+  "setup.customize":"⚙ Customize",
   "setup.mode":"Mode",
   "setup.mode.practice":"Practice",
   "setup.mode.level":"Level Game",
@@ -44,11 +47,34 @@ const NB_STR={ en:{
   "setup.input.mic":"Piano sound (microphone)",
   "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard. Have a MIDI keyboard or a piano nearby? Pick 🎹 or 🎤 here to answer by playing real notes.",
   "setup.input.midiDesc":"Play the note on a connected MIDI keyboard — the OCTAVE matters, so play the exact note you see. Black keys are ignored. The buttons keep working too.",
-  "setup.input.micDesc":"Play the note on a real piano — this device listens and names what it hears. The OCTAVE matters, so play the exact note you see. Audio is analyzed here only, never recorded or uploaded. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
+  "setup.input.micDesc":"Play the note on a real piano — this device listens and names what it hears. The OCTAVE matters, so play the exact note you see. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
   "setup.input.midiNone":"No MIDI keyboard detected — answering with the buttons.",
   "setup.input.micFail":"Microphone unavailable — answering with the buttons.",
   "hud.midiOn":"MIDI keyboard on",
   "hud.micOn":"Listening for your piano",
+
+  /* MIDI connection states (setup panel) */
+  "midi.connectBtn":"🎹 Connect MIDI Keyboard",
+  "midi.st.idle":"Not connected yet — click Connect to find your keyboard.",
+  "midi.st.requesting":"Requesting MIDI permission… click “Allow” if the browser asks.",
+  "midi.st.on":"✅ Connected: {names}. Play the exact note you see — letter buttons keep working too.",
+  "midi.st.none":"No MIDI device detected — plug in a keyboard (it connects automatically) or keep using the letter buttons.",
+  "midi.st.denied":"MIDI permission was denied — the letter buttons still work. Click Connect to try again.",
+  "midi.st.unsupported":"MIDI is not supported in this browser (use Chrome or Edge) — the letter buttons still work.",
+
+  /* microphone setup (runs BEFORE any timed round) */
+  "mic.title":"Microphone setup",
+  "mic.privacy":"Audio is analyzed on this device only. It is not recorded, saved, or uploaded.",
+  "mic.enable":"🎙 Enable Microphone",
+  "mic.requesting":"Requesting microphone permission…",
+  "mic.level":"Input level",
+  "mic.testHint":"Play one piano note to test.",
+  "mic.heard":"Heard: {note}",
+  "mic.ready":"✅ Microphone ready — you can start!",
+  "mic.denied":"Microphone unavailable — you can continue with the letter buttons.",
+  "mic.continueWithout":"Continue without microphone",
+  "mic.needSetup":"Set up the microphone above (or continue without it) — the round starts only when you're ready.",
+  "mic.birdsongOff":"Background birdsong is off in microphone mode so the game can't hear itself. Your previous choice comes back when you leave microphone mode.",
 
   /* sets */
   "set.lines":"lines",
@@ -102,6 +128,7 @@ const NB_STR={ en:{
   "res.successTitle":"You made it — Level 10 complete! 🎉",
   "res.reached":"Reached Level {level}",
   "res.newBest":"New best for these settings!",
+  "res.firstFlight":"First flight recorded — try again and build your score.",
   "res.condition":"Conditions",
   "res.notesRead":"Notes read",
   "res.accuracy":"Accuracy",

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>All Lessons · Theory Lab</title>
-<link rel="stylesheet" href="css/style.css?v=20260720nav3">
+<link rel="stylesheet" href="css/style.css?v=20260726rev">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1c1e54">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -45,9 +45,11 @@
       if(!ls.length) return;
       const open = filter? " open" : (u.unit===1?" open":"");
       html+=`<div class="unit-group${open}">
-        <div class="unit-head" onclick="this.parentElement.classList.toggle('open')">
-          <span>Unit ${u.unit} — ${u.name}</span><span>▾</span></div>
-        <div class="unit-body">`+
+        <button type="button" class="unit-head" style="width:100%;font:inherit;text-align:left;background:none;border:none;color:inherit"
+          aria-expanded="${open?"true":"false"}" aria-controls="unitBody${u.unit}"
+          onclick="const g=this.parentElement,on=g.classList.toggle('open');this.setAttribute('aria-expanded',String(on))">
+          <span>Unit ${u.unit} — ${u.name}</span><span aria-hidden="true">▾</span></button>
+        <div class="unit-body" id="unitBody${u.unit}">`+
         ls.map(l=>{
           const built=l.n<=BUILT_THROUGH;
           const p=prog[l.n];

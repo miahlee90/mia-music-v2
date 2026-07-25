@@ -8,12 +8,24 @@
    correct = sail past with sparkles, time-out = soft head-bonk on the trunk;
    +1 heart on every level-up; meadow strip + wooden-sign level toast; compact
    status bar (round text + progress dots + ★ streak); labeled "Distance to
-   Tree" indicator (hidden when untimed); A–G buttons with focus/check/nudge
-   states; feedback delays from NBData.FEEDBACK.
+   Tree" indicator (hidden when untimed); A–G piano-key answers with
+   focus/check/nudge states; feedback delays from NBData.FEEDBACK.
    The bird/tree live INSIDE the staff SVG so vertical alignment with the
    target note is exact at every screen size. Flight is time-based.
    Time-out = gentle bump + cartoon stars — the bird is NEVER hurt; no screen
    shake or flashes. A run is a RECORD, not a test.
+   v0.5 (usability review 2026-07-26):
+     - First-time default = Beginner (Practice · Treble · C4–G4 · letter
+       buttons); "🐣 Beginner Start" flies immediately, "⚙ Customize" opens
+       the full setup. A returning player's last settings persist locally.
+     - MIDI: explicit Connect button + visible connection states + device
+       name in setup; the game never claims a keyboard is ready without one.
+     - Microphone: full setup step BEFORE any timed round (enable → level
+       meter → play one test note → ready / continue-without); the bird
+       timer never runs while permission or testing is in progress.
+       Selecting mic mode forces Background birdsong OFF (visibly, control
+       disabled) and restores the previous choice on leaving mic mode.
+     - A zero-correct round gets neutral encouragement, never "New best".
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 
 const NBUI=(()=>{
@@ -26,9 +38,21 @@ const NBUI=(()=>{
   const reduceMotion=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   let root=null, session=null, scene=null, raf=0;
-  /* default range: the full grand staff C2–C6 (instructor 2026-07-17) */
-  let settings={ mode:"level", clef:"grand", a:"C2", b:"C6", setId:null,
-                 rounds:10, sound:"after", music:NBData.MUSIC_DEFAULT, hints:true };
+  /* Beginner defaults (usability review): a brand-new student gets the
+     gentlest start. The old expert default (Level · Grand · C2–C6 · 29
+     notes) is one Customize away and still fully available. */
+  const SETTINGS_LS="nb-settings-v1";
+  const BEGINNER={ mode:"practice", clef:"treble", a:"C4", b:"G4", setId:null,
+                   rounds:10, sound:"after", music:NBData.MUSIC_DEFAULT, hints:true };
+  let hasSaved=false;
+  let settings=(()=>{
+    try{ const s=JSON.parse(localStorage.getItem(SETTINGS_LS));
+      if(s&&s.mode){ hasSaved=true; return Object.assign({},BEGINNER,s); } }catch(e){}
+    return Object.assign({},BEGINNER);
+  })();
+  const saveSettings=()=>{ try{ localStorage.setItem(SETTINGS_LS,JSON.stringify(settings)); }catch(e){} };
+  /* birdsong preference parked while mic mode forces it off */
+  let micPrevMusic=null;
 
   /* Theory Lab student session (same sign-in as the lessons; set by student.html
      via lms.js). Read-only here: the game shows who is signed in and tags its
@@ -117,6 +141,14 @@ const NBUI=(()=>{
       <p class="nb-signin">${stu
         ? nbt("setup.signedIn",{name:stu.name,cls:stu.class||stu.classCode||""})
         : `<a href="../student.html">${nbt("setup.signIn")}</a> · ${nbt("setup.signInWhy")}`}</p>
+      <div class="nb-field">
+        <div class="choices chips" style="gap:10px">
+          <button class="play nb-beginner">${nbt("setup.beginner")}</button>
+          <button class="ghost nb-customize" aria-expanded="false" aria-controls="nbCustom">${nbt("setup.customize")}</button>
+        </div>
+        <p class="nb-sublab" style="margin-top:6px">${nbt("setup.beginnerDesc")}</p>
+      </div>
+      <div id="nbCustom" class="nb-customwrap">
       <div class="nb-field"><div class="nb-lab">${nbt("setup.mode")}</div>
         <div class="choices chips nb-modes">
           <button data-mode="practice" aria-pressed="false">🎈 ${nbt("setup.mode.practice")}</button>
@@ -150,21 +182,39 @@ const NBUI=(()=>{
           <button data-i="midi">🎹 ${nbt("setup.input.midi")}</button>
           <button data-i="mic">🎤 ${nbt("setup.input.mic")}</button>
         </div>
-        <p class="nb-inputdesc" aria-live="polite" style="color:var(--muted);font-size:13.5px"></p></div>
+        <p class="nb-inputdesc" aria-live="polite" style="color:var(--muted);font-size:13.5px"></p>
+        <div class="nb-instpanel" aria-live="polite"></div></div>
       <div class="nb-field nb-soundfield"><div class="nb-lab">${nbt("setup.sound")}</div>
         <select class="nav-jump nb-sound" aria-label="${nbt("setup.sound")}"></select></div>
       <div class="nb-field nb-musicfield"><div class="nb-lab">${nbt("setup.music")}</div>
         <div class="choices chips nb-music">
           <button data-m="1">🐦 ${nbt("setup.music.on")}</button><button data-m="0">${nbt("setup.music.off")}</button>
-        </div></div>
+        </div>
+        <p class="nb-musicnote nb-sublab" hidden>${nbt("mic.birdsongOff")}</p></div>
       <div class="nb-field nb-hintfield"><div class="nb-lab">${nbt("setup.hints")}</div>
         <div class="choices chips nb-hints">
           <button data-h="1">💡 ${nbt("setup.hints.on")}</button><button data-h="0">${nbt("setup.hints.off")}</button>
         </div></div>
       <p style="color:var(--muted);font-size:14px">${nbt("setup.answerNote")}</p>
-      <div style="text-align:center;margin-top:14px"><button class="play nb-start">▶ ${nbt("setup.start")}</button></div>
+      <div style="text-align:center;margin-top:14px"><button class="play nb-start">▶ ${nbt("setup.start")}</button>
+        <p class="nb-startnote nb-sublab" aria-live="polite"></p></div>
       <p class="nb-rotatehint">${nbt("setup.rotateHint")}</p>
+      </div>
     </section>`;
+
+    /* Beginner Start / Customize (first visit hides the full form) */
+    const customWrap=$("#nbCustom"), customBtn=$(".nb-customize");
+    const setCustom=open=>{ customWrap.style.display=open?"":"none";
+      customBtn.setAttribute("aria-expanded",String(open)); };
+    setCustom(hasSaved);
+    customBtn.onclick=()=>setCustom(customWrap.style.display==="none");
+    $(".nb-beginner").onclick=()=>{
+      settings=Object.assign({},BEGINNER);
+      if(window.NBInput) NBInput.setMode("buttons");
+      micPrevMusic=null;
+      saveSettings(); hasSaved=true;
+      startRound();
+    };
 
     /* range selects */
     const selA=$(".nb-a"), selB=$(".nb-b");
@@ -272,10 +322,20 @@ const NBUI=(()=>{
         x.classList.toggle("nb-on",on); x.setAttribute("aria-pressed",String(on)); });
       [...row.children].forEach(b=>b.onclick=()=>{ set(b); paint(); });
       paint();
+      return paint;
     }
-    chipToggle(".nb-music",()=>settings.music?"1":"0",b=>{ settings.music=b.dataset.m==="1"; });
+    const paintMusic=chipToggle(".nb-music",()=>settings.music?"1":"0",b=>{ settings.music=b.dataset.m==="1"; });
     chipToggle(".nb-hints",()=>settings.hints?"1":"0",b=>{ settings.hints=b.dataset.h==="1"; });
     chipToggle(".nb-rounds",()=>String(settings.rounds),b=>{ settings.rounds=+b.dataset.r; });
+
+    /* the round may only start when the chosen input is actually usable —
+       in mic mode that means the microphone setup finished (or was skipped) */
+    function paintStart(){
+      const btn=$(".nb-start"), note=$(".nb-startnote");
+      const needMic=window.NBInput&&NBInput.mode()==="mic"&&!NBInput.micReady();
+      if(btn) btn.disabled=!!needMic;
+      if(note) note.textContent=needMic?nbt("mic.needSetup"):"";
+    }
 
     /* answer-input picker (letter buttons / MIDI keyboard / real-piano mic);
        unsupported choices hide themselves, buttons always keep working */
@@ -285,6 +345,67 @@ const NBUI=(()=>{
         if(b.dataset.i==="midi"&&!NBInput.midiSupported()) b.style.display="none";
         if(b.dataset.i==="mic"&&!NBInput.micSupported()) b.style.display="none";
       });
+
+      /* ----- MIDI status panel: explicit connect, visible states ----- */
+      function midiPanel(host){
+        const st=NBInput.midiState();
+        const line=st.status==="on"?nbt("midi.st.on",{names:st.names.join(", ")})
+                  :nbt("midi.st."+(st.status==="idle"?"idle":st.status));
+        host.innerHTML=`
+          <p class="nb-sublab" style="margin:6px 0">${line}</p>
+          ${st.status==="on"?"":`<button class="ghost nb-midiconnect">${nbt("midi.connectBtn")}</button>`}`;
+        const b=host.querySelector(".nb-midiconnect");
+        if(b) b.onclick=()=>NBInput.connectMIDI(()=>{ if(NBInput.mode()==="midi") midiPanel(host); });
+      }
+
+      /* ----- microphone setup panel: runs BEFORE any timed round ----- */
+      function micPanel(host){
+        if(NBInput.micReady()){
+          host.innerHTML=`
+            <p class="nb-sublab" style="margin:6px 0">${nbt("mic.privacy")}</p>
+            <p style="font-weight:700;margin:6px 0">${nbt("mic.ready")}</p>
+            <button class="ghost nb-micskip">${nbt("mic.continueWithout")}</button>`;
+        }else{
+          host.innerHTML=`
+            <p class="nb-sublab" style="margin:6px 0">${nbt("mic.privacy")}</p>
+            <div class="nb-micflow">
+              <button class="play nb-micenable">${nbt("mic.enable")}</button>
+              <button class="ghost nb-micskip">${nbt("mic.continueWithout")}</button>
+            </div>
+            <div class="nb-mictest" hidden>
+              <p class="nb-sublab" style="margin:8px 0 4px">${nbt("mic.level")}</p>
+              <div style="height:12px;border-radius:9999px;background:#eee5cd;overflow:hidden;max-width:340px">
+                <div class="nb-miclevel" style="height:100%;width:0%;background:linear-gradient(90deg,#5ee39a,#1f9d55);border-radius:9999px"></div>
+              </div>
+              <p style="margin:8px 0 0;font-weight:700">${nbt("mic.testHint")}</p>
+              <p class="nb-micheard" aria-live="polite" style="margin:4px 0 0;min-height:20px"></p>
+            </div>`;
+        }
+        const skip=host.querySelector(".nb-micskip");
+        if(skip) skip.onclick=()=>{ NBInput.micSetupDone(false); NBInput.setMode("buttons"); paintInput(); };
+        const en=host.querySelector(".nb-micenable");
+        if(en) en.onclick=async()=>{
+          en.disabled=true; en.textContent=nbt("mic.requesting");
+          const testBox=host.querySelector(".nb-mictest");
+          const ok=await NBInput.micTestStart(f=>{
+            const lvl=host.querySelector(".nb-miclevel");
+            if(f.rms!=null&&lvl) lvl.style.width=Math.min(100,f.rms*900)+"%";
+            if(f.note){
+              const heard=host.querySelector(".nb-micheard");
+              if(heard) heard.textContent="🎵 "+nbt("mic.heard",{note:f.note+" ("+f.note+String(Math.floor(f.midi/12)-1)+")"});
+              /* one confidently-detected note = the test passed */
+              NBInput.micSetupDone(true);
+              micPanel(host); paintStart();
+            }
+          });
+          if(!ok){ host.querySelector(".nb-instpanel,.nb-micflow");
+            en.textContent=nbt("mic.denied"); en.disabled=true;
+            return; }
+          if(testBox) testBox.hidden=false;
+          en.style.display="none";
+        };
+      }
+
       const paintInput=()=>{
         [...row.children].forEach(b=>{
           const on=b.dataset.i===NBInput.mode();
@@ -296,13 +417,27 @@ const NBUI=(()=>{
         const inst=NBInput.mode()!=="buttons";
         const sf=$(".nb-soundfield"); if(sf) sf.style.display=inst?"none":"";
         settings.sound=inst?"off":$(".nb-sound").value;
+        /* mic mode forces Background birdsong OFF — visibly (the control
+           shows Off and disables); the previous choice returns on leaving */
+        const mic=NBInput.mode()==="mic";
+        if(mic){ if(micPrevMusic===null) micPrevMusic=settings.music; settings.music=false; }
+        else if(micPrevMusic!==null){ settings.music=micPrevMusic; micPrevMusic=null; }
+        [...$(".nb-music").children].forEach(b=>b.disabled=mic);
+        const mn=$(".nb-musicnote"); if(mn) mn.hidden=!mic;
+        paintMusic();
+        /* per-mode status/setup panel */
+        const panel=$(".nb-instpanel"); panel.innerHTML="";
+        if(NBInput.mode()==="midi") midiPanel(panel);
+        if(mic) micPanel(panel);
+        paintStart();
       };
       [...row.children].forEach(b=>b.onclick=()=>{ NBInput.setMode(b.dataset.i); paintInput(); });
       paintInput();
     } else $(".nb-inputfield").style.display="none";
 
     paintMode();
-    $(".nb-start").onclick=()=>startRound();
+    paintStart();
+    $(".nb-start").onclick=()=>{ saveSettings(); hasSaved=true; startRound(); };
     /* chime:false everywhere in the game — no sounds the student didn't cause */
     if(window.Teacher) Teacher.say(nbt("mia.intro",{title:NB_CONFIG.TITLE}),{pose:"wave",chime:false});
   }
@@ -396,7 +531,9 @@ const NBUI=(()=>{
     document.removeEventListener("keydown",onKey);
     document.addEventListener("keydown",onKey);
     /* instrument input: MIDI note-on / real-piano mic detection feed the
-       same tryAnswer() as the letter buttons (which keep working) */
+       same tryAnswer() as the letter buttons (which keep working). The mic
+       pipeline was already opened and TESTED in setup, so nothing here
+       waits on a permission popup while the timer runs. */
     if(window.NBInput&&NBInput.mode()!=="buttons"){
       settings.sound="off";   /* also covers restarts that skip the setup screen */
       NBInput.enableForRound(a=>tryAnswer(a.letter,a.midi)).then(got=>{
@@ -418,6 +555,9 @@ const NBUI=(()=>{
     const b=$(".nb-musicbtn"); if(!b) return;
     b.textContent=settings.music?"🐦":"🔇";
     b.title=nbt(settings.music?"hud.musicOn":"hud.musicOff");
+    /* mic mode keeps birdsong off — the toggle is disabled during play too */
+    const mic=window.NBInput&&NBInput.mode()==="mic";
+    b.disabled=!!mic; if(mic){ b.textContent="🔇"; }
   }
 
   /* tab hidden → rAF stops but the wall clock doesn't: shift t0 by the hidden
@@ -789,6 +929,10 @@ const NBUI=(()=>{
        condition + missed-note review. To re-enable: load nb-sync.js in
        note-bird.html and call NBSync.push(runRec) here. */
 
+    /* a run with ZERO correct answers gets neutral encouragement — never a
+       celebratory "New best" (usability review) */
+    const zeroCorrect=!s.firstTry;
+
     const ms=v=>v==null?"—":(v/1000).toFixed(1)+"s";
     const clefRow=["treble","bass"].map(c=>{
       const d=s.byClef[c]; if(!d.n) return "";
@@ -810,7 +954,8 @@ const NBUI=(()=>{
       <h2>${nbt("res.title")}</h2>
       <div class="score-box">
         ${headline}
-        ${s.mode==="level"&&isNewBest?`<p class="nb-newbest">🏅 ${nbt("res.newBest")}</p>`:""}
+        ${zeroCorrect?`<p>${nbt("res.firstFlight")}</p>`:""}
+        ${s.mode==="level"&&isNewBest&&!zeroCorrect?`<p class="nb-newbest">🏅 ${nbt("res.newBest")}</p>`:""}
         <p style="margin-top:6px"><b>${nbt("res.condition")}:</b> ${conditionLabel(cond)}</p>
       </div>
       <div class="nb-statgrid">

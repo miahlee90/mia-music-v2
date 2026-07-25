@@ -56,7 +56,7 @@ const Teacher=(()=>{
     html=String(html).replace(/\s*\u{1F447}/gu,"<br>\u{1F447}");
     return `<div class="say">${miniAvatar()}<div class="bub">${html}</div></div>`; }
 
-  function say(text,{pose="neutral",sticky=false,chime=true,proactive=false}={}){
+  function say(text,{pose="neutral",sticky=false,chime=true,proactive=false,ttl=0}={}){
     init();
     if(proactive){
       const visible=root.classList.contains("in");
@@ -70,9 +70,12 @@ const Teacher=(()=>{
     if(chime){ MFAudio.tone(76,.15,0,.22); MFAudio.tone(83,.2,.12,.22);
       if(pose==="celebrate") [88].forEach((n,i)=>MFAudio.tone(n,.25,.26,.25)); }
     clearInterval(typer); textEl.textContent="";
-    let i=0; typer=setInterval(()=>{ textEl.textContent=text.slice(0,++i); if(i>=text.length) clearInterval(typer); },16);
+    if(matchMedia("(prefers-reduced-motion: reduce)").matches){ textEl.textContent=text; }
+    else{ let i=0; typer=setInterval(()=>{ textEl.textContent=text.slice(0,++i); if(i>=text.length) clearInterval(typer); },16); }
     clearTimeout(timer);
-    if(!sticky) timer=setTimeout(hide, Math.max(5000, text.length*55+2000));
+    /* ttl lets callers shorten the stay (the lesson welcome auto-collapses
+       quickly so the bubble never lingers over content); reopen via the icon */
+    if(!sticky) timer=setTimeout(hide, ttl||Math.max(5000, text.length*55+2000));
     return true;
   }
   function hide(){ if(!root) return; root.classList.remove("in"); clearTimeout(timer);

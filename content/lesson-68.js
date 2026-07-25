@@ -206,7 +206,7 @@ LESSON_CONTENT[68]={
   vocabulary:[
     {term:"Cadence", def:"A harmonic ending that marks the end of a musical phrase."},
     {term:"Authentic Cadence (PAC / IAC)", sym:"V(⁷) → I", def:"V or V7 → I. PAC = strongest ending. IAC = less complete ending."},
-    {term:"Half Cadence", sym:"? → V", def:"Ends on V. Creates an expectation of continuation."},
+    {term:"Half Cadence", sym:"Any chord → V", def:"Ends on V. Creates an expectation of continuation."},
     {term:"Plagal & Deceptive", sym:"IV→I & V→vi", def:"Plagal: IV → I (“Amen” cadence). Deceptive: V → vi (major) or V → VI (minor)."}
   ],
   mistakes:[],

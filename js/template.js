@@ -266,8 +266,10 @@
   reg("secQuiz", "this question", mia.quiz);
 
   /* ---------- welcome (proactive #1) ---------- */
+  /* auto-collapses after 4s so it never lingers over lesson content —
+     the student can always reopen help from the Mia icon */
   window.addEventListener("load",()=>setTimeout(()=>{
-    Teacher.say(C.welcome||`Welcome to Lesson ${Nav.label(n)}! Let's go!`,{pose:"wave",chime:false,proactive:true});
+    Teacher.say(C.welcome||`Welcome to Lesson ${Nav.label(n)}! Let's go!`,{pose:"wave",chime:false,proactive:true,ttl:4000});
   },600));
 })();
 

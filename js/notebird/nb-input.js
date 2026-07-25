@@ -1,16 +1,26 @@
 /* Note Bird — instrument input (NBInput): answer by PLAYING the note.
    Two ways besides the letter buttons (which always keep working):
-     🎹 MIDI keyboard  — Web MIDI note-on → letter (any octave counts)
+     🎹 MIDI keyboard  — Web MIDI note-on → letter (octave must match)
      🎤 Piano sound    — the microphone listens to a REAL piano and names
                           what it hears (YIN pitch detection, same method as
                           Aural Lab's voice engine)
+   v5 (usability review):
+     - MIDI is connected by an EXPLICIT student action in setup
+       (connectMIDI) with visible states: requesting / connected+device
+       names / none / denied / unsupported. Hot-plug via onstatechange.
+     - The microphone has a SETUP STEP before any timed round: enable →
+       level meter → play one test note → ready. The same open pipeline is
+       reused by the round, so the bird timer never starts while a
+       permission popup or test is still in progress.
    Privacy, true in code: microphone audio is analyzed on this device only —
-   never recorded, saved, or uploaded. The mic is requested only when a
-   round starts in mic mode (a student action), a visible badge shows while
-   listening, and everything stops on round end / tab hide / page close.
+   never recorded, saved, or uploaded. The mic is opened only from a student
+   action, a visible badge shows while listening, and every track stops on
+   round end / input-mode change / tab hide / page close.
    While mic mode is on, background birdsong is suppressed so the game
-   can't hear itself. Black keys are ignored (the game asks for naturals);
-   octave never matters — reading the LETTER is the skill. */
+   can't hear itself. Black keys are ignored (the game asks for naturals).
+   Silence and low-confidence audio NEVER fire an answer (rmsGate + conf
+   threshold + needFrames), so they can never count as wrong.
+   NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 const NBInput=(()=>{
   const LS="nb-input-v1";
   const NAT={0:"C",2:"D",4:"E",5:"F",7:"G",9:"A",11:"B"};
@@ -20,8 +30,9 @@ const NBInput=(()=>{
     catch(e){ return "buttons"; } })();
   const save=()=>{ try{ localStorage.setItem(LS,JSON.stringify({mode})); }catch(e){} };
 
-  let cb=null, midiAccess=null, midiHot=false;
-  let stream=null, ctx=null, node=null, micHot=false;
+  let cb=null;
+  let midiAccess=null, midiHot=false, midiNames=[], midiStatus="idle", midiWatch=null;
+  let stream=null, ctx=null, node=null, sink=null, micHot=false, micIsReady=false;
   let realMusicStart=null, wrapped=[];
   /* while the GAME plays a sound (note preview, ding-dong-dang, wrong-slide)
      the mic must go deaf — otherwise it "hears" the game and answers itself */
@@ -44,22 +55,39 @@ const NBInput=(()=>{
   const fire=(l,midi)=>{ if(cb) cb({letter:l,midi}); };
 
   /* ---------- MIDI ---------- */
+  function midiWire(){
+    if(!midiAccess) return;
+    midiNames=[];
+    midiAccess.inputs.forEach(inp=>{ inp.onmidimessage=onMidiMsg; midiNames.push(inp.name||"MIDI device"); });
+    midiStatus=midiNames.length?"on":"none";
+    if(midiWatch) midiWatch(midiState());
+  }
+  function onMidiMsg(e){
+    if(!midiHot) return;
+    const [st,note,vel]=e.data;
+    if((st&0xf0)===0x90&&vel>0){
+      const L=NAT[note%12];
+      if(L) fire(L,note);              /* black keys are simply ignored */
+    }
+  }
+  function midiState(){ return {status:midiStatus,names:midiNames.slice()}; }
+  /* the EXPLICIT connect action — call from a user click in setup; the
+     permission popup is never triggered automatically on page load */
+  async function connectMIDI(onChange){
+    if(onChange) midiWatch=onChange;
+    if(!midiSupported()){ midiStatus="unsupported"; if(midiWatch) midiWatch(midiState()); return midiState(); }
+    if(!midiAccess){
+      midiStatus="requesting"; if(midiWatch) midiWatch(midiState());
+      try{ midiAccess=await navigator.requestMIDIAccess(); }
+      catch(e){ midiStatus="denied"; if(midiWatch) midiWatch(midiState()); return midiState(); }
+      midiAccess.onstatechange=midiWire;
+    }
+    midiWire();
+    return midiState();
+  }
   async function startMIDI(){
-    if(!midiSupported()) return false;
-    try{ midiAccess=midiAccess||await navigator.requestMIDIAccess(); }
-    catch(e){ return false; }
-    const wire=()=>{ midiAccess.inputs.forEach(inp=>{ inp.onmidimessage=onMsg; }); };
-    const onMsg=e=>{
-      if(!midiHot) return;
-      const [st,note,vel]=e.data;
-      if((st&0xf0)===0x90&&vel>0){
-        const L=NAT[note%12];
-        if(L) fire(L,note);            /* black keys are simply ignored */
-      }
-    };
-    midiAccess.onstatechange=wire;
-    wire();
-    if([...midiAccess.inputs.values()].length===0) return false;
+    await connectMIDI();
+    if(midiStatus!=="on") return false;
     midiHot=true;
     badge("🎹 "+nbt("hud.midiOn"));
     return true;
@@ -85,8 +113,10 @@ const NBInput=(()=>{
     return {freq:sr/(tau+shift),conf:1-cm[tau],rms};
   }
   /* onset logic: after silence (or a different pitch), the same pitch class
-     seen on `needFrames` consecutive voiced frames = ONE played note */
-  function makeOnset(){
+     seen on `needFrames` consecutive voiced frames = ONE played note.
+     Unvoiced/quiet frames only ever RESET state — they can never fire. */
+  function makeOnset(onNote){
+    onNote=onNote||fire;
     let lastFire=0,lastVoiced=0,candPc=-1,candN=0,heldPc=-1;
     return r=>{
       const now=performance.now();
@@ -100,18 +130,20 @@ const NBInput=(()=>{
       if(candN>=CFG.needFrames&&now-lastFire>=CFG.cooldownMs){
         heldPc=pc; candPc=-1; candN=0; lastFire=now;
         const L=NAT[pc];
-        if(L) fire(L,midi);
+        if(L) onNote(L,midi);
       }
     };
   }
-  async function startMic(){
+  /* one shared pipeline; `sink` decides where frames go (setup test vs round) */
+  async function openMic(){
+    if(stream&&ctx&&node) return true;
     if(!micSupported()) return false;
     try{ stream=await navigator.mediaDevices.getUserMedia(
       {audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true}}); }
     catch(e){ return false; }
     ctx=new (window.AudioContext||window.webkitAudioContext)();
     const src=ctx.createMediaStreamSource(stream);
-    const onset=makeOnset();
+    const dispatch=r=>{ if(sink) sink(r); };
     if(ctx.audioWorklet){
       const code=`
         const CFG=${JSON.stringify({fMin:CFG.fMin,fMax:CFG.fMax,yinThresh:CFG.yinThresh,rmsGate:CFG.rmsGate})};
@@ -128,7 +160,7 @@ const NBInput=(()=>{
       const url=URL.createObjectURL(new Blob([code],{type:"application/javascript"}));
       await ctx.audioWorklet.addModule(url); URL.revokeObjectURL(url);
       node=new AudioWorkletNode(ctx,"nb-pitch");
-      node.port.onmessage=e=>onset(e.data);
+      node.port.onmessage=e=>dispatch(e.data);
       src.connect(node);
     }else{
       node=ctx.createScriptProcessor(4096,1,1);
@@ -136,9 +168,38 @@ const NBInput=(()=>{
       let acc=new Float32Array(1024),n=0;
       node.onaudioprocess=e=>{ const ch=e.inputBuffer.getChannelData(0);
         for(let i=0;i+2<ch.length;i+=3){ acc[n++]=(ch[i]+ch[i+1]+ch[i+2])/3;
-          if(n>=1024){ onset(yin(acc,sr)); acc.copyWithin(0,512); n=512; } } };
+          if(n>=1024){ dispatch(yin(acc,sr)); acc.copyWithin(0,512); n=512; } } };
       src.connect(node); node.connect(ctx.destination);
     }
+    return true;
+  }
+  function closeMic(){
+    try{ if(stream) stream.getTracks().forEach(tr=>tr.stop()); }catch(e){}
+    try{ if(node) node.disconnect(); }catch(e){}
+    try{ if(ctx) ctx.close(); }catch(e){}
+    stream=ctx=node=null; sink=null; micIsReady=false;
+  }
+  /* setup-time test: onFrame receives {rms} every frame and {note,midi} on a
+     detected note — the UI draws the level meter and the "Heard: G (G3)"
+     line from these. Nothing here ever answers a game question. */
+  async function micTestStart(onFrame){
+    if(!await openMic()) return false;
+    const onset=makeOnset((L,midi)=>onFrame({note:L,midi}));
+    sink=r=>{ onFrame({rms:r.rms||0}); onset(r); };
+    badge("🎤 "+nbt("hud.micOn"));
+    return true;
+  }
+  /* end of the setup test. ready=true keeps the OPEN pipeline for the round
+     (no second permission, timer starts clean); ready=false closes tracks. */
+  function micSetupDone(ready){
+    sink=null; badge(null); micIsReady=!!ready;
+    if(!ready) closeMic();
+  }
+  const micReady=()=>micIsReady&&!!stream;
+
+  async function startMic(){
+    if(!await openMic()) return false;
+    sink=makeOnset(fire);
     micHot=true;
     badge("🎤 "+nbt("hud.micOn"));
     deafenGameAudio();
@@ -173,19 +234,22 @@ const NBInput=(()=>{
   }
   function stopRound(){
     cb=null; midiHot=false; micHot=false; badge(null);
-    try{ if(stream) stream.getTracks().forEach(tr=>tr.stop()); }catch(e){}
-    try{ if(node) node.disconnect(); }catch(e){}
-    try{ if(ctx) ctx.close(); }catch(e){}
-    stream=ctx=node=null;
+    closeMic();
     restoreGameAudio();
   }
+  function setMode(m){
+    if(m!==mode&&mode==="mic") closeMic();   /* leaving mic mode stops tracks */
+    mode=m; save();
+  }
   if(typeof document!=="undefined"){
-    document.addEventListener("visibilitychange",()=>{ if(document.hidden&&(micHot||midiHot)) stopRound(); });
-    window.addEventListener("pagehide",()=>{ if(micHot||midiHot) stopRound(); });
+    document.addEventListener("visibilitychange",()=>{ if(document.hidden&&(micHot||midiHot||stream)) stopRound(); });
+    window.addEventListener("pagehide",()=>{ if(micHot||midiHot||stream) stopRound(); });
   }
 
-  return {mode:()=>mode,setMode:m=>{ mode=m; save(); },
-          midiSupported,micSupported,enableForRound,stopRound,suppress,
+  return {mode:()=>mode,setMode,
+          midiSupported,micSupported,connectMIDI,midiState,
+          micTestStart,micSetupDone,micReady,
+          enableForRound,stopRound,suppress,
           yin,_onsetFactory:makeOnset,_deafen:deafenGameAudio,_restore:restoreGameAudio};
 })();
 window.NBInput=NBInput;   /* const doesn't land on window — expose explicitly */

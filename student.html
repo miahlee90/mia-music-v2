@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>My Progress · Theory Lab</title>
-<link rel="stylesheet" href="css/style.css?v=20260720nav3">
+<link rel="stylesheet" href="css/style.css?v=20260726rev">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1c1e54">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -60,10 +60,13 @@
 
   function renderLogin(msg){
     app.innerHTML=`<div class="sd-card sd-login"><h2>Student Sign-in</h2>
-      <p>Enter the two codes your teacher gave you. No email needed.</p>
-      <label>Class Code<input id="cc" autocomplete="off" placeholder="e.g. QK7M2P"></label>
-      <label>Access Code<input id="ac" autocomplete="off" placeholder="e.g. ABCD-2345"></label>
-      <p class="sd-err" id="err">${msg||""}</p>
+      <p>Enter the two codes your instructor gave you. No email needed.
+         One sign-in works across Theory, Piano, Aural, and Game Lab — no separate Lab accounts.</p>
+      <label for="cc">Class Code<input id="cc" name="classCode" autocomplete="off" required
+        aria-describedby="err" placeholder="e.g. QK7M2P"></label>
+      <label for="ac">Access Code<input id="ac" name="accessCode" autocomplete="off" required
+        aria-describedby="err" placeholder="e.g. ABCD-2345"></label>
+      <p class="sd-err" id="err" role="alert" aria-live="polite">${msg||""}</p>
       <button id="go">Sign in</button>
       <p style="font-size:13px;color:#777">Your codes work on any device — phone, tablet or computer.</p></div>`;
     document.getElementById("go").onclick=async()=>{

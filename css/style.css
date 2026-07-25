@@ -72,8 +72,10 @@ hr.sep{border:none;border-top:1px solid var(--hairline);margin:20px 0}
 #mia.in{transform:none}
 #miaBubble{pointer-events:auto;max-width:290px;background:#fff;border:1.5px solid var(--primary);border-radius:14px 14px 14px 4px;box-shadow:var(--shadow-2);padding:12px 30px 12px 14px;margin-bottom:6px;margin-left:44px;font-size:15px;position:relative}
 #miaBubble:after{content:"";position:absolute;left:-2px;bottom:-10px;border:10px solid transparent;border-top-color:var(--primary);border-left-color:var(--primary)}
-#miaClose{position:absolute;top:4px;right:8px;background:none;border:none;color:var(--muted);font-size:14px;padding:2px;min-height:0}
+#miaClose{position:absolute;top:2px;right:4px;background:none;border:none;color:var(--muted);font-size:15px;
+  padding:6px 8px;min-height:0;min-width:32px;cursor:pointer}   /* ≥32px tap target */
 #miaClose:hover{background:none;color:var(--ink)}
+#miaClose:focus-visible{outline:2px solid var(--primary);outline-offset:2px;border-radius:8px}
 #miaSvg{width:96px;height:112px;pointer-events:auto;cursor:pointer;filter:drop-shadow(0 3px 6px rgba(0,55,112,.2))}
 .armR{transform-origin:78px 82px}
 .armL{transform-origin:42px 82px}
@@ -104,6 +106,25 @@ hr.sep{border:none;border-top:1px solid var(--hairline);margin:20px 0}
 #miaMenu .mm-title{font-size:12.5px;color:var(--muted);padding:2px 6px}
 #miaMenu button{background:var(--bg);color:var(--ink);text-align:left;padding:10px 14px;font-size:15px;border-radius:10px;min-height:0}
 #miaMenu button:hover{background:#eef2f7}
+/* Mia must never cover lesson content: on narrower screens the full character
+   hides and the bubble becomes a compact bottom sheet above the help icon;
+   the icon itself is the always-available compact entry point. */
+@media (max-width:900px){
+  #miaSvg{display:none}
+  #mia{left:10px;right:10px;bottom:80px;align-items:stretch;transform:translateY(140%)}
+  #mia.in{transform:none}
+  #miaBubble{max-width:none;margin-left:0;border-radius:14px}
+  #miaBubble:after{display:none}
+}
+/* respect reduced-motion: no slide/bounce/typewriter companions */
+@media (prefers-reduced-motion:reduce){
+  #mia{transition:none}
+  #miaIcon{transition:none}
+  #miaIcon .pulse{animation:none}
+  #miaMenu.open{animation:none}
+  .pose-wave .armR,.pose-celebrate #miaSvg{animation:none}
+  .confetti{display:none}
+}
 
 /* progressive steps */
 .step{display:none}
