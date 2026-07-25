@@ -141,18 +141,26 @@ const NBInput=(()=>{
     }
     micHot=true;
     badge("🎤 "+nbt("hud.micOn"));
-    /* the game must not hear itself: suppress birdsong while listening … */
-    if(window.NBMusic&&!realMusicStart){ realMusicStart=NBMusic.start;
+    deafenGameAudio();
+    return true;
+  }
+  /* the game must not hear itself while the mic listens: silence birdsong
+     and wrap the game's tone calls so each raises a deaf window.
+     NOTE: MFAudio/NBMusic are top-level consts and do NOT exist on window —
+     guard with typeof, or these blocks silently never run (v1 bug). */
+  function deafenGameAudio(){
+    if(typeof NBMusic!=="undefined"&&!realMusicStart){ realMusicStart=NBMusic.start;
       NBMusic.start=()=>{}; NBMusic.stop(); }
-    /* … and go deaf while the game plays its own tones (note previews,
-       ding-dong-dang) — wrap the audio calls to raise the deaf window */
-    if(window.MFAudio) ["tone","yay"].forEach(fn=>{
+    if(typeof MFAudio!=="undefined"&&!wrapped.length) ["tone","yay"].forEach(fn=>{
       if(typeof MFAudio[fn]==="function"){
         const orig=MFAudio[fn]; wrapped.push([fn,orig]);
-        MFAudio[fn]=(...a)=>{ suppress(1600); return orig(...a); };
+        MFAudio[fn]=(...a)=>{ suppress(1900); return orig(...a); };
       }
     });
-    return true;
+  }
+  function restoreGameAudio(){
+    if(typeof NBMusic!=="undefined"&&realMusicStart){ NBMusic.start=realMusicStart; realMusicStart=null; }
+    wrapped.forEach(([fn,orig])=>{ MFAudio[fn]=orig; }); wrapped=[];
   }
 
   /* ---------- round lifecycle ---------- */
@@ -168,8 +176,7 @@ const NBInput=(()=>{
     try{ if(node) node.disconnect(); }catch(e){}
     try{ if(ctx) ctx.close(); }catch(e){}
     stream=ctx=node=null;
-    if(window.NBMusic&&realMusicStart){ NBMusic.start=realMusicStart; realMusicStart=null; }
-    wrapped.forEach(([fn,orig])=>{ MFAudio[fn]=orig; }); wrapped=[];
+    restoreGameAudio();
   }
   if(typeof document!=="undefined"){
     document.addEventListener("visibilitychange",()=>{ if(document.hidden&&(micHot||midiHot)) stopRound(); });
@@ -178,6 +185,6 @@ const NBInput=(()=>{
 
   return {mode:()=>mode,setMode:m=>{ mode=m; save(); },
           midiSupported,micSupported,enableForRound,stopRound,suppress,
-          yin,_onsetFactory:makeOnset};
+          yin,_onsetFactory:makeOnset,_deafen:deafenGameAudio,_restore:restoreGameAudio};
 })();
 window.NBInput=NBInput;   /* const doesn't land on window — expose explicitly */
