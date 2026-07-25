@@ -151,12 +151,13 @@ const NBInput=(()=>{
   function deafenGameAudio(){
     if(typeof NBMusic!=="undefined"&&!realMusicStart){ realMusicStart=NBMusic.start;
       NBMusic.start=()=>{}; NBMusic.stop(); }
-    if(typeof MFAudio!=="undefined"&&!wrapped.length) ["tone","yay"].forEach(fn=>{
-      if(typeof MFAudio[fn]==="function"){
-        const orig=MFAudio[fn]; wrapped.push([fn,orig]);
-        MFAudio[fn]=(...a)=>{ suppress(1900); return orig(...a); };
-      }
-    });
+    if(typeof MFAudio!=="undefined"&&!wrapped.length)
+      [["tone",1900],["yay",1100]].forEach(([fn,ms])=>{
+        if(typeof MFAudio[fn]==="function"){
+          const orig=MFAudio[fn]; wrapped.push([fn,orig]);
+          MFAudio[fn]=(...a)=>{ suppress(ms); return orig(...a); };
+        }
+      });
   }
   function restoreGameAudio(){
     if(typeof NBMusic!=="undefined"&&realMusicStart){ NBMusic.start=realMusicStart; realMusicStart=null; }

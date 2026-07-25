@@ -151,7 +151,7 @@ const NBUI=(()=>{
           <button data-i="mic">🎤 ${nbt("setup.input.mic")}</button>
         </div>
         <p class="nb-inputdesc" aria-live="polite" style="color:var(--muted);font-size:13.5px"></p></div>
-      <div class="nb-field"><div class="nb-lab">${nbt("setup.sound")}</div>
+      <div class="nb-field nb-soundfield"><div class="nb-lab">${nbt("setup.sound")}</div>
         <select class="nav-jump nb-sound" aria-label="${nbt("setup.sound")}"></select></div>
       <div class="nb-field nb-musicfield"><div class="nb-lab">${nbt("setup.music")}</div>
         <div class="choices chips nb-music">
@@ -290,6 +290,12 @@ const NBUI=(()=>{
           const on=b.dataset.i===NBInput.mode();
           b.classList.toggle("nb-on",on); b.setAttribute("aria-pressed",String(on)); });
         $(".nb-inputdesc").textContent=nbt("setup.input."+NBInput.mode()+"Desc");
+        /* instrument input plays its OWN sound — the game's note sound goes
+           fully off (Visual only) so the mic can't hear the game and the
+           first played note registers at once */
+        const inst=NBInput.mode()!=="buttons";
+        const sf=$(".nb-soundfield"); if(sf) sf.style.display=inst?"none":"";
+        settings.sound=inst?"off":$(".nb-sound").value;
       };
       [...row.children].forEach(b=>b.onclick=()=>{ NBInput.setMode(b.dataset.i); paintInput(); });
       paintInput();
@@ -335,7 +341,7 @@ const NBUI=(()=>{
       <div class="feedback nb-fb" aria-live="assertive"></div>
       <div class="nb-reveal"></div>
       <div class="nb-answerbar">
-        <div class="choices chips nb-letters" role="group" aria-label="note-name answers"></div>
+        <div class="nb-letters nb-keys" role="group" aria-label="note-name answers"></div>
         <div class="nb-tools">
           ${session.mode==="practice"&&settings.hints?`<button class="ghost nb-hintbtn">💡 ${nbt("hud.hint")}</button>`:""}
           ${settings.sound==="appear"?`<button class="ghost nb-replay">🔁 ${nbt("hud.replay")}</button>`:""}
@@ -343,13 +349,23 @@ const NBUI=(()=>{
       </div>
     </section>`;
 
+    /* answers = ONE C–B octave of piano keys (instructor: keys, not pills).
+       Letters sit on the white keys; black keys are decoration only.
+       Clicking a key stays OCTAVE-FREE — it answers the letter, exactly
+       like the old buttons (only instrument input enforces the octave). */
     const row=$(".nb-letters");
-    LETTERS.forEach(l=>{
+    ["C","D","E","F","G","A","B"].forEach(l=>{
       const b=document.createElement("button");
-      b.textContent=l; b.dataset.l=l;
+      b.className="nb-wkey";
+      b.innerHTML=`<span>${l}</span>`; b.dataset.l=l;
       b.setAttribute("aria-label","answer "+l);
       b.onclick=()=>tryAnswer(l);
       row.appendChild(b);
+    });
+    [0,1,3,4,5].forEach(i=>{           /* C#/D#, F#/G#/A# positions */
+      const k=document.createElement("span");
+      k.className="nb-bkey"; k.style.left=`calc(${((i+1)*100/7).toFixed(2)}% - 4.5%)`;
+      row.appendChild(k);
     });
     /* progress dots: practice = rounds; level = notes in the current level */
     const dots=$(".nb-dots");
@@ -382,6 +398,7 @@ const NBUI=(()=>{
     /* instrument input: MIDI note-on / real-piano mic detection feed the
        same tryAnswer() as the letter buttons (which keep working) */
     if(window.NBInput&&NBInput.mode()!=="buttons"){
+      settings.sound="off";   /* also covers restarts that skip the setup screen */
       NBInput.enableForRound(a=>tryAnswer(a.letter,a.midi)).then(got=>{
         if(got!==NBInput.mode())
           levelToast(nbt(NBInput.mode()==="midi"?"setup.input.midiNone":"setup.input.micFail"));
