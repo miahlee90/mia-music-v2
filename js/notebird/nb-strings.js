@@ -27,7 +27,7 @@ const NB_STR={ en:{
   "setup.hints.on":"On",
   "setup.hints.off":"Off",
   "setup.start":"Start",
-  "setup.answerNote":"Answer with the A–G buttons or your computer keyboard (A–G keys).",
+  "setup.answerNote":"Answer with the A–G buttons or your computer keyboard (A–G keys) — or play the notes on a MIDI keyboard or a real piano: pick it under “Answer with” above.",
   "setup.rotateHint":"📱 Turn your phone sideways during play for a bigger, full-screen view.",
   "hud.fullscreen":"Full screen",
   "hud.exitFullscreen":"Exit full screen",
@@ -42,7 +42,7 @@ const NB_STR={ en:{
   "setup.input.buttons":"Letter buttons",
   "setup.input.midi":"MIDI keyboard",
   "setup.input.mic":"Piano sound (microphone)",
-  "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard.",
+  "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard. Have a MIDI keyboard or a piano nearby? Pick 🎹 or 🎤 here to answer by playing real notes.",
   "setup.input.midiDesc":"Play the note on a connected MIDI keyboard — the OCTAVE matters, so play the exact note you see. Black keys are ignored. The buttons keep working too.",
   "setup.input.micDesc":"Play the note on a real piano — this device listens and names what it hears. The OCTAVE matters, so play the exact note you see. Audio is analyzed here only, never recorded or uploaded. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
   "setup.input.midiNone":"No MIDI keyboard detected — answering with the buttons.",
@@ -123,7 +123,7 @@ const NB_STR={ en:{
   "res.spaces":"Space notes",
 
   /* Mia (guide character) lines */
-  "mia.intro":"Welcome to {title}! Read the note and tap its letter before the bird reaches the tree. Pick your clef and range, then fly!",
+  "mia.intro":"Welcome to {title}! Read the note and tap its letter before the bird reaches the tree — or answer by playing a MIDI keyboard or a real piano (pick it under “Answer with”). Choose your clef and range, then fly!",
   "mia.levelIntro":"Level game: the bird gets a little faster every level. Three misses and the flight ends — good luck!",
   "mia.practiceIntro":"Practice mode: no rush! Read each note, and ask me for a landmark hint if you get stuck.",
   "mia.success":"Level 10 complete — what a flight! 🌟 Try a wider range next?",
