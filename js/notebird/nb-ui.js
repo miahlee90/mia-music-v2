@@ -53,6 +53,15 @@ const NBUI=(()=>{
   const saveSettings=()=>{ try{ localStorage.setItem(SETTINGS_LS,JSON.stringify(settings)); }catch(e){} };
   /* birdsong preference parked while mic mode forces it off */
   let micPrevMusic=null;
+  /* instrument rounds silence the game's note sound at RUNTIME only — this
+     flag must never be written into settings/saved (a past version did, which
+     left iPads permanently silent even back in buttons mode) */
+  let instSilent=false;
+  /* one-time repair for settings poisoned by that bug: sound:"off" had been
+     saved invisibly; restore the default. A student who really wants Visual
+     only just picks it again once. */
+  try{ if(settings.sound==="off"&&!localStorage.getItem("nb-fix-sound24")){
+    settings.sound="after"; saveSettings(); } localStorage.setItem("nb-fix-sound24","1"); }catch(e){}
 
   /* Theory Lab student session (same sign-in as the lessons; set by student.html
      via lms.js). Read-only here: the game shows who is signed in and tags its
@@ -416,7 +425,10 @@ const NBUI=(()=>{
            first played note registers at once */
         const inst=NBInput.mode()!=="buttons";
         const sf=$(".nb-soundfield"); if(sf) sf.style.display=inst?"none":"";
-        settings.sound=inst?"off":$(".nb-sound").value;
+        /* runtime-only: never write "off" into settings (it would persist and
+           leave the game silent after returning to buttons — the iPad bug) */
+        instSilent=inst;
+        settings.sound=$(".nb-sound").value;
         /* mic mode forces Background birdsong OFF — visibly (the control
            shows Off and disables); the previous choice returns on leaving */
         const mic=NBInput.mode()==="mic";
@@ -444,6 +456,10 @@ const NBUI=(()=>{
 
   /* ============================== ROUND / PLAY ============================== */
   function startRound(extra){
+    /* iOS/Safari audio unlock: create+resume the AudioContext INSIDE this
+       Start tap — without it, sounds scheduled later from the animation loop
+       (bird passing the note) can stay silent on iPad */
+    try{ MFAudio.ac(); }catch(e){}
     const cond=(extra&&extra.condition)||currentCondition();
     const pool=(extra&&extra.pool)||buildPool(cond);
     session=NBEngine.createSession({
@@ -476,7 +492,7 @@ const NBUI=(()=>{
       <div class="feedback nb-fb" aria-live="assertive"></div>
       <div class="nb-reveal"></div>
       <div class="nb-answerbar">
-        <div class="nb-letters nb-keys" role="group" aria-label="note-name answers"></div>
+        <div class="choices chips nb-letters" role="group" aria-label="note-name answers"></div>
         <div class="nb-tools">
           ${session.mode==="practice"&&settings.hints?`<button class="ghost nb-hintbtn">💡 ${nbt("hud.hint")}</button>`:""}
           ${settings.sound==="appear"?`<button class="ghost nb-replay">🔁 ${nbt("hud.replay")}</button>`:""}
@@ -484,23 +500,16 @@ const NBUI=(()=>{
       </div>
     </section>`;
 
-    /* answers = ONE C–B octave of piano keys (instructor: keys, not pills).
-       Letters sit on the white keys; black keys are decoration only.
-       Clicking a key stays OCTAVE-FREE — it answers the letter, exactly
-       like the old buttons (only instrument input enforces the octave). */
+    /* answers = plain A–G letter buttons (instructor 2026-07-30: the piano-key
+       bar read too small on iPad — back to big letters, sized up on tablets).
+       Instrument input (MIDI / mic) still answers through NBInput below. */
     const row=$(".nb-letters");
-    ["C","D","E","F","G","A","B"].forEach(l=>{
+    LETTERS.forEach(l=>{
       const b=document.createElement("button");
-      b.className="nb-wkey";
-      b.innerHTML=`<span>${l}</span>`; b.dataset.l=l;
+      b.textContent=l; b.dataset.l=l;
       b.setAttribute("aria-label","answer "+l);
       b.onclick=()=>tryAnswer(l);
       row.appendChild(b);
-    });
-    [0,1,3,4,5].forEach(i=>{           /* C#/D#, F#/G#/A# positions */
-      const k=document.createElement("span");
-      k.className="nb-bkey"; k.style.left=`calc(${((i+1)*100/7).toFixed(2)}% - 4.5%)`;
-      row.appendChild(k);
     });
     /* progress dots: practice = rounds; level = notes in the current level */
     const dots=$(".nb-dots");
@@ -534,8 +543,8 @@ const NBUI=(()=>{
        same tryAnswer() as the letter buttons (which keep working). The mic
        pipeline was already opened and TESTED in setup, so nothing here
        waits on a permission popup while the timer runs. */
-    if(window.NBInput&&NBInput.mode()!=="buttons"){
-      settings.sound="off";   /* also covers restarts that skip the setup screen */
+    instSilent=!!(window.NBInput&&NBInput.mode()!=="buttons"); /* covers restarts that skip setup */
+    if(instSilent){
       NBInput.enableForRound(a=>tryAnswer(a.letter,a.midi)).then(got=>{
         if(got!==NBInput.mode())
           levelToast(nbt(NBInput.mode()==="midi"?"setup.input.midiNone":"setup.input.micFail"));
@@ -693,7 +702,7 @@ const NBUI=(()=>{
     $(".nb-timertrack").classList.remove("nb-low");
     scene.state="prep"; setBirdState("st-wait");
     scene.prepEnd=now()+NBData.PREP_MS;
-    if(settings.sound==="appear"){ scene.noteHeard=true; MFAudio.tone(note.audio,.8,0,.5); }
+    if(settings.sound==="appear"&&!instSilent){ scene.noteHeard=true; MFAudio.tone(note.audio,.8,0,.5); }
     raf=requestAnimationFrame(tick);
   }
 
@@ -741,7 +750,7 @@ const NBUI=(()=>{
       const x=scene.spawnX+(scene.stopX-scene.spawnX)*p;
       /* the bird sounds the note as it flies past the notehead — the note is
          heard exactly ONCE per question (instructor) */
-      if(!scene.noteHeard&&x<=NOTE_X&&settings.sound!=="off"){
+      if(!scene.noteHeard&&x<=NOTE_X&&settings.sound!=="off"&&!instSilent){
         scene.noteHeard=true; MFAudio.tone(scene.note.audio,.6,0,.4); }
       birdAt(x,yy+bob);
       $(".nb-timerfill").style.width=((1-p)*100)+"%";
@@ -798,7 +807,7 @@ const NBUI=(()=>{
       sfxCorrect(); /* ding-dong-dang */
       /* the note plays once per question — only if it hasn't been heard yet
          (practice: the perched bird never crossed the notehead) */
-      if(settings.sound!=="off"&&!scene.noteHeard){
+      if(settings.sound!=="off"&&!instSilent&&!scene.noteHeard){
         scene.noteHeard=true; MFAudio.tone(scene.note.audio,.7,.45,.45); }
       const fb=$(".nb-fb");
       fb.textContent="✓ "+nbt("fb.correctIs",{name:noteName(scene.note)});

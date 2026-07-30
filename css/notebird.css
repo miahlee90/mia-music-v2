@@ -274,26 +274,10 @@ body.nb-fill .nb-fs{background:var(--primary);color:#fff;border-color:var(--prim
   .nb-toastin{animation:none;opacity:1}
 }
 
-/* ===== piano-key answer bar — one C–B octave (letters on the white keys,
-   decorative black keys; clicking stays octave-free) ===== */
-.nb-letters.nb-keys{position:relative;display:flex;gap:0;justify-content:center;
-  max-width:480px;margin:10px auto 0;padding:0}
-.nb-keys .nb-wkey{flex:1 1 0;min-width:0;height:96px;background:#fff;
-  border:1.5px solid #b9b19b;border-radius:0 0 9px 9px;margin:0;padding:0;
-  display:flex;align-items:flex-end;justify-content:center;cursor:pointer;
-  font-weight:800;font-size:16px;color:var(--primary,#533afd);
-  box-shadow:inset 0 -6px 0 rgba(0,0,0,.05)}
-.nb-keys .nb-wkey+.nb-wkey{border-left-width:1px}
-.nb-keys .nb-wkey span{margin-bottom:8px;pointer-events:none}
-.nb-keys .nb-wkey:hover{background:#f4f2ff}
-.nb-keys .nb-wkey:active{background:#e9e4ff;box-shadow:inset 0 -3px 0 rgba(0,0,0,.08)}
-.nb-keys .nb-wkey.right{background:#dff3e7;border-color:#3fa46a}
-.nb-keys .nb-wkey.wrongpick{background:#fdeaf1;border-color:#e05252}
-.nb-keys .nb-wkey:disabled{opacity:.55;cursor:default}
-.nb-bkey{position:absolute;top:0;width:9%;height:56px;background:#20222f;
-  border-radius:0 0 5px 5px;pointer-events:none;z-index:1;
-  box-shadow:inset 0 -5px 0 rgba(255,255,255,.08)}
-@media (max-width:640px){
-  .nb-keys .nb-wkey{height:80px;font-size:14px}
-  .nb-bkey{height:46px}
+/* ===== answers are plain A–G letter pills again (instructor 2026-07-30:
+   the piano-key bar read too small on iPad). On touch tablets the pills
+   grow well past phone size so they match the device. ===== */
+@media (min-width:700px) and (pointer:coarse){
+  .nb-letters{gap:14px}
+  .nb-letters button{min-width:84px;min-height:72px;font-size:1.7rem;padding:14px 16px}
 }
