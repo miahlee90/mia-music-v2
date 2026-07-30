@@ -433,6 +433,21 @@ button.notecard svg.mf-staff{height:46px;width:auto;max-width:100%;display:block
 .vox-symb svg.mf-staff .clef-stroke{stroke:#fff}
 .vox-symb svg.mf-staff .arc{stroke:#fff}
 @media (max-width:600px){ .vox-card{flex:1 1 45%} }
+/* Vocabulary cards WIGGLE every few seconds so students notice they flip
+   (instructor 2026-07-30: nobody was tapping them). Staggered per card;
+   pauses on hover (so the lift shows) and while a card shows its back;
+   the global reduced-motion rule already disables it. */
+@keyframes vox-nudge{0%,86%,100%{transform:translateY(0) rotate(0)}
+  88%{transform:translateY(-7px) rotate(-2deg)}
+  92%{transform:translateY(-2px) rotate(2deg)}
+  96%{transform:translateY(-6px) rotate(-1.5deg)}}
+.vox-card{animation:vox-nudge 5.2s ease-in-out infinite}
+.vox-card:nth-child(2){animation-delay:.7s}
+.vox-card:nth-child(3){animation-delay:1.4s}
+.vox-card:nth-child(4){animation-delay:2.1s}
+.vox-card:nth-child(5){animation-delay:2.8s}
+.vox-card:nth-child(6){animation-delay:3.5s}
+.vox-card:hover,.vox-card.back{animation:none}
 
 /* v7 — key signatures (Book 2, L29-30) */
 .mf-staff .ksgroup.clickable{cursor:pointer}

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Theory Lab — Interactive Lessons with Mia</title>
-<link rel="stylesheet" href="css/style.css?v=20260726rev">
+<link rel="stylesheet" href="css/style.css?v=20260730voca">
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#1c1e54">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -35,12 +35,13 @@
 @media(max-width:900px){.mia-hero{display:none}}
 main{max-width:1020px;margin:0 auto;padding:34px 24px 8px}
 .how{gap:18px;margin-top:18px}
-.how .card{position:relative;overflow:hidden;padding:26px 20px 22px;transition:transform .14s,box-shadow .2s}
+/* these three are INFO cards, not buttons — no hover lift (instructor
+   2026-07-30: the movement made people click them) */
+.how .card{position:relative;overflow:hidden;padding:26px 20px 22px}
 .how .card::before{content:"";position:absolute;top:0;left:0;right:0;height:5px}
 .how .card:nth-child(1)::before{background:linear-gradient(90deg,var(--gold,#ffd166),var(--pink,#f96bee))}
 .how .card:nth-child(2)::before{background:linear-gradient(90deg,var(--pink,#f96bee),var(--primary))}
 .how .card:nth-child(3)::before{background:linear-gradient(90deg,#7fb4ff,var(--primary))}
-.how .card:hover{transform:translateY(-4px);box-shadow:0 18px 44px rgba(0,55,112,.16)}
 .how .ico{width:54px;height:54px;border-radius:14px;margin:0 auto 12px;
   display:flex;align-items:center;justify-content:center;font-size:28px}
 .how .card:nth-child(1) .ico{background:#fff4d6}
