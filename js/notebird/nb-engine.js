@@ -94,7 +94,7 @@ const NBEngine=(()=>{
       const st=NBData.SCORING.stars.find(s=>acc>=s.min);
       const missed={};
       records.forEach(r=>{ if((r.correct&&!r.firstTry)||r.timedOut||(!r.correct&&r.attempts>0)) missed[r.noteId]=(missed[r.noteId]||0)+1; });
-      const byClef={treble:{ok:0,n:0},bass:{ok:0,n:0}};
+      const byClef={treble:{ok:0,n:0},bass:{ok:0,n:0},alto:{ok:0,n:0},tenor:{ok:0,n:0}};
       const byPos={line:{ok:0,n:0},space:{ok:0,n:0}};
       done.forEach(r=>{ const c=byClef[r.clef],p=byPos[r.onLine?"line":"space"];
         if(c){c.n++; if(r.firstTry)c.ok++;} if(p){p.n++; if(r.firstTry)p.ok++;} });
@@ -127,10 +127,12 @@ const NBEngine=(()=>{
     };
   }
 
-  /* nearest landmark hint (Practice mode). Returns a translated sentence. */
+  /* nearest landmark hint (Practice mode). Returns a translated sentence.
+     2026-07-31: only landmarks valid for the note's clef are offered (a bass
+     or C-clef note never gets "Treble G"); Middle C is universal. */
   function landmarkHint(note){
     let best=null,bd=1e9;
-    NBData.LANDMARKS.forEach(lm=>{
+    NBData.LANDMARKS.filter(lm=>!lm.clefs||lm.clefs.includes(note.clef)).forEach(lm=>{
       const d=NBData.dia(note.sci)-NBData.dia(lm.p);
       if(Math.abs(d)<bd){ bd=Math.abs(d); best={lm,d}; }
     });

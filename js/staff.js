@@ -37,6 +37,9 @@
    (spec.time:"C|" draws the slashed C; "C" = common time as before).
    v7.4 (Unit 8): HARMONIC INTERVALS — {chord:true} stacks a note on the previous
    one (same x; 2nds/unisons offset 13px) and plays it SIMULTANEOUSLY.
+   v8.8 (Game Lab, 2026-07-31): C CLEFS — clef:"alto" (middle line = C4) and
+   clef:"tenor" (4th line = C4); stroke-drawn C-clef glyph, ledger lines and
+   key signatures (KSPOS alto/tenor) follow automatically via baseIdx.
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 const MFAudio=(()=>{
   /* v3 sound (2026-07-18, instructor: Aural Lab's piano sounds much better):
@@ -111,8 +114,9 @@ const Staff=(()=>{
   const BEATS={w:4,h:2,q:1,"8":0.5,"16":0.25,"32":0.125};
   const VOLS={pp:.14,p:.24,mp:.36,mf:.5,f:.66,ff:.85};
   function dia(p){ const m=p.match(/^([A-G])[#b]?(\d)$/); return (+m[2])*7+LETTERS.indexOf(m[1]); }
-  /* diatonic index of bottom line: treble E4=30, bass G2=18 */
-  function baseIdx(clef){ return clef==="bass"?18:30; }
+  /* diatonic index of bottom line: treble E4=30, bass G2=18,
+     alto F3=24 (middle line C4), tenor D3=22 (4th line C4) */
+  function baseIdx(clef){ return clef==="bass"?18:clef==="alto"?24:clef==="tenor"?22:30; }
   function yFor(p,clef,y0){ return (y0+4*GAP)-(dia(p)-baseIdx(clef))*(GAP/2); }
   function normD(d){ d=String(d||"q"); return d.endsWith(".")? d.slice(0,-1) : d; }
   function isDotted(n){ return !!n.dot || String(n.d||n.rest||"").endsWith("."); }
@@ -146,13 +150,26 @@ const Staff=(()=>{
       parts.push(`<circle class="clefdot" cx="${LEFT+31}" cy="${y0+GAP*0.5}" r="3.1"/>`);
       parts.push(`<circle class="clefdot" cx="${LEFT+31}" cy="${y0+GAP*1.5}" r="3.1"/>`);
     }
+    if(clef==="alto"||clef==="tenor"){
+      /* v8.8: C clef — two vertical bars + two mirrored curls meeting at the
+         C line (alto: middle line; tenor: 4th line, glyph rises above the staff) */
+      const cy=y0+(clef==="alto"?2:1)*GAP, h=2*GAP;
+      parts.push(`<rect class="clefdot" x="${LEFT+2}" y="${cy-h}" width="5" height="${2*h}" rx="2"/>`);
+      parts.push(`<line class="clef-stroke" x1="${LEFT+12}" y1="${cy-h}" x2="${LEFT+12}" y2="${cy+h}"/>`);
+      [-1,1].forEach(s=>{
+        parts.push(`<path class="clef-stroke" d="M ${LEFT+13} ${cy+s*3} C ${LEFT+18} ${cy+s*8}, ${LEFT+17} ${cy+s*(h-5)}, ${LEFT+25} ${cy+s*(h-2)} C ${LEFT+32} ${cy+s*h}, ${LEFT+36} ${cy+s*(h-7)}, ${LEFT+34} ${cy+s*(h-13)} C ${LEFT+32.5} ${cy+s*(h-18)}, ${LEFT+27} ${cy+s*(h-19)}, ${LEFT+25} ${cy+s*(h-15)}"/>`);
+        parts.push(`<circle class="clefdot" cx="${LEFT+26.5}" cy="${cy+s*(h-14)}" r="2.6"/>`);
+      });
+    }
     if(opts._ks) drawKeysig(parts,y0,clef,opts._ks);
     if(opts._time) drawTime(parts,y0,opts._time,opts._ksW);
   }
   /* v7 — key signatures. Major keys: positive = sharps, negative = flats */
   const KEYS={C:0,G:1,D:2,A:3,E:4,B:5,"F#":6,"C#":7,F:-1,Bb:-2,Eb:-3,Ab:-4,Db:-5,Gb:-6,Cb:-7};
-  const KSPOS={ sharp:{treble:["F5","C5","G5","D5","A4","E5","B4"],bass:["F3","C3","G3","D3","A2","E3","B2"]},
-                flat:{treble:["B4","E5","A4","D5","G4","C5","F4"],bass:["B2","E3","A2","D3","G2","C3","F2"]} };
+  const KSPOS={ sharp:{treble:["F5","C5","G5","D5","A4","E5","B4"],bass:["F3","C3","G3","D3","A2","E3","B2"],
+                       alto:["F4","C4","G4","D4","A3","E4","B3"],tenor:["F3","C4","G3","D4","A3","E4","B3"]},
+                flat:{treble:["B4","E5","A4","D5","G4","C5","F4"],bass:["B2","E3","A2","D3","G2","C3","F2"],
+                      alto:["B3","E4","A3","D4","G3","C4","F3"],tenor:["B3","E4","A3","D4","G3","C4","F3"]} };
   function parseKeysig(k){
     if(k==null) return null;
     if(typeof k==="object") return k.sharps?{type:"sharp",n:Math.min(7,k.sharps)}:(k.flats?{type:"flat",n:Math.min(7,k.flats)}:null);
@@ -161,8 +178,8 @@ const Staff=(()=>{
     return {type:v>0?"sharp":"flat", n:Math.abs(v)};
   }
   function drawKeysig(parts,y0,clef,ks){
-    if(clef!=="treble"&&clef!=="bass") return;
     const pos=KSPOS[ks.type][clef];
+    if(!pos) return;
     for(let i=0;i<ks.n;i++){
       const x=LEFT+46+i*12, y=yFor(pos[i],clef,y0);
       parts.push(`<g class="ksgroup" data-ks="${i}">${accSVG(x,y,ks.type==="sharp"?"#":"b")}</g>`);

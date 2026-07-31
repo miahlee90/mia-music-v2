@@ -162,6 +162,8 @@ const NB_STR={ en:{
   /* misc */
   "misc.treble":"Treble",
   "misc.bass":"Bass",
+  "misc.alto":"Alto",
+  "misc.tenor":"Tenor",
   "misc.grand":"Grand Staff",
   "misc.middleC":"Middle C",
   "misc.lives":"chances",

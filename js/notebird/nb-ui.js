@@ -26,6 +26,8 @@
        Selecting mic mode forces Background birdsong OFF (visibly, control
        disabled) and restores the previous choice on leaving mic mode.
      - A zero-correct round gets neutral encouragement, never "New best".
+   v0.6 (2026-07-31): ALTO and TENOR clef chips in setup (staff.js v8.8 draws
+   the C clef); results "By clef" row covers all four clefs.
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 
 const NBUI=(()=>{
@@ -169,6 +171,8 @@ const NBUI=(()=>{
           <button data-c="auto">${nbt("setup.clef.auto")}</button>
           <button data-c="treble">𝄞 ${nbt("misc.treble")}</button>
           <button data-c="bass">𝄢 ${nbt("misc.bass")}</button>
+          <button data-c="alto">𝄡 ${nbt("misc.alto")}</button>
+          <button data-c="tenor">𝄡 ${nbt("misc.tenor")}</button>
           <button data-c="grand">${nbt("misc.grand")}</button>
         </div></div>
       <div class="nb-field"><div class="nb-lab">${nbt("setup.range")}</div>
@@ -943,7 +947,7 @@ const NBUI=(()=>{
     const zeroCorrect=!s.firstTry;
 
     const ms=v=>v==null?"—":(v/1000).toFixed(1)+"s";
-    const clefRow=["treble","bass"].map(c=>{
+    const clefRow=["treble","bass","alto","tenor"].map(c=>{
       const d=s.byClef[c]; if(!d.n) return "";
       return `<span class="nb-chip">${nbt("misc."+c)}: ${d.ok}/${d.n}</span>`; }).join("");
     const posRow=["line","space"].map(p=>{

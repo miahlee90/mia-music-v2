@@ -6,6 +6,8 @@
    Instructor design (2026-07-17): the game is NOT a test — a run records
    "under these conditions the student reached level N". 3 mistakes allowed,
    speed rises with each level, completing level 10 = success.
+   2026-07-31: ALTO and TENOR clefs (C clefs) join treble/bass/grand — baseIdx,
+   two appended quick picks (full alto/tenor staff), clef-aware landmarks.
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 
 const NB_CONFIG={
@@ -27,7 +29,9 @@ const NBData=(()=>{
     return 12*(x.octave+1)+P2SEMI[x.letter]+accOff; }
   function dia(p){ const x=parse(p); return x.octave*7+LETTERS.indexOf(x.letter); }
   function fromDia(idx){ return LETTERS[((idx%7)+7)%7]+Math.floor(idx/7); }
-  function baseIdx(clef){ return clef==="bass"?18:30; } /* diatonic idx of bottom line */
+  /* diatonic idx of bottom line — treble E4, bass G2, alto F3 (middle line C4),
+     tenor D3 (4th line C4); mirrors staff.js v8.8 */
+  function baseIdx(clef){ return clef==="bass"?18:clef==="alto"?24:clef==="tenor"?22:30; }
 
   /* staff position of a pitch in a clef: idx 0 = bottom line, +1 per line/space upward */
   function staffPos(p,clef){
@@ -88,7 +92,11 @@ const NBData=(()=>{
     {a:"G3",b:"G4",clef:"grand"},
     {a:"C5",b:"G5",clef:"treble"},
     {a:"A3",b:"A5",clef:"treble"},
-    {a:"E2",b:"E4",clef:"bass"}
+    {a:"E2",b:"E4",clef:"bass"},
+    /* C clefs (2026-07-31, appended after the instructor's original list):
+       each is that clef's full staff, bottom line to top line */
+    {a:"F3",b:"G4",clef:"alto"},
+    {a:"D3",b:"E4",clef:"tenor"}
   ];
 
   /* ---------- lines-only / spaces-only sets (mnemonics, verified standard) ---------- */
@@ -153,13 +161,16 @@ const NBData=(()=>{
     historyCap:200
   };
 
-  /* ---------- landmark notes (Practice-mode hints) ---------- */
+  /* ---------- landmark notes (Practice-mode hints) ----------
+     clefs: which clefs a landmark makes sense in (its label names a clef-specific
+     position). No clefs field = universal. Middle C anchors the C clefs — the
+     alto/tenor clef literally points at it. */
   const LANDMARKS=[
     {p:"C4", labelKey:"lm.middleC"},
-    {p:"G4", labelKey:"lm.trebleG"},
-    {p:"F3", labelKey:"lm.bassF"},
-    {p:"F5", labelKey:"lm.topLineF"},
-    {p:"G2", labelKey:"lm.bottomLineG"}
+    {p:"G4", labelKey:"lm.trebleG", clefs:["treble"]},
+    {p:"F3", labelKey:"lm.bassF",  clefs:["bass"]},
+    {p:"F5", labelKey:"lm.topLineF", clefs:["treble"]},
+    {p:"G2", labelKey:"lm.bottomLineG", clefs:["bass"]}
   ];
 
   /* condition key: "under WHICH conditions did the run happen" (best-level records) */
@@ -174,6 +185,9 @@ const NBData=(()=>{
     if(!(g.staffIdx===2&&g.onLine)) out.push("G4 must be treble line 2");
     if(!(f.staffIdx===6&&f.onLine)) out.push("F3 must be bass line 4");
     if(midiOf("C4")!==60||midiOf("G4")!==67||midiOf("F3")!==53) out.push("MIDI mapping broken");
+    const ca=buildNote("C4","alto"), ct=buildNote("C4","tenor");
+    if(!(ca.staffIdx===4&&ca.onLine)) out.push("C4 alto must be the middle line");
+    if(!(ct.staffIdx===6&&ct.onLine)) out.push("C4 tenor must be line 4");
     const r=naturalsBetween("A2","C4"); /* A2 B2 C3 D3 E3 F3 G3 A3 B3 C4 */
     if(r.length!==10||r[0]!=="A2"||r[9]!=="C4") out.push("naturalsBetween A2-C4 wrong: "+r.join(","));
     if(autoClef(["C4","G4"])!=="treble") out.push("autoClef C4-G4 should be treble");
