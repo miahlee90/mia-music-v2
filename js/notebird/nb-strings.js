@@ -1,6 +1,11 @@
 /* Note Bird — locale strings (EN base). Adding Korean/Spanish later = one new
    dict (NB_STR.ko / NB_STR.es) with the same keys; components never hardcode
    student-facing sentences. {name} style placeholders are filled by nbt().
+   2026-07-31 (instructor): mic input advertised for ANY real instrument that
+   sounds as written (piano, violin, cello, flute…), one note at a time — the
+   engine was never piano-specific. Singing deliberately NOT offered (octave
+   rule + scooping would frustrate); transposing instruments excluded by the
+   "sounds just as written" wording.
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 
 const NB_STR={ en:{
@@ -30,7 +35,7 @@ const NB_STR={ en:{
   "setup.hints.on":"On",
   "setup.hints.off":"Off",
   "setup.start":"Start",
-  "setup.answerNote":"Answer with the A–G buttons or your computer keyboard (A–G keys) — or play the notes on a MIDI keyboard or a real piano: pick it under “Answer with” above.",
+  "setup.answerNote":"Answer with the A–G buttons or your computer keyboard (A–G keys) — or play the notes on a MIDI keyboard or a real instrument (piano, violin, cello, flute…): pick it under “Answer with” above.",
   "setup.rotateHint":"📱 Turn your phone sideways during play for a bigger, full-screen view.",
   "hud.fullscreen":"Full screen",
   "hud.exitFullscreen":"Exit full screen",
@@ -44,14 +49,14 @@ const NB_STR={ en:{
   "setup.input":"Answer with",
   "setup.input.buttons":"Letter buttons",
   "setup.input.midi":"MIDI keyboard",
-  "setup.input.mic":"Piano sound (microphone)",
-  "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard. Have a MIDI keyboard or a piano nearby? Pick 🎹 or 🎤 here to answer by playing real notes.",
+  "setup.input.mic":"Instrument sound (microphone)",
+  "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard. Have a MIDI keyboard or a real instrument nearby? Pick 🎹 or 🎤 here to answer by playing real notes.",
   "setup.input.midiDesc":"Play the note on a connected MIDI keyboard — the OCTAVE matters, so play the exact note you see. Black keys are ignored. The buttons keep working too.",
-  "setup.input.micDesc":"Play the note on a real piano — this device listens and names what it hears. The OCTAVE matters, so play the exact note you see. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
+  "setup.input.micDesc":"Play the note on a real instrument — piano, violin, cello, flute… any instrument that sounds just as written, one note at a time. This device listens and names what it hears. The OCTAVE matters, so play the exact note you see. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
   "setup.input.midiNone":"No MIDI keyboard detected — answering with the buttons.",
   "setup.input.micFail":"Microphone unavailable — answering with the buttons.",
   "hud.midiOn":"MIDI keyboard on",
-  "hud.micOn":"Listening for your piano",
+  "hud.micOn":"Listening for your instrument",
 
   /* MIDI connection states (setup panel) */
   "midi.connectBtn":"🎹 Connect MIDI Keyboard",
@@ -68,7 +73,7 @@ const NB_STR={ en:{
   "mic.enable":"🎙 Enable Microphone",
   "mic.requesting":"Requesting microphone permission…",
   "mic.level":"Input level",
-  "mic.testHint":"Play one piano note to test.",
+  "mic.testHint":"Play one note on your instrument to test.",
   "mic.heard":"Heard: {note}",
   "mic.ready":"✅ Microphone ready — you can start!",
   "mic.denied":"Microphone unavailable — you can continue with the letter buttons.",
@@ -150,7 +155,7 @@ const NB_STR={ en:{
   "res.spaces":"Space notes",
 
   /* Mia (guide character) lines */
-  "mia.intro":"Welcome to {title}! Read the note and tap its letter before the bird reaches the tree — or answer by playing a MIDI keyboard or a real piano (pick it under “Answer with”). Choose your clef and range, then fly!",
+  "mia.intro":"Welcome to {title}! Read the note and tap its letter before the bird reaches the tree — or answer by playing a MIDI keyboard or a real instrument like piano, violin or cello (pick it under “Answer with”). Choose your clef and range, then fly!",
   "mia.levelIntro":"Level game: the bird gets a little faster every level. Three misses and the flight ends — good luck!",
   "mia.practiceIntro":"Practice mode: no rush! Read each note, and ask me for a landmark hint if you get stuck.",
   "mia.success":"Level 10 complete — what a flight! 🌟 Try a wider range next?",

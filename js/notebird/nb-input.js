@@ -1,9 +1,11 @@
 /* Note Bird — instrument input (NBInput): answer by PLAYING the note.
    Two ways besides the letter buttons (which always keep working):
      🎹 MIDI keyboard  — Web MIDI note-on → letter (octave must match)
-     🎤 Piano sound    — the microphone listens to a REAL piano and names
-                          what it hears (YIN pitch detection, same method as
-                          Aural Lab's voice engine)
+     🎤 Instrument sound — the microphone listens to a REAL instrument (piano,
+                          violin, cello, flute… anything monophonic that sounds
+                          as written; 2026-07-31 rename from "Piano sound") and
+                          names what it hears (YIN pitch detection, same method
+                          as Aural Lab's voice engine)
    v5 (usability review):
      - MIDI is connected by an EXPLICIT student action in setup
        (connectMIDI) with visible states: requesting / connected+device
