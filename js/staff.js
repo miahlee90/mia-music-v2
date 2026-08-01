@@ -162,13 +162,15 @@ const Staff=(()=>{
       parts.push(`<rect class="clef-path" x="${x+11.5}" y="${cy-h}" width="2.4" height="${2*h}"/>`);
       [-1,1].forEach(s=>{
         const Y=dy=>cy+s*dy;
-        parts.push(`<path class="clef-path" d="M ${x+13.9} ${Y(0.5)}
-          C ${x+24} ${Y(1.5)}, ${x+33} ${Y(3)}, ${x+35.5} ${Y(9)}
-          C ${x+38} ${Y(16)}, ${x+34} ${Y(25)}, ${x+25} ${Y(28.5)}
+        /* v8.8c (instructor): the CENTER junction stays tucked against the
+           thin bar — no long tongue poking right at the middle line */
+        parts.push(`<path class="clef-path" d="M ${x+13.9} ${Y(0.8)}
+          C ${x+19} ${Y(1.6)}, ${x+27} ${Y(3.2)}, ${x+31.5} ${Y(7)}
+          C ${x+37} ${Y(12.5)}, ${x+35.5} ${Y(23)}, ${x+25} ${Y(28.5)}
           C ${x+20} ${Y(30)}, ${x+16} ${Y(29)}, ${x+14.5} ${Y(27.5)}
           C ${x+18} ${Y(27.8)}, ${x+22.5} ${Y(26.5)}, ${x+25} ${Y(24)}
           C ${x+28.5} ${Y(20.5)}, ${x+29} ${Y(14)}, ${x+26.5} ${Y(10.5)}
-          C ${x+23} ${Y(7)}, ${x+18} ${Y(4.5)}, ${x+13.9} ${Y(3)} Z"/>`);
+          C ${x+23.5} ${Y(6.8)}, ${x+18.5} ${Y(4)}, ${x+13.9} ${Y(2.6)} Z"/>`);
         parts.push(`<circle class="clef-path" cx="${x+25.2}" cy="${Y(9)}" r="3.7"/>`);
       });
     }
