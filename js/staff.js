@@ -163,7 +163,9 @@ const Staff=(()=>{
       [-1,1].forEach(s=>{
         const Y=dy=>cy+s*dy;
         /* v8.8c (instructor): the CENTER junction stays tucked against the
-           thin bar — no long tongue poking right at the middle line */
+           thin bar — no long tongue poking right at the middle line.
+           v8.8d (instructor): NO ball terminals — they read as stray dots at
+           game size; each curl now tapers and melts into the stroke. */
         parts.push(`<path class="clef-path" d="M ${x+13.9} ${Y(0.8)}
           C ${x+19} ${Y(1.6)}, ${x+27} ${Y(3.2)}, ${x+31.5} ${Y(7)}
           C ${x+37} ${Y(12.5)}, ${x+35.5} ${Y(23)}, ${x+25} ${Y(28.5)}
@@ -171,7 +173,6 @@ const Staff=(()=>{
           C ${x+18} ${Y(27.8)}, ${x+22.5} ${Y(26.5)}, ${x+25} ${Y(24)}
           C ${x+28.5} ${Y(20.5)}, ${x+29} ${Y(14)}, ${x+26.5} ${Y(10.5)}
           C ${x+23.5} ${Y(6.8)}, ${x+18.5} ${Y(4)}, ${x+13.9} ${Y(2.6)} Z"/>`);
-        parts.push(`<circle class="clef-path" cx="${x+25.2}" cy="${Y(9)}" r="3.7"/>`);
       });
     }
     if(opts._ks) drawKeysig(parts,y0,clef,opts._ks);
