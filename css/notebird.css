@@ -59,6 +59,19 @@
    obvious at a glance — white bold text on the brand purple */
 .choices.chips button.nb-on{background:var(--primary);border-color:var(--primary);
   color:#fff;font-weight:800;box-shadow:0 3px 10px rgba(83,58,253,.35)}
+/* v37 — GAME-OVER overlay covering the whole play card (the review page is
+   gone): Staff-Wars-style — big title, range-tweak arrows, START / QUIT */
+.nb-play{position:relative}
+.nb-gameover{position:absolute;inset:0;z-index:7;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:10px;border-radius:inherit;
+  background:rgba(253,248,236,.93);overflow:auto}
+.nb-gameover[hidden]{display:none}
+.nb-go-title{font-size:clamp(26px,6vw,46px);font-weight:900;letter-spacing:.1em;
+  color:#d23c3c;text-shadow:0 2px 0 rgba(255,255,255,.8)}
+.nb-go-title.nb-go-win{color:#1f9d55}
+.nb-gameover .nb-rangetweak{margin:2px 0}
+.nb-go-btns{display:flex;gap:12px;align-items:center}
+.nb-go-btns .play{font-size:17px;padding:10px 26px}
 /* v36 — Staff-Wars-style range tweak on the results screen */
 .nb-rangetweak{display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0 4px}
 .nb-rangetweak .nb-rt-col{display:flex;flex-direction:column;gap:8px}

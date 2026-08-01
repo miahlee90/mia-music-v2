@@ -151,6 +151,11 @@ const NB_STR={ en:{
   "res.playAgain":"Fly again",
   "res.lowUp":"Lowest note up","res.lowDn":"Lowest note down",
   "res.hiUp":"Highest note up","res.hiDn":"Highest note down",
+
+  /* game-over overlay (v0.15 — the review page is gone) */
+  "go.over":"GAME OVER",
+  "go.success":"LEVEL 10 — YOU MADE IT! 🎉",
+  "go.quit":"Quit",
   "res.practiceMissed":"Practice Missed Notes",
   "res.changeSettings":"Change settings",
   "res.byClef":"By clef",

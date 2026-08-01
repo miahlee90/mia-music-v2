@@ -37,11 +37,12 @@
    Customize are GONE; Answer with + Clef + Note range always show with their
    defaults pre-selected (solid-fill .nb-on styling in notebird.css v31 makes
    the picked chip/card unmistakable) and ▶ Start sits below.
-   v0.14 (instructor 2026-08-01, Staff-Wars reference photos): the results
-   screen gets a RANGE TWEAK widget next to "Fly again" — two ▲▼ pairs move
-   the lowest/highest note one staff step (C2–C6 bounds, min 5-note span),
-   a mini staff + label repaint live, Fly again saves and relaunches.
-   Hidden for letter-set (FACE/EGBDF…) rounds.
+   v0.15 (instructor 2026-08-01): the Flight-record REVIEW PAGE IS GONE —
+   the run ends ON the game screen with a Staff-Wars-style overlay:
+   GAME OVER / Level-10 win line, the ▲▼ range-tweak widget (C2–C6 bounds,
+   min 5-note span, hidden for letter-set rounds), then START / QUIT.
+   START saves any tweaked range and relaunches; QUIT returns to setup.
+   Runs still record to device-local bests.
    v0.12 (instructor 2026-07-31): BARE setup — sign-in line, game-info line,
    MIDI chip and the under-chip description are all gone (MIDI/mic code stays;
    only the chip was removed). Default range is the full grand staff C2–C6
@@ -426,6 +427,7 @@ const NBUI=(()=>{
 
   /* ============================== ROUND / PLAY ============================== */
   function startRound(extra){
+    finished=false;
     /* iOS/Safari audio unlock: create+resume the AudioContext INSIDE this
        Start tap — without it, sounds scheduled later from the animation loop
        (bird passing the note) can stay silent on iPad */
@@ -468,6 +470,7 @@ const NBUI=(()=>{
           ${settings.sound==="appear"?`<button class="ghost nb-replay">🔁 ${nbt("hud.replay")}</button>`:""}
         </div>
       </div>
+      <div class="nb-gameover" hidden></div>
     </section>`;
 
     /* answers = plain A–G letter buttons (instructor 2026-07-30: the piano-key
@@ -879,81 +882,42 @@ const NBUI=(()=>{
     $(".nb-pause").textContent=scene.paused?"▶ "+nbt("hud.resume"):"⏸ "+nbt("hud.pause");
   }
 
-  /* ============================== RESULTS ============================== */
+  /* ============================== GAME OVER (v0.15) ==============================
+     The Flight-record review page is GONE (instructor 2026-08-01) — the run
+     ends ON the game screen, Staff-Wars-style: GAME OVER (or the Level-10
+     win line) over the frozen scene, the ▲▼ range-tweak arrows, then
+     START / QUIT. Runs are still recorded to device-local bests (the setup
+     condition line keeps showing "Best here: Level N"). */
+  let finished=false;
   function finishRound(aborted){
+    if(finished) return; finished=true;
     stopLoop(); NBMusic.stop();
     if(window.NBInput) NBInput.stopRound();
-    document.body.classList.remove("nb-playing"); /* results scroll normally */
-    exitBigScreen();
     document.removeEventListener("keydown",onKey);
+    setLetters(false);
     const s=session.stats();
     const cond=session.condition;
-    if(!s.notesRead){ showSetup(); return; }
-
-    const condKey=NBData.conditionKey(cond);
-    const stu=studentSession();
-    const runRec={
-      date:new Date().toISOString(), game:NB_CONFIG.TITLE, version:NB_CONFIG.VERSION,
-      student:stu?{name:stu.name,class:stu.class||null,classCode:stu.classCode||null}:null,
-      mode:s.mode, condition:conditionLabel(cond), condKey,
-      level:s.level, success:s.success,
-      notesRead:s.notesRead, accuracy:s.accuracy,
-      avgMs:s.avgMs, fastestMs:s.fastestMs, bestStreak:s.bestStreak,
-      wrong:s.wrongAttempts, timeouts:s.timeouts, hintsUsed:s.hintsUsed,
-      missed:Object.keys(s.missed), answerMethod:"letters+keyboard"
-    };
-    const isNewBest=NBEngine.saveRun(condKey,runRec);
-    /* Server sync intentionally OFF (owner 2026-07-17: casual game, no need to
-       save to the cloud). Records stay on this device only — best level per
-       condition + missed-note review. To re-enable: load nb-sync.js in
-       note-bird.html and call NBSync.push(runRec) here. */
-
-    /* a run with ZERO correct answers gets neutral encouragement — never a
-       celebratory "New best" (usability review) */
-    const zeroCorrect=!s.firstTry;
-
-    const ms=v=>v==null?"—":(v/1000).toFixed(1)+"s";
-    const clefRow=["treble","bass","alto","tenor"].map(c=>{
-      const d=s.byClef[c]; if(!d.n) return "";
-      return `<span class="nb-chip">${nbt("misc."+c)}: ${d.ok}/${d.n}</span>`; }).join("");
-    const posRow=["line","space"].map(p=>{
-      const d=s.byPos[p]; if(!d.n) return "";
-      return `<span class="nb-chip">${nbt(p==="line"?"res.lines":"res.spaces")}: ${d.ok}/${d.n}</span>`; }).join("");
-    const missedIds=Object.keys(s.missed);
-
-    const headline=s.mode==="level"
-      ? (s.success
-          ? `<div class="nb-successbanner">🎉 ${nbt("res.successTitle")}</div>`
-          : `<div class="score-big">${nbt("res.reached",{level:s.level})}</div>`)
-      : `<div class="stars" aria-label="${s.stars} stars">${s.stars>0?"⭐".repeat(s.stars):""}</div>
-         <div class="score-big">${s.accuracy}%</div><p>${nbt("res.accuracy")}</p>`;
-
-    root.innerHTML=`
-    <section class="card nb-results">
-      <h2>${nbt("res.title")}</h2>
-      <div class="score-box">
-        ${headline}
-        ${zeroCorrect?`<p>${nbt("res.firstFlight")}</p>`:""}
-        ${s.mode==="level"&&isNewBest&&!zeroCorrect?`<p class="nb-newbest">🏅 ${nbt("res.newBest")}</p>`:""}
-        <p style="margin-top:6px"><b>${nbt("res.condition")}:</b> ${conditionLabel(cond)}</p>
-      </div>
-      <div class="nb-statgrid">
-        <div><b>${s.notesRead}</b><span>${nbt("res.notesRead")}</span></div>
-        <div><b>${s.firstTry}</b><span>${nbt("res.correct")}</span></div>
-        <div><b>${s.wrongAttempts}</b><span>${nbt("res.wrong")}</span></div>
-        <div><b>${s.timeouts}</b><span>${nbt("res.timeouts")}</span></div>
-        <div><b>${s.bestStreak}</b><span>${nbt("res.bestStreak")}</span></div>
-        <div><b>${ms(s.avgMs)}</b><span>${nbt("res.avgTime")}</span></div>
-      </div>
-      <div class="nb-chiprow">${clefRow}${posRow}
-        ${s.hintsUsed?`<span class="nb-chip">💡 ${nbt("res.hints")}: ${s.hintsUsed}</span>`:""}</div>
-      <hr class="sep">
-      <h2>${nbt("res.missedTitle")}</h2>
-      ${missedIds.length?`<div class="nb-missedgrid"></div>`:`<p>${nbt("res.noMissed")}</p>`}
+    if(s.notesRead){
+      const condKey=NBData.conditionKey(cond);
+      const stu=studentSession();
+      NBEngine.saveRun(condKey,{
+        date:new Date().toISOString(), game:NB_CONFIG.TITLE, version:NB_CONFIG.VERSION,
+        student:stu?{name:stu.name,class:stu.class||null,classCode:stu.classCode||null}:null,
+        mode:s.mode, condition:conditionLabel(cond), condKey,
+        level:s.level, success:s.success,
+        notesRead:s.notesRead, accuracy:s.accuracy,
+        avgMs:s.avgMs, fastestMs:s.fastestMs, bestStreak:s.bestStreak,
+        wrong:s.wrongAttempts, timeouts:s.timeouts, hintsUsed:s.hintsUsed,
+        missed:Object.keys(s.missed), answerMethod:"letters+keyboard"
+      });
+      /* server sync intentionally OFF (owner 2026-07-17) — see nb-sync.js */
+    }
+    if(s.success) MFAudio.yay();
+    const el=$(".nb-gameover");
+    if(!el){ showSetup(); return; }
+    el.innerHTML=`
+      <div class="nb-go-title${s.success?" nb-go-win":""}">${s.success?nbt("go.success"):nbt("go.over")}</div>
       ${cond.setId?"":`
-      <!-- v0.14 (instructor 2026-08-01, Staff-Wars-style): tweak the range
-           right here, then fly again — ▲▼ pairs move the lowest / highest
-           note; the mini staff repaints live -->
       <div class="nb-rangetweak">
         <div class="nb-rt-col">
           <button class="ghost nb-rt" data-t="a" data-d="1" aria-label="${nbt("res.lowUp")}">▲</button>
@@ -965,42 +929,23 @@ const NBUI=(()=>{
           <button class="ghost nb-rt" data-t="b" data-d="-1" aria-label="${nbt("res.hiDn")}">▼</button>
         </div>
       </div>`}
-      <div class="navrow" style="margin-top:10px">
-        <a href="#" class="nb-again">▶ ${nbt("res.playAgain")}</a>
-        ${missedIds.length?`<a href="#" class="nb-pm">🎯 ${nbt("res.practiceMissed")}</a>`:""}
-        <a href="#" class="nb-settings">⚙ ${nbt("res.changeSettings")}</a>
-      </div>
-    </section>`;
-
-    const pool=session.pool;
-    const grid=$(".nb-missedgrid");
-    if(grid) missedIds.forEach(id=>{
-      const n=pool.find(x=>x.id===id); if(!n) return;
-      const card=document.createElement("div"); card.className="nb-misscard";
-      const st=document.createElement("div");
-      card.appendChild(st);
-      const cap=document.createElement("div"); cap.className="nb-misscap";
-      cap.innerHTML=`<b>${noteName(n)}</b> <span>${nbt("res.missedTimes",{n:s.missed[id]})}</span>`;
-      card.appendChild(cap);
-      card.onclick=()=>MFAudio.tone(n.audio,.7,0,.5);
-      grid.appendChild(card);
-      Staff.render(st,{clef:n.clef,notes:[{p:n.sci,d:"w"}],width:170});
-    });
-
-    /* Staff-Wars-style range tweak (v0.14): ▲▼ nudge the endpoints one staff
-       step at a time inside C2–C6, keeping at least a 5-note span; Fly again
-       saves the tweaked range and relaunches. Hidden for letter-set rounds. */
+      <div class="nb-go-btns">
+        <button class="play nb-go-start">▶ ${nbt("setup.start")}</button>
+        <button class="ghost nb-go-quit">${nbt("go.quit")}</button>
+      </div>`;
+    el.hidden=false;
+    /* ▲▼ nudge the endpoints one staff step inside C2–C6 (min 5-note span);
+       START saves the tweaked range and relaunches at once */
     let ra=cond.a, rb=cond.b;
-    if(!cond.setId&&$(".nb-rangetweak")){
+    if(!cond.setId){
       const MINI=NBData.dia(NBData.RANGE_MIN), MAXI=NBData.dia(NBData.RANGE_MAX), GAPMIN=4;
-      const rtClef=cond.clef; /* clef stays — outside notes grow ledger lines */
+      const grand=cond.clef==="grand";
       const paintRT=()=>{
-        const grand=rtClef==="grand";
-        Staff.render($(".nb-rt-staff"),{clef:rtClef,width:150,
+        Staff.render(el.querySelector(".nb-rt-staff"),{clef:cond.clef,width:150,
           notes:[ra,rb].map(p=>({p,d:"w",clef:grand?(NBData.midiOf(p)>=60?"treble":"bass"):undefined}))});
-        $(".nb-rt-lab").textContent=ra+"–"+rb;
+        el.querySelector(".nb-rt-lab").textContent=ra+"–"+rb;
       };
-      [...root.querySelectorAll(".nb-rt")].forEach(b=>b.onclick=()=>{
+      [...el.querySelectorAll(".nb-rt")].forEach(b=>b.onclick=()=>{
         const d=+b.dataset.d;
         let ia=NBData.dia(ra), ib=NBData.dia(rb);
         if(b.dataset.t==="a"){ ia+=d; if(ia<MINI||ia>ib-GAPMIN) return; ra=NBData.fromDia(ia); }
@@ -1009,31 +954,13 @@ const NBUI=(()=>{
       });
       paintRT();
     }
-    $(".nb-again").onclick=e=>{ e.preventDefault();
+    el.querySelector(".nb-go-start").onclick=()=>{
       if(!cond.setId&&(ra!==cond.a||rb!==cond.b)){
         settings.a=ra; settings.b=rb; settings.setId=null; saveSettings();
       }
       startRound();
     };
-    $(".nb-settings").onclick=e=>{ e.preventDefault(); showSetup(); };
-    const pm=$(".nb-pm");
-    if(pm) pm.onclick=e=>{
-      e.preventDefault();
-      const missedPool=pool.filter(n=>missedIds.includes(n.id));
-      startRound({pool:missedPool, condition:cond, mode:"practice",
-        rounds:Math.min(12,Math.max(4,missedPool.length*2))});
-    };
-
-    if(window.Teacher){
-      if(s.mode==="level"){
-        const key=s.success?"mia.success":(s.level>=5?"mia.goodRun":"mia.earlyRun");
-        Teacher.say(nbt(key,{level:s.level}),{pose:s.success?"celebrate":"wave",proactive:true,chime:false});
-        if(s.success) Teacher.celebrate();
-      }else{
-        Teacher.say(nbt(s.stars>=2?"mia.practiceGood":"mia.practiceMore"),{pose:"wave",proactive:true,chime:false});
-      }
-    }
-    if(s.success) MFAudio.yay();
+    el.querySelector(".nb-go-quit").onclick=()=>showSetup();
   }
 
   /* ============================== BOOT ============================== */
