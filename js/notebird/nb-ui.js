@@ -33,6 +33,10 @@
    open the full form, and 🎤 instrument answering must be one tap away.
    Beginner Start honors the picked input; both start buttons gate on mic
    readiness (paintStart). Default input stays Letter buttons.
+   v0.10 (instructor 2026-07-31, student reviews "too complicated"): the
+   first screen shows ONLY Start buttons + Answer with; Customize starts
+   collapsed for everyone (returning players too) and reveals Clef + Note
+   range. All setup copy cut to one short line each (nb-strings).
    v0.8 (instructor 2026-07-31, "단순하게"): SETUP SIMPLIFIED — the mode,
    rounds, note-sound, birdsong and hints fields are GONE. Every run is the
    Level Game (note sound on, birdsong on by default; HUD 🐦 mutes). Saved
@@ -191,7 +195,7 @@ const NBUI=(()=>{
         <div class="nb-instpanel" aria-live="polite"></div>
         <p class="nb-inputnote nb-sublab" aria-live="polite"></p></div>
       <div id="nbCustom" class="nb-customwrap">
-      <p class="nb-sublab" style="margin:4px 0 0">🚀 ${nbt("setup.mode.levelDesc",{lives:NBData.LEVELS.lives})}</p>
+      <p class="nb-sublab" style="margin:4px 0 0">${nbt("setup.gameLine")}</p>
       <div class="nb-field"><div class="nb-lab">${nbt("setup.clef")}</div>
         <div class="choices chips nb-clefs">
           <button data-c="auto">${nbt("setup.clef.auto")}</button>
@@ -211,18 +215,20 @@ const NBUI=(()=>{
         <div class="nb-sublab">${nbt("setup.sets")}</div>
         <div class="choices chips nb-sets"></div>
         <p class="nb-condline" aria-live="polite"></p></div>
-      <p style="color:var(--muted);font-size:14px">${nbt("setup.answerNote")}</p>
       <div style="text-align:center;margin-top:14px"><button class="play nb-start">▶ ${nbt("setup.start")}</button>
         <p class="nb-startnote nb-sublab" aria-live="polite"></p></div>
       <p class="nb-rotatehint">${nbt("setup.rotateHint")}</p>
       </div>
     </section>`;
 
-    /* Beginner Start / Customize (first visit hides the full form) */
+    /* Beginner Start / Customize. v0.10 (instructor 2026-07-31, review
+       feedback "too complicated"): the form starts COLLAPSED for everyone —
+       returning players included; the first screen is only Start + Answer
+       with, and ⚙ Customize reveals Clef + Note range. */
     const customWrap=$("#nbCustom"), customBtn=$(".nb-customize");
     const setCustom=open=>{ customWrap.style.display=open?"":"none";
       customBtn.setAttribute("aria-expanded",String(open)); };
-    setCustom(hasSaved);
+    setCustom(false);
     customBtn.onclick=()=>setCustom(customWrap.style.display==="none");
     $(".nb-beginner").onclick=()=>{
       /* v0.7: Beginner Start keeps the beginner GAME settings but honors the
