@@ -21,8 +21,12 @@
        permission popup or test is still in progress.
    Privacy, true in code: microphone audio is analyzed on this device only —
    never recorded, saved, or uploaded. The mic is opened only from a student
-   action, a visible badge shows while listening, and every track stops on
-   round end / input-mode change / tab hide / page close.
+   action and a visible badge shows while it is open.
+   v7 (instructor 2026-08-01): in mic mode the pipeline STAYS OPEN between
+   rounds — game over / restart / returning to setup must not disconnect the
+   instrument mic ("한번 연결하면 쭈욱"). Between rounds it is DEAF (sink
+   null — frames are discarded). Tracks still fully close on input-mode
+   change, tab hide and page close.
    While mic mode is on, background birdsong is suppressed so the game
    can't hear itself. Black keys are ignored (the game asks for naturals).
    Silence and low-confidence audio NEVER fire an answer (rmsGate + conf
@@ -263,17 +267,25 @@ const NBInput=(()=>{
     return "buttons";
   }
   function stopRound(){
-    cb=null; midiHot=false; micHot=false; badge(null);
-    closeMic();
+    cb=null; midiHot=false; micHot=false;
     restoreGameAudio();
+    /* v7: mic mode keeps the pipeline OPEN (deaf, sink=null) so the next
+       round starts instantly with no re-permission / re-setup */
+    if(mode==="mic"&&stream&&micIsReady){ sink=null; badge("🎤 "+nbt("hud.micOn")); }
+    else { badge(null); closeMic(); }
+  }
+  /* full shutdown — privacy paths only (tab hide, page close) */
+  function shutdown(){
+    cb=null; midiHot=false; micHot=false; badge(null);
+    restoreGameAudio(); closeMic();
   }
   function setMode(m){
-    if(m!==mode&&mode==="mic") closeMic();   /* leaving mic mode stops tracks */
+    if(m!==mode&&mode==="mic"){ badge(null); closeMic(); } /* leaving mic mode stops tracks */
     mode=m; save();
   }
   if(typeof document!=="undefined"){
-    document.addEventListener("visibilitychange",()=>{ if(document.hidden&&(micHot||midiHot||stream)) stopRound(); });
-    window.addEventListener("pagehide",()=>{ if(micHot||midiHot||stream) stopRound(); });
+    document.addEventListener("visibilitychange",()=>{ if(document.hidden&&(micHot||midiHot||stream)) shutdown(); });
+    window.addEventListener("pagehide",()=>{ if(micHot||midiHot||stream) shutdown(); });
   }
 
   return {mode:()=>mode,setMode,
