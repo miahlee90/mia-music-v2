@@ -65,9 +65,9 @@ const NBUI=(()=>{
      gentlest start. The old expert default (Level · Grand · C2–C6 · 29
      notes) is one Customize away and still fully available. */
   const SETTINGS_LS="nb-settings-v1";
-  /* v0.12 default = the FULL GRAND STAFF C2–C6 (instructor 2026-07-31 —
-     back to the original expert default; quick picks change it in one tap) */
-  const BEGINNER={ mode:"level", clef:"grand", a:"C2", b:"C6", setId:null,
+  /* v0.13 default = TREBLE G3–A5, the violin beginner range (instructor
+     2026-07-31 — open G string to A5; quick picks change it in one tap) */
+  const BEGINNER={ mode:"level", clef:"treble", a:"G3", b:"A5", setId:null,
                    rounds:10, sound:"after", music:NBData.MUSIC_DEFAULT, hints:true };
   let hasSaved=false;
   let settings=(()=>{
@@ -83,11 +83,12 @@ const NBUI=(()=>{
      (including music:false parked by past mic sessions). */
   Object.assign(settings,{mode:"level",rounds:10,sound:"after",hints:true,music:true});
   const saveSettingsEarly=()=>{ try{ localStorage.setItem(SETTINGS_LS,JSON.stringify(settings)); }catch(e){} };
-  /* one-time move to the new C2–C6 default (players who saved older settings
-     get it once; after that their own choices stick again) */
-  try{ if(!localStorage.getItem("nb-defc2c6")){
-    settings.clef="grand"; settings.a="C2"; settings.b="C6"; settings.setId=null;
-    saveSettingsEarly(); localStorage.setItem("nb-defc2c6","1"); } }catch(e){}
+  /* one-time move to the violin-range default G3–A5 treble (players who saved
+     older settings get it once; after that their own choices stick again).
+     Supersedes the short-lived nb-defc2c6 migration. */
+  try{ if(!localStorage.getItem("nb-defg3a5")){
+    settings.clef="treble"; settings.a="G3"; settings.b="A5"; settings.setId=null;
+    saveSettingsEarly(); localStorage.setItem("nb-defg3a5","1"); } }catch(e){}
   const saveSettings=()=>{ try{ localStorage.setItem(SETTINGS_LS,JSON.stringify(settings)); }catch(e){} };
   /* birdsong preference parked while mic mode forces it off */
   let micPrevMusic=null;

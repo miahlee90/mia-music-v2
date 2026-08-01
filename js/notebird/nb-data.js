@@ -91,7 +91,9 @@ const NBData=(()=>{
     {a:"C3",b:"G3",clef:"bass"},
     {a:"G3",b:"G4",clef:"grand"},
     {a:"C5",b:"G5",clef:"treble"},
-    {a:"A3",b:"A5",clef:"treble"},
+    /* 2026-07-31 instructor: was A3–A5 — widened to the VIOLIN beginner range
+       (open G string G3 up to A5) and made the game's DEFAULT */
+    {a:"G3",b:"A5",clef:"treble"},
     {a:"E2",b:"E4",clef:"bass"},
     /* C clefs (2026-07-31, appended after the instructor's original list):
        each is that clef's full staff, bottom line to top line */
