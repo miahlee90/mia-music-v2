@@ -49,14 +49,14 @@ const NB_STR={ en:{
   "setup.input":"Answer with",
   "setup.input.buttons":"Letter buttons",
   "setup.input.midi":"MIDI keyboard",
-  "setup.input.mic":"Instrument sound (microphone)",
-  "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard. Have a MIDI keyboard or a real instrument nearby? Pick 🎹 or 🎤 here to answer by playing real notes.",
+  "setup.input.mic":"Piano & instrument sound (microphone)",
+  "setup.input.buttonsDesc":"Tap A–G on screen, or press A–G on your computer keyboard. Have a MIDI keyboard, a piano or another instrument nearby? Pick 🎹 or 🎤 here to answer by playing real notes.",
   "setup.input.midiDesc":"Play the note on a connected MIDI keyboard — the OCTAVE matters, so play the exact note you see. Black keys are ignored. The buttons keep working too.",
-  "setup.input.micDesc":"Play the note on a real instrument — piano, violin, cello, flute… any instrument that sounds just as written, one note at a time. This device listens and names what it hears. The OCTAVE matters, so play the exact note you see. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
+  "setup.input.micDesc":"Play the note on a real piano — or violin, cello, flute… any instrument that sounds just as written, one note at a time. This device listens and names what it hears. The OCTAVE matters, so play the exact note you see. Background birdsong turns off so the game can't hear itself. The buttons keep working too.",
   "setup.input.midiNone":"No MIDI keyboard detected — answering with the buttons.",
   "setup.input.micFail":"Microphone unavailable — answering with the buttons.",
   "hud.midiOn":"MIDI keyboard on",
-  "hud.micOn":"Listening for your instrument",
+  "hud.micOn":"Listening for your piano or instrument",
 
   /* MIDI connection states (setup panel) */
   "midi.connectBtn":"🎹 Connect MIDI Keyboard",
