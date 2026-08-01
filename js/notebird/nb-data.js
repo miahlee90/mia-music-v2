@@ -97,9 +97,9 @@ const NBData=(()=>{
     {a:"E2",b:"E4",clef:"bass"},
     /* C clefs (2026-07-31, appended after the instructor's original list;
        2026-08-01 instructor: instrument ranges — VIOLA alto C3–C5 (open C
-       string up), CELLO tenor C3–G5) */
+       string up), CELLO tenor C3–G4) */
     {a:"C3",b:"C5",clef:"alto"},
-    {a:"C3",b:"G5",clef:"tenor"}
+    {a:"C3",b:"G4",clef:"tenor"}
   ];
 
   /* ---------- lines-only / spaces-only sets (mnemonics, verified standard) ---------- */
