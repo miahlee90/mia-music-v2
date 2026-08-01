@@ -33,6 +33,12 @@
    open the full form, and 🎤 instrument answering must be one tap away.
    Beginner Start honors the picked input; both start buttons gate on mic
    readiness (paintStart). Default input stays Letter buttons.
+   v0.8 (instructor 2026-07-31, "단순하게"): SETUP SIMPLIFIED — the mode,
+   rounds, note-sound, birdsong and hints fields are GONE. Every run is the
+   Level Game (note sound on, birdsong on by default; HUD 🐦 mutes). Saved
+   settings are coerced at load. Practice mode survives only as the results
+   screen's "Practice Missed Notes" (untimed, hints on, keyboard reveal).
+   Customize now holds just Clef + Note range/quick picks/sets.
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 
 const NBUI=(()=>{
@@ -49,7 +55,7 @@ const NBUI=(()=>{
      gentlest start. The old expert default (Level · Grand · C2–C6 · 29
      notes) is one Customize away and still fully available. */
   const SETTINGS_LS="nb-settings-v1";
-  const BEGINNER={ mode:"practice", clef:"treble", a:"C4", b:"G4", setId:null,
+  const BEGINNER={ mode:"level", clef:"treble", a:"C4", b:"G4", setId:null,
                    rounds:10, sound:"after", music:NBData.MUSIC_DEFAULT, hints:true };
   let hasSaved=false;
   let settings=(()=>{
@@ -57,6 +63,13 @@ const NBUI=(()=>{
       if(s&&s.mode){ hasSaved=true; return Object.assign({},BEGINNER,s); } }catch(e){}
     return Object.assign({},BEGINNER);
   })();
+  /* v0.8 simplification (instructor 2026-07-31): setup no longer offers
+     mode / rounds / note-sound / birdsong / hints — every run is the LEVEL
+     GAME, note sound on, birdsong on (HUD 🐦 still mutes), 10 rounds if a
+     practice round ever runs. Practice survives ONLY as the results screen's
+     "Practice Missed Notes". Coercing here also repairs older saved settings
+     (including music:false parked by past mic sessions). */
+  Object.assign(settings,{mode:"level",rounds:10,sound:"after",hints:true,music:true});
   const saveSettings=()=>{ try{ localStorage.setItem(SETTINGS_LS,JSON.stringify(settings)); }catch(e){} };
   /* birdsong preference parked while mic mode forces it off */
   let micPrevMusic=null;
@@ -178,12 +191,7 @@ const NBUI=(()=>{
         <div class="nb-instpanel" aria-live="polite"></div>
         <p class="nb-inputnote nb-sublab" aria-live="polite"></p></div>
       <div id="nbCustom" class="nb-customwrap">
-      <div class="nb-field"><div class="nb-lab">${nbt("setup.mode")}</div>
-        <div class="choices chips nb-modes">
-          <button data-mode="practice" aria-pressed="false">🎈 ${nbt("setup.mode.practice")}</button>
-          <button data-mode="level" aria-pressed="false">🚀 ${nbt("setup.mode.level")}</button>
-        </div>
-        <p class="nb-modedesc" aria-live="polite"></p></div>
+      <p class="nb-sublab" style="margin:4px 0 0">🚀 ${nbt("setup.mode.levelDesc",{lives:NBData.LEVELS.lives})}</p>
       <div class="nb-field"><div class="nb-lab">${nbt("setup.clef")}</div>
         <div class="choices chips nb-clefs">
           <button data-c="auto">${nbt("setup.clef.auto")}</button>
@@ -203,21 +211,6 @@ const NBUI=(()=>{
         <div class="nb-sublab">${nbt("setup.sets")}</div>
         <div class="choices chips nb-sets"></div>
         <p class="nb-condline" aria-live="polite"></p></div>
-      <div class="nb-field nb-roundsfield"><div class="nb-lab">${nbt("setup.rounds")}</div>
-        <div class="choices chips nb-rounds">
-          <button data-r="5">5</button><button data-r="10">10</button><button data-r="15">15</button>
-        </div></div>
-      <div class="nb-field nb-soundfield"><div class="nb-lab">${nbt("setup.sound")}</div>
-        <select class="nav-jump nb-sound" aria-label="${nbt("setup.sound")}"></select></div>
-      <div class="nb-field nb-musicfield"><div class="nb-lab">${nbt("setup.music")}</div>
-        <div class="choices chips nb-music">
-          <button data-m="1">🐦 ${nbt("setup.music.on")}</button><button data-m="0">${nbt("setup.music.off")}</button>
-        </div>
-        <p class="nb-musicnote nb-sublab" hidden>${nbt("mic.birdsongOff")}</p></div>
-      <div class="nb-field nb-hintfield"><div class="nb-lab">${nbt("setup.hints")}</div>
-        <div class="choices chips nb-hints">
-          <button data-h="1">💡 ${nbt("setup.hints.on")}</button><button data-h="0">${nbt("setup.hints.off")}</button>
-        </div></div>
       <p style="color:var(--muted);font-size:14px">${nbt("setup.answerNote")}</p>
       <div style="text-align:center;margin-top:14px"><button class="play nb-start">▶ ${nbt("setup.start")}</button>
         <p class="nb-startnote nb-sublab" aria-live="polite"></p></div>
@@ -319,40 +312,9 @@ const NBUI=(()=>{
     }
     [...$(".nb-clefs").children].forEach(b=>b.onclick=()=>{ settings.clef=b.dataset.c; settings.setId=null; paintRange(); });
 
-    function paintMode(){
-      [...$(".nb-modes").children].forEach(b=>{
-        const on=b.dataset.mode===settings.mode;
-        b.classList.toggle("nb-on",on); b.setAttribute("aria-pressed",String(on)); });
-      $(".nb-modedesc").textContent=settings.mode==="practice"
-        ? nbt("setup.mode.practiceDesc")
-        : nbt("setup.mode.levelDesc",{lives:NBData.LEVELS.lives});
-      $(".nb-hintfield").style.display=settings.mode==="practice"?"":"none";
-      $(".nb-roundsfield").style.display=settings.mode==="practice"?"":"none";
-      $(".nb-musicfield").style.display=settings.mode==="level"?"":"none";
-      paintRange();
-    }
-    [...$(".nb-modes").children].forEach(b=>b.onclick=()=>{ settings.mode=b.dataset.mode; paintMode(); });
-
-    const snd=$(".nb-sound");
-    NBData.SOUND_MODES.forEach(m=>{
-      const o=document.createElement("option");
-      o.value=m.id; o.textContent=nbt(m.nameKey);
-      if(m.id===settings.sound) o.selected=true;
-      snd.appendChild(o);
-    });
-    snd.onchange=()=>{ settings.sound=snd.value; };
-    function chipToggle(sel,get,set){
-      const row=$(sel);
-      const paint=()=>[...row.children].forEach(x=>{
-        const on=(x.dataset.m??x.dataset.h??x.dataset.r)===get();
-        x.classList.toggle("nb-on",on); x.setAttribute("aria-pressed",String(on)); });
-      [...row.children].forEach(b=>b.onclick=()=>{ set(b); paint(); });
-      paint();
-      return paint;
-    }
-    const paintMusic=chipToggle(".nb-music",()=>settings.music?"1":"0",b=>{ settings.music=b.dataset.m==="1"; });
-    chipToggle(".nb-hints",()=>settings.hints?"1":"0",b=>{ settings.hints=b.dataset.h==="1"; });
-    chipToggle(".nb-rounds",()=>String(settings.rounds),b=>{ settings.rounds=+b.dataset.r; });
+    /* v0.8: no mode / rounds / sound / music / hints fields — level game only;
+       their settings are coerced at load and practice lives on solely through
+       the results screen's "Practice Missed Notes" (hints always on there). */
 
     /* the round may only start when the chosen input is actually usable —
        in mic mode that means the microphone setup finished (or was skipped).
@@ -438,22 +400,14 @@ const NBUI=(()=>{
           b.classList.toggle("nb-on",on); b.setAttribute("aria-pressed",String(on)); });
         $(".nb-inputdesc").textContent=nbt("setup.input."+NBInput.mode()+"Desc");
         /* instrument input plays its OWN sound — the game's note sound goes
-           fully off (Visual only) so the mic can't hear the game and the
-           first played note registers at once */
-        const inst=NBInput.mode()!=="buttons";
-        const sf=$(".nb-soundfield"); if(sf) sf.style.display=inst?"none":"";
-        /* runtime-only: never write "off" into settings (it would persist and
-           leave the game silent after returning to buttons — the iPad bug) */
-        instSilent=inst;
-        settings.sound=$(".nb-sound").value;
-        /* mic mode forces Background birdsong OFF — visibly (the control
-           shows Off and disables); the previous choice returns on leaving */
+           silent at RUNTIME ONLY so the mic can't hear the game (never write
+           "off" into settings: it would persist — the old iPad bug) */
+        instSilent=NBInput.mode()!=="buttons";
+        /* mic mode parks birdsong OFF (no setup control anymore; the HUD 🐦
+           button still shows/toggles it) — previous choice returns on leaving */
         const mic=NBInput.mode()==="mic";
         if(mic){ if(micPrevMusic===null) micPrevMusic=settings.music; settings.music=false; }
         else if(micPrevMusic!==null){ settings.music=micPrevMusic; micPrevMusic=null; }
-        [...$(".nb-music").children].forEach(b=>b.disabled=mic);
-        const mn=$(".nb-musicnote"); if(mn) mn.hidden=!mic;
-        paintMusic();
         /* per-mode status/setup panel */
         const panel=$(".nb-instpanel"); panel.innerHTML="";
         if(NBInput.mode()==="midi") midiPanel(panel);
@@ -464,7 +418,7 @@ const NBUI=(()=>{
       paintInput();
     } else $(".nb-inputfield").style.display="none";
 
-    paintMode();
+    paintRange();
     paintStart();
     $(".nb-start").onclick=()=>{ saveSettings(); hasSaved=true; startRound(); };
     /* chime:false everywhere in the game — no sounds the student didn't cause */

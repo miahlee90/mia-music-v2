@@ -12,7 +12,7 @@ const NB_STR={ en:{
   /* setup screen */
   "setup.title":"Set up your flight",
   "setup.beginner":"🐣 Beginner Start",
-  "setup.beginnerDesc":"Practice mode · Treble clef · C4–G4 — the easiest first flight, one click. Answer with the letter buttons, or pick 🎤 below to play your answers on a piano or another instrument.",
+  "setup.beginnerDesc":"Treble clef · C4–G4 — the easiest first flight, one click. Answer with the letter buttons, or pick 🎤 below to play your answers on a piano or another instrument.",
   "setup.customize":"⚙ Customize",
   "setup.mode":"Mode",
   "setup.mode.practice":"Practice",
