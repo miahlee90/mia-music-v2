@@ -37,6 +37,10 @@
    Customize are GONE; Answer with + Clef + Note range always show with their
    defaults pre-selected (solid-fill .nb-on styling in notebird.css v31 makes
    the picked chip/card unmistakable) and ▶ Start sits below.
+   v0.12 (instructor 2026-07-31): BARE setup — sign-in line, game-info line,
+   MIDI chip and the under-chip description are all gone (MIDI/mic code stays;
+   only the chip was removed). Default range is the full grand staff C2–C6
+   again (one-time migration flag nb-defc2c6 moves older saves over once).
    v0.10 (instructor 2026-07-31, student reviews "too complicated"): all
    setup copy cut to one short line each (nb-strings).
    v0.8 (instructor 2026-07-31, "단순하게"): SETUP SIMPLIFIED — the mode,
@@ -61,7 +65,9 @@ const NBUI=(()=>{
      gentlest start. The old expert default (Level · Grand · C2–C6 · 29
      notes) is one Customize away and still fully available. */
   const SETTINGS_LS="nb-settings-v1";
-  const BEGINNER={ mode:"level", clef:"treble", a:"C4", b:"G4", setId:null,
+  /* v0.12 default = the FULL GRAND STAFF C2–C6 (instructor 2026-07-31 —
+     back to the original expert default; quick picks change it in one tap) */
+  const BEGINNER={ mode:"level", clef:"grand", a:"C2", b:"C6", setId:null,
                    rounds:10, sound:"after", music:NBData.MUSIC_DEFAULT, hints:true };
   let hasSaved=false;
   let settings=(()=>{
@@ -76,6 +82,12 @@ const NBUI=(()=>{
      "Practice Missed Notes". Coercing here also repairs older saved settings
      (including music:false parked by past mic sessions). */
   Object.assign(settings,{mode:"level",rounds:10,sound:"after",hints:true,music:true});
+  const saveSettingsEarly=()=>{ try{ localStorage.setItem(SETTINGS_LS,JSON.stringify(settings)); }catch(e){} };
+  /* one-time move to the new C2–C6 default (players who saved older settings
+     get it once; after that their own choices stick again) */
+  try{ if(!localStorage.getItem("nb-defc2c6")){
+    settings.clef="grand"; settings.a="C2"; settings.b="C6"; settings.setId=null;
+    saveSettingsEarly(); localStorage.setItem("nb-defc2c6","1"); } }catch(e){}
   const saveSettings=()=>{ try{ localStorage.setItem(SETTINGS_LS,JSON.stringify(settings)); }catch(e){} };
   /* birdsong preference parked while mic mode forces it off */
   let micPrevMusic=null;
@@ -169,24 +181,17 @@ const NBUI=(()=>{
     if(window.NBInput) NBInput.stopRound();   /* mic/MIDI never outlive a round */
     document.body.classList.remove("nb-playing"); /* back to normal page layout */
     exitBigScreen();
-    const stu=studentSession();
     root.innerHTML=`
     <section class="card nb-setup">
       <h2>${nbt("setup.title")}</h2>
-      <p class="nb-signin">${stu
-        ? nbt("setup.signedIn",{name:stu.name,cls:stu.class||stu.classCode||""})
-        : `<a href="../student.html">${nbt("setup.signIn")}</a> · ${nbt("setup.signInWhy")}`}</p>
-      <p class="nb-sublab" style="margin:4px 0 0">${nbt("setup.gameLine")}</p>
-      <!-- v0.11 (instructor 2026-07-31): ONE flat setup page — no Beginner
-           Start / Customize split; the three fields show with their defaults
-           already selected (clearly colored), Start sits below. -->
+      <!-- v0.12 (instructor 2026-07-31): BARE setup — no sign-in line, no
+           game-info line, no MIDI chip (MIDI still works in code; the chip
+           returns if ever wanted), no description under the chips. -->
       <div class="nb-field nb-inputfield"><div class="nb-lab">${nbt("setup.input")}</div>
         <div class="choices chips nb-inputchips">
           <button data-i="buttons">🔤 ${nbt("setup.input.buttons")}</button>
-          <button data-i="midi">🎹 ${nbt("setup.input.midi")}</button>
           <button data-i="mic">🎤 ${nbt("setup.input.mic")}</button>
         </div>
-        <p class="nb-inputdesc" aria-live="polite" style="color:var(--muted);font-size:13.5px"></p>
         <div class="nb-instpanel" aria-live="polite"></div>
         <p class="nb-inputnote nb-sublab" aria-live="polite"></p></div>
       <div class="nb-field"><div class="nb-lab">${nbt("setup.clef")}</div>
@@ -306,8 +311,10 @@ const NBUI=(()=>{
        unsupported choices hide themselves, buttons always keep working */
     if(window.NBInput){
       const row=$(".nb-inputchips");
+      /* the MIDI chip is gone (v0.12) — a previously saved midi mode falls
+         back to buttons so no invisible mode stays active */
+      if(NBInput.mode()==="midi") NBInput.setMode("buttons");
       [...row.children].forEach(b=>{
-        if(b.dataset.i==="midi"&&!NBInput.midiSupported()) b.style.display="none";
         if(b.dataset.i==="mic"&&!NBInput.micSupported()) b.style.display="none";
       });
 
@@ -385,7 +392,6 @@ const NBUI=(()=>{
         [...row.children].forEach(b=>{
           const on=b.dataset.i===NBInput.mode();
           b.classList.toggle("nb-on",on); b.setAttribute("aria-pressed",String(on)); });
-        $(".nb-inputdesc").textContent=nbt("setup.input."+NBInput.mode()+"Desc");
         /* instrument input plays its OWN sound — the game's note sound goes
            silent at RUNTIME ONLY so the mic can't hear the game (never write
            "off" into settings: it would persist — the old iPad bug) */
