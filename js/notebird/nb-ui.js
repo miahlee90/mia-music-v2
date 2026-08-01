@@ -37,6 +37,11 @@
    Customize are GONE; Answer with + Clef + Note range always show with their
    defaults pre-selected (solid-fill .nb-on styling in notebird.css v31 makes
    the picked chip/card unmistakable) and ▶ Start sits below.
+   v0.14 (instructor 2026-08-01, Staff-Wars reference photos): the results
+   screen gets a RANGE TWEAK widget next to "Fly again" — two ▲▼ pairs move
+   the lowest/highest note one staff step (C2–C6 bounds, min 5-note span),
+   a mini staff + label repaint live, Fly again saves and relaunches.
+   Hidden for letter-set (FACE/EGBDF…) rounds.
    v0.12 (instructor 2026-07-31): BARE setup — sign-in line, game-info line,
    MIDI chip and the under-chip description are all gone (MIDI/mic code stays;
    only the chip was removed). Default range is the full grand staff C2–C6
@@ -945,7 +950,22 @@ const NBUI=(()=>{
       <hr class="sep">
       <h2>${nbt("res.missedTitle")}</h2>
       ${missedIds.length?`<div class="nb-missedgrid"></div>`:`<p>${nbt("res.noMissed")}</p>`}
-      <div class="navrow" style="margin-top:22px">
+      ${cond.setId?"":`
+      <!-- v0.14 (instructor 2026-08-01, Staff-Wars-style): tweak the range
+           right here, then fly again — ▲▼ pairs move the lowest / highest
+           note; the mini staff repaints live -->
+      <div class="nb-rangetweak">
+        <div class="nb-rt-col">
+          <button class="ghost nb-rt" data-t="a" data-d="1" aria-label="${nbt("res.lowUp")}">▲</button>
+          <button class="ghost nb-rt" data-t="a" data-d="-1" aria-label="${nbt("res.lowDn")}">▼</button>
+        </div>
+        <div><div class="nb-rt-staff"></div><div class="nb-rt-lab" aria-live="polite"></div></div>
+        <div class="nb-rt-col">
+          <button class="ghost nb-rt" data-t="b" data-d="1" aria-label="${nbt("res.hiUp")}">▲</button>
+          <button class="ghost nb-rt" data-t="b" data-d="-1" aria-label="${nbt("res.hiDn")}">▼</button>
+        </div>
+      </div>`}
+      <div class="navrow" style="margin-top:10px">
         <a href="#" class="nb-again">▶ ${nbt("res.playAgain")}</a>
         ${missedIds.length?`<a href="#" class="nb-pm">🎯 ${nbt("res.practiceMissed")}</a>`:""}
         <a href="#" class="nb-settings">⚙ ${nbt("res.changeSettings")}</a>
@@ -967,7 +987,34 @@ const NBUI=(()=>{
       Staff.render(st,{clef:n.clef,notes:[{p:n.sci,d:"w"}],width:170});
     });
 
-    $(".nb-again").onclick=e=>{ e.preventDefault(); startRound(); };
+    /* Staff-Wars-style range tweak (v0.14): ▲▼ nudge the endpoints one staff
+       step at a time inside C2–C6, keeping at least a 5-note span; Fly again
+       saves the tweaked range and relaunches. Hidden for letter-set rounds. */
+    let ra=cond.a, rb=cond.b;
+    if(!cond.setId&&$(".nb-rangetweak")){
+      const MINI=NBData.dia(NBData.RANGE_MIN), MAXI=NBData.dia(NBData.RANGE_MAX), GAPMIN=4;
+      const rtClef=cond.clef; /* clef stays — outside notes grow ledger lines */
+      const paintRT=()=>{
+        const grand=rtClef==="grand";
+        Staff.render($(".nb-rt-staff"),{clef:rtClef,width:150,
+          notes:[ra,rb].map(p=>({p,d:"w",clef:grand?(NBData.midiOf(p)>=60?"treble":"bass"):undefined}))});
+        $(".nb-rt-lab").textContent=ra+"–"+rb;
+      };
+      [...root.querySelectorAll(".nb-rt")].forEach(b=>b.onclick=()=>{
+        const d=+b.dataset.d;
+        let ia=NBData.dia(ra), ib=NBData.dia(rb);
+        if(b.dataset.t==="a"){ ia+=d; if(ia<MINI||ia>ib-GAPMIN) return; ra=NBData.fromDia(ia); }
+        else { ib+=d; if(ib>MAXI||ib<ia+GAPMIN) return; rb=NBData.fromDia(ib); }
+        paintRT();
+      });
+      paintRT();
+    }
+    $(".nb-again").onclick=e=>{ e.preventDefault();
+      if(!cond.setId&&(ra!==cond.a||rb!==cond.b)){
+        settings.a=ra; settings.b=rb; settings.setId=null; saveSettings();
+      }
+      startRound();
+    };
     $(".nb-settings").onclick=e=>{ e.preventDefault(); showSetup(); };
     const pm=$(".nb-pm");
     if(pm) pm.onclick=e=>{

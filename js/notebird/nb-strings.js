@@ -149,6 +149,8 @@ const NB_STR={ en:{
   "res.noMissed":"You read every note correctly — nothing to review!",
   "res.missedTimes":"missed {n}×",
   "res.playAgain":"Fly again",
+  "res.lowUp":"Lowest note up","res.lowDn":"Lowest note down",
+  "res.hiUp":"Highest note up","res.hiDn":"Highest note down",
   "res.practiceMissed":"Practice Missed Notes",
   "res.changeSettings":"Change settings",
   "res.byClef":"By clef",

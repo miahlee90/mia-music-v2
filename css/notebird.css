@@ -59,6 +59,12 @@
    obvious at a glance — white bold text on the brand purple */
 .choices.chips button.nb-on{background:var(--primary);border-color:var(--primary);
   color:#fff;font-weight:800;box-shadow:0 3px 10px rgba(83,58,253,.35)}
+/* v36 — Staff-Wars-style range tweak on the results screen */
+.nb-rangetweak{display:flex;align-items:center;justify-content:center;gap:12px;margin:16px 0 4px}
+.nb-rangetweak .nb-rt-col{display:flex;flex-direction:column;gap:8px}
+.nb-rangetweak .nb-rt{min-width:48px;min-height:40px;font-size:17px;padding:2px 12px;line-height:1}
+.nb-rangetweak .nb-rt-staff{width:160px}
+.nb-rangetweak .nb-rt-lab{text-align:center;font-weight:800;font-size:13.5px;color:var(--brand-dark)}
 .nb-rangeRow{display:flex;gap:14px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
 .nb-rangeRow label{font-size:14px;color:var(--ink-2);display:flex;gap:6px;align-items:center}
 .nb-rangeRow select{min-width:90px}
