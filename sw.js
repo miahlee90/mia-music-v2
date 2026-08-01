@@ -1,6 +1,10 @@
 /* Music Fundamentals v2 — service worker (offline cache).
-   Bump CACHE when deploying updated files. */
-const CACHE="mf-v2-20260730-theorylab39";
+   Bump CACHE when deploying updated files.
+   2026-07-31: fetch strategy fixed — the old cache-first + ignoreSearch:true
+   made every ?v= cache-busting tag meaningless, so updated pages never
+   reached students until CACHE was bumped. Now navigations are NETWORK-FIRST
+   (cache only as the offline fallback) and subresources respect ?v=. */
+const CACHE="mf-v2-20260731-notebird40";
 const PRECACHE=[
  "./index.html",
  "./lessons.html",
@@ -250,10 +254,22 @@ self.addEventListener("fetch",e=>{
   const u=new URL(e.request.url);
   if(u.origin!==location.origin) return;                 /* CDN + Supabase: straight to network */
   if(u.pathname.endsWith("/sw.js")) return;
-  e.respondWith(
-    caches.match(e.request,{ignoreSearch:true}).then(hit=>hit||fetch(e.request).then(res=>{
+  /* HTML pages: network-first so a deploy shows up on the next reload;
+     the cache serves only when offline */
+  if(e.request.mode==="navigate"){
+    e.respondWith(fetch(e.request).then(res=>{
       if(res.ok){ const copy=res.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); }
       return res;
-    }))
+    }).catch(()=>caches.match(e.request,{ignoreSearch:true})
+      .then(hit=>hit||caches.match("./index.html"))));
+    return;
+  }
+  /* subresources: cache-first but the ?v= tag is RESPECTED — a bumped tag
+     misses the cache and fetches fresh; ignoreSearch only as offline fallback */
+  e.respondWith(
+    caches.match(e.request).then(hit=>hit||fetch(e.request).then(res=>{
+      if(res.ok){ const copy=res.clone(); caches.open(CACHE).then(c=>c.put(e.request,copy)); }
+      return res;
+    }).catch(()=>caches.match(e.request,{ignoreSearch:true})))
   );
 });
