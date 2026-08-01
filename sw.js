@@ -4,7 +4,7 @@
    made every ?v= cache-busting tag meaningless, so updated pages never
    reached students until CACHE was bumped. Now navigations are NETWORK-FIRST
    (cache only as the offline fallback) and subresources respect ?v=. */
-const CACHE="mf-v2-20260731-notebird40";
+const CACHE="mf-v2-20260801b";
 const PRECACHE=[
  "./index.html",
  "./lessons.html",

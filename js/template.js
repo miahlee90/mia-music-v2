@@ -10,13 +10,18 @@
   const C=LESSON_CONTENT[n];
   const app=document.getElementById("app");
   if(!C){ app.innerHTML="<main><div class='mf-warn'>Content file missing for lesson "+n+".</div></main>"; return; }
-  const GAMES=C.games||(C.game?[C.game]:[]);
+  /* Mini-game sections hidden site-wide (instructor 2026-08-01: lessons felt too
+     long). All game content stays in the lesson files — flip SHOW_GAMES to true
+     to bring every game back. */
+  const SHOW_GAMES=false;
+  const GAMES_ALL=C.games||(C.game?[C.game]:[]);
+  const GAMES=SHOW_GAMES?GAMES_ALL:[];
 
   /* ---------- validation (anti-textbook contract) ---------- */
   const warns=[];
   ["objectives","steps","examples","quiz","vocabulary","mistakes","summary"].forEach(k=>{ if(!C[k]) warns.push("missing section: "+k); });
   if(C.quiz){ const len=Quiz.expand(C.quiz).length; if(len<8||len>25) warns.push("quiz has "+len+" questions (need 8-25)"); }
-  let interactions=(C.hook&&C.hook.interact?1:0)+(C.steps||[]).filter(s=>s.try).length+(C.keyboard?1:0)+GAMES.length+(C.practice?1:0);
+  let interactions=(C.hook&&C.hook.interact?1:0)+(C.steps||[]).filter(s=>s.try).length+(C.keyboard?1:0)+GAMES_ALL.length+(C.practice?1:0);
   if(interactions<2) warns.push("fewer than 2 hands-on interactions before the quiz");
 
   /* ---------- build sections ---------- */
@@ -26,7 +31,7 @@
   if(C.hook) S.secHook=`<section class="card" id="secHook"><span class="tag">Welcome</span>
     ${Teacher.bubbleHTML(C.hook.say)}<div id="hookBody"></div><p class="feedback" id="hookFb"></p></section>`;
 
-  S.secObjectives=`<section class="card" id="secObjectives"><h2>Today's mission</h2><ul class="objectives">${C.objectives.map(o=>`<li>${o}</li>`).join("")}</ul></section>`;
+  S.secObjectives=`<section class="card" id="secObjectives"><details class="mission"><summary><h2>\u{1F3AF} Today's mission</h2><span class="mission-arrow">▸</span></summary><ul class="objectives">${C.objectives.map(o=>`<li>${o}</li>`).join("")}</ul></details></section>`;
 
   let learn=`<section class="card" id="secLearn"><h2>Learn by doing</h2>`;
   C.steps.forEach((s,i)=>{

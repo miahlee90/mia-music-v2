@@ -57,6 +57,12 @@ a:hover{text-decoration:underline}
   text-transform:uppercase;color:var(--primary-dark);background:rgba(185,185,249,.35);
   border-radius:9999px;padding:3px 10px;margin-bottom:8px}
 .objectives li{margin-left:22px;margin-bottom:5px}
+details.mission summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;user-select:none}
+details.mission summary::-webkit-details-marker{display:none}
+details.mission summary h2{margin-bottom:0}
+details.mission .mission-arrow{color:var(--muted);font-size:1.1rem;transition:transform .18s ease}
+details.mission[open] .mission-arrow{transform:rotate(90deg)}
+details.mission[open] .objectives{margin-top:12px}
 .mistakes li,.summary li{margin-left:22px;margin-bottom:6px}
 hr.sep{border:none;border-top:1px solid var(--hairline);margin:20px 0}
 
