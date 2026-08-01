@@ -33,10 +33,12 @@
    open the full form, and 🎤 instrument answering must be one tap away.
    Beginner Start honors the picked input; both start buttons gate on mic
    readiness (paintStart). Default input stays Letter buttons.
-   v0.10 (instructor 2026-07-31, student reviews "too complicated"): the
-   first screen shows ONLY Start buttons + Answer with; Customize starts
-   collapsed for everyone (returning players too) and reveals Clef + Note
-   range. All setup copy cut to one short line each (nb-strings).
+   v0.11 (instructor 2026-07-31): ONE flat setup page — Beginner Start and
+   Customize are GONE; Answer with + Clef + Note range always show with their
+   defaults pre-selected (solid-fill .nb-on styling in notebird.css v31 makes
+   the picked chip/card unmistakable) and ▶ Start sits below.
+   v0.10 (instructor 2026-07-31, student reviews "too complicated"): all
+   setup copy cut to one short line each (nb-strings).
    v0.8 (instructor 2026-07-31, "단순하게"): SETUP SIMPLIFIED — the mode,
    rounds, note-sound, birdsong and hints fields are GONE. Every run is the
    Level Game (note sound on, birdsong on by default; HUD 🐦 mutes). Saved
@@ -174,17 +176,10 @@ const NBUI=(()=>{
       <p class="nb-signin">${stu
         ? nbt("setup.signedIn",{name:stu.name,cls:stu.class||stu.classCode||""})
         : `<a href="../student.html">${nbt("setup.signIn")}</a> · ${nbt("setup.signInWhy")}`}</p>
-      <div class="nb-field">
-        <div class="choices chips" style="gap:10px">
-          <button class="play nb-beginner">${nbt("setup.beginner")}</button>
-          <button class="ghost nb-customize" aria-expanded="false" aria-controls="nbCustom">${nbt("setup.customize")}</button>
-        </div>
-        <p class="nb-sublab" style="margin-top:6px">${nbt("setup.beginnerDesc")}</p>
-      </div>
-      <!-- v0.7 (instructor 2026-07-31): the answer-input picker lives OUTSIDE
-           Customize — tablet/phone students rarely open the full form, and the
-           🎤 instrument option must be one tap from the first screen.
-           Beginner Start honors whatever is picked here. -->
+      <p class="nb-sublab" style="margin:4px 0 0">${nbt("setup.gameLine")}</p>
+      <!-- v0.11 (instructor 2026-07-31): ONE flat setup page — no Beginner
+           Start / Customize split; the three fields show with their defaults
+           already selected (clearly colored), Start sits below. -->
       <div class="nb-field nb-inputfield"><div class="nb-lab">${nbt("setup.input")}</div>
         <div class="choices chips nb-inputchips">
           <button data-i="buttons">🔤 ${nbt("setup.input.buttons")}</button>
@@ -194,8 +189,6 @@ const NBUI=(()=>{
         <p class="nb-inputdesc" aria-live="polite" style="color:var(--muted);font-size:13.5px"></p>
         <div class="nb-instpanel" aria-live="polite"></div>
         <p class="nb-inputnote nb-sublab" aria-live="polite"></p></div>
-      <div id="nbCustom" class="nb-customwrap">
-      <p class="nb-sublab" style="margin:4px 0 0">${nbt("setup.gameLine")}</p>
       <div class="nb-field"><div class="nb-lab">${nbt("setup.clef")}</div>
         <div class="choices chips nb-clefs">
           <button data-c="auto">${nbt("setup.clef.auto")}</button>
@@ -218,28 +211,7 @@ const NBUI=(()=>{
       <div style="text-align:center;margin-top:14px"><button class="play nb-start">▶ ${nbt("setup.start")}</button>
         <p class="nb-startnote nb-sublab" aria-live="polite"></p></div>
       <p class="nb-rotatehint">${nbt("setup.rotateHint")}</p>
-      </div>
     </section>`;
-
-    /* Beginner Start / Customize. v0.10 (instructor 2026-07-31, review
-       feedback "too complicated"): the form starts COLLAPSED for everyone —
-       returning players included; the first screen is only Start + Answer
-       with, and ⚙ Customize reveals Clef + Note range. */
-    const customWrap=$("#nbCustom"), customBtn=$(".nb-customize");
-    const setCustom=open=>{ customWrap.style.display=open?"":"none";
-      customBtn.setAttribute("aria-expanded",String(open)); };
-    setCustom(false);
-    customBtn.onclick=()=>setCustom(customWrap.style.display==="none");
-    $(".nb-beginner").onclick=()=>{
-      /* v0.7: Beginner Start keeps the beginner GAME settings but honors the
-         input picked on the first screen — a tablet student who tapped 🎤 and
-         finished mic setup flies with buttons+instrument, no Customize needed.
-         (mic mode: the disabled state below already blocks an un-set-up mic) */
-      const keepMusic=settings.music;              /* mic mode may have parked it */
-      settings=Object.assign({},BEGINNER,{music:keepMusic});
-      saveSettings(); hasSaved=true;
-      startRound();
-    };
 
     /* range selects */
     const selA=$(".nb-a"), selB=$(".nb-b");
@@ -323,11 +295,10 @@ const NBUI=(()=>{
        the results screen's "Practice Missed Notes" (hints always on there). */
 
     /* the round may only start when the chosen input is actually usable —
-       in mic mode that means the microphone setup finished (or was skipped).
-       v0.7: gates BOTH start buttons (Beginner Start sits on the first screen) */
+       in mic mode that means the microphone setup finished (or was skipped) */
     function paintStart(){
       const needMic=window.NBInput&&NBInput.mode()==="mic"&&!NBInput.micReady();
-      [$(".nb-start"),$(".nb-beginner")].forEach(b=>{ if(b) b.disabled=!!needMic; });
+      const b=$(".nb-start"); if(b) b.disabled=!!needMic;
       [$(".nb-startnote"),$(".nb-inputnote")].forEach(n=>{ if(n) n.textContent=needMic?nbt("mic.needSetup"):""; });
     }
 
