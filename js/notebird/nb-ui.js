@@ -375,7 +375,12 @@ const NBUI=(()=>{
         if(en) en.onclick=async()=>{
           en.disabled=true; en.textContent=nbt("mic.requesting");
           const testBox=host.querySelector(".nb-mictest");
-          const ok=await NBInput.micTestStart(f=>{
+          /* v0.9 (first real-device test 2026-07-31): NOTHING here may hang or
+             throw the UI into a dead "Requesting…" state — micTestStart now
+             times out / reports errors, and any failure re-enables the button
+             (tap to retry) and prints the reason for classroom debugging */
+          let ok=false;
+          try{ ok=await NBInput.micTestStart(f=>{
             const lvl=host.querySelector(".nb-miclevel");
             if(f.rms!=null&&lvl) lvl.style.width=Math.min(100,f.rms*900)+"%";
             if(f.note){
@@ -385,9 +390,14 @@ const NBUI=(()=>{
               NBInput.micSetupDone(true);
               micPanel(host); paintStart();
             }
-          });
-          if(!ok){ host.querySelector(".nb-instpanel,.nb-micflow");
-            en.textContent=nbt("mic.denied"); en.disabled=true;
+          }); }catch(e){ ok=false; }
+          if(!ok){
+            en.textContent=nbt("mic.denied"); en.disabled=false; /* tap = try again */
+            const err=NBInput.micError&&NBInput.micError();
+            if(err){ let el=host.querySelector(".nb-micerr");
+              if(!el){ el=document.createElement("p"); el.className="nb-micerr nb-sublab";
+                en.parentNode.appendChild(el); }
+              el.textContent="("+err+")"; }
             return; }
           if(testBox) testBox.hidden=false;
           en.style.display="none";

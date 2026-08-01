@@ -6,6 +6,11 @@
                           as written; 2026-07-31 rename from "Piano sound") and
                           names what it hears (YIN pitch detection, same method
                           as Aural Lab's voice engine)
+   v6 (2026-07-31, first real-device mic test): openMic hardened — permission
+   request times out instead of hanging "Requesting…" forever, every failure
+   after the grant is caught (worklet → ScriptProcessor fallback) and exposed
+   via micError() for the setup panel to display; worklet pulled via muted
+   gain so analysis frames are guaranteed to flow.
    v5 (usability review):
      - MIDI is connected by an EXPLICIT student action in setup
        (connectMIDI) with visible states: requesting / connected+device
@@ -136,18 +141,34 @@ const NBInput=(()=>{
       }
     };
   }
-  /* one shared pipeline; `sink` decides where frames go (setup test vs round) */
+  /* one shared pipeline; `sink` decides where frames go (setup test vs round).
+     v6 hardening (2026-07-31, first real-device test): the old version could
+     hang on "Requesting…" forever — getUserMedia never settling (wedged
+     device / OS privacy block) or ANY error after the permission grant threw
+     out of the async click handler unseen. Now: gUM races an 8s timeout,
+     everything after it is caught (worklet failure falls back to
+     ScriptProcessor), failures store a readable reason in micError(), and the
+     worklet is pulled through a MUTED gain to the destination so frames are
+     guaranteed to flow (the ScriptProcessor path always did this). */
+  let lastMicErr=null;
+  const micError=()=>lastMicErr;
   async function openMic(){
     if(stream&&ctx&&node) return true;
-    if(!micSupported()) return false;
-    try{ stream=await navigator.mediaDevices.getUserMedia(
-      {audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true}}); }
-    catch(e){ return false; }
-    ctx=new (window.AudioContext||window.webkitAudioContext)();
-    const src=ctx.createMediaStreamSource(stream);
-    const dispatch=r=>{ if(sink) sink(r); };
-    if(ctx.audioWorklet){
-      const code=`
+    if(!micSupported()){ lastMicErr="unsupported"; return false; }
+    try{ stream=await Promise.race([
+        navigator.mediaDevices.getUserMedia(
+          {audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true}}),
+        new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout — no answer from the microphone")),8000))]); }
+    catch(e){ lastMicErr=(e&&(e.name||e.message))||"denied"; stream=null; return false; }
+    try{
+      ctx=new (window.AudioContext||window.webkitAudioContext)();
+      try{ if(ctx.state==="suspended") ctx.resume(); }catch(e){}
+      const src=ctx.createMediaStreamSource(stream);
+      const dispatch=r=>{ if(sink) sink(r); };
+      let workletOk=false;
+      if(ctx.audioWorklet){
+        try{
+          const code=`
         const CFG=${JSON.stringify({fMin:CFG.fMin,fMax:CFG.fMax,yinThresh:CFG.yinThresh,rmsGate:CFG.rmsGate})};
         ${yin.toString()}
         class NBP extends AudioWorkletProcessor{
@@ -159,21 +180,28 @@ const NBInput=(()=>{
                 this.buf.copyWithin(0,512); this.n=512; } }
             return true; } }
         registerProcessor("nb-pitch",NBP);`;
-      const url=URL.createObjectURL(new Blob([code],{type:"application/javascript"}));
-      await ctx.audioWorklet.addModule(url); URL.revokeObjectURL(url);
-      node=new AudioWorkletNode(ctx,"nb-pitch");
-      node.port.onmessage=e=>dispatch(e.data);
-      src.connect(node);
-    }else{
-      node=ctx.createScriptProcessor(4096,1,1);
-      const sr=ctx.sampleRate/3;
-      let acc=new Float32Array(1024),n=0;
-      node.onaudioprocess=e=>{ const ch=e.inputBuffer.getChannelData(0);
-        for(let i=0;i+2<ch.length;i+=3){ acc[n++]=(ch[i]+ch[i+1]+ch[i+2])/3;
-          if(n>=1024){ dispatch(yin(acc,sr)); acc.copyWithin(0,512); n=512; } } };
-      src.connect(node); node.connect(ctx.destination);
-    }
-    return true;
+          const url=URL.createObjectURL(new Blob([code],{type:"application/javascript"}));
+          await ctx.audioWorklet.addModule(url); URL.revokeObjectURL(url);
+          node=new AudioWorkletNode(ctx,"nb-pitch");
+          node.port.onmessage=e=>dispatch(e.data);
+          src.connect(node);
+          const mute=ctx.createGain(); mute.gain.value=0;  /* silent — keeps the graph pulled */
+          node.connect(mute); mute.connect(ctx.destination);
+          workletOk=true;
+        }catch(e){ try{ if(node) node.disconnect(); }catch(_){} node=null; }
+      }
+      if(!workletOk){
+        node=ctx.createScriptProcessor(4096,1,1);
+        const sr=ctx.sampleRate/3;
+        let acc=new Float32Array(1024),n=0;
+        node.onaudioprocess=e=>{ const ch=e.inputBuffer.getChannelData(0);
+          for(let i=0;i+2<ch.length;i+=3){ acc[n++]=(ch[i]+ch[i+1]+ch[i+2])/3;
+            if(n>=1024){ dispatch(yin(acc,sr)); acc.copyWithin(0,512); n=512; } } };
+        src.connect(node); node.connect(ctx.destination);
+      }
+      lastMicErr=null;
+      return true;
+    }catch(e){ lastMicErr=(e&&(e.name||e.message))||"audio setup failed"; closeMic(); return false; }
   }
   function closeMic(){
     try{ if(stream) stream.getTracks().forEach(tr=>tr.stop()); }catch(e){}
@@ -250,7 +278,7 @@ const NBInput=(()=>{
 
   return {mode:()=>mode,setMode,
           midiSupported,micSupported,connectMIDI,midiState,
-          micTestStart,micSetupDone,micReady,
+          micTestStart,micSetupDone,micReady,micError,
           enableForRound,stopRound,suppress,
           yin,_onsetFactory:makeOnset,_deafen:deafenGameAudio,_restore:restoreGameAudio};
 })();
