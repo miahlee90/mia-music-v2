@@ -38,8 +38,9 @@
    v7.4 (Unit 8): HARMONIC INTERVALS — {chord:true} stacks a note on the previous
    one (same x; 2nds/unisons offset 13px) and plays it SIMULTANEOUSLY.
    v8.8 (Game Lab, 2026-07-31): C CLEFS — clef:"alto" (middle line = C4) and
-   clef:"tenor" (4th line = C4); stroke-drawn C-clef glyph, ledger lines and
-   key signatures (KSPOS alto/tenor) follow automatically via baseIdx.
+   clef:"tenor" (4th line = C4); ledger lines and key signatures (KSPOS
+   alto/tenor) follow automatically via baseIdx. v8.8b: glyph redrawn as the
+   ENGRAVED official shape (filled reversed-C strokes with ball terminals).
    NOTE (maintenance): edit by FULL-FILE REWRITE only. */
 const MFAudio=(()=>{
   /* v3 sound (2026-07-18, instructor: Aural Lab's piano sounds much better):
@@ -151,14 +152,24 @@ const Staff=(()=>{
       parts.push(`<circle class="clefdot" cx="${LEFT+31}" cy="${y0+GAP*1.5}" r="3.1"/>`);
     }
     if(clef==="alto"||clef==="tenor"){
-      /* v8.8: C clef — two vertical bars + two mirrored curls meeting at the
-         C line (alto: middle line; tenor: 4th line, glyph rises above the staff) */
-      const cy=y0+(clef==="alto"?2:1)*GAP, h=2*GAP;
-      parts.push(`<rect class="clefdot" x="${LEFT+2}" y="${cy-h}" width="5" height="${2*h}" rx="2"/>`);
-      parts.push(`<line class="clef-stroke" x1="${LEFT+12}" y1="${cy-h}" x2="${LEFT+12}" y2="${cy+h}"/>`);
+      /* v8.8b: ENGRAVED C clef (instructor 2026-07-31: the official shape) —
+         thick bar + thin bar, then two mirrored reversed-C strokes: each starts
+         thin at the CENTER pinch on the thin bar, swells through the outer
+         bulge, tapers along the inner spiral and ends in a round BALL facing
+         the middle. Alto: centered on the middle line; tenor: on line 4. */
+      const cy=y0+(clef==="alto"?2:1)*GAP, h=2*GAP, x=LEFT;
+      parts.push(`<rect class="clef-path" x="${x+2}" y="${cy-h}" width="5.5" height="${2*h}"/>`);
+      parts.push(`<rect class="clef-path" x="${x+11.5}" y="${cy-h}" width="2.4" height="${2*h}"/>`);
       [-1,1].forEach(s=>{
-        parts.push(`<path class="clef-stroke" d="M ${LEFT+13} ${cy+s*3} C ${LEFT+18} ${cy+s*8}, ${LEFT+17} ${cy+s*(h-5)}, ${LEFT+25} ${cy+s*(h-2)} C ${LEFT+32} ${cy+s*h}, ${LEFT+36} ${cy+s*(h-7)}, ${LEFT+34} ${cy+s*(h-13)} C ${LEFT+32.5} ${cy+s*(h-18)}, ${LEFT+27} ${cy+s*(h-19)}, ${LEFT+25} ${cy+s*(h-15)}"/>`);
-        parts.push(`<circle class="clefdot" cx="${LEFT+26.5}" cy="${cy+s*(h-14)}" r="2.6"/>`);
+        const Y=dy=>cy+s*dy;
+        parts.push(`<path class="clef-path" d="M ${x+13.9} ${Y(0.5)}
+          C ${x+24} ${Y(1.5)}, ${x+33} ${Y(3)}, ${x+35.5} ${Y(9)}
+          C ${x+38} ${Y(16)}, ${x+34} ${Y(25)}, ${x+25} ${Y(28.5)}
+          C ${x+20} ${Y(30)}, ${x+16} ${Y(29)}, ${x+14.5} ${Y(27.5)}
+          C ${x+18} ${Y(27.8)}, ${x+22.5} ${Y(26.5)}, ${x+25} ${Y(24)}
+          C ${x+28.5} ${Y(20.5)}, ${x+29} ${Y(14)}, ${x+26.5} ${Y(10.5)}
+          C ${x+23} ${Y(7)}, ${x+18} ${Y(4.5)}, ${x+13.9} ${Y(3)} Z"/>`);
+        parts.push(`<circle class="clef-path" cx="${x+25.2}" cy="${Y(9)}" r="3.7"/>`);
       });
     }
     if(opts._ks) drawKeysig(parts,y0,clef,opts._ks);
