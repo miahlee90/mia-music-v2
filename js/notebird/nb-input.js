@@ -159,14 +159,29 @@ const NBInput=(()=>{
   async function openMic(){
     if(stream&&ctx&&node) return true;
     if(!micSupported()){ lastMicErr="unsupported"; return false; }
+    /* iOS/Safari (the iPad Start-never-enables bug, 2026-08-07): the
+       AudioContext must be CREATED and resume()d synchronously INSIDE the
+       student's tap — this pre-await code still runs in that gesture.
+       Creating it after the permission popup (as before) left the context
+       permanently "suspended" on iPad: no analysis frames → level meter dead
+       → the test note was never detected → Start stayed disabled. */
+    try{
+      if(!ctx) ctx=new (window.AudioContext||window.webkitAudioContext)();
+      if(ctx.state==="suspended"){ const p=ctx.resume(); if(p&&p.catch) p.catch(()=>{}); }
+    }catch(e){}
     try{ stream=await Promise.race([
         navigator.mediaDevices.getUserMedia(
           {audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true}}),
         new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout — no answer from the microphone")),8000))]); }
     catch(e){ lastMicErr=(e&&(e.name||e.message))||"denied"; stream=null; return false; }
     try{
-      ctx=new (window.AudioContext||window.webkitAudioContext)();
-      try{ if(ctx.state==="suspended") ctx.resume(); }catch(e){}
+      /* belt-and-suspenders: retry resume after the grant, and if the context
+         is STILL suspended let the student's next tap anywhere revive it */
+      try{
+        if(ctx.state==="suspended"){ const p=ctx.resume(); if(p&&p.catch) p.catch(()=>{});
+          const kick=()=>{ try{ ctx&&ctx.resume(); }catch(e){} };
+          document.addEventListener("pointerdown",kick,{once:true,capture:true}); }
+      }catch(e){}
       const src=ctx.createMediaStreamSource(stream);
       const dispatch=r=>{ if(sink) sink(r); };
       let workletOk=false;
