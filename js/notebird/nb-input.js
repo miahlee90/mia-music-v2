@@ -203,7 +203,15 @@ const NBInput=(()=>{
         document.addEventListener("pointerdown",kick,{capture:true});
         kickHandler=kick;
       }catch(e){}
-      const src=ctx.createMediaStreamSource(stream);
+      const src0=ctx.createMediaStreamSource(stream);
+      /* iPad mics run MUCH quieter than phones (instructor 2026-08-07: the
+         level bar barely twitched) — boost before analysis so the same
+         thresholds work everywhere. Pitch confidence is amplitude-relative,
+         so this only lifts the floor, never distorts detection; the graph
+         ends in a muted gain, so nothing audible changes. */
+      const boost=ctx.createGain(); boost.gain.value=5;
+      src0.connect(boost);
+      const src=boost;
       const dispatch=r=>{ if(sink) sink(r); };
       let workletOk=false;
       if(ctx.audioWorklet){

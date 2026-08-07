@@ -374,7 +374,9 @@ const NBUI=(()=>{
           let ok=false, frames=0, loud=0, maxRms=0, busyShown=false;
           try{ ok=await NBInput.micTestStart(f=>{
             const lvl=host.querySelector(".nb-miclevel");
-            if(f.rms!=null&&lvl) lvl.style.width=Math.min(100,f.rms*900)+"%";
+            /* perceptual (sqrt) scale — quiet-but-real input visibly moves the
+               bar instead of barely twitching (instructor's iPad, 2026-08-07) */
+            if(f.rms!=null&&lvl) lvl.style.width=Math.min(100,Math.sqrt(Math.min(1,f.rms))*230)+"%";
             if(f.rms!=null) maxRms=Math.max(maxRms,f.rms);
             /* live plumbing readout — turns a silent iPad into a readable
                reason (suspended ctx / 0 frames / rate mismatch) */
