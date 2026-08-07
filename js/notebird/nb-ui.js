@@ -371,16 +371,27 @@ const NBUI=(()=>{
              throw the UI into a dead "Requesting…" state — micTestStart now
              times out / reports errors, and any failure re-enables the button
              (tap to retry) and prints the reason for classroom debugging */
-          let ok=false, frames=0, loud=0;
+          let ok=false, frames=0, loud=0, maxRms=0, busyShown=false;
           try{ ok=await NBInput.micTestStart(f=>{
             const lvl=host.querySelector(".nb-miclevel");
             if(f.rms!=null&&lvl) lvl.style.width=Math.min(100,f.rms*900)+"%";
+            if(f.rms!=null) maxRms=Math.max(maxRms,f.rms);
             /* live plumbing readout — turns a silent iPad into a readable
                reason (suspended ctx / 0 frames / rate mismatch) */
             if(f.rms!=null&&(++frames%8===1)){
               const d=NBInput.micDiag&&NBInput.micDiag();
               const el=host.querySelector(".nb-micdiag");
-              if(d&&el) el.textContent=`audio ${d.state} · ${d.path} · ctx ${d.ctxRate}${d.trackRate?"/mic "+d.trackRate:""} · frames ${frames} · level ${(f.rms||0).toFixed(3)}`;
+              if(d&&el) el.textContent=`audio ${d.state} · ${d.path} · ctx ${d.ctxRate}${d.trackRate?"/mic "+d.trackRate:""} · frames ${frames} · level ${(f.rms||0).toFixed(3)}${d.muted?" · MUTED":""}`;
+              /* the classroom case from the instructor's iPad photo: pipeline
+                 alive, thousands of frames, level EXACTLY 0.000 — iOS gave
+                 the mic to another tab/app and feeds this one pure silence.
+                 Say so instead of letting the student stare at a dead meter. */
+              const heard=host.querySelector(".nb-micheard");
+              const silentMuted=d&&d.muted || (frames>=240&&maxRms===0);
+              if(heard){
+                if(silentMuted&&!busyShown){ heard.textContent=nbt("mic.busy"); busyShown=true; }
+                else if(busyShown&&maxRms>0){ heard.textContent=""; busyShown=false; }
+              }
             }
             /* PASS = a confidently-named note (best), OR simply enough real
                input level — on devices where pitch confidence stays shy the

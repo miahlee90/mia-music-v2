@@ -75,6 +75,7 @@ const NB_STR={ en:{
   "mic.requesting":"Requesting microphone permission…",
   "mic.level":"Input level",
   "mic.testHint":"Play one note on your instrument to test.",
+  "mic.busy":"⚠️ Another tab or app is holding the microphone — close other tabs (especially another Note Bird tab with a 🎤 badge) and mic apps, then tap Enable again.",
   "mic.heard":"Heard: {note}",
   "mic.ready":"✅ Microphone ready!",
   "mic.denied":"Microphone unavailable — you can continue with the letter buttons.",

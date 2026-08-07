@@ -45,6 +45,8 @@ const NBInput=(()=>{
   let midiAccess=null, midiHot=false, midiNames=[], midiStatus="idle", midiWatch=null;
   let stream=null, ctx=null, node=null, sink=null, micHot=false, micIsReady=false;
   let trackRate=0, pathUsed="", kickHandler=null;   /* mic diagnostics (setup panel) */
+  let micTrack=null, trackMuted=false;   /* iOS mutes the track when another
+    tab/app holds the mic — frames then carry EXACT silence (level 0.000) */
   let realMusicStart=null, wrapped=[];
   /* while the GAME plays a sound (note preview, ding-dong-dang, wrong-slide)
      the mic must go deaf — otherwise it "hears" the game and answers itself */
@@ -183,6 +185,10 @@ const NBInput=(()=>{
          suspended). */
       try{
         const tr0=stream.getAudioTracks()[0];
+        micTrack=tr0||null;
+        if(tr0){ trackMuted=!!tr0.muted;
+          tr0.onmute=()=>{ trackMuted=true; };
+          tr0.onunmute=()=>{ trackMuted=false; }; }
         trackRate=(tr0&&tr0.getSettings&&tr0.getSettings().sampleRate)||0;
         if(trackRate&&ctx&&Math.abs(ctx.sampleRate-trackRate)>1){
           try{ ctx.close(); }catch(e){}
@@ -244,12 +250,15 @@ const NBInput=(()=>{
     try{ if(ctx) ctx.close(); }catch(e){}
     try{ if(kickHandler) document.removeEventListener("pointerdown",kickHandler,{capture:true}); }catch(e){}
     stream=ctx=node=null; sink=null; micIsReady=false; kickHandler=null; pathUsed=""; trackRate=0;
+    micTrack=null; trackMuted=false;
   }
   /* live plumbing readout for the setup panel — turns "it doesn't work" into
      a phone-photo-able reason (state / rates / worklet-vs-sp) */
   function micDiag(){
     return {state:ctx?ctx.state:"-", ctxRate:ctx?ctx.sampleRate:0,
-            trackRate, path:pathUsed||"-"};
+            trackRate, path:pathUsed||"-",
+            muted:trackMuted||(micTrack?micTrack.muted:false),
+            trackState:micTrack?micTrack.readyState:"-"};
   }
   /* setup-time test: onFrame receives {rms} every frame and {note,midi} on a
      detected note — the UI draws the level meter and the "Heard: G (G3)"
