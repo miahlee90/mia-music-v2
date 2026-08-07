@@ -44,6 +44,7 @@ const NBInput=(()=>{
   let cb=null;
   let midiAccess=null, midiHot=false, midiNames=[], midiStatus="idle", midiWatch=null;
   let stream=null, ctx=null, node=null, sink=null, micHot=false, micIsReady=false;
+  let trackRate=0, pathUsed="", kickHandler=null;   /* mic diagnostics (setup panel) */
   let realMusicStart=null, wrapped=[];
   /* while the GAME plays a sound (note preview, ding-dong-dang, wrong-slide)
      the mic must go deaf — otherwise it "hears" the game and answers itself */
@@ -175,12 +176,26 @@ const NBInput=(()=>{
         new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout — no answer from the microphone")),8000))]); }
     catch(e){ lastMicErr=(e&&(e.name||e.message))||"denied"; stream=null; return false; }
     try{
+      /* Safari's OTHER mic killer (2026-08-07): if the context's sample rate
+         differs from the mic track's, createMediaStreamSource delivers pure
+         SILENCE. Rebuild the context at the track's own rate when they differ
+         (the pointerdown kick below covers a rebuilt context that comes back
+         suspended). */
+      try{
+        const tr0=stream.getAudioTracks()[0];
+        trackRate=(tr0&&tr0.getSettings&&tr0.getSettings().sampleRate)||0;
+        if(trackRate&&ctx&&Math.abs(ctx.sampleRate-trackRate)>1){
+          try{ ctx.close(); }catch(e){}
+          ctx=new (window.AudioContext||window.webkitAudioContext)({sampleRate:trackRate});
+        }
+      }catch(e){}
       /* belt-and-suspenders: retry resume after the grant, and if the context
          is STILL suspended let the student's next tap anywhere revive it */
       try{
-        if(ctx.state==="suspended"){ const p=ctx.resume(); if(p&&p.catch) p.catch(()=>{});
-          const kick=()=>{ try{ ctx&&ctx.resume(); }catch(e){} };
-          document.addEventListener("pointerdown",kick,{once:true,capture:true}); }
+        if(ctx.state==="suspended"){ const p=ctx.resume(); if(p&&p.catch) p.catch(()=>{}); }
+        const kick=()=>{ try{ ctx&&ctx.state==="suspended"&&ctx.resume(); }catch(e){} };
+        document.addEventListener("pointerdown",kick,{capture:true});
+        kickHandler=kick;
       }catch(e){}
       const src=ctx.createMediaStreamSource(stream);
       const dispatch=r=>{ if(sink) sink(r); };
@@ -206,7 +221,7 @@ const NBInput=(()=>{
           src.connect(node);
           const mute=ctx.createGain(); mute.gain.value=0;  /* silent — keeps the graph pulled */
           node.connect(mute); mute.connect(ctx.destination);
-          workletOk=true;
+          workletOk=true; pathUsed="worklet";
         }catch(e){ try{ if(node) node.disconnect(); }catch(_){} node=null; }
       }
       if(!workletOk){
@@ -217,6 +232,7 @@ const NBInput=(()=>{
           for(let i=0;i+2<ch.length;i+=3){ acc[n++]=(ch[i]+ch[i+1]+ch[i+2])/3;
             if(n>=1024){ dispatch(yin(acc,sr)); acc.copyWithin(0,512); n=512; } } };
         src.connect(node); node.connect(ctx.destination);
+        pathUsed="sp";
       }
       lastMicErr=null;
       return true;
@@ -226,7 +242,14 @@ const NBInput=(()=>{
     try{ if(stream) stream.getTracks().forEach(tr=>tr.stop()); }catch(e){}
     try{ if(node) node.disconnect(); }catch(e){}
     try{ if(ctx) ctx.close(); }catch(e){}
-    stream=ctx=node=null; sink=null; micIsReady=false;
+    try{ if(kickHandler) document.removeEventListener("pointerdown",kickHandler,{capture:true}); }catch(e){}
+    stream=ctx=node=null; sink=null; micIsReady=false; kickHandler=null; pathUsed=""; trackRate=0;
+  }
+  /* live plumbing readout for the setup panel — turns "it doesn't work" into
+     a phone-photo-able reason (state / rates / worklet-vs-sp) */
+  function micDiag(){
+    return {state:ctx?ctx.state:"-", ctxRate:ctx?ctx.sampleRate:0,
+            trackRate, path:pathUsed||"-"};
   }
   /* setup-time test: onFrame receives {rms} every frame and {note,midi} on a
      detected note — the UI draws the level meter and the "Heard: G (G3)"
@@ -305,7 +328,7 @@ const NBInput=(()=>{
 
   return {mode:()=>mode,setMode,
           midiSupported,micSupported,connectMIDI,midiState,
-          micTestStart,micSetupDone,micReady,micError,
+          micTestStart,micSetupDone,micReady,micError,micDiag,
           enableForRound,stopRound,suppress,
           yin,_onsetFactory:makeOnset,_deafen:deafenGameAudio,_restore:restoreGameAudio};
 })();

@@ -358,6 +358,7 @@ const NBUI=(()=>{
               </div>
               <p style="margin:8px 0 0;font-weight:700">${nbt("mic.testHint")}</p>
               <p class="nb-micheard" aria-live="polite" style="margin:4px 0 0;min-height:20px"></p>
+              <p class="nb-micdiag nb-sublab" style="margin:6px 0 0;font-feature-settings:'tnum'"></p>
             </div>`;
         }
         const skip=host.querySelector(".nb-micskip");
@@ -370,16 +371,27 @@ const NBUI=(()=>{
              throw the UI into a dead "Requesting…" state — micTestStart now
              times out / reports errors, and any failure re-enables the button
              (tap to retry) and prints the reason for classroom debugging */
-          let ok=false;
+          let ok=false, frames=0, loud=0;
           try{ ok=await NBInput.micTestStart(f=>{
             const lvl=host.querySelector(".nb-miclevel");
             if(f.rms!=null&&lvl) lvl.style.width=Math.min(100,f.rms*900)+"%";
+            /* live plumbing readout — turns a silent iPad into a readable
+               reason (suspended ctx / 0 frames / rate mismatch) */
+            if(f.rms!=null&&(++frames%8===1)){
+              const d=NBInput.micDiag&&NBInput.micDiag();
+              const el=host.querySelector(".nb-micdiag");
+              if(d&&el) el.textContent=`audio ${d.state} · ${d.path} · ctx ${d.ctxRate}${d.trackRate?"/mic "+d.trackRate:""} · frames ${frames} · level ${(f.rms||0).toFixed(3)}`;
+            }
+            /* PASS = a confidently-named note (best), OR simply enough real
+               input level — on devices where pitch confidence stays shy the
+               student must still be able to start (2026-08-07, iPad) */
             if(f.note){
               const heard=host.querySelector(".nb-micheard");
               if(heard) heard.textContent="🎵 "+nbt("mic.heard",{note:f.note+" ("+f.note+String(Math.floor(f.midi/12)-1)+")"});
-              /* one confidently-detected note = the test passed */
               NBInput.micSetupDone(true);
               micPanel(host); paintStart();
+            } else if(f.rms>=0.015&&!NBInput.micReady()){
+              if(++loud>=10){ NBInput.micSetupDone(true); micPanel(host); paintStart(); }
             }
           }); }catch(e){ ok=false; }
           if(!ok){
