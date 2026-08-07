@@ -111,6 +111,7 @@ const NB_STR={ en:{
   "hud.getReady":"Get ready…",
   "hud.levelUp":"Level {n}! The bird speeds up…",
   "hud.timerLabel":"Distance to Tree",
+  "hud.answered":"✓ {ok}/{n} · {pct}%",
   "hud.heartGain":"+1 ❤️",
 
   /* feedback — correct */

@@ -100,6 +100,11 @@
   border-bottom:1px solid var(--hairline);padding-bottom:8px}
 .nb-hud-round{font-weight:700;color:var(--brand-dark);white-space:nowrap}
 .nb-hud-score{color:var(--accent-dark);font-weight:600;white-space:nowrap}
+/* running solved/accuracy chip ("✓ 7/9 · 78%") — instructor 2026-08-07 */
+.nb-hud-acc{color:var(--correct);font-weight:700;white-space:nowrap;
+  background:#e6f4ec;border-radius:9999px;padding:3px 12px;
+  font-feature-settings:"tnum"}
+.nb-hud-acc:empty{display:none}
 .nb-hud-lives{letter-spacing:2px}
 .nb-hud-spacer{flex:1}
 .nb-hud button{min-height:30px;padding:4px 12px;font-size:13px}

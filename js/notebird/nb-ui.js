@@ -474,6 +474,7 @@ const NBUI=(()=>{
         <span class="nb-dots" aria-hidden="true"></span>
         <span class="nb-hud-lives" aria-label="chances left"></span>
         <span class="nb-hud-score"></span>
+        <span class="nb-hud-acc" aria-label="questions answered and accuracy"></span>
         <span class="nb-hud-spacer"></span>
         <button class="ghost nb-fs" aria-label="${nbt("hud.fullscreen")}" title="${nbt("hud.fullscreen")}">⛶</button>
         ${session.mode==="level"?`<button class="ghost nb-musicbtn" aria-label="${nbt("setup.music")}"></button>`:""}
@@ -719,6 +720,11 @@ const NBUI=(()=>{
     const filled=session.mode==="level"?session.inLevel:Math.min(15,session.qCount-1);
     [...$(".nb-dots").children].forEach((d,i)=>d.classList.toggle("filled",i<filled));
     $(".nb-hud-score").textContent="★ "+nbt("hud.streak",{streak:session.streak});
+    /* running "solved / accuracy" readout (instructor 2026-08-07, like the
+       classic drill sites' "1/1 · 100%") — first-try corrects over answered */
+    const st=session.stats();
+    $(".nb-hud-acc").textContent=st.notesRead>0
+      ? nbt("hud.answered",{ok:st.firstTry,n:st.notesRead,pct:st.accuracy}) : "";
   }
 
   function birdAt(x,y){ scene.bird.setAttribute("transform",`translate(${x},${y}) scale(1.3)`); }
