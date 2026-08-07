@@ -35,7 +35,11 @@
 const NBInput=(()=>{
   const LS="nb-input-v1";
   const NAT={0:"C",2:"D",4:"E",5:"F",7:"G",9:"A",11:"B"};
-  const CFG={fMin:60,fMax:1100,yinThresh:.15,rmsGate:.008,conf:.75,
+  /* rmsGate is calibrated for the ×5-BOOSTED signal (see openMic). Lowered
+     .008→.003 (2026-08-07): the instructor's iPad peaks around .005–.012
+     boosted — the meter danced but detection/pass never engaged. Confidence
+     (conf .75) remains the real false-positive gate. */
+  const CFG={fMin:60,fMax:1100,yinThresh:.15,rmsGate:.003,conf:.75,
              needFrames:3,cooldownMs:800,silenceMs:150};
   let mode=(()=>{ try{ return JSON.parse(localStorage.getItem(LS)).mode||"buttons"; }
     catch(e){ return "buttons"; } })();

@@ -403,8 +403,10 @@ const NBUI=(()=>{
               if(heard) heard.textContent="🎵 "+nbt("mic.heard",{note:f.note+" ("+f.note+String(Math.floor(f.midi/12)-1)+")"});
               NBInput.micSetupDone(true);
               micPanel(host); paintStart();
-            } else if(f.rms>=0.015&&!NBInput.micReady()){
-              if(++loud>=10){ NBInput.micSetupDone(true); micPanel(host); paintStart(); }
+            } else if(f.rms>=0.006&&!NBInput.micReady()){
+              /* threshold matched to real iPad levels (boosted ≈.005–.012):
+                 the bar danced but 0.015 was never reached (2026-08-07) */
+              if(++loud>=12){ NBInput.micSetupDone(true); micPanel(host); paintStart(); }
             }
           }); }catch(e){ ok=false; }
           if(!ok){
